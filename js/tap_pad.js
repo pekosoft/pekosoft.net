@@ -842,10 +842,11 @@ function drawReferenceLines(layer, color, timelineHeight) {
   if (!showGuides) return;
 
   const maxGuide = Math.floor(timelineHeight / 30) * 30;
+  const titleY = Math.round(timelineHeight - (maxGuide - 30)) - 5;
 
   const title = svgUtils.createText({
-    x: 45,
-    y: 12,
+    x: 40,
+    y: titleY,
     text: "BPM",
     fill: color,
     fontSize: 12,
@@ -866,7 +867,7 @@ function drawReferenceLines(layer, color, timelineHeight) {
     const y = Math.round(timelineHeight - bpm) + 0.5;
     layer.appendChild(createTimelineLine(0, y, TIMELINE_WIDTH, y, color));
 
-    if (bpm === maxGuide) continue;
+    if (bpm >= maxGuide - 30) continue;
 
     const label = svgUtils.createText({
       x: 40,

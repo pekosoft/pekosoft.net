@@ -644,13 +644,14 @@ function drawReferenceLines(timelineHeight) {
   if (!metronomeTimelineSvg || !metronomeSvgUtils) return;
 
   const maxGuide = Math.floor(timelineHeight / 30) * 30;
+  const titleY = timelineHeight - Math.min(timelineHeight, maxGuide - 30) - 5;
   const guidesLayer = document.createElementNS('http://www.w3.org/2000/svg', 'g');
   guidesLayer.setAttribute('class', 'metronome-timeline-guides');
   metronomeTimelineSvg.appendChild(guidesLayer);
 
   guidesLayer.appendChild(metronomeSvgUtils.createText({
-    x: 45,
-    y: 12,
+    x: 40,
+    y: titleY,
     text: 'BPM',
     color: getCssVariable('--grey1'),
     size: 12,
@@ -675,7 +676,7 @@ function drawReferenceLines(timelineHeight) {
       color: getCssVariable('--grey1')
     }));
 
-    if (bpm === maxGuide) continue;
+    if (bpm >= maxGuide - 30) continue;
 
     guidesLayer.appendChild(metronomeSvgUtils.createText({
       x: 40,

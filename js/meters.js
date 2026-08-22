@@ -77,15 +77,28 @@
   }
 
   const colorGrey1 = getComputedStyle(document.documentElement).getPropertyValue('--grey1').trim() || '#222';
-  const colorGrey2 = getComputedStyle(document.documentElement).getPropertyValue('--grey2').trim() || '#444';
+  const guideLabelInset = 6;
+  const guideLabelHeight = 10;
+  const guideLabelGap = 4;
+  const guideGridLeft = 32;
+  const guideGridTop = guideLabelInset + guideLabelHeight + guideLabelGap;
+
+  function snapGuideCoordinate(value) {
+    const dpr = window.devicePixelRatio || 1;
+    return (Math.round((value * dpr) - 0.5) + 0.5) / dpr;
+  }
+
+  function setCrispGuideStroke(ctx) {
+    ctx.lineWidth = 1 / (window.devicePixelRatio || 1);
+  }
 
   function drawToolGuideLabel(ctx, text, x, y, align = 'left', bounds = null) {
     ctx.save();
     ctx.font = '10px Arial';
     const textWidth = ctx.measureText(text).width;
-    const minX = 6;
-    const minY = 2;
-    const maxY = bounds ? Math.max(minY, bounds.height - 12) : y;
+    const minX = guideLabelInset;
+    const minY = guideLabelInset;
+    const maxY = bounds ? Math.max(minY, bounds.height - guideLabelHeight - guideLabelInset) : y;
     const safeY = Math.max(minY, Math.min(maxY, y));
 
     let safeAlign = align;
@@ -108,9 +121,27 @@
 
     ctx.textAlign = safeAlign;
     ctx.textBaseline = 'top';
-    ctx.fillStyle = colorGrey2;
+    ctx.fillStyle = colorGrey1;
     ctx.fillText(text, safeX, safeY);
     ctx.restore();
+  }
+
+  function drawHorizontalGuideLabel(ctx, text, y, width, height) {
+    const labelY = y <= guideLabelInset
+      ? Math.round(y) + guideLabelGap
+      : Math.round(y) - guideLabelHeight - guideLabelGap;
+    drawToolGuideLabel(
+      ctx,
+      text,
+      guideGridLeft - guideLabelGap,
+      labelY,
+      'right',
+      { width, height }
+    );
+  }
+
+  function drawVerticalGuideLabel(ctx, text, x, width, height) {
+    drawToolGuideLabel(ctx, text, Math.round(x) + guideLabelGap, guideLabelInset, 'left', { width, height });
   }
 
   function frequencyToSpectrumX(freqHz, width, sampleRate) {
@@ -121,24 +152,47 @@
     return width * Math.log(freqHz / fMin) / Math.log(nyquist / fMin);
   }
 
-  function drawToolGuidesForOscilloscope(ctx, width, height) {
-    const gridYs = [0.25, 0.5, 0.75];
+  function drawWaveformDbScale(ctx, width, height, centerY, amplitude) {
+    const minusSixDbGain = Math.pow(10, -6 / 20);
+    const marks = [
+      { label: '0 dB', offset: -1 },
+      { label: '-6 dB', offset: -minusSixDbGain },
+      { label: '-∞', offset: 0 },
+      { label: '-6 dB', offset: minusSixDbGain },
+      { label: '0 dB', offset: 1 }
+    ];
     ctx.save();
     ctx.strokeStyle = colorGrey1;
-    ctx.lineWidth = 1;
-    gridYs.forEach((ratio) => {
-      const y = Math.round(height * ratio) + 0.5;
+    setCrispGuideStroke(ctx);
+    marks.slice(1, -1).forEach(({ offset }) => {
+      const y = snapGuideCoordinate(centerY + (offset * amplitude));
       ctx.beginPath();
       ctx.moveTo(0, y);
       ctx.lineTo(width, y);
       ctx.stroke();
     });
-    const centerY = Math.round(height / 2) + 0.5;
+    ctx.restore();
+
+    marks.forEach(({ label, offset }) => {
+      drawHorizontalGuideLabel(ctx, label, centerY + (offset * amplitude), width, height);
+    });
+  }
+
+  function drawWaveformValueSeparator(ctx, height) {
+    const x = snapGuideCoordinate(guideGridLeft);
+    ctx.save();
+    ctx.strokeStyle = colorGrey1;
+    setCrispGuideStroke(ctx);
     ctx.beginPath();
-    ctx.moveTo(0, centerY);
-    ctx.lineTo(width, centerY);
+    ctx.moveTo(x, 0);
+    ctx.lineTo(x, height);
     ctx.stroke();
     ctx.restore();
+  }
+
+  function drawToolGuidesForOscilloscope(ctx, width, height) {
+    drawWaveformValueSeparator(ctx, height);
+    drawWaveformDbScale(ctx, width, height, height / 2, height / 2);
   }
 
   function drawToolGuidesForLevelMeter(ctx, width, height, channelCount) {
@@ -147,7 +201,7 @@
     const barH = Math.floor((height - gap * (channelCount - 1)) / channelCount);
     ctx.save();
     ctx.strokeStyle = colorGrey1;
-    ctx.lineWidth = 1;
+    setCrispGuideStroke(ctx);
 
     ctx.font = '10px Arial';
     let lastLabelRight = -Infinity;
@@ -155,28 +209,25 @@
 
     dBMarks.forEach((db) => {
       const amplitude = Math.pow(10, db / 20);
-      const x = Math.round(width * amplitude) + 0.5;
+      const x = snapGuideCoordinate(width * amplitude);
       ctx.beginPath();
       ctx.moveTo(x, 0);
       ctx.lineTo(x, height);
       ctx.stroke();
 
       const label = `${db} dB`;
-      const halfWidth = ctx.measureText(label).width / 2;
-      const clampedX = Math.max(6 + halfWidth, Math.min((width - 6) - halfWidth, x));
-      const labelLeft = clampedX - halfWidth;
-      const labelRight = clampedX + halfWidth;
-      const drawLabel = (labelLeft >= lastLabelRight + minLabelGap) || db === 0;
-
-      if (drawLabel) {
-        drawToolGuideLabel(ctx, label, clampedX, height - 12, 'center', { width, height });
+      const labelWidth = ctx.measureText(label).width;
+      const labelRight = x - guideLabelGap;
+      const labelLeft = labelRight - labelWidth;
+      if (labelLeft >= lastLabelRight + minLabelGap || db === 0) {
+        drawVerticalGuideLabel(ctx, label, x, width, height);
         lastLabelRight = labelRight;
       }
     });
 
     const splitY = channelCount > 1
-      ? Math.round(barH + gap / 2) + 0.5
-      : Math.round(height / 2) + 0.5;
+      ? snapGuideCoordinate(barH + gap / 2)
+      : snapGuideCoordinate(height / 2);
     ctx.beginPath();
     ctx.moveTo(0, splitY);
     ctx.lineTo(width, splitY);
@@ -190,28 +241,28 @@
     const dBMarks = [-60, -48, -36, -24, -12, 0];
     ctx.save();
     ctx.strokeStyle = colorGrey1;
-    ctx.lineWidth = 1;
+    setCrispGuideStroke(ctx);
 
     dBMarks.forEach((db) => {
       const ratio = (db + 60) / 60;
-      const y = Math.round(height - (Math.max(0, Math.min(1, ratio)) * height)) + 0.5;
+      const rawY = snapGuideCoordinate(height - (Math.max(0, Math.min(1, ratio)) * height));
+      const y = db === 0 ? guideGridTop : rawY;
       ctx.beginPath();
       ctx.moveTo(0, y);
       ctx.lineTo(width, y);
       ctx.stroke();
-      drawToolGuideLabel(ctx, `${db}`, 8, Math.max(4, y - 10), 'left', { width, height });
+      drawHorizontalGuideLabel(ctx, `${db}`, y, width, height);
     });
 
-    let lastLabelX = -Infinity;
-    const minLabelGap = 24;
     freqs.forEach((freq) => {
-      const x = Math.round(frequencyToSpectrumX(freq, width, sampleRate)) + 0.5;
+      const rawX = snapGuideCoordinate(frequencyToSpectrumX(freq, width, sampleRate));
+      const x = freq === 20 ? guideGridLeft : rawX;
       const label = freq >= 1000 ? `${(freq / 1000).toFixed(freq >= 10000 ? 0 : 1)}k` : `${freq}`;
-
-      if (x - lastLabelX >= minLabelGap || freq === 20000) {
-        drawToolGuideLabel(ctx, label, x, height - 12, 'center', { width, height });
-        lastLabelX = x;
-      }
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, height);
+      ctx.stroke();
+      drawVerticalGuideLabel(ctx, label, x, width, height);
     });
 
     ctx.restore();
@@ -439,7 +490,7 @@
     const sliceWidth = width / data.length;
     let x = 0;
     for (let i = 0; i < data.length; i++) {
-      const y = (data[i] / 255) * height;
+      const y = height / 2 - (((data[i] - 128) / 128) * height / 2);
       if (i === 0) ctx.moveTo(x, y);
       else ctx.lineTo(x, y);
       x += sliceWidth;
@@ -718,23 +769,18 @@
 
     if (mode === 'wavescope') {
       const isStereo = (source?.channelCount || 1) > 1;
-      const guideYs = isStereo ? [0.25, 0.5, 0.75] : [0.25, 0.5, 0.75];
-      ctx.save();
-      ctx.strokeStyle = colorGrey1;
-      ctx.lineWidth = 1;
-      guideYs.forEach((ratio) => {
-        const y = Math.round(height * ratio) + 0.5;
-        ctx.beginPath();
-        ctx.moveTo(0, y);
-        ctx.lineTo(width, y);
-        ctx.stroke();
-      });
+      const lanes = isStereo
+        ? [{ label: 'L', center: 0.25 }, { label: 'R', center: 0.75 }]
+        : [{ label: '', center: 0.5 }];
+      const laneAmplitude = isStereo ? 0.18 : 0.35;
 
-      if (isStereo) {
-        drawToolGuideLabel(ctx, 'L', 8, Math.round(height * 0.25) - 8, 'left', { width, height });
-        drawToolGuideLabel(ctx, 'R', 8, Math.round(height * 0.75) - 8, 'left', { width, height });
-      }
-      ctx.restore();
+      drawWaveformValueSeparator(ctx, height);
+      lanes.forEach(({ label, center }) => {
+        drawWaveformDbScale(ctx, width, height, height * center, height * laneAmplitude);
+        if (label) {
+          drawToolGuideLabel(ctx, label, width - 8, Math.round(height * center) - 6, 'right', { width, height });
+        }
+      });
       return;
     }
 

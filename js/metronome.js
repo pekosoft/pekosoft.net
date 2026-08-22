@@ -657,6 +657,14 @@ function drawReferenceLines(timelineHeight) {
     anchor: 'end'
   }));
 
+  guidesLayer.appendChild(metronomeSvgUtils.createLine({
+    x1: METRONOME_GRAPH_OFFSET,
+    y1: 0,
+    x2: METRONOME_GRAPH_OFFSET,
+    y2: timelineHeight,
+    color: getCssVariable('--grey1')
+  }));
+
   for (let bpm = 30; bpm <= maxGuide; bpm += 30) {
     const y = timelineHeight - Math.min(timelineHeight, bpm);
     guidesLayer.appendChild(metronomeSvgUtils.createLine({

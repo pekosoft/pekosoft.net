@@ -854,6 +854,14 @@ function drawReferenceLines(layer, color, timelineHeight) {
   });
   layer.appendChild(title);
 
+  layer.appendChild(createTimelineLine(
+    TAP_PAD_GRAPH_OFFSET,
+    0,
+    TAP_PAD_GRAPH_OFFSET,
+    timelineHeight,
+    color
+  ));
+
   for (let bpm = 30; bpm <= maxGuide; bpm += 30) {
     const y = Math.round(timelineHeight - bpm) + 0.5;
     layer.appendChild(createTimelineLine(0, y, TIMELINE_WIDTH, y, color));

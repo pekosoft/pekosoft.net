@@ -394,6 +394,14 @@ function drawReferenceLines(timelineHeight) {
     anchor: 'end'
   }));
 
+  guidesLayer.appendChild(turntableSvgUtils.createLine({
+    x1: TURNTABLE_GRAPH_OFFSET,
+    y1: 0,
+    x2: TURNTABLE_GRAPH_OFFSET,
+    y2: timelineHeight,
+    color: getCssVariable('--grey1')
+  }));
+
   refSpeeds.forEach(rpm => {
     const y = timelineHeight - Math.min(timelineHeight, rpm * 2);
     guidesLayer.appendChild(turntableSvgUtils.createLine({

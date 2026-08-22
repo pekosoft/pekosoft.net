@@ -236,14 +236,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if (settings.resetButton) {
     settings.resetButton.addEventListener("click", () => {
       resetSettings();
-      loadSettings();
-      applyGridSetting();
-      applyGridSizeSetting();
-      applyButtonTextSetting();
-      applyFontSizeSetting();
-      applyAlphaSetting();
-      refreshNumericKnobAngles();
-      if (window.applySiteSettings) window.applySiteSettings();
+      window.location.reload();
     });
   }
 

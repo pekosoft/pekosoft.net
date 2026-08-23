@@ -55,6 +55,23 @@
     return readBoolean(localStorage.getItem("global.guides"), defaultGuides);
   }
 
+  function getBrightGlobal() {
+    return localStorage.getItem("global.bright_guides") === "true";
+  }
+
+  function getTimelineBrightStorageKey() {
+    return `${getPageSlug()}.timeline_bright`;
+  }
+
+  function getTimelineBright() {
+    const saved = localStorage.getItem(getTimelineBrightStorageKey());
+    return saved === null ? getBrightGlobal() : saved === "true";
+  }
+
+  function getTimelineGuideColor(fallback) {
+    return getTimelineBright() ? "#fff" : fallback;
+  }
+
   function getRegistry() {
     try {
       const parsed = JSON.parse(localStorage.getItem("global.guides.modules") || "{}");
@@ -107,6 +124,17 @@
     }
   }
 
+  function updateBrightSettingsButton() {
+    const input = document.getElementById("bright-guides");
+    const button = document.querySelector('[data-setting-toggle="bright-guides"]');
+    const enabled = getBrightGlobal();
+    if (input) input.checked = enabled;
+    if (button) {
+      button.classList.toggle("button-on", enabled);
+      button.setAttribute("aria-pressed", String(enabled));
+    }
+  }
+
   function syncPageRegistry() {
     const registry = getRegistry();
     if (!Object.keys(registry).length) {
@@ -155,11 +183,62 @@
     }));
   }
 
+  function clearBrightLocalOverrides() {
+    for (let index = localStorage.length - 1; index >= 0; index -= 1) {
+      const key = localStorage.key(index);
+      if (/^meters\..+\.bright$/.test(key || "") || key?.endsWith(".timeline_bright")) {
+        localStorage.removeItem(key);
+      }
+    }
+  }
+
+  function setBrightGlobal(nextState) {
+    const enabled = !!nextState;
+    localStorage.setItem("global.bright_guides", String(enabled));
+    clearBrightLocalOverrides();
+    updateBrightSettingsButton();
+    window.dispatchEvent(new CustomEvent("pekosoft:bright-guides-global-change", {
+      detail: { enabled }
+    }));
+    window.dispatchEvent(new CustomEvent("pekosoft:timeline-bright-change", {
+      detail: { enabled }
+    }));
+  }
+
+  function syncTimelineBrightButton() {
+    const button = document.querySelector("#timeline-bright-button[data-shared-timeline-bright]");
+    if (!button) return;
+    const enabled = getTimelineBright();
+    button.classList.toggle("button-on", enabled);
+    button.setAttribute("aria-pressed", String(enabled));
+  }
+
+  function toggleTimelineBright() {
+    localStorage.setItem(getTimelineBrightStorageKey(), String(!getTimelineBright()));
+    syncTimelineBrightButton();
+    window.dispatchEvent(new CustomEvent("pekosoft:timeline-bright-change", {
+      detail: { enabled: getTimelineBright() }
+    }));
+  }
+
   window.PekoGuides = {
     getGlobal,
     setGlobal,
     syncPageRegistry,
-    updateSettingsButton
+    updateSettingsButton,
+    getBrightGlobal,
+    setBrightGlobal,
+    updateBrightSettingsButton,
+    getTimelineBright,
+    getTimelineGuideColor
+  };
+
+  window.PekoBrightGuides = {
+    getGlobal: getBrightGlobal,
+    setGlobal: setBrightGlobal,
+    updateSettingsButton: updateBrightSettingsButton,
+    getTimelineBright,
+    getTimelineGuideColor
   };
 
   document.addEventListener("click", (event) => {
@@ -170,10 +249,16 @@
     if (event.key === "global.guides" && event.newValue !== null) {
       setGlobal(readBoolean(event.newValue, defaultGuides));
     }
+    if (event.key === "global.bright_guides" && event.newValue !== null) {
+      setBrightGlobal(event.newValue === "true");
+    }
   });
 
   document.addEventListener("DOMContentLoaded", () => {
     syncPageRegistry();
     updateSettingsButton();
+    updateBrightSettingsButton();
+    syncTimelineBrightButton();
+    document.querySelector("#timeline-bright-button[data-shared-timeline-bright]")?.addEventListener("click", toggleTimelineBright);
   });
 })();

@@ -8,6 +8,7 @@ window.FactoryDefaults = {
   grid: false,
   gridSize: 16,
   guides: true,
+  brightGuides: false,
   headers: true,
   layout: true,
   haptics: false,
@@ -30,6 +31,7 @@ document.addEventListener("DOMContentLoaded", () => {
     gridSizeValue: document.getElementById("grid-size-value"),
     fontSizeKnob: document.getElementById("font-size-knob"),
     guides: document.getElementById("guides"),
+    brightGuides: document.getElementById("bright-guides"),
     headers: document.getElementById("headers"),
     layout: document.getElementById("layout"),
     haptics: document.getElementById("haptics"),
@@ -146,6 +148,14 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  if (settings.brightGuides) {
+    settings.brightGuides.addEventListener("change", () => {
+      localStorage.setItem("global.bright_guides", settings.brightGuides.checked);
+      if (window.PekoBrightGuides) window.PekoBrightGuides.setGlobal(settings.brightGuides.checked);
+      if (window.applySiteSettings) window.applySiteSettings();
+    });
+  }
+
   if (settings.haptics) {
     settings.haptics.addEventListener("change", () => {
       saveHapticsSetting();
@@ -250,6 +260,11 @@ document.addEventListener("DOMContentLoaded", () => {
       settings.guides.checked = window.PekoGuides
         ? window.PekoGuides.getGlobal()
         : (localStorage.getItem("global.guides") ?? String(defaults.guides)) === "true";
+    }
+    if (settings.brightGuides) {
+      settings.brightGuides.checked = window.PekoBrightGuides
+        ? window.PekoBrightGuides.getGlobal()
+        : (localStorage.getItem("global.bright_guides") ?? String(defaults.brightGuides)) === "true";
     }
     const savedGridSize = normalizeGridSize(parseInt(localStorage.getItem("global.grid_size") ?? `${defaults.gridSize}`, 10));
     setGridSize(savedGridSize, false);
@@ -412,6 +427,8 @@ document.addEventListener("DOMContentLoaded", () => {
     localStorage.setItem("global.grid_size", defaults.gridSize);
     localStorage.setItem("global.guides", defaults.guides);
     if (window.PekoGuides) window.PekoGuides.setGlobal(defaults.guides);
+    localStorage.setItem("global.bright_guides", defaults.brightGuides);
+    if (window.PekoBrightGuides) window.PekoBrightGuides.setGlobal(defaults.brightGuides);
     localStorage.setItem("global.haptics", defaults.haptics);
     localStorage.setItem("global.headers", defaults.headers);
     localStorage.setItem("global.layout", defaults.layout);

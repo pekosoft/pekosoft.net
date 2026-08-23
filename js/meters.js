@@ -22,6 +22,7 @@
   };
 
   const guidesButton = document.getElementById('tool-guides-button');
+  const brightButton = document.getElementById('tool-bright-button');
   const availableModes = Object.keys(canvasByMode).filter((mode) => !!canvasByMode[mode]);
   if (!availableModes.length) return;
 
@@ -36,6 +37,13 @@
   function getSavedGuides() {
     const saved = localStorage.getItem(`${storagePrefix}.guides`);
     return saved === null ? localStorage.getItem('global.guides') !== 'false' : saved === 'on';
+  }
+
+  function getSavedBright() {
+    const saved = localStorage.getItem(`${storagePrefix}.bright`);
+    return saved === null
+      ? (window.PekoBrightGuides?.getGlobal() || false)
+      : saved === 'on';
   }
 
   function resizeCanvasToDisplaySize(canvas, ctx) {
@@ -77,6 +85,7 @@
   }
 
   const colorGrey1 = getComputedStyle(document.documentElement).getPropertyValue('--grey1').trim() || '#222';
+  let guideColor = colorGrey1;
   const guideLabelInset = 6;
   const guideLabelHeight = 10;
   const guideLabelGap = 4;
@@ -121,7 +130,7 @@
 
     ctx.textAlign = safeAlign;
     ctx.textBaseline = 'top';
-    ctx.fillStyle = colorGrey1;
+    ctx.fillStyle = guideColor;
     ctx.fillText(text, safeX, safeY);
     ctx.restore();
   }
@@ -162,7 +171,7 @@
       { label: '0 dB', offset: 1 }
     ];
     ctx.save();
-    ctx.strokeStyle = colorGrey1;
+    ctx.strokeStyle = guideColor;
     setCrispGuideStroke(ctx);
     marks.slice(1, -1).forEach(({ offset }) => {
       const y = snapGuideCoordinate(centerY + (offset * amplitude));
@@ -181,7 +190,7 @@
   function drawWaveformValueSeparator(ctx, height) {
     const x = snapGuideCoordinate(guideGridLeft);
     ctx.save();
-    ctx.strokeStyle = colorGrey1;
+    ctx.strokeStyle = guideColor;
     setCrispGuideStroke(ctx);
     ctx.beginPath();
     ctx.moveTo(x, 0);
@@ -200,7 +209,7 @@
     const gap = channelCount > 1 ? 4 : 0;
     const barH = Math.floor((height - gap * (channelCount - 1)) / channelCount);
     ctx.save();
-    ctx.strokeStyle = colorGrey1;
+    ctx.strokeStyle = guideColor;
     setCrispGuideStroke(ctx);
 
     ctx.font = '10px Arial';
@@ -240,7 +249,7 @@
     const freqs = [20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000];
     const dBMarks = [-60, -48, -36, -24, -12, 0];
     ctx.save();
-    ctx.strokeStyle = colorGrey1;
+    ctx.strokeStyle = guideColor;
     setCrispGuideStroke(ctx);
 
     dBMarks.forEach((db) => {
@@ -360,6 +369,7 @@
   }
 
   let guidesOn = getSavedGuides();
+  let brightGuides = getSavedBright();
 
   function applyMode(nextMode) {
     if (!availableModes.includes(nextMode)) return;
@@ -382,6 +392,17 @@
     localStorage.setItem(`${storagePrefix}.guides`, guidesOn ? 'on' : 'off');
     if (guidesButton) {
       guidesButton.classList.toggle('button-on', guidesOn);
+    }
+  }
+
+  function applyBright(nextState, persist = true) {
+    brightGuides = !!nextState;
+    guideColor = brightGuides ? '#fff' : colorGrey1;
+    if (persist) {
+      localStorage.setItem(`${storagePrefix}.bright`, brightGuides ? 'on' : 'off');
+    }
+    if (brightButton) {
+      brightButton.classList.toggle('button-on', brightGuides);
     }
   }
 
@@ -869,6 +890,14 @@
     guidesButton.addEventListener('click', () => applyGuides(!guidesOn));
   }
 
+  if (brightButton) {
+    brightButton.addEventListener('click', () => applyBright(!brightGuides));
+  }
+
+  window.addEventListener('pekosoft:bright-guides-global-change', (event) => {
+    applyBright(event.detail?.enabled, false);
+  });
+
   const resetButton = document.getElementById('reset-button');
   if (resetButton) {
     resetButton.addEventListener('click', () => {
@@ -878,6 +907,7 @@
 
   applyMode(activeMode);
   applyGuides(guidesOn);
+  applyBright(brightGuides);
   window.__pekosoftClearMeterFrame = clearMeterFrame;
   requestAnimationFrame(tick);
 })();

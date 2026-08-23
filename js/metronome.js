@@ -26,6 +26,7 @@ const copyButton = document.getElementById("copy-button");
 const panelBeatsButton = document.getElementById("panel-beats-button");
 const panelTempiButton = document.getElementById("panel-tempi-button");
 const btnGuides = document.getElementById("guides-button");
+window.addEventListener('pekosoft:timeline-bright-change', () => redrawTimeline());
 const btnHaptic = document.getElementById("haptic-button");
 const baseBpmButton = document.getElementById("base-bpm-button");
 const baseTempiButton = document.getElementById("base-tempi-button");
@@ -643,6 +644,7 @@ function drawReferenceLines(timelineHeight) {
   if (!show_guides) return;
   if (!metronomeTimelineSvg || !metronomeSvgUtils) return;
 
+  const guideColor = window.PekoBrightGuides?.getTimelineGuideColor(getCssVariable('--grey1')) || getCssVariable('--grey1');
   const maxGuide = Math.floor(timelineHeight / 30) * 30;
   const titleY = timelineHeight - Math.min(timelineHeight, maxGuide - 30) - 5;
   const guidesLayer = document.createElementNS('http://www.w3.org/2000/svg', 'g');
@@ -653,7 +655,7 @@ function drawReferenceLines(timelineHeight) {
     x: 40,
     y: titleY,
     text: 'BPM',
-    color: getCssVariable('--grey1'),
+    color: guideColor,
     size: 12,
     anchor: 'end'
   }));
@@ -663,7 +665,7 @@ function drawReferenceLines(timelineHeight) {
     y1: 0,
     x2: METRONOME_GRAPH_OFFSET,
     y2: timelineHeight,
-    color: getCssVariable('--grey1')
+    color: guideColor
   }));
 
   for (let bpm = 30; bpm <= maxGuide; bpm += 30) {
@@ -673,7 +675,7 @@ function drawReferenceLines(timelineHeight) {
       y1: y,
       x2: METRONOME_TIMELINE_WIDTH,
       y2: y,
-      color: getCssVariable('--grey1')
+      color: guideColor
     }));
 
     if (bpm >= maxGuide - 30) continue;
@@ -682,7 +684,7 @@ function drawReferenceLines(timelineHeight) {
       x: 40,
       y: y - 5,
       text: String(bpm),
-      color: getCssVariable('--grey1'),
+      color: guideColor,
       size: 12,
       anchor: 'end'
     }));

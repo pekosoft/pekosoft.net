@@ -380,6 +380,11 @@
 </div>
 
 <div class="feature-row border">
+  <svg class="standard-image-help"><use href="/icons.svg#sun"></use></svg>
+  <div class="justify"><h1>Bright <span class="object">option</span></h1>Makes guides white across supported Timelines and Meters. A module-local BRIGHT button overrides this setting for its own module only. <span class="default">Default: off.</span></div>
+</div>
+
+<div class="feature-row border">
   <svg class="standard-image-help"><use href="/icons.svg#tool"></use></svg>
   <div class="justify"><h1>Headers <span class="object">option</span></h1>Shows or hides module headers.</div>
 </div>

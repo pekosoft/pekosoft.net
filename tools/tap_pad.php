@@ -152,6 +152,13 @@
         <span class="button-text">GUIDES</span>
       </button>
 
+      <button id="timeline-bright-button" data-shared-timeline-bright class="square" title="Toggle bright guides">
+        <svg class="icons">
+          <use href="/icons.svg#sun" />
+        </svg>
+        <span class="button-text">BRIGHT</span>
+      </button>
+
       <button id="current-line-button" class="square" title="Toggle Current BPM">
         <svg class="icons">
           <use href="/icons.svg#letter_c" />

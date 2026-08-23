@@ -191,6 +191,10 @@
         <svg class="icons" role="img"><use href="/icons.svg#guides" /></svg>
         <span class="button-text">GUIDES</span>
       </button>
+      <button id="timeline-bright-button" title="Toggle bright guides">
+        <svg class="icons" role="img"><use href="/icons.svg#sun" /></svg>
+        <span class="button-text">BRIGHT</span>
+      </button>
     </div>
   </div>
 

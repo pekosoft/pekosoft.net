@@ -31,6 +31,7 @@ const volumeIncreaseButton = document.getElementById('volume-increase-button');
 const volumeDecreaseButton = document.getElementById('volume-decrease-button');
 
 const guidesButton = document.getElementById('guides-button');
+window.addEventListener('pekosoft:timeline-bright-change', () => redrawTimeline());
 const tunerTimelineSvg = document.getElementById('tuner-timeline-svg');
 const tunerTimelineContainer = document.getElementById('timeline-container');
 const tunerSvgUtils = window.PekoSvgUtils;
@@ -320,6 +321,10 @@ function drawGuides(timelineHeight) {
   if (!state.showGuides) return;
   if (!tunerTimelineSvg || !tunerSvgUtils) return;
 
+  const baseLineColor = getCssVariable('--grey1');
+  const baseLabelColor = getCssVariable('--grey2');
+  const lineColor = window.PekoBrightGuides?.getTimelineGuideColor(baseLineColor) || baseLineColor;
+  const labelColor = window.PekoBrightGuides?.getTimelineGuideColor(baseLabelColor) || baseLabelColor;
   const guidesLayer = document.createElementNS('http://www.w3.org/2000/svg', 'g');
   guidesLayer.setAttribute('class', 'tuner-timeline-guides');
   tunerTimelineSvg.appendChild(guidesLayer);
@@ -339,13 +344,13 @@ function drawGuides(timelineHeight) {
       y1: y,
       x2: TUNER_TIMELINE_WIDTH,
       y2: y,
-      color: getCssVariable('--grey1')
+      color: lineColor
     }));
     guidesLayer.appendChild(tunerSvgUtils.createText({
       x: 44,
       y: y - 4,
       text: line.label,
-      color: getCssVariable('--grey2'),
+      color: labelColor,
       size: 12,
       anchor: 'end'
     }));

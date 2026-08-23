@@ -27,6 +27,7 @@ const btnLabelL = document.getElementById('label-l-button');
 const labelSmall = document.querySelector('.label-small');
 const labelLarge = document.querySelector('.label-large');
 const btnGuides = document.getElementById("guides-button");
+window.addEventListener('pekosoft:timeline-bright-change', () => redrawTimeline());
 const increaseButton = document.getElementById('increase-button');
 const decreaseButton = document.getElementById('decrease-button');
 const volumeSlider = document.getElementById('volume-slider');
@@ -380,6 +381,7 @@ function drawReferenceLines(timelineHeight) {
   if (!showGuides) return;
   if (!turntableTimelineSvg || !turntableSvgUtils) return;
 
+  const guideColor = window.PekoBrightGuides?.getTimelineGuideColor(getCssVariable('--grey1')) || getCssVariable('--grey1');
   const refSpeeds = [8, 33, 45, 78];
   const guidesLayer = document.createElementNS('http://www.w3.org/2000/svg', 'g');
   guidesLayer.setAttribute('class', 'turntable-timeline-guides');
@@ -389,7 +391,7 @@ function drawReferenceLines(timelineHeight) {
     x: 45,
     y: 12,
     text: 'RPM',
-    color: getCssVariable('--grey1'),
+    color: guideColor,
     size: 12,
     anchor: 'end'
   }));
@@ -399,7 +401,7 @@ function drawReferenceLines(timelineHeight) {
     y1: 0,
     x2: TURNTABLE_GRAPH_OFFSET,
     y2: timelineHeight,
-    color: getCssVariable('--grey1')
+    color: guideColor
   }));
 
   refSpeeds.forEach(rpm => {
@@ -409,14 +411,14 @@ function drawReferenceLines(timelineHeight) {
       y1: y,
       x2: TURNTABLE_TIMELINE_WIDTH,
       y2: y,
-      color: getCssVariable('--grey1')
+      color: guideColor
     }));
 
     guidesLayer.appendChild(turntableSvgUtils.createText({
       x: 40,
       y: y - 5,
       text: String(rpm),
-      color: getCssVariable('--grey1'),
+      color: guideColor,
       size: 12,
       anchor: 'end'
     }));

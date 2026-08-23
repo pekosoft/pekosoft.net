@@ -29,6 +29,7 @@ class BPMCurve {
     this.copyButton = document.getElementById('copy-button');
     this.guidesButton = document.getElementById('guides-button');
     this.timelineGuidesButton = document.getElementById('timeline-guides-button');
+    this.timelineBrightButton = document.getElementById('timeline-bright-button');
     this.panelValuesButton = document.getElementById('panel-values-button');
     this.panelCurveButton = document.getElementById('panel-curve-button');
     this.toggleValuesButton = document.getElementById('toggle-values-button');
@@ -101,6 +102,9 @@ class BPMCurve {
     this.isTimelineGuidesVisible = localStorage.getItem('bpm_curve.timeline_guides') === null
       ? localStorage.getItem('global.guides') !== 'false'
       : localStorage.getItem('bpm_curve.timeline_guides') === 'true';
+    this.isTimelineBright = localStorage.getItem('bpm_curve.timeline_bright') === null
+      ? (window.PekoBrightGuides?.getGlobal() || false)
+      : localStorage.getItem('bpm_curve.timeline_bright') === 'true';
     this.audioContext = null;
     this.metersAnalyser = null;
     this.masterMuteGainNode = null;
@@ -227,6 +231,17 @@ class BPMCurve {
       this.syncButtonStates();
       this.renderTimeline();
       this.saveState();
+    });
+    this.timelineBrightButton?.addEventListener('click', () => {
+      this.isTimelineBright = !this.isTimelineBright;
+      localStorage.setItem('bpm_curve.timeline_bright', String(this.isTimelineBright));
+      this.syncButtonStates();
+      this.renderTimeline();
+    });
+    window.addEventListener('pekosoft:bright-guides-global-change', (event) => {
+      this.isTimelineBright = !!event.detail?.enabled;
+      this.syncButtonStates();
+      this.renderTimeline();
     });
     this.panelValuesButton?.addEventListener('click', () => this.setPanelView('values'));
     this.panelCurveButton?.addEventListener('click', () => this.setPanelView('curve'));
@@ -849,6 +864,7 @@ class BPMCurve {
     this.beatsButton?.classList.toggle('button-on', this.isBeatsVisible);
     this.guidesButton?.classList.toggle('button-on', this.isGuidesVisible);
     this.timelineGuidesButton?.classList.toggle('button-on', this.isTimelineGuidesVisible);
+    this.timelineBrightButton?.classList.toggle('button-on', this.isTimelineBright);
     this.panelValuesButton?.classList.toggle('button-on', this.panelView === 'values');
     this.panelCurveButton?.classList.toggle('button-on', this.panelView === 'curve');
     if (this.removePointButton) {
@@ -1768,13 +1784,13 @@ class BPMCurve {
           y1: padding.top,
           x2: x,
           y2: padding.top + innerHeight,
-          color: this.getCssVariable('--grey1', '#404040')
+          color: this.isTimelineBright ? '#fff' : this.getCssVariable('--grey1', '#404040')
         }));
         guidesLayer.appendChild(this.svgUtils.createText({
           x: x - 14,
           y: height - 6,
           text: `${time.toFixed(1)}s`,
-          color: this.getCssVariable('--grey2', '#808080'),
+          color: this.isTimelineBright ? '#fff' : this.getCssVariable('--grey2', '#808080'),
           size: 13,
           anchor: 'start'
         }));

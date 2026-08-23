@@ -47,6 +47,7 @@ const currentLineButton = document.getElementById("current-line-button");
 const averageLineButton = document.getElementById("average-line-button");
 const targetLineButton = document.getElementById("target-line-button");
 const btnGuides = document.getElementById("guides-button");
+window.addEventListener('pekosoft:timeline-bright-change', () => redrawTimeline());
 const btnHaptic = document.getElementById("haptic-button");
 
 const currentBpmInput = document.getElementById("current-bpm");
@@ -786,7 +787,8 @@ function redrawTimeline() {
   const currentColor = getCssVariable("--color1");
   const averageColor = getCssVariable("--color2");
   const whiteColor = getCssVariable("--white");
-  const guideColor = getCssVariable("--grey1");
+  const baseGuideColor = getCssVariable("--grey1");
+  const guideColor = window.PekoBrightGuides?.getTimelineGuideColor(baseGuideColor) || baseGuideColor;
 
   const guidesLayer = svgUtils.createElement("g");
   const targetLayer = svgUtils.createElement("g");

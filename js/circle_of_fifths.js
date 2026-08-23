@@ -113,6 +113,7 @@
       this.timelineCanvas = document.getElementById("timeline-canvas");
       this.timelineContext = this.timelineCanvas?.getContext("2d") || null;
       this.timelineGuidesButton = document.getElementById("timeline-guides-button");
+      this.timelineBrightButton = document.getElementById("timeline-bright-button");
       this.panelText = document.getElementById("panel-text");
       this.copyButton = document.getElementById("copy-button");
 
@@ -121,6 +122,9 @@
       this.showDim = true;
       this.showSignatures = false;
       this.guidesOn = true;
+      this.timelineBright = localStorage.getItem("circle_of_fifths.timeline_bright") === null
+        ? (window.PekoBrightGuides?.getGlobal() || false)
+        : localStorage.getItem("circle_of_fifths.timeline_bright") === "true";
       this.soundEnabled = true;
       this.playbackSpeed = Number(this.speedSlider?.value || DEFAULT_PLAYBACK_SPEED);
       this.volume = Number(this.volumeSlider?.value || 70);
@@ -278,6 +282,17 @@
         this.updateControls();
         this.drawTimeline();
         this.saveSettings();
+      });
+      this.timelineBrightButton?.addEventListener("click", () => {
+        this.timelineBright = !this.timelineBright;
+        localStorage.setItem("circle_of_fifths.timeline_bright", String(this.timelineBright));
+        this.updateControls();
+        this.drawTimeline();
+      });
+      window.addEventListener("pekosoft:bright-guides-global-change", (event) => {
+        this.timelineBright = !!event.detail?.enabled;
+        this.updateControls();
+        this.drawTimeline();
       });
       this.copyButton?.addEventListener("click", () => this.copyPanelText());
       window.addEventListener("resize", () => {
@@ -537,6 +552,7 @@
       this.toggleDimButton?.classList.toggle("button-on", this.showDim);
       this.toggleSignatureButton?.classList.toggle("button-on", this.showSignatures);
       this.timelineGuidesButton?.classList.toggle("button-on", this.guidesOn);
+      this.timelineBrightButton?.classList.toggle("button-on", this.timelineBright);
       this.arrowUpButton?.classList.toggle("button-on", this.selectedMode === "major");
       this.arrowDownButton?.classList.toggle("button-on", this.selectedMode === "minor");
     }
@@ -951,7 +967,7 @@
       ctx.fillRect(0, 0, width, height);
 
       if (this.guidesOn) {
-        ctx.strokeStyle = colors.grey1;
+        ctx.strokeStyle = this.timelineBright ? colors.white : colors.grey1;
         ctx.lineWidth = 1;
         for (let row = 0; row <= TIMELINE_ROW_COUNT; row++) {
           const y = Math.min(height - 0.5, Math.max(0.5, Math.round(row * rowHeight) + 0.5));
@@ -967,7 +983,7 @@
           ctx.lineTo(x, height);
           ctx.stroke();
         }
-        ctx.fillStyle = colors.grey2;
+        ctx.fillStyle = this.timelineBright ? colors.white : colors.grey2;
         ctx.font = `${Math.max(8, Math.min(12, Math.floor(rowHeight - 2)))}px Arial`;
         ctx.textBaseline = "middle";
         for (let midi = TIMELINE_START_MIDI; midi <= TIMELINE_END_MIDI; midi++) {

@@ -293,6 +293,9 @@
   class DrumMachine {
     constructor() {
       this.state = loadState();
+      this.timelineBright = localStorage.getItem("drum_machine.timeline_bright") === null
+        ? (window.PekoBrightGuides?.getGlobal() || false)
+        : localStorage.getItem("drum_machine.timeline_bright") === "true";
       const savedPlaylist = this.loadRecordingPlaylist();
       this.recordings = savedPlaylist.recordings;
       this.selectedRecordingIndex = savedPlaylist.selectedRecordingIndex;
@@ -354,6 +357,7 @@
         panInput: document.getElementById("pan-input"),
         timelineCanvas: document.getElementById("drum-roll"),
         timelineGuides: document.getElementById("timeline-guides-button"),
+        timelineBright: document.getElementById("timeline-bright-button"),
         playlistItems: document.getElementById("recording-playlist-items"),
         playlistCount: document.getElementById("recording-playlist-count"),
         playlistDuration: document.getElementById("recording-playlist-duration"),
@@ -695,6 +699,15 @@
         this.updateTimelineButton();
         this.updatePanel();
       });
+      this.elements.timelineBright.addEventListener("click", () => {
+        this.timelineBright = !this.timelineBright;
+        localStorage.setItem("drum_machine.timeline_bright", String(this.timelineBright));
+        this.updateTimelineButton();
+      });
+      window.addEventListener("pekosoft:bright-guides-global-change", (event) => {
+        this.timelineBright = !!event.detail?.enabled;
+        this.updateTimelineButton();
+      });
       this.drawTimeline();
     }
 
@@ -727,7 +740,7 @@
       const rowHeight = height / VOICES.length;
       const rootStyles = getComputedStyle(document.documentElement);
       const primaryColor = rootStyles.getPropertyValue("--color1").trim();
-      const guideColor = rootStyles.getPropertyValue("--grey1").trim();
+      const guideColor = this.timelineBright ? "#fff" : rootStyles.getPropertyValue("--grey1").trim();
 
       this.timelineEvents = this.timelineEvents.filter((event) => event.endTime >= windowStart);
       context.clearRect(0, 0, width, height);
@@ -1783,6 +1796,8 @@
     updateTimelineButton() {
       this.elements.timelineGuides.classList.toggle("button-on", this.state.timelineGuides);
       this.elements.timelineGuides.setAttribute("aria-pressed", this.state.timelineGuides ? "true" : "false");
+      this.elements.timelineBright.classList.toggle("button-on", this.timelineBright);
+      this.elements.timelineBright.setAttribute("aria-pressed", this.timelineBright ? "true" : "false");
     }
 
   }

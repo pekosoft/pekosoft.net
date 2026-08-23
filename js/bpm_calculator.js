@@ -31,6 +31,7 @@ const toggleSoundButton = document.getElementById('toggle-sound-button');
 const toggleLoopButton = document.getElementById('toggle-loop-button');
 const togglePlayheadButton = document.getElementById('toggle-playhead-button');
 const guidesButton = document.getElementById('guides-button');
+const timelineBrightButton = document.getElementById('timeline-bright-button');
 const followButton = document.getElementById('follow-button');
 const selectNoneButton = document.getElementById('select-none-button');
 const positionField = document.getElementById('position-field');
@@ -48,6 +49,9 @@ const BPM_TIMELINE_WIDTH = 4096;
 const BPM_MIN_TIMELINE_HEIGHT = 256;
 const globalGuidesDefault = localStorage.getItem('global.guides') !== 'false';
 const reducedMotionDefault = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+let timelineBright = localStorage.getItem('bpm_calculator.timeline_bright') === null
+  ? (window.PekoBrightGuides?.getGlobal() || false)
+  : localStorage.getItem('bpm_calculator.timeline_bright') === 'true';
 let disconnectTimelineResize = null;
 let timelineFollow = null;
 
@@ -744,7 +748,7 @@ function drawCanvas() {
   timelineSvg.appendChild(layer);
   if (state.showGuides) {
     const middleY = (h / 2) + 0.5;
-    layer.appendChild(createTimelineLine(0, middleY, w, middleY, getCssVariable('--grey1')));
+    layer.appendChild(createTimelineLine(0, middleY, w, middleY, timelineBright ? getCssVariable('--white') : getCssVariable('--grey1')));
   }
 
   if (state.showPlayhead) {
@@ -1810,6 +1814,10 @@ function updateGuidesButton() {
   }
 }
 
+function updateTimelineBrightButton() {
+  timelineBrightButton?.classList.toggle('button-on', timelineBright);
+}
+
 function updateFollowButton() {
   if (followButton) {
     followButton.classList.toggle('button-on', state.followTimeline);
@@ -1875,6 +1883,21 @@ if (guidesButton) {
   });
 }
 
+if (timelineBrightButton) {
+  timelineBrightButton.addEventListener('click', () => {
+    timelineBright = !timelineBright;
+    localStorage.setItem('bpm_calculator.timeline_bright', String(timelineBright));
+    updateTimelineBrightButton();
+    drawCanvas();
+  });
+}
+
+window.addEventListener('pekosoft:bright-guides-global-change', (event) => {
+  timelineBright = !!event.detail?.enabled;
+  updateTimelineBrightButton();
+  drawCanvas();
+});
+
 if (followButton) {
   followButton.addEventListener('click', () => {
     state.followTimeline = !state.followTimeline;
@@ -1898,6 +1921,7 @@ updateSoundButton();
 updateLoopButton();
 updatePlayheadButton();
 updateGuidesButton();
+updateTimelineBrightButton();
 updateFollowButton();
 updateTimelineReadout(0, 0);
 setupTimelineResizeHandling();

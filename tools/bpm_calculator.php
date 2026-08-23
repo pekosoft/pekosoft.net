@@ -356,6 +356,13 @@
         <span class="button-text">GUIDES</span>
       </button>
 
+      <button id="timeline-bright-button" class="square" title="Toggle bright guides">
+        <svg class="icons">
+          <use href="/icons.svg#sun" />
+        </svg>
+        <span class="button-text">BRIGHT</span>
+      </button>
+
       <button id="toggle-playhead-button" class="square" title="Toggle playhead">
         <svg class="icons">
           <use href="/icons.svg#playhead" />

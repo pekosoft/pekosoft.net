@@ -45,6 +45,7 @@ const audioInput = document.getElementById('audio-input');
 const panelTextElement = document.getElementById('player-text');
 const copyButton = document.getElementById('copy-button');
 const guidesButton = document.getElementById('guides-button');
+window.addEventListener('pekosoft:timeline-bright-change', () => redrawTimelineCanvas());
 const timelineZoomButton = document.getElementById('timeline-zoom-button');
 const timelineRulerButton = document.getElementById('timeline-ruler-button');
 const bpmRulerButton = document.getElementById('bpm-ruler-button');
@@ -3296,7 +3297,8 @@ function drawReferenceLines() {
 
     const channels = loadedAudioBuffer ? loadedAudioBuffer.numberOfChannels : 1;
     const channelHeight = staticCanvas.height / channels;
-    const grey1 = getComputedStyle(document.documentElement).getPropertyValue('--grey1').trim();
+    const baseGrey1 = getComputedStyle(document.documentElement).getPropertyValue('--grey1').trim();
+    const grey1 = window.PekoBrightGuides?.getTimelineGuideColor(baseGrey1) || baseGrey1;
     // -3 dB amplitude ratio: 10^(-3/20)
     const DB3_AMP = Math.pow(10, -3 / 20);
 

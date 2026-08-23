@@ -38,6 +38,9 @@ class Piano {
     this.isSoundEnabled = settings.isSoundEnabled !== undefined ? settings.isSoundEnabled : true;
     this.glideEnabled = settings.glideEnabled !== undefined ? settings.glideEnabled : true;
     this.timelineGuides = settings.timelineGuides !== undefined ? settings.timelineGuides : true;
+    this.timelineBright = localStorage.getItem('piano.timeline_bright') === null
+      ? (window.PekoBrightGuides?.getGlobal() || false)
+      : localStorage.getItem('piano.timeline_bright') === 'true';
     this.rangeMode = settings.rangeMode === 'one' ? 'one' : 'two';
     this.startOctave = Number.isFinite(Number(settings.startOctave)) ? Number(settings.startOctave) : 4;
     this.rollWindowMs = 8000;
@@ -628,13 +631,24 @@ class Piano {
 
   initTimelineButtons() {
     const guidesButton = document.getElementById('timeline-guides-button');
+    const brightButton = document.getElementById('timeline-bright-button');
 
     guidesButton.classList.toggle('button-on', this.timelineGuides);
+    brightButton.classList.toggle('button-on', this.timelineBright);
     guidesButton.addEventListener('click', () => {
       this.timelineGuides = !this.timelineGuides;
       guidesButton.classList.toggle('button-on', this.timelineGuides);
       this.saveSettings();
       this.updateActionButtonStates();
+    });
+    brightButton.addEventListener('click', () => {
+      this.timelineBright = !this.timelineBright;
+      localStorage.setItem('piano.timeline_bright', String(this.timelineBright));
+      brightButton.classList.toggle('button-on', this.timelineBright);
+    });
+    window.addEventListener('pekosoft:bright-guides-global-change', (event) => {
+      this.timelineBright = !!event.detail?.enabled;
+      brightButton.classList.toggle('button-on', this.timelineBright);
     });
   }
 
@@ -660,7 +674,7 @@ class Piano {
 
     if (this.timelineGuides) {
       this.pianoRollCtx.lineWidth = 1;
-      this.pianoRollCtx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+      this.pianoRollCtx.strokeStyle = this.timelineBright ? '#fff' : 'rgba(255, 255, 255, 0.08)';
       for (let row = 0; row <= rowCount; row++) {
         const y = row * rowHeight;
         this.pianoRollCtx.beginPath();

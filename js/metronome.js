@@ -31,8 +31,10 @@ const btnHaptic = document.getElementById("haptic-button");
 const baseBpmButton = document.getElementById("base-bpm-button");
 const baseTempiButton = document.getElementById("base-tempi-button");
 const baseSignatureButton = document.getElementById("base-signature-button");
+const baseWeightButton = document.getElementById("base-weight-button");
 const baseBpmText = document.getElementById('base-bpm-text');
 const baseTempiText = document.getElementById('base-tempi-text');
+const metronomeWeight = document.getElementById('metronome-weight');
 const metronomeSpacer = document.querySelector('.metronome-spacer');
 const metronomeToolContainer = document.getElementById('tool-container');
 
@@ -50,6 +52,7 @@ let accentOn = true;
 let showBaseBpm = false;
 let showBaseTempi = false;
 let showBaseSignature = true;
+let showMetronomeWeight = true;
 let showPanelTempi = false;
 let mutedBeatIndexes = new Set();
 let beatsPanelText = '';
@@ -389,6 +392,9 @@ function updateToggleButtons() {
   if (baseSignatureButton) {
     baseSignatureButton.classList.toggle('button-on', showBaseSignature);
   }
+  if (baseWeightButton) {
+    baseWeightButton.classList.toggle('button-on', showMetronomeWeight);
+  }
   if (panelBeatsButton) {
     panelBeatsButton.classList.toggle('button-on', !showPanelTempi);
   }
@@ -421,11 +427,22 @@ function updateBPM(value, persist = true) {
   const formatted = clamped.toFixed(3);
   bpmInput.value = formatted;
   bpmSlider.value = Math.round(clamped);
+  updateMetronomeWeight(clamped);
   updateBaseText();
   updateBaseSignatureCircles();
   if (persist) {
     saveSettings();
   }
+}
+
+function updateMetronomeWeight(bpm = getValidatedBPM()) {
+  if (!metronomeWeight) return;
+
+  const clamped = Math.min(Math.max(Number(bpm) || minBPM, minBPM), maxBPM);
+  const rangePosition = (clamped - minBPM) / (maxBPM - minBPM);
+  const bottomPercent = 80 - (rangePosition * 60);
+  metronomeWeight.style.setProperty('--metronome-weight-position', `${bottomPercent.toFixed(3)}%`);
+  metronomeWeight.hidden = !showMetronomeWeight;
 }
 
 function updateVolume(value) {
@@ -716,6 +733,7 @@ function saveSettings() {
   localStorage.setItem('metronome.signature', getSignatureLabel());
   localStorage.setItem('metronome.accent_on', JSON.stringify(accentOn));
   localStorage.setItem('metronome.show_base_signature', JSON.stringify(showBaseSignature));
+  localStorage.setItem('metronome.show_weight', JSON.stringify(showMetronomeWeight));
   saveMutedBeatSettings();
 }
 
@@ -736,6 +754,7 @@ function loadSettings() {
   const savedSignature = localStorage.getItem('metronome.signature');
   const savedAccent = localStorage.getItem('metronome.accent_on');
   const savedMutedBeats = localStorage.getItem('metronome.muted_beats');
+  const savedWeight = localStorage.getItem('metronome.show_weight');
   const hasSavedBaseMode = savedShowBaseBpm !== null || savedShowBaseTempi !== null || savedShowBaseSignature !== null;
 
   const globalBPM = parseFloat(localStorage.getItem('global.default_bpm'));
@@ -772,6 +791,9 @@ function loadSettings() {
   }
   if (savedAccent !== null) {
     accentOn = JSON.parse(savedAccent);
+  }
+  if (savedWeight !== null) {
+    showMetronomeWeight = JSON.parse(savedWeight);
   }
   if (savedSignature !== null && signatureSelect) {
     signatureSelect.value = savedSignature;
@@ -810,6 +832,7 @@ function loadSettings() {
   renderPanelView();
   updateBaseText();
   updateBaseSignatureCircles();
+  updateMetronomeWeight();
   if (!isBlinkOn) clearBlink();
 }
 
@@ -841,6 +864,15 @@ if (baseTempiButton) {
 if (baseSignatureButton) {
   baseSignatureButton.addEventListener('click', () => {
     setBaseInfoMode(showBaseSignature ? 'none' : 'signature');
+  });
+}
+
+if (baseWeightButton) {
+  baseWeightButton.addEventListener('click', () => {
+    showMetronomeWeight = !showMetronomeWeight;
+    saveSettings();
+    updateToggleButtons();
+    updateMetronomeWeight();
   });
 }
 
@@ -905,6 +937,7 @@ resetButton.addEventListener('click', () => {
   localStorage.removeItem('metronome.signature');
   localStorage.removeItem('metronome.accent_on');
   localStorage.removeItem('metronome.muted_beats');
+  localStorage.removeItem('metronome.show_weight');
 
   isSoundOn = true;
   isBlinkOn = false;
@@ -914,6 +947,7 @@ resetButton.addEventListener('click', () => {
   showBaseBpm = false;
   showBaseTempi = false;
   showBaseSignature = true;
+  showMetronomeWeight = true;
   showPanelTempi = false;
   mutedBeatIndexes = new Set();
   soundVolume = 100;

@@ -40,7 +40,9 @@
   <div id="tool-container" class="container">
     <div class="module-body metronome-spacer border">
       <div class="metronome-wrapper">
-        <div class="pendulum"></div>
+        <div class="pendulum">
+          <div id="metronome-weight" class="metronome-weight"></div>
+        </div>
         <div class="metronome-body"></div>
         <div class="metronome-base"></div>
         <div id="base-bpm-text" class="metronome-base-text" hidden>B P M</div>
@@ -60,6 +62,13 @@
           <use href="/icons.svg#beat_signature" />
         </svg>
         <span class="button-text">SIGNATURE</span>
+      </button>
+
+      <button id="base-weight-button" class="square" title="Toggle pendulum weight">
+        <svg class="icons">
+          <use href="/icons.svg#weight" />
+        </svg>
+        <span class="button-text">WEIGHT</span>
       </button>
 
       <button id="base-tempi-button" class="square" title="Toggle Italian tempi">
@@ -272,7 +281,7 @@
   <script src="/js/audio.js"></script>
   <script src="/js/svg_utils.js"></script>
   <script src="/js/svg_timeline.js"></script>
-  <script src="/js/<?php echo $release; ?>.js"></script>
+  <script src="/js/<?php echo $release; ?>.js?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/js/' . $release . '.js'); ?>"></script>
   <?php require($_SERVER['DOCUMENT_ROOT'] . "/elements/footer.php"); ?>
 </body>
 

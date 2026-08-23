@@ -53,6 +53,17 @@
   bottom: calc(60px * var(--metronome-scale, 1));
 }
 
+.metronome-weight {
+  width: calc(38px * var(--metronome-scale, 1));
+  height: calc(24px * var(--metronome-scale, 1));
+  position: absolute;
+  left: 50%;
+  bottom: var(--metronome-weight-position, 50%);
+  transform: translateX(-50%);
+  background-color: var(--white);
+  clip-path: polygon(0 0, 100% 0, 76% 100%, 24% 100%);
+}
+
 .metronome-body {
   width: calc(300px * var(--metronome-scale, 1));
   height: calc(320px * var(--metronome-scale, 1));

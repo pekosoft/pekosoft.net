@@ -280,29 +280,6 @@ function markActiveTocButton() {
   });
 }
 
-function syncFooterGap() {
-  const footers = document.querySelectorAll('.footer-tools');
-  footers.forEach(footer => {
-    const items = Array.from(footer.children);
-    if (items.length < 2) return;
-
-    footer.style.setProperty('--footer-gap', '12px');
-
-    const footerStyles = getComputedStyle(footer);
-    const contentWidth = footer.clientWidth - parseFloat(footerStyles.paddingLeft) - parseFloat(footerStyles.paddingRight);
-    const itemWidth = Math.max(...items.map(item => item.getBoundingClientRect().width));
-    const minimumGap = 12;
-
-    if (!Number.isFinite(contentWidth) || !Number.isFinite(itemWidth) || contentWidth <= 0 || itemWidth <= 0) return;
-
-    const visibleItems = Math.min(items.length, Math.floor((contentWidth + minimumGap) / (itemWidth + minimumGap)));
-    if (visibleItems < 2 || visibleItems >= items.length) return;
-
-    const fittedGap = (contentWidth - visibleItems * itemWidth) / (visibleItems - 1);
-    footer.style.setProperty('--footer-gap', `${Math.max(minimumGap, fittedGap).toFixed(3)}px`);
-  });
-}
-
 function syncSidebarFooterHeight() {
   const footer = document.querySelector('.footer');
   const footerVisible = footer && !document.documentElement.classList.contains('footer-hidden');
@@ -320,31 +297,6 @@ function updateFooterVisibility() {
     toggleFooterButton.setAttribute('aria-pressed', String(footerVisible));
     toggleFooterButton.classList.toggle('button-on', footerVisible);
   }
-}
-
-function updateFooterTools() {
-  const footer = document.querySelector('.footer');
-  const footerTools = footer && footer.querySelector('.footer-tools');
-  const toggleToolsButton = document.getElementById('toggle-tools-button');
-  if (!footer || !footerTools || !toggleToolsButton) return;
-
-  const toolsVisible = localStorage.getItem('global.footer_tools') === 'true';
-  footer.classList.toggle('footer-tools-active', toolsVisible);
-  footerTools.setAttribute('aria-hidden', String(!toolsVisible));
-  toggleToolsButton.setAttribute('aria-pressed', String(toolsVisible));
-  toggleToolsButton.setAttribute('title', toolsVisible ? 'Hide tools' : 'Show tools');
-  toggleToolsButton.setAttribute('aria-label', toolsVisible ? 'Hide tools' : 'Show tools');
-  toggleToolsButton.classList.toggle('button-on', toolsVisible);
-  syncFooterGap();
-}
-
-function toggleFooterTools() {
-  const footer = document.querySelector('.footer');
-  if (!footer) return;
-
-  const toolsVisible = !footer.classList.contains('footer-tools-active');
-  localStorage.setItem('global.footer_tools', String(toolsVisible));
-  updateFooterTools();
 }
 
 function toggleFooterVisibility() {
@@ -959,11 +911,6 @@ document.addEventListener('DOMContentLoaded', function () {
     toggleFooterButton.addEventListener('click', toggleFooterVisibility);
   }
 
-  const toggleToolsButton = document.getElementById('toggle-tools-button');
-  if (toggleToolsButton) {
-    toggleToolsButton.addEventListener('click', toggleFooterTools);
-  }
-
   applyColorTheme(getColorTheme());
 
   updateModeButtonState();
@@ -974,8 +921,6 @@ document.addEventListener('DOMContentLoaded', function () {
   markActiveFooterLink();
   markActiveTocButton();
   updateFooterVisibility();
-  updateFooterTools();
-  syncFooterGap();
   setupTimelineSaveButton();
   ensureControlsFooters();
   setupStatusBars();
@@ -983,13 +928,11 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 window.addEventListener('resize', () => {
-  syncFooterGap();
   syncSidebarFooterHeight();
 });
 window.addEventListener('resize', restoreDesktopSidebarState);
 if (window.visualViewport) {
   window.visualViewport.addEventListener('resize', () => {
-    syncFooterGap();
     syncSidebarFooterHeight();
   });
 }

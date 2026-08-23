@@ -817,7 +817,10 @@
     }
   }
 
-  function tick() {
+  const activeRenderIntervalMs = 1000 / 30;
+  let lastActiveRenderMs = 0;
+
+  function tick(timestamp) {
     const source = getSourceConfig();
     const canvas = canvasByMode[activeMode];
     if (canvas) {
@@ -867,14 +870,17 @@
               drawGuidesBehind('level', ctx, width, height, source);
             }
           }
-        } else if (activeMode === 'oscilloscope') {
-          renderOscilloscope(ctx, canvas, source.analyser, source);
-        } else if (activeMode === 'wavescope') {
-          renderWavescope(ctx, canvas, source);
-        } else if (activeMode === 'spectroscope') {
-          renderSpectrum(ctx, canvas, source);
-        } else if (activeMode === 'level') {
-          renderLevel(ctx, canvas, source);
+        } else if (timestamp - lastActiveRenderMs >= activeRenderIntervalMs) {
+          lastActiveRenderMs = timestamp;
+          if (activeMode === 'oscilloscope') {
+            renderOscilloscope(ctx, canvas, source.analyser, source);
+          } else if (activeMode === 'wavescope') {
+            renderWavescope(ctx, canvas, source);
+          } else if (activeMode === 'spectroscope') {
+            renderSpectrum(ctx, canvas, source);
+          } else if (activeMode === 'level') {
+            renderLevel(ctx, canvas, source);
+          }
         }
       }
     }

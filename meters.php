@@ -1,5 +1,31 @@
 <div id="meters-container" class="container">
   <div class="module-body standard border">
+    <div class="controls-buttons wrapper">
+      <button id="tool-spectroscope-button" class="square" title="Spectroscope">
+        <svg class="icons">
+          <use href="/icons.svg#eq" />
+        </svg>
+        <span class="button-text">SPECTROSCOPE</span>
+      </button>
+      <button id="tool-level-button" class="square" title="Level meter">
+        <svg class="icons">
+          <use href="/icons.svg#meter" />
+        </svg>
+        <span class="button-text">LEVEL</span>
+      </button>
+      <button id="tool-oscilloscope-button" class="square" title="Oscilloscope">
+        <svg class="icons">
+          <use href="/icons.svg#wavelength" />
+        </svg>
+        <span class="button-text">OSCILLOSCOPE</span>
+      </button>
+      <button id="tool-wavescope-button" class="square" title="Wavescope">
+        <svg class="icons">
+          <use href="/icons.svg#pulse" />
+        </svg>
+        <span class="button-text">WAVESCOPE</span>
+      </button>
+    </div>
     <canvas id="volume-meter" class="meter-canvas" width="4096" height="32"></canvas>
     <canvas id="frequency-analyzer" class="meter-canvas" width="4096" height="512"></canvas>
     <canvas id="wavescope" class="meter-canvas" width="4096" height="256"></canvas>
@@ -18,30 +44,6 @@
         <use href="/icons.svg#sun" />
       </svg>
       <span class="button-text">BRIGHT</span>
-    </button>
-    <button id="tool-spectroscope-button" class="square" title="Spectroscope">
-      <svg class="icons">
-        <use href="/icons.svg#eq" />
-      </svg>
-      <span class="button-text">SPECTROSCOPE</span>
-    </button>
-    <button id="tool-level-button" class="square" title="Level meter">
-      <svg class="icons">
-        <use href="/icons.svg#meter" />
-      </svg>
-      <span class="button-text">LEVEL</span>
-    </button>
-    <button id="tool-oscilloscope-button" class="square" title="Oscilloscope">
-      <svg class="icons">
-        <use href="/icons.svg#wavelength" />
-      </svg>
-      <span class="button-text">OSCILLOSCOPE</span>
-    </button>
-    <button id="tool-wavescope-button" class="square" title="Wavescope">
-      <svg class="icons">
-        <use href="/icons.svg#pulse" />
-      </svg>
-      <span class="button-text">WAVESCOPE</span>
     </button>
   </div>
 </div>

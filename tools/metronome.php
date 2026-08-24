@@ -64,18 +64,18 @@
         <span class="button-text">SIGNATURE</span>
       </button>
 
-      <button id="base-weight-button" class="square" title="Toggle pendulum weight">
-        <svg class="icons">
-          <use href="/icons.svg#weight" />
-        </svg>
-        <span class="button-text">WEIGHT</span>
-      </button>
-
       <button id="base-tempi-button" class="square" title="Toggle Italian tempi">
         <svg class="icons">
           <use href="/icons.svg#italy" />
         </svg>
         <span class="button-text">TEMPI</span>
+      </button>
+
+      <button id="base-weight-button" class="square" title="Toggle pendulum weight">
+        <svg class="icons">
+          <use href="/icons.svg#pendulum_weight" />
+        </svg>
+        <span class="button-text">WEIGHT</span>
       </button>
     </div>
   </div>

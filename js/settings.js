@@ -63,6 +63,24 @@ document.addEventListener("DOMContentLoaded", () => {
     a4Hz: { min: 400, max: 480 },
     speedOfSound: { min: 300, max: 380 }
   };
+  const phoneSettingsQuery = window.matchMedia("(max-width: 799px)");
+  let suppressPhoneFieldClick = false;
+
+  document.querySelectorAll(".settings-panel .setting-row :is(label, input, select)").forEach((field) => {
+    field.addEventListener("pointerdown", (event) => {
+      if (!phoneSettingsQuery.matches) return;
+
+      suppressPhoneFieldClick = true;
+      event.preventDefault();
+    });
+  });
+  document.addEventListener("click", (event) => {
+    if (!suppressPhoneFieldClick) return;
+
+    suppressPhoneFieldClick = false;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+  }, true);
 
   function syncToggleButtonState(input) {
     const button = document.querySelector(`[data-setting-toggle="${input.id}"]`);

@@ -51,7 +51,7 @@
 
       <div class="controls-buttons wrapper">
 
-        <button id="target-knob" class="knob-control" type="button" title="Adjust target BPM" aria-label="Adjust target BPM"></button>
+        <button id="target-knob" class="knob-control" type="button" title="Target BPM" aria-label="Target"></button>
 
         <button id="toggle-sound-button" class="square" title="Toggle sound">
           <svg class="icons">

@@ -73,27 +73,27 @@
 
         <div class="setting-row">
           <label for="grid-size-value" title="Grid size" class="settings-control-label">Size:</label>
-          <div class="knob-wrap"><input type="number" id="grid-size-value" class="knob-value" value="16" readonly><button id="grid-size-knob" class="knob-control" type="button"></button></div>
+          <div class="knob-wrap"><input type="number" id="grid-size-value" class="knob-value" value="16" readonly><button id="grid-size-knob" class="knob-control" type="button" title="Grid size" aria-label="Size"></button></div>
         </div>
         <div class="setting-row">
           <label for="font_size_selector" title="Default font size" class="settings-control-label">Font:</label>
-          <div class="knob-wrap"><select id="font_size_selector"><option value="small">Small</option><option value="medium">Medium</option><option value="large">Large</option></select><button id="font-size-knob" class="knob-control" type="button"></button></div>
+          <div class="knob-wrap"><select id="font_size_selector"><option value="small">Small</option><option value="medium">Medium</option><option value="large">Large</option></select><button id="font-size-knob" class="knob-control" type="button" title="Default font size" aria-label="Font"></button></div>
         </div>
         <div class="setting-row">
           <label for="default_bpm" title="Default Beats Per Minute" class="settings-control-label">BPM:</label>
-          <div class="knob-wrap"><input type="number" id="default_bpm" name="default_bpm" value="120" min="30" max="320" step="1"><button id="default-bpm-knob" class="knob-control" type="button"></button></div>
+          <div class="knob-wrap"><input type="number" id="default_bpm" name="default_bpm" value="120" min="30" max="320" step="1"><button id="default-bpm-knob" class="knob-control" type="button" title="Default Beats Per Minute" aria-label="BPM"></button></div>
         </div>
         <div class="setting-row">
           <label for="default_rpm" title="Default Rounds Per Minute" class="settings-control-label">RPM:</label>
-          <div class="knob-wrap"><input type="number" id="default_rpm" name="default_rpm" value="33.333" min="8" max="78" step="0.001" readonly><button id="default-rpm-knob" class="knob-control" type="button"></button></div>
+          <div class="knob-wrap"><input type="number" id="default_rpm" name="default_rpm" value="33.333" min="8" max="78" step="0.001" readonly><button id="default-rpm-knob" class="knob-control" type="button" title="Default Rounds Per Minute" aria-label="RPM"></button></div>
         </div>
         <div class="setting-row">
           <label for="a4_hz" title="Default frequency for A4" class="settings-control-label">A4 Hz:</label>
-          <div class="knob-wrap"><input type="number" id="a4_hz" name="a4_hz" value="440" min="400" max="480" step="1"><button id="a4-hz-knob" class="knob-control" type="button"></button></div>
+          <div class="knob-wrap"><input type="number" id="a4_hz" name="a4_hz" value="440" min="400" max="480" step="1"><button id="a4-hz-knob" class="knob-control" type="button" title="Default frequency for A4" aria-label="A4 Hz"></button></div>
         </div>
         <div class="setting-row">
           <label for="speed_of_sound" title="Speed Of Sound in meters per second" class="settings-control-label">SOS:</label>
-          <div class="knob-wrap"><input type="number" id="speed_of_sound" name="speed_of_sound" value="343" min="300" max="380" step="1"><button id="speed-of-sound-knob" class="knob-control" type="button"></button></div>
+          <div class="knob-wrap"><input type="number" id="speed_of_sound" name="speed_of_sound" value="343" min="300" max="380" step="1"><button id="speed-of-sound-knob" class="knob-control" type="button" title="Speed Of Sound in meters per second" aria-label="SOS"></button></div>
         </div>
 
       </div>

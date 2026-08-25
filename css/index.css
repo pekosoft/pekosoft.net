@@ -2047,6 +2047,7 @@ button.grey .icons {
 .labeled-range {
   flex: 1;
   position: relative;
+  overflow: hidden;
   z-index: 2;
 }
 
@@ -2096,11 +2097,6 @@ button.grey .icons {
   content: "TONE VOLUME";
   letter-spacing: 1px;
   word-spacing: 12px;
-}
-
-#beat-volume-slider,
-#tone-volume-slider {
-  overflow: hidden;
 }
 
 #beat-volume-slider::after,

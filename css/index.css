@@ -1251,7 +1251,8 @@ html.invert-colors .container:fullscreen {
   flex-direction: column;
   flex: 1 1 auto;
   min-height: 0;
-  width: 100%;
+  width: calc(100% + 4px);
+  margin-left: -4px;
   padding-top: 0;
   overflow-y: auto;
   overscroll-behavior-y: contain;
@@ -1310,6 +1311,8 @@ html.invert-colors .container:fullscreen {
   flex: 1 1 auto;
   flex-direction: column;
   min-height: 0;
+  width: calc(100% + 4px);
+  margin-left: -4px;
   overflow-y: auto;
   overscroll-behavior-y: contain;
   padding: 0 0 4px;

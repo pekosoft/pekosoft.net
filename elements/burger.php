@@ -35,6 +35,10 @@ $hasPlaylistModule = in_array('playlist', $availableModules, true);
       Pekosoft
     </button>
 
+      </div>
+
+      <div class="toc-column">
+
     <?php if ($isBetaRelease): ?>
       <button class="toc-button" data-href="/player" title="Player" aria-label="Player"><svg class="icons" role="img"><use href="/icons.svg#player"></use></svg>Player</button>
       <button class="toc-button" data-href="/visualizer" title="Visualizer" aria-label="Visualizer"><svg class="icons" role="img"><use href="/icons.svg#visualizer"></use></svg>Visualizer</button>

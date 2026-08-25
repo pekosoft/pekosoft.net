@@ -1299,7 +1299,7 @@ html.invert-colors .container:fullscreen {
 .settings-panel-close {
   display: flex;
   flex: 0 0 auto;
-  margin-top: auto;
+  margin-top: 24px;
   align-items: center;
   justify-content: center;
   height: 48px;
@@ -1521,7 +1521,7 @@ html.invert-colors .container:fullscreen {
 .toc-close {
   display: flex;
   flex: 0 0 auto;
-  margin-top: auto;
+  margin-top: 24px;
   align-items: center;
   justify-content: center;
   height: 48px;

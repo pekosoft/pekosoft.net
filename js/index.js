@@ -392,6 +392,8 @@ function toggleSettingsPanel() {
 // Function to close the TOC when clicked outside
 
 document.addEventListener('click', function (event) {
+  if (!event.isTrusted) return;
+
   const toc = document.getElementById('toc');
   const burger = document.querySelector('#burger-container');
   const settingsPanel = document.getElementById('settings-panel');
@@ -410,6 +412,8 @@ document.addEventListener('click', function (event) {
 });
 
 document.addEventListener('click', function (event) {
+  if (!event.isTrusted) return;
+
   const settingsPanel = document.getElementById('settings-panel');
   const settingsMenu = document.querySelector('#settings-menu-container');
   const toc = document.getElementById('toc');

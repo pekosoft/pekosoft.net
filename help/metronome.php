@@ -216,6 +216,24 @@
 </div>
 
 <div class="feature-row border"><svg class="standard-image-help">
+    <use href="/icons.svg#sun"></use>
+  </svg>
+  <div class="justify">
+    <h1>BRIGHT <span class="object">button</span></h1>
+    Toggles bright guides in Timeline. This local button overrides the Settings Bright option for Timeline only. <span class="default">Default: off.</span>
+  </div>
+</div>
+
+<div class="feature-row border"><svg class="standard-image-help">
+    <use href="/icons.svg#photo"></use>
+  </svg>
+  <div class="justify">
+    <h1>SAVE <span class="object">button</span></h1>
+    Saves the Timeline canvas as a PNG image.
+  </div>
+</div>
+
+<div class="feature-row border"><svg class="standard-image-help">
     <use href="/icons.svg#copy"></use>
   </svg>
   <div class="justify">
@@ -301,6 +319,16 @@
   <div class="justify">
     <h1>GUIDES <span class="object">button</span></h1>
     Toggles meter guides. This local button overrides the Settings Guides option for Meters only. <span class="default">Default: on.</span>
+  </div>
+</div>
+
+<div class="feature-row border">
+  <svg class="standard-image-help">
+    <use href="/icons.svg#sun"></use>
+  </svg>
+  <div class="justify">
+    <h1>BRIGHT <span class="object">button</span></h1>
+    Toggles bright guides in Meters. This local button overrides the Settings Bright option for Meters only. <span class="default">Default: off.</span>
   </div>
 </div>
 

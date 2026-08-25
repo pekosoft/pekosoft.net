@@ -1395,7 +1395,7 @@ html.invert-colors .container:fullscreen {
   width: 40px;
   text-align: center;
   background-color: var(--black);
-  border: 1px solid var(--grey2);
+  border: 1px solid var(--grey1);
   outline: none;
   color: inherit;
   font: inherit;

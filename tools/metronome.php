@@ -61,21 +61,21 @@
         <svg class="icons">
           <use href="/icons.svg#beat_signature" />
         </svg>
-        <span class="button-text">SIGNATURE</span>
+        <span class="button-text">Signature</span>
       </button>
 
       <button id="base-tempi-button" class="square" title="Toggle Italian tempi">
         <svg class="icons">
           <use href="/icons.svg#italy" />
         </svg>
-        <span class="button-text">TEMPI</span>
+        <span class="button-text">Tempi</span>
       </button>
 
       <button id="base-weight-button" class="square" title="Toggle pendulum weight">
         <svg class="icons">
           <use href="/icons.svg#pendulum_weight" />
         </svg>
-        <span class="button-text">WEIGHT</span>
+        <span class="button-text">Weight</span>
       </button>
     </div>
   </div>
@@ -91,63 +91,63 @@
           <svg class="icons">
             <use href="/icons.svg#play" />
           </svg>
-          <span class="button-text">PLAY</span>
+          <span class="button-text">Play</span>
         </button>
 
         <button id="stop-button" class="square" title="Stop and clear session">
           <svg class="icons">
             <use href="/icons.svg#stop" />
           </svg>
-          <span class="button-text">STOP</span>
+          <span class="button-text">Stop</span>
         </button>
 
         <button id="toggle-sound-button" class="square" title="Toggle tick sound">
           <svg class="icons">
             <use href="/icons.svg#sound" />
           </svg>
-          <span class="button-text">SOUND</span>
+          <span class="button-text">Sound</span>
         </button>
 
         <button id="toggle-accent-button" class="square" title="Toggle accent">
           <svg class="icons">
             <use href="/icons.svg#beat_accent" />
           </svg>
-          <span class="button-text">ACCENT</span>
+          <span class="button-text">Accent</span>
         </button>
 
         <button id="toggle-blink-button" class="square" title="Toggle blinking background">
           <svg class="icons">
             <use href="/icons.svg#blink" />
           </svg>
-          <span class="button-text">BLINK</span>
+          <span class="button-text">Blink</span>
         </button>
 
         <button id="half-button" class="square" title="Halve the BPM">
           <svg class="icons">
             <use href="/icons.svg#triangle_down" />
           </svg>
-          <span class="button-text">HALF</span>
+          <span class="button-text">Half</span>
         </button>
 
         <button id="double-button" class="square" title="Double the BPM">
           <svg class="icons">
             <use href="/icons.svg#triangle_up" />
           </svg>
-          <span class="button-text">DOUBLE</span>
+          <span class="button-text">Double</span>
         </button>
 
         <button id="haptic-button" class="square" title="Toggle haptic feedback">
           <svg class="icons">
             <use href="/icons.svg#haptic" />
           </svg>
-          <span class="button-text">HAPTIC</span>
+          <span class="button-text">Haptic</span>
         </button>
 
         <button id="reset-button" class="square" title="Reset to default">
           <svg class="icons">
             <use href="/icons.svg#reset" />
           </svg>
-          <span class="button-text">RESET</span>
+          <span class="button-text">Reset</span>
         </button>
 
       </div>
@@ -231,13 +231,13 @@
         <svg class="icons">
           <use href="/icons.svg#guides" />
         </svg>
-        <span class="button-text">GUIDES</span>
+        <span class="button-text">Guides</span>
       </button>
       <button id="timeline-bright-button" data-shared-timeline-bright class="square" title="Toggle bright guides">
         <svg class="icons">
           <use href="/icons.svg#sun" />
         </svg>
-        <span class="button-text">BRIGHT</span>
+        <span class="button-text">Bright</span>
       </button>
     </div>
   </div>
@@ -253,21 +253,21 @@
         <svg class="icons">
           <use href="/icons.svg#timeline" />
         </svg>
-        <span class="button-text">BEATS</span>
+        <span class="button-text">Beats</span>
       </button>
 
       <button id="panel-tempi-button" class="square" title="Show Italian tempi">
         <svg class="icons">
           <use href="/icons.svg#italy" />
         </svg>
-        <span class="button-text">TEMPI</span>
+        <span class="button-text">Tempi</span>
       </button>
 
       <button id="copy-button" class="square" title="Copy data">
         <svg class="icons">
           <use href="/icons.svg#copy" />
         </svg>
-        <span class="button-text">COPY</span>
+        <span class="button-text">Copy</span>
       </button>
     </div>
   </div>

@@ -35,14 +35,14 @@
           <svg class="icons">
             <use href="/icons.svg#reset" />
           </svg>
-          <span class="button-text">REFRESH</span>
+          <span class="button-text">Refresh</span>
         </button>
 
         <button id="live-button" class="square button-on" title="Toggle live WebSocket updates">
           <svg class="icons">
             <use href="/icons.svg#play" />
           </svg>
-          <span class="button-text">LIVE</span>
+          <span class="button-text">Live</span>
         </button>
 
       </div>
@@ -117,7 +117,7 @@
         <svg class="icons">
           <use href="/icons.svg#copy" />
         </svg>
-        <span class="button-text">COPY</span>
+        <span class="button-text">Copy</span>
       </button>
     </div>
   </div>

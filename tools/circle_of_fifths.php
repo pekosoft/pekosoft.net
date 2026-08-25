@@ -38,15 +38,15 @@
     <div class="module-footer wrapper colored">
       <button id="rotate-button" class="square" title="Toggle selected key at top">
         <svg class="icons" role="img"><use href="/icons.svg#rotate" /></svg>
-        <span class="button-text">ROTATE</span>
+        <span class="button-text">Rotate</span>
       </button>
       <button id="toggle-dim-button" class="square button-on" title="Toggle diminished ring">
         <svg class="icons" role="img"><use href="/icons.svg#radio_button" /></svg>
-        <span class="button-text">DIM</span>
+        <span class="button-text">Dim</span>
       </button>
       <button id="toggle-signature-button" class="square" title="Toggle key signature hints">
         <svg class="icons" role="img"><use href="/icons.svg#field" /></svg>
-        <span class="button-text">SIGN</span>
+        <span class="button-text">Sign</span>
       </button>
     </div>
   </div>
@@ -56,11 +56,11 @@
       <div class="controls-buttons wrapper">
         <button id="play-scale-button" title="Play selected scale">
           <svg class="icons" role="img"><use href="/icons.svg#play" /></svg>
-          <span class="button-text">SCALE</span>
+          <span class="button-text">Scale</span>
         </button>
         <button id="play-triad-button" title="Play selected triad">
           <svg class="icons" role="img"><use href="/icons.svg#piano" /></svg>
-          <span class="button-text">TRIAD</span>
+          <span class="button-text">Triad</span>
         </button>
         <button id="play-progression-button" title="Play I V vi IV progression">
           <svg class="icons" role="img"><use href="/icons.svg#timeline" /></svg>
@@ -68,15 +68,15 @@
         </button>
         <button id="sound-master-button" class="button-on" title="Toggle sound">
           <svg class="icons" role="img"><use href="/icons.svg#sound" /></svg>
-          <span class="button-text">SOUND</span>
+          <span class="button-text">Sound</span>
         </button>
         <button id="stop-button" title="Stop all playback">
           <svg class="icons" role="img"><use href="/icons.svg#stop" /></svg>
-          <span class="button-text">STOP</span>
+          <span class="button-text">Stop</span>
         </button>
         <button id="reset-button" title="Reset to default">
           <svg class="icons" role="img"><use href="/icons.svg#reset" /></svg>
-          <span class="button-text">RESET</span>
+          <span class="button-text">Reset</span>
         </button>
       </div>
 
@@ -139,11 +139,11 @@
     <div class="module-footer wrapper colored">
       <button id="play-diatonic-button" class="square" title="Play I ii iii IV V vi vii diminished">
         <svg class="icons" role="img"><use href="/icons.svg#piano" /></svg>
-        <span class="button-text">DIATONIC</span>
+        <span class="button-text">Diatonic</span>
       </button>
       <button id="play-dim-button" class="square" title="Play diminished triad">
         <svg class="icons" role="img"><use href="/icons.svg#record" /></svg>
-        <span class="button-text">DIM</span>
+        <span class="button-text">Dim</span>
       </button>
     </div>
   </div>
@@ -155,11 +155,11 @@
     <div class="module-footer wrapper colored">
       <button id="timeline-guides-button" class="square button-on" title="Toggle guides">
         <svg class="icons" role="img"><use href="/icons.svg#guides" /></svg>
-        <span class="button-text">GUIDES</span>
+        <span class="button-text">Guides</span>
       </button>
       <button id="timeline-bright-button" class="square" title="Toggle bright guides">
         <svg class="icons" role="img"><use href="/icons.svg#sun" /></svg>
-        <span class="button-text">BRIGHT</span>
+        <span class="button-text">Bright</span>
       </button>
     </div>
   </div>
@@ -171,7 +171,7 @@
     <div class="module-footer wrapper colored">
       <button id="copy-button" class="square" title="Copy data">
         <svg class="icons" role="img"><use href="/icons.svg#copy" /></svg>
-        <span class="button-text">COPY</span>
+        <span class="button-text">Copy</span>
       </button>
     </div>
   </div>

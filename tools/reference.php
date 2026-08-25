@@ -25,7 +25,7 @@
           <svg class="icons">
             <use href="/icons.svg#reset" />
           </svg>
-          <span class="button-text">RESET</span>
+          <span class="button-text">Reset</span>
         </button>
       </div>
     </div>
@@ -131,21 +131,21 @@
         <svg class="icons">
           <use href="/icons.svg#piano" />
         </svg>
-        <span class="button-text">NOTES</span>
+        <span class="button-text">Notes</span>
       </button>
 
       <button id="table-scales-button" class="square" title="Show Scales">
         <svg class="icons">
           <use href="/icons.svg#timeline" />
         </svg>
-        <span class="button-text">SCALES</span>
+        <span class="button-text">Scales</span>
       </button>
 
       <button id="table-chords-button" class="square" title="Show Chords">
         <svg class="icons">
           <use href="/icons.svg#value" />
         </svg>
-        <span class="button-text">CHORDS</span>
+        <span class="button-text">Chords</span>
       </button>
 
       <button id="toggle-view-button" class="square" title="Toggle standard or cards view" aria-pressed="false">
@@ -155,7 +155,7 @@
         <span id="toggle-view-text" class="button-text">VIEW</span>
       </button>
 
-      <button id="toggle-sort-button" class="square" title="SORT: Ascending" aria-pressed="false">
+      <button id="toggle-sort-button" class="square" title="Sort: Ascending" aria-pressed="false">
         <svg class="icons">
           <use href="/icons.svg#arrow_up_down" />
         </svg>

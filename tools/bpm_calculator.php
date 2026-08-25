@@ -64,43 +64,43 @@
               <svg class="icons">
                 <use href="/icons.svg#radio_button" />
               </svg>
-              <span class="button-text">SELECT</span>
+              <span class="button-text">Select</span>
             </button>
             <button id="toggle-note-button" class="square" title="Toggle note column">
               <svg class="icons">
                 <use href="/icons.svg#tuner" />
               </svg>
-              <span class="button-text">NOTE</span>
+              <span class="button-text">Note</span>
             </button>
             <button id="toggle-value-button" class="square" title="Toggle value column">
               <svg class="icons">
                 <use href="/icons.svg#value" />
               </svg>
-              <span class="button-text">VALUE</span>
+              <span class="button-text">Value</span>
             </button>
             <button id="toggle-ms-button" class="square" title="Toggle milliseconds column">
               <svg class="icons">
                 <use href="/icons.svg#clock" />
               </svg>
-              <span class="button-text">MS</span>
+              <span class="button-text">ms</span>
             </button>
             <button id="toggle-hz-button" class="square" title="Toggle Hertz column">
               <svg class="icons">
                 <use href="/icons.svg#wavelength" />
               </svg>
-              <span class="button-text">HZ</span>
+              <span class="button-text">Hz</span>
             </button>
             <button id="toggle-cm-button" class="square" title="Toggle wavelength in centimeters column">
               <svg class="icons">
                 <use href="/icons.svg#cm" />
               </svg>
-              <span class="button-text">CM</span>
+              <span class="button-text">cm</span>
             </button>
             <button id="toggle-inches-button" class="square" title="Toggle wavelength in inches column">
               <svg class="icons">
                 <use href="/icons.svg#cm" />
               </svg>
-              <span class="button-text">IN</span>
+              <span class="button-text">in</span>
             </button>
             <button id="toggle-usa-button" class="square" title="Toggle American names column">
               <svg class="icons">
@@ -124,31 +124,31 @@
               <svg class="icons">
                 <use href="/icons.svg#plus_minus" />
               </svg>
-              <span class="button-text">DIFF</span>
+              <span class="button-text">Diff</span>
             </button>
             <button id="toggle-percent-button" class="square" title="Toggle percentage column relative to the Crotchet">
               <svg class="icons">
                 <use href="/icons.svg#value" />
               </svg>
-              <span class="button-text">PERCENT</span>
+              <span class="button-text">Percent</span>
             </button>
             <button id="toggle-rest-button" class="square" title="Toggle rest column">
               <svg class="icons">
                 <use href="/icons.svg#tuner_off" />
               </svg>
-              <span class="button-text">REST</span>
+              <span class="button-text">Rest</span>
             </button>
             <button id="toggle-play-button-column" class="square" title="Toggle play column">
               <svg class="icons">
                 <use href="/icons.svg#play" />
               </svg>
-              <span class="button-text">PLAY</span>
+              <span class="button-text">Play</span>
             </button>
             <button id="toggle-close-button" class="square" title="Toggle close column">
               <svg class="icons">
                 <use href="/icons.svg#close" />
               </svg>
-              <span class="button-text">CLOSE</span>
+              <span class="button-text">Close</span>
             </button>
           </div>
         </fieldset>
@@ -160,19 +160,19 @@
               <svg class="icons">
                 <use href="/icons.svg#1_4" />
               </svg>
-              <span class="button-text">BASE</span>
+              <span class="button-text">Base</span>
             </button>
             <button id="dotted-mode-button" class="square" title="Toggle dotted notes rows">
               <svg class="icons">
                 <use href="/icons.svg#1_4_dotted" />
               </svg>
-              <span class="button-text">DOTTED</span>
+              <span class="button-text">Dotted</span>
             </button>
             <button id="triplet-mode-button" class="square" title="Toggle triplet notes rows">
               <svg class="icons">
                 <use href="/icons.svg#triplet" />
               </svg>
-              <span class="button-text">TRIPLET</span>
+              <span class="button-text">Triplet</span>
             </button>
           </div>
         </fieldset>
@@ -183,14 +183,14 @@
         <svg class="icons">
           <use href="/icons.svg#arrow_up_down" />
         </svg>
-        <span id="sort-button-text" class="button-text">SORT</span>
+        <span id="sort-button-text" class="button-text">Sort</span>
       </button>
 
       <button id="tool-copy-button" class="square" title="Copy visible values">
         <svg class="icons">
           <use href="/icons.svg#copy" />
         </svg>
-        <span class="button-text">COPY</span>
+        <span class="button-text">Copy</span>
       </button>
     </div>
   </div>
@@ -206,48 +206,48 @@
           <svg class="icons">
             <use href="/icons.svg#play" />
           </svg>
-          <span class="button-text">PLAY</span>
+          <span class="button-text">Play</span>
         </button> <button id="stop-button" class="square" title="Stop playback">
           <svg class="icons">
             <use href="/icons.svg#stop" />
           </svg>
-          <span class="button-text">STOP</span>
+          <span class="button-text">Stop</span>
         </button> <button id="toggle-sound-button" class="square" title="Toggle sound">
           <svg class="icons">
             <use href="/icons.svg#sound" />
           </svg>
-          <span class="button-text">SOUND</span>
+          <span class="button-text">Sound</span>
         </button>
         <button id="toggle-loop-button" class="square" title="Toggle loop">
           <svg class="icons">
             <use href="/icons.svg#loop" />
           </svg>
-          <span class="button-text">LOOP</span>
+          <span class="button-text">Loop</span>
         </button>
 
         <button id="half-button" class="square" title="Halve the BPM">
           <svg class="icons">
             <use href="/icons.svg#triangle_down" />
           </svg>
-          <span class="button-text">HALF</span>
+          <span class="button-text">Half</span>
         </button>
         <button id="double-button" class="square" title="Double the BPM">
           <svg class="icons">
             <use href="/icons.svg#triangle_up" />
           </svg>
-          <span class="button-text">DOUBLE</span>
+          <span class="button-text">Double</span>
         </button>
         <button id="select-none-button" class="square" title="Select none">
           <svg class="icons">
             <use href="/icons.svg#select_none" />
           </svg>
-          <span class="button-text">SELECT NONE</span>
+          <span class="button-text">Select None</span>
         </button>
         <button id="reset-button" class="square" title="Reset to default">
           <svg class="icons">
             <use href="/icons.svg#reset" />
           </svg>
-          <span class="button-text">RESET</span>
+          <span class="button-text">Reset</span>
         </button>
 
       </div>
@@ -353,28 +353,28 @@
         <svg class="icons">
           <use href="/icons.svg#guides" />
         </svg>
-        <span class="button-text">GUIDES</span>
+        <span class="button-text">Guides</span>
       </button>
 
       <button id="timeline-bright-button" class="square" title="Toggle bright guides">
         <svg class="icons">
           <use href="/icons.svg#sun" />
         </svg>
-        <span class="button-text">BRIGHT</span>
+        <span class="button-text">Bright</span>
       </button>
 
       <button id="toggle-playhead-button" class="square" title="Toggle playhead">
         <svg class="icons">
           <use href="/icons.svg#playhead" />
         </svg>
-        <span class="button-text">PLAYHEAD</span>
+        <span class="button-text">Playhead</span>
       </button>
 
       <button id="follow-button" class="square" title="Follow playback position">
         <svg class="icons">
           <use href="/icons.svg#asterisk" />
         </svg>
-        <span class="button-text">FOLLOW</span>
+        <span class="button-text">Follow</span>
       </button>
     </div>
   </div>
@@ -390,7 +390,7 @@
         <svg class="icons">
           <use href="/icons.svg#copy" />
         </svg>
-        <span class="button-text">COPY</span>
+        <span class="button-text">Copy</span>
       </button>
     </div>
   </div>

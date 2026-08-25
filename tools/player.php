@@ -44,77 +44,77 @@
           <svg class="icons">
             <use href="/icons.svg#eject" />
           </svg>
-          <span class="button-text">OPEN</span>
+          <span class="button-text">Open</span>
         </button>
 
         <button id="record-button" class="square" title="Record audio">
           <svg class="icons">
             <use href="/icons.svg#record" />
           </svg>
-          <span class="button-text">RECORD</span>
+          <span class="button-text">Record</span>
         </button>
 
         <button id="play-button" class="square" title="Toggle play">
           <svg class="icons">
             <use href="/icons.svg#play" />
           </svg>
-          <span class="button-text">PLAY</span>
+          <span class="button-text">Play</span>
         </button>
 
         <button id="prev-button" class="square" title="Previous track">
           <svg class="icons">
             <use href="/icons.svg#skip_left" />
           </svg>
-          <span class="button-text">PREV</span>
+          <span class="button-text">Prev</span>
         </button>
 
         <button id="next-button" class="square" title="Next track">
           <svg class="icons">
             <use href="/icons.svg#skip_right" />
           </svg>
-          <span class="button-text">NEXT</span>
+          <span class="button-text">Next</span>
         </button>
 
         <button id="stop-button" class="square" title="Stop playback or recording">
           <svg class="icons">
             <use href="/icons.svg#stop" />
           </svg>
-          <span class="button-text">STOP</span>
+          <span class="button-text">Stop</span>
         </button>
 
         <button id="download-button" class="square" title="Download audio">
           <svg class="icons">
             <use href="/icons.svg#download" />
           </svg>
-          <span class="button-text">DOWNLOAD</span>
+          <span class="button-text">Download</span>
         </button>
 
         <button id="toggle-loop-button" class="square" title="Toggle loop">
           <svg class="icons">
             <use href="/icons.svg#loop" />
           </svg>
-          <span class="button-text">LOOP</span>
+          <span class="button-text">Loop</span>
         </button>
 
         <button id="toggle-input-button" class="square" title="Toggle input">
           <svg class="icons">
             <use href="/icons.svg#mic" />
           </svg>
-          <span class="button-text">INPUT</span>
+          <span class="button-text">Input</span>
         </button>
 
         <button id="toggle-sound-button" class="square" title="Toggle sound">
           <svg class="icons">
             <use href="/icons.svg#sound" />
           </svg>
-          <span class="button-text">SOUND</span>
+          <span class="button-text">Sound</span>
         </button>
 
         <button id="reset-button" class="square" title="Reset to default">
           <svg class="icons">
             <use href="/icons.svg#reset" />
           </svg>
-          <span class="button-text">RESET</span>
+          <span class="button-text">Reset</span>
         </button>
 
       </div>
@@ -245,133 +245,133 @@
         <svg class="icons">
           <use href="/icons.svg#guides" />
         </svg>
-        <span class="button-text">GUIDES</span>
+        <span class="button-text">Guides</span>
       </button>
 
       <button id="timeline-bright-button" data-shared-timeline-bright class="square" title="Toggle bright guides">
         <svg class="icons">
           <use href="/icons.svg#sun" />
         </svg>
-        <span class="button-text">BRIGHT</span>
+        <span class="button-text">Bright</span>
       </button>
 
       <button id="timeline-zoom-button" class="square" title="Toggle zoom">
         <svg class="icons">
           <use href="/icons.svg#zoom_in" />
         </svg>
-        <span class="button-text">ZOOM</span>
+        <span class="button-text">Zoom</span>
       </button>
 
       <button id="timeline-ruler-button" class="square" title="Toggle ruler">
         <svg class="icons">
           <use href="/icons.svg#ruler" />
         </svg>
-        <span class="button-text">RULER</span>
+        <span class="button-text">Ruler</span>
       </button>
 
       <button id="bpm-ruler-button" class="square" title="Toggle beats ruler">
         <svg class="icons">
           <use href="/icons.svg#ruler" />
         </svg>
-        <span class="button-text">BEATS</span>
+        <span class="button-text">Beats</span>
       </button>
 
       <button id="snap-button" class="square" title="Toggle beat snapping">
         <svg class="icons">
           <use href="/icons.svg#snap" />
         </svg>
-        <span class="button-text">SNAP</span>
+        <span class="button-text">Snap</span>
       </button>
 
       <button id="timeline-pan-button" class="square" title="Toggle pan line">
         <svg class="icons">
           <use href="/icons.svg#slider" />
         </svg>
-        <span class="button-text">PAN</span>
+        <span class="button-text">Pan</span>
       </button>
 
       <button id="waveform-color-button" class="square" title="Toggle multi-color waveform">
         <svg class="icons">
           <use href="/icons.svg#alpha" />
         </svg>
-        <span class="button-text">COLOR</span>
+        <span class="button-text">Color</span>
       </button>
 
       <button id="select-all-button" class="square" title="Select full waveform">
         <svg class="icons">
           <use href="/icons.svg#select_all" />
         </svg>
-        <span class="button-text">ALL</span>
+        <span class="button-text">All</span>
       </button>
 
       <button id="select-none-button" class="square" title="Clear waveform selection">
         <svg class="icons">
           <use href="/icons.svg#select_none" />
         </svg>
-        <span class="button-text">NONE</span>
+        <span class="button-text">None</span>
       </button>
 
       <button id="fade-in-button" class="square" title="Fade in using selected curve">
         <svg class="icons">
           <use href="/icons.svg#arrow_up" />
         </svg>
-        <span class="button-text">FADE IN</span>
+        <span class="button-text">Fade In</span>
       </button>
 
       <button id="fade-out-button" class="square" title="Fade out using selected curve">
         <svg class="icons">
           <use href="/icons.svg#arrow_down" />
         </svg>
-        <span class="button-text">FADE OUT</span>
+        <span class="button-text">Fade Out</span>
       </button>
 
       <button id="normalize-button" class="square" title="Normalize to 0 dB">
         <svg class="icons">
           <use href="/icons.svg#eq" />
         </svg>
-        <span class="button-text">NORMALIZE</span>
+        <span class="button-text">Normalize</span>
       </button>
 
       <button id="reverse-button" class="square" title="Reverse">
         <svg class="icons">
           <use href="/icons.svg#reverse" />
         </svg>
-        <span class="button-text">REVERSE</span>
+        <span class="button-text">Reverse</span>
       </button>
 
       <button id="cut-button" class="square" title="Cut to clipboard">
         <svg class="icons">
           <use href="/icons.svg#tool" />
         </svg>
-        <span class="button-text">CUT</span>
+        <span class="button-text">Cut</span>
       </button>
 
       <button id="paste-button" class="square" title="Paste from clipboard">
         <svg class="icons">
           <use href="/icons.svg#copy" />
         </svg>
-        <span class="button-text">PASTE</span>
+        <span class="button-text">Paste</span>
       </button>
 
       <button id="delete-button" class="square" title="Delete">
         <svg class="icons">
           <use href="/icons.svg#delete" />
         </svg>
-        <span class="button-text">DELETE</span>
+        <span class="button-text">Delete</span>
       </button>
 
       <button id="undo-button" class="square" title="Undo waveform edit">
         <svg class="icons">
           <use href="/icons.svg#undo" />
         </svg>
-        <span class="button-text">UNDO</span>
+        <span class="button-text">Undo</span>
       </button>
 
       <button id="redo-button" class="square" title="Redo waveform edit">
         <svg class="icons">
           <use href="/icons.svg#redo" />
         </svg>
-        <span class="button-text">REDO</span>
+        <span class="button-text">Redo</span>
       </button>
     </div>
   </div>
@@ -415,42 +415,42 @@
         <svg class="icons">
           <use href="/icons.svg#random" />
         </svg>
-        <span class="button-text">RANDOMIZE</span>
+        <span class="button-text">Randomize</span>
       </button>
 
       <button id="playlist-clear-button" class="square" title="Clear all playlist items">
         <svg class="icons">
           <use href="/icons.svg#delete" />
         </svg>
-        <span class="button-text">CLEAR</span>
+        <span class="button-text">Clear</span>
       </button>
 
       <button id="playlist-clean-button" class="square" title="Clean dead files">
         <svg class="icons">
           <use href="/icons.svg#delete" />
         </svg>
-        <span class="button-text">CLEAN</span>
+        <span class="button-text">Clean</span>
       </button>
 
       <button id="playlist-auto-clean-button" class="square" title="Auto clean dead files">
         <svg class="icons">
           <use href="/icons.svg#asterisk" />
         </svg>
-        <span class="button-text">AUTO</span>
+        <span class="button-text">Auto</span>
       </button>
 
       <button id="playlist-load-button" class="square" title="Import playlist">
         <svg class="icons">
           <use href="/icons.svg#open" />
         </svg>
-        <span class="button-text">LOAD</span>
+        <span class="button-text">Load</span>
       </button>
 
       <button id="playlist-save-button" class="square" title="Export playlist">
         <svg class="icons">
           <use href="/icons.svg#download" />
         </svg>
-        <span class="button-text">SAVE</span>
+        <span class="button-text">Save</span>
       </button>
     </div>
   </div>
@@ -466,28 +466,28 @@
         <svg class="icons">
           <use href="/icons.svg#tag" />
         </svg>
-        <span class="button-text">META</span>
+        <span class="button-text">Meta</span>
       </button>
 
       <button id="panel-input-button" class="square" title="Show audio input details">
         <svg class="icons">
           <use href="/icons.svg#mic" />
         </svg>
-        <span class="button-text">INPUT</span>
+        <span class="button-text">Input</span>
       </button>
 
       <button id="panel-playlist-button" class="square" title="Show playlist data">
         <svg class="icons">
           <use href="/icons.svg#view_list" />
         </svg>
-        <span class="button-text">PLAYLIST</span>
+        <span class="button-text">Playlist</span>
       </button>
 
       <button id="copy-button" class="square" title="Copy data">
         <svg class="icons">
           <use href="/icons.svg#copy" />
         </svg>
-        <span class="button-text">COPY</span>
+        <span class="button-text">Copy</span>
       </button>
     </div>
   </div>

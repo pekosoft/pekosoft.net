@@ -164,13 +164,13 @@
         <svg class="icons">
           <use href="/icons.svg#reset" />
         </svg>
-        <span class="button-text">UPDATE</span>
+        <span class="button-text">Update</span>
       </button>
       <button id="system-copy-button" class="square" title="Copy system info">
         <svg class="icons">
           <use href="/icons.svg#copy" />
         </svg>
-        <span class="button-text">COPY</span>
+        <span class="button-text">Copy</span>
       </button>
     </div>
   </main>

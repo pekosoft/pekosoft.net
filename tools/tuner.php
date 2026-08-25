@@ -47,21 +47,21 @@
         <svg class="icons">
           <use href="/icons.svg#mic" />
         </svg>
-        <span class="button-text">LISTEN</span>
+        <span class="button-text">Listen</span>
       </button>
 
       <button id="tone-button" class="square" title="Toggle reference tone playback">
         <svg class="icons">
           <use href="/icons.svg#sound" />
         </svg>
-        <span class="button-text">TONE</span>
+        <span class="button-text">Tone</span>
       </button>
 
       <button id="hold-button" class="square" title="Freeze detected readout">
         <svg class="icons">
           <use href="/icons.svg#stop" />
         </svg>
-        <span class="button-text">HOLD</span>
+        <span class="button-text">Hold</span>
       </button>
     </div>
   </div>
@@ -76,21 +76,21 @@
           <svg class="icons">
             <use href="/icons.svg#field" />
           </svg>
-          <span class="button-text">FOLLOW</span>
+          <span class="button-text">Follow</span>
         </button>
 
         <button id="clear-panel-button" class="square" title="Clear panel output">
           <svg class="icons">
             <use href="/icons.svg#close" />
           </svg>
-          <span class="button-text">CLEAR</span>
+          <span class="button-text">Clear</span>
         </button>
 
         <button id="reset-button" class="square" title="Reset to default">
           <svg class="icons">
             <use href="/icons.svg#reset" />
           </svg>
-          <span class="button-text">RESET</span>
+          <span class="button-text">Reset</span>
         </button>
 
       </div>
@@ -179,13 +179,13 @@
         <svg class="icons">
           <use href="/icons.svg#guides" />
         </svg>
-        <span class="button-text">GUIDES</span>
+        <span class="button-text">Guides</span>
       </button>
       <button id="timeline-bright-button" data-shared-timeline-bright class="square" title="Toggle bright guides">
         <svg class="icons">
           <use href="/icons.svg#sun" />
         </svg>
-        <span class="button-text">BRIGHT</span>
+        <span class="button-text">Bright</span>
       </button>
     </div>
   </div>
@@ -201,14 +201,14 @@
         <svg class="icons">
           <use href="/icons.svg#close" />
         </svg>
-        <span class="button-text">CLEAR</span>
+        <span class="button-text">Clear</span>
       </button>
 
       <button id="copy-button" class="square" title="Copy data">
         <svg class="icons">
           <use href="/icons.svg#copy" />
         </svg>
-        <span class="button-text">COPY</span>
+        <span class="button-text">Copy</span>
       </button>
     </div>
   </div>

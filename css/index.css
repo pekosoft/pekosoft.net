@@ -886,6 +886,7 @@ html.modules-page body:not(.layout-two-columns) {
 
 .button-text {
   display: none;
+  text-transform: uppercase;
 }
 
 /* Show text on buttons when toggled, except icon-only, square, and TOC buttons */

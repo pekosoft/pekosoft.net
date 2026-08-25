@@ -816,7 +816,7 @@ function setupPanelWrapToggle() {
       speechButton.title = "Speak panel text";
       speechButton.innerHTML = `
       <svg class="icons"><use href="/icons.svg#speech" /></svg>
-      <span class="button-text">SPEECH</span>`;
+      <span class="button-text">Speech</span>`;
 
       speechButton.addEventListener("click", () => {
         if (isSpeaking) {
@@ -837,7 +837,7 @@ function setupPanelWrapToggle() {
       downloadButton.title = "Download panel data";
       downloadButton.innerHTML = `
       <svg class="icons"><use href="/icons.svg#download" /></svg>
-      <span class="button-text">DOWNLOAD</span>`;
+      <span class="button-text">Download</span>`;
 
       downloadButton.addEventListener("click", () => {
         const values = Array.from(footer.closest(".container")?.querySelectorAll("textarea") || [])
@@ -880,7 +880,7 @@ function setupPanelWrapToggle() {
       wrapButton.title = "Toggle text wrap";
       wrapButton.innerHTML = `
       <svg class="icons"><use href="/icons.svg#wrap_text" /></svg>
-      <span class="button-text">WRAP</span>`;
+      <span class="button-text">Wrap</span>`;
 
       wrapButton.addEventListener("click", () => {
         const nextState = !wrapButton.classList.contains("button-on");
@@ -904,7 +904,7 @@ function setupPanelWrapToggle() {
       colorButton.title = "Toggle syntax color";
       colorButton.innerHTML = `
       <svg class="icons"><use href="/icons.svg#alpha" /></svg>
-      <span class="button-text">COLOR</span>`;
+      <span class="button-text">Color</span>`;
 
       colorButton.addEventListener("click", () => {
         const nextState = !colorButton.classList.contains("button-on");
@@ -972,7 +972,7 @@ function setupTimelineCopyButton() {
     copyButton.title = isPlayerTimeline ? "Copy to clipboard" : "Copy bitmap";
     copyButton.innerHTML = `
       <svg class="icons"><use href="/icons.svg#copy" /></svg>
-      <span class="button-text">COPY</span>`;
+      <span class="button-text">Copy</span>`;
 
     copyButton.addEventListener("click", async () => {
       try {

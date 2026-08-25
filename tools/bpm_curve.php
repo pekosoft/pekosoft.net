@@ -29,23 +29,23 @@
     <div class="module-footer wrapper colored">
       <button id="guides-button" class="square" title="Toggle guides">
         <svg class="icons" role="img"><use href="/icons.svg#guides" /></svg>
-        <span class="button-text">GUIDES</span>
+        <span class="button-text">Guides</span>
       </button>
       <button id="beats-button" class="square" title="Toggle beats">
         <svg class="icons" role="img"><use href="/icons.svg#beat" /></svg>
-        <span class="button-text">BEATS</span>
+        <span class="button-text">Beats</span>
       </button>
       <button id="toggle-values-button" class="square" title="Toggle values">
         <svg class="icons" role="img"><use href="/icons.svg#value" /></svg>
-        <span class="button-text">VALUES</span>
+        <span class="button-text">Values</span>
       </button>
       <button id="save-svg-button" class="square" title="Save curve as PNG">
         <svg class="icons" role="img"><use href="/icons.svg#photo" /></svg>
-        <span class="button-text">SAVE</span>
+        <span class="button-text">Save</span>
       </button>
       <button id="copy-svg-button" class="square" title="Copy curve as PNG">
         <svg class="icons" role="img"><use href="/icons.svg#copy" /></svg>
-        <span class="button-text">COPY</span>
+        <span class="button-text">Copy</span>
       </button>
     </div>
   </div>
@@ -55,79 +55,79 @@
       <div class="controls-buttons wrapper">
         <button id="play-button" class="square" title="Play preview">
           <svg class="icons" role="img"><use href="/icons.svg#play" /></svg>
-          <span class="button-text">PLAY</span>
+          <span class="button-text">Play</span>
         </button>
         <button id="stop-button" class="square" title="Stop preview">
           <svg class="icons" role="img"><use href="/icons.svg#stop" /></svg>
-          <span class="button-text">STOP</span>
+          <span class="button-text">Stop</span>
         </button>
         <button id="loop-button" class="square" title="Toggle loop">
           <svg class="icons" role="img"><use href="/icons.svg#loop" /></svg>
-          <span class="button-text">LOOP</span>
+          <span class="button-text">Loop</span>
         </button>
         <button id="sound-button" class="square" title="Toggle sound">
           <svg class="icons" role="img"><use href="/icons.svg#sound" /></svg>
-          <span class="button-text">SOUND</span>
+          <span class="button-text">Sound</span>
         </button>
         <button id="beat-sound-button" class="square" title="Toggle beat sound">
           <svg class="icons" role="img"><use href="/icons.svg#beat" /></svg>
-          <span class="button-text">BEAT</span>
+          <span class="button-text">Beat</span>
         </button>
         <button id="tone-button" class="square" title="Toggle continuous tone">
           <svg class="icons" role="img"><use href="/icons.svg#wavelength" /></svg>
-          <span class="button-text">TONE</span>
+          <span class="button-text">Tone</span>
         </button>
         <button id="prev-point-button" class="square" title="Previous point">
           <svg class="icons" role="img"><use href="/icons.svg#skip_prev" /></svg>
-          <span class="button-text">PREV</span>
+          <span class="button-text">Prev</span>
         </button>
         <button id="next-point-button" class="square" title="Next point">
           <svg class="icons" role="img"><use href="/icons.svg#skip_next" /></svg>
-          <span class="button-text">NEXT</span>
+          <span class="button-text">Next</span>
         </button>
         <button id="undo-button" class="square" title="Undo">
           <svg class="icons" role="img"><use href="/icons.svg#undo" /></svg>
-          <span class="button-text">UNDO</span>
+          <span class="button-text">Undo</span>
         </button>
         <button id="redo-button" class="square" title="Redo">
           <svg class="icons" role="img"><use href="/icons.svg#redo" /></svg>
-          <span class="button-text">REDO</span>
+          <span class="button-text">Redo</span>
         </button>
         <button id="select-all-points-button" class="square" title="Select all points">
           <svg class="icons" role="img"><use href="/icons.svg#select_all" /></svg>
-          <span class="button-text">ALL</span>
+          <span class="button-text">All</span>
         </button>
         <button id="select-no-points-button" class="square" title="Select no points">
           <svg class="icons" role="img"><use href="/icons.svg#select_none" /></svg>
-          <span class="button-text">NONE</span>
+          <span class="button-text">None</span>
         </button>
         <button id="move-up-button" class="square" title="Move point up">
           <svg class="icons" role="img"><use href="/icons.svg#arrow_up" /></svg>
-          <span class="button-text">UP</span>
+          <span class="button-text">Up</span>
         </button>
         <button id="move-down-button" class="square" title="Move point down">
           <svg class="icons" role="img"><use href="/icons.svg#arrow_down" /></svg>
-          <span class="button-text">DOWN</span>
+          <span class="button-text">Down</span>
         </button>
         <button id="move-left-button" class="square" title="Move point left">
           <svg class="icons" role="img"><use href="/icons.svg#arrow_left" /></svg>
-          <span class="button-text">LEFT</span>
+          <span class="button-text">Left</span>
         </button>
         <button id="move-right-button" class="square" title="Move point right">
           <svg class="icons" role="img"><use href="/icons.svg#arrow_right" /></svg>
-          <span class="button-text">RIGHT</span>
+          <span class="button-text">Right</span>
         </button>
         <button id="add-point-button" class="square" title="Add point">
           <svg class="icons" role="img"><use href="/icons.svg#plus" /></svg>
-          <span class="button-text">ADD</span>
+          <span class="button-text">Add</span>
         </button>
         <button id="remove-point-button" class="square" title="Remove point">
           <svg class="icons" role="img"><use href="/icons.svg#minus" /></svg>
-          <span class="button-text">REMOVE</span>
+          <span class="button-text">Remove</span>
         </button>
         <button id="reset-button" class="square" title="Reset to default">
           <svg class="icons" role="img"><use href="/icons.svg#reset" /></svg>
-          <span class="button-text">RESET</span>
+          <span class="button-text">Reset</span>
         </button>
       </div>
 
@@ -225,11 +225,11 @@
     <div class="module-footer wrapper colored">
       <button id="timeline-guides-button" class="square" title="Toggle timeline guides">
         <svg class="icons" role="img"><use href="/icons.svg#guides" /></svg>
-        <span class="button-text">GUIDES</span>
+        <span class="button-text">Guides</span>
       </button>
       <button id="timeline-bright-button" class="square" title="Toggle bright guides">
         <svg class="icons" role="img"><use href="/icons.svg#sun" /></svg>
-        <span class="button-text">BRIGHT</span>
+        <span class="button-text">Bright</span>
       </button>
     </div>
   </div>
@@ -241,15 +241,15 @@
     <div class="module-footer wrapper colored">
       <button id="panel-curve-button" class="square" title="Show curve view">
         <svg class="icons" role="img"><use href="/icons.svg#wavelength" /></svg>
-        <span class="button-text">CURVE</span>
+        <span class="button-text">Curve</span>
       </button>
       <button id="panel-values-button" class="square" title="Show values view">
         <svg class="icons" role="img"><use href="/icons.svg#value" /></svg>
-        <span class="button-text">VALUES</span>
+        <span class="button-text">Values</span>
       </button>
       <button id="copy-button" class="square" title="Copy curve data">
         <svg class="icons" role="img"><use href="/icons.svg#copy" /></svg>
-        <span class="button-text">COPY</span>
+        <span class="button-text">Copy</span>
       </button>
     </div>
   </div>

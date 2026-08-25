@@ -68,14 +68,14 @@
               <svg class="icons">
                 <use href="/icons.svg#label_s" />
               </svg>
-              <span class="button-text">LABEL S</span>
+              <span class="button-text">Label S</span>
             </button>
 
             <button id="label-l-button" class="square" title="Toggle large center label">
               <svg class="icons">
                 <use href="/icons.svg#label_l" />
               </svg>
-              <span class="button-text">LABEL L</span>
+              <span class="button-text">Label L</span>
             </button>
           </div>
         </fieldset>
@@ -87,14 +87,14 @@
               <svg class="icons">
                 <use href="/icons.svg#radio_button" />
               </svg>
-              <span class="button-text">STANDARD</span>
+              <span class="button-text">Standard</span>
             </button>
 
             <button id="jukebox-button" class="square" title="Toggle large jukebox spindle hole">
               <svg class="icons">
                 <use href="/icons.svg#jukebox" />
               </svg>
-              <span class="button-text">JUKEBOX</span>
+              <span class="button-text">Jukebox</span>
             </button>
           </div>
         </fieldset>
@@ -115,21 +115,21 @@
           <svg class="icons">
             <use href="/icons.svg#play" />
           </svg>
-          <span class="button-text">PLAY</span>
+          <span class="button-text">Play</span>
         </button>
 
         <button id="stop-button" class="square" title="Stop and reset rotation">
           <svg class="icons">
             <use href="/icons.svg#stop" />
           </svg>
-          <span class="button-text">STOP</span>
+          <span class="button-text">Stop</span>
         </button>
 
         <button id="toggle-sound-button" class="square" title="Toggle reference tone">
           <svg class="icons">
             <use href="/icons.svg#sound" />
           </svg>
-          <span class="button-text">SOUND</span>
+          <span class="button-text">Sound</span>
         </button>
 
         <!-- RPM Buttons -->
@@ -180,28 +180,28 @@
           <svg class="icons">
             <use href="/icons.svg#reverse" />
           </svg>
-          <span class="button-text">REVERSE</span>
+          <span class="button-text">Reverse</span>
         </button>
 
         <button id="torque-button" class="square button-on" title="Toggle torque emulation">
           <svg class="icons">
             <use href="/icons.svg#torque" />
           </svg>
-          <span class="button-text">TORQUE</span>
+          <span class="button-text">Torque</span>
         </button>
 
         <button id="haptic-button" class="square" title="Toggle haptic feedback">
           <svg class="icons">
             <use href="/icons.svg#haptic" />
           </svg>
-          <span class="button-text">HAPTIC</span>
+          <span class="button-text">Haptic</span>
         </button>
 
         <button id="reset-button" class="square" title="Reset to default">
           <svg class="icons">
             <use href="/icons.svg#reset" />
           </svg>
-          <span class="button-text">RESET</span>
+          <span class="button-text">Reset</span>
         </button>
 
       </div>
@@ -292,13 +292,13 @@
         <svg class="icons">
           <use href="/icons.svg#guides" />
         </svg>
-        <span class="button-text">GUIDES</span>
+        <span class="button-text">Guides</span>
       </button>
       <button id="timeline-bright-button" data-shared-timeline-bright class="square" title="Toggle bright guides">
         <svg class="icons">
           <use href="/icons.svg#sun" />
         </svg>
-        <span class="button-text">BRIGHT</span>
+        <span class="button-text">Bright</span>
       </button>
     </div>
   </div>
@@ -314,7 +314,7 @@
         <svg class="icons">
           <use href="/icons.svg#copy" />
         </svg>
-        <span class="button-text">COPY</span>
+        <span class="button-text">Copy</span>
       </button>
     </div>
   </div>

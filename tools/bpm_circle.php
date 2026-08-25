@@ -57,46 +57,46 @@
           <svg class="icons" role="img">
             <use href="/icons.svg#play" />
           </svg>
-          <span class="button-text">PLAY</span>
+          <span class="button-text">Play</span>
         </button>
         <button id="stop-button" title="Stop playback and reset position">
           <svg class="icons" role="img">
             <use href="/icons.svg#stop" />
           </svg>
-          <span class="button-text">STOP</span>
+          <span class="button-text">Stop</span>
         </button>
 
         <button id="toggle-playhead-button" title="Toggle playhead"><svg class="icons" role="img">
             <use href="/icons.svg#playhead" />
-          </svg><span class="button-text">PLAYHEAD</span></button>
+          </svg><span class="button-text">Playhead</span></button>
         <button id="hold-button" title="Hold active segment"><svg class="icons" role="img">
             <use href="/icons.svg#pause" />
-          </svg><span class="button-text">HOLD</span></button>
+          </svg><span class="button-text">Hold</span></button>
         <button id="loop-button" title="Loop playback"><svg class="icons" role="img">
             <use href="/icons.svg#loop" />
-          </svg><span class="button-text">LOOP</span></button>
+          </svg><span class="button-text">Loop</span></button>
         <button id="sound-master-button" title="Toggle all sounds"><svg class="icons" role="img">
             <use href="/icons.svg#sound" />
-          </svg><span class="button-text">SOUND</span></button>
+          </svg><span class="button-text">Sound</span></button>
 
         <button id="all-button" title="Select all notes"><svg class="icons" role="img">
             <use href="/icons.svg#select_all" />
-          </svg><span class="button-text">ALL</span></button>
+          </svg><span class="button-text">All</span></button>
         <button id="none-button" title="Deselect all notes"><svg class="icons" role="img">
             <use href="/icons.svg#select_none" />
-          </svg><span class="button-text">NONE</span></button>
+          </svg><span class="button-text">None</span></button>
         <button id="prev-button" title="Previous note division"><svg class="icons" role="img">
             <use href="/icons.svg#decrease" />
-          </svg><span class="button-text">PREV</span></button>
+          </svg><span class="button-text">Prev</span></button>
         <button id="next-button" title="Next note division"><svg class="icons" role="img">
             <use href="/icons.svg#increase" />
-          </svg><span class="button-text">NEXT</span></button>
+          </svg><span class="button-text">Next</span></button>
 
         <button id="reset-button" title="Reset to default">
           <svg class="icons" role="img">
             <use href="/icons.svg#reset" />
           </svg>
-          <span class="button-text">RESET</span>
+          <span class="button-text">Reset</span>
         </button>
       </div>
 
@@ -178,25 +178,25 @@
         <svg class="icons">
           <use href="/icons.svg#copy" />
         </svg>
-        <span class="button-text">COPY</span>
+        <span class="button-text">Copy</span>
       </button>
       <button id="info-display-selected-button" class="info-display-button button-on" title="Selected segment" aria-label="Selected segment">
         <svg class="icons">
           <use href="/icons.svg#field" />
         </svg>
-        <span class="button-text">SELECTED</span>
+        <span class="button-text">Selected</span>
       </button>
       <button id="info-display-active-button" class="info-display-button" title="Active notes" aria-label="Active notes">
         <svg class="icons">
           <use href="/icons.svg#sound" />
         </svg>
-        <span class="button-text">ACTIVE</span>
+        <span class="button-text">Active</span>
       </button>
       <button id="info-display-all-button" class="info-display-button" title="All notes" aria-label="All notes">
         <svg class="icons">
           <use href="/icons.svg#timeline" />
         </svg>
-        <span class="button-text">ALL</span>
+        <span class="button-text">All</span>
       </button>
     </div>
   </div>

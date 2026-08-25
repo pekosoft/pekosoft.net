@@ -76,6 +76,20 @@ const playbackState = {
   activePlayButton: null
 };
 
+const buttonLabelCase = {
+  BPM: 'BPM',
+  BPS: 'BPS',
+  HZ: 'Hz',
+  MIDI: 'MIDI',
+  SPB: 'SPB',
+  'WAVE CM': 'Wave cm'
+};
+
+function formatButtonLabel(value) {
+  const label = String(value || '');
+  return buttonLabelCase[label] || label.toLowerCase().replace(/\b\w/g, (character) => character.toUpperCase());
+}
+
 function getReferenceAudioContext() {
   const AudioContextClass = window.AudioContext || window.webkitAudioContext;
   if (!AudioContextClass) return null;
@@ -649,8 +663,9 @@ function updateColumnButtons() {
     }
 
     button.hidden = false;
-    label.textContent = columnLabel;
-    button.title = `Toggle ${columnLabel} column`;
+  const buttonLabel = formatButtonLabel(columnLabel);
+  label.textContent = buttonLabel;
+  button.title = `Toggle ${buttonLabel} column`;
     button.classList.toggle('button-on', visibility[i] !== false);
     button.setAttribute('aria-pressed', visibility[i] !== false ? 'true' : 'false');
   }
@@ -660,16 +675,16 @@ function updateViewButton() {
   const isCardsView = state.view === 'cards';
   viewToggleButton.classList.toggle('button-on', isCardsView);
   viewToggleButton.setAttribute('aria-pressed', isCardsView ? 'true' : 'false');
-  viewToggleButton.title = isCardsView ? 'VIEW: Switch to standard view' : 'VIEW: Switch to cards view';
-  viewToggleText.textContent = 'VIEW';
+  viewToggleButton.title = isCardsView ? 'View: Switch to standard view' : 'View: Switch to cards view';
+  viewToggleText.textContent = 'View';
 }
 
 function updateSortButton() {
   const isDescending = state.sort === 'desc';
   sortToggleButton.classList.toggle('button-on', isDescending);
   sortToggleButton.setAttribute('aria-pressed', isDescending ? 'true' : 'false');
-  sortToggleButton.title = isDescending ? 'SORT: Descending' : 'SORT: Ascending';
-  sortToggleText.textContent = 'SORT';
+  sortToggleButton.title = isDescending ? 'Sort: Descending' : 'Sort: Ascending';
+  sortToggleText.textContent = 'Sort';
 }
 
 function getOrderedRows(table) {

@@ -27,19 +27,19 @@
         <svg class="icons">
           <use href="/icons.svg#play" />
         </svg>
-        <span class="button-text">PLAY</span>
+        <span class="button-text">Play</span>
       </button>
       <button id="tap-blink-button" class="square" title="Toggle blink">
         <svg class="icons">
           <use href="/icons.svg#blink" />
         </svg>
-        <span class="button-text">BLINK</span>
+        <span class="button-text">Blink</span>
       </button>
       <button id="tap-copy-button" class="square" title="Copy BPM">
         <svg class="icons">
           <use href="/icons.svg#copy" />
         </svg>
-        <span class="button-text">COPY</span>
+        <span class="button-text">Copy</span>
       </button>
     </div>
   </div>
@@ -57,28 +57,28 @@
           <svg class="icons">
             <use href="/icons.svg#sound" />
           </svg>
-          <span class="button-text">SOUND</span>
+          <span class="button-text">Sound</span>
         </button>
 
         <button id="timer-button" class="square" title="Toggle timer">
           <svg class="icons">
             <use href="/icons.svg#clock" />
           </svg>
-          <span class="button-text">TIMER</span>
+          <span class="button-text">Timer</span>
         </button>
 
         <button id="haptic-button" class="square" title="Toggle haptic feedback">
           <svg class="icons">
             <use href="/icons.svg#haptic" />
           </svg>
-          <span class="button-text">HAPTIC</span>
+          <span class="button-text">Haptic</span>
         </button>
 
         <button id="reset-button" class="square" title="Reset to default">
           <svg class="icons">
             <use href="/icons.svg#reset" />
           </svg>
-          <span class="button-text">RESET</span>
+          <span class="button-text">Reset</span>
         </button>
 
       </div>
@@ -149,35 +149,35 @@
         <svg class="icons">
           <use href="/icons.svg#guides" />
         </svg>
-        <span class="button-text">GUIDES</span>
+        <span class="button-text">Guides</span>
       </button>
 
       <button id="timeline-bright-button" data-shared-timeline-bright class="square" title="Toggle bright guides">
         <svg class="icons">
           <use href="/icons.svg#sun" />
         </svg>
-        <span class="button-text">BRIGHT</span>
+        <span class="button-text">Bright</span>
       </button>
 
       <button id="current-line-button" class="square" title="Toggle Current BPM">
         <svg class="icons">
           <use href="/icons.svg#letter_c" />
         </svg>
-        <span class="button-text">CURRENT</span>
+        <span class="button-text">Current</span>
       </button>
 
       <button id="average-line-button" class="square" title="Toggle Average BPM">
         <svg class="icons">
           <use href="/icons.svg#letter_a" />
         </svg>
-        <span class="button-text">AVERAGE</span>
+        <span class="button-text">Average</span>
       </button>
 
       <button id="target-line-button" class="square" title="Toggle Target BPM">
         <svg class="icons">
           <use href="/icons.svg#letter_t" />
         </svg>
-        <span class="button-text">TARGET</span>
+        <span class="button-text">Target</span>
       </button>
     </div>
   </div>
@@ -193,7 +193,7 @@
         <svg class="icons">
           <use href="/icons.svg#copy" />
         </svg>
-        <span class="button-text">COPY</span>
+        <span class="button-text">Copy</span>
       </button>
     </div>
   </div>

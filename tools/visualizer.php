@@ -33,35 +33,35 @@
             <svg class="icons">
               <use href="/icons.svg#play" />
             </svg>
-            <span class="button-text">PLAY</span>
+            <span class="button-text">Play</span>
           </button>
 
           <button id="toggle-cross-button" class="square" title="Toggle crosshair">
             <svg class="icons">
               <use href="/icons.svg#crosshair" />
             </svg>
-            <span class="button-text">CROSS</span>
+            <span class="button-text">Cross</span>
           </button>
 
           <button id="toggle-mask-button" class="square" title="Toggle mask">
             <svg class="icons">
               <use href="/icons.svg#mask" />
             </svg>
-            <span class="button-text">MASK</span>
+            <span class="button-text">Mask</span>
           </button>
 
           <button id="toggle-title-button" class="square" title="Toggle meter titles">
             <svg class="icons">
               <use href="/icons.svg#text" />
             </svg>
-            <span class="button-text">TITLE</span>
+            <span class="button-text">Title</span>
           </button>
 
           <button id="reset-button" class="square" title="Reset to default">
             <svg class="icons">
               <use href="/icons.svg#reset" />
             </svg>
-            <span class="button-text">RESET</span>
+            <span class="button-text">Reset</span>
           </button>
         </div>
 
@@ -70,63 +70,63 @@
             <svg class="icons">
               <use href="/icons.svg#clock" />
             </svg>
-            <span class="button-text">CLOCK</span>
+            <span class="button-text">Clock</span>
           </button>
 
           <button id="toggle-cake-button" class="square" title="Toggle cake">
             <svg class="icons">
               <use href="/icons.svg#cake_diagram" />
             </svg>
-            <span class="button-text">CAKE</span>
+            <span class="button-text">Cake</span>
           </button>
 
           <button id="toggle-speedometer-button" class="square" title="Toggle speedometer">
             <svg class="icons">
               <use href="/icons.svg#meter" />
             </svg>
-            <span class="button-text">SPEEDOMETER</span>
+            <span class="button-text">Speedometer</span>
           </button>
 
           <button id="toggle-metronome-button" class="square" title="Toggle metronome">
             <svg class="icons">
               <use href="/icons.svg#metronome" />
             </svg>
-            <span class="button-text">METRONOME</span>
+            <span class="button-text">Metronome</span>
           </button>
 
           <button id="toggle-ticker-button" class="square" title="Toggle ticker">
             <svg class="icons">
               <use href="/icons.svg#ticker" />
             </svg>
-            <span class="button-text">TICKER</span>
+            <span class="button-text">Ticker</span>
           </button>
 
           <button id="toggle-lines-button" class="square" title="Toggle lines">
             <svg class="icons">
               <use href="/icons.svg#timeline" />
             </svg>
-            <span class="button-text">LINES</span>
+            <span class="button-text">Lines</span>
           </button>
 
           <button id="toggle-stars-button" class="square" title="Toggle stars">
             <svg class="icons">
               <use href="/icons.svg#star" />
             </svg>
-            <span class="button-text">STARS</span>
+            <span class="button-text">Stars</span>
           </button>
 
           <button id="toggle-pulse-button" class="square" title="Toggle pulse">
             <svg class="icons">
               <use href="/icons.svg#pulse" />
             </svg>
-            <span class="button-text">PULSE</span>
+            <span class="button-text">Pulse</span>
           </button>
 
           <button id="toggle-blink-button" class="square" title="Toggle blink">
             <svg class="icons">
               <use href="/icons.svg#blink" />
             </svg>
-            <span class="button-text">BLINK</span>
+            <span class="button-text">Blink</span>
           </button>
         </div>
 
@@ -218,28 +218,28 @@
         <svg class="icons">
           <use href="/icons.svg#select_all" />
         </svg>
-        <span class="button-text">ALL</span>
+        <span class="button-text">All</span>
       </button>
 
       <button id="tool-mode-single-button" class="square" title="Show one meter at a time">
         <svg class="icons">
           <use href="/icons.svg#radio_button" />
         </svg>
-        <span class="button-text">ONE</span>
+        <span class="button-text">One</span>
       </button>
 
       <button id="tool-single-prev-button" class="square" title="Previous meter in single mode">
         <svg class="icons">
           <use href="/icons.svg#skip_left" />
         </svg>
-        <span class="button-text">LEFT</span>
+        <span class="button-text">Left</span>
       </button>
 
       <button id="tool-single-next-button" class="square" title="Next meter in single mode">
         <svg class="icons">
           <use href="/icons.svg#skip_right" />
         </svg>
-        <span class="button-text">RIGHT</span>
+        <span class="button-text">Right</span>
       </button>
     </div>
   </div>

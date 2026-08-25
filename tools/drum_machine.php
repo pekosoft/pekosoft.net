@@ -24,11 +24,11 @@
     <div class="module-footer wrapper colored">
       <button id="random-button" class="square" title="Randomize pattern" aria-label="Randomize pattern">
         <svg class="icons" role="img"><use href="/icons.svg#random" /></svg>
-        <span class="button-text">RANDOM</span>
+        <span class="button-text">Random</span>
       </button>
       <button id="clear-button" class="square" title="Clear pattern" aria-label="Clear pattern">
         <svg class="icons" role="img"><use href="/icons.svg#close" /></svg>
-        <span class="button-text">CLEAR</span>
+        <span class="button-text">Clear</span>
       </button>
     </div>
   </div>
@@ -38,39 +38,39 @@
       <div class="controls-buttons wrapper">
         <button id="play-button" class="square" title="Toggle playback">
           <svg class="icons"><use href="/icons.svg#play" /></svg>
-          <span class="button-text">PLAY</span>
+          <span class="button-text">Play</span>
         </button>
         <button id="record-button" class="square" title="Toggle recording">
           <svg class="icons"><use href="/icons.svg#record" /></svg>
-          <span class="button-text">RECORD</span>
+          <span class="button-text">Record</span>
         </button>
         <button id="playback-button" class="square" title="Toggle recording playback">
           <svg class="icons"><use href="/icons.svg#play" /></svg>
-          <span class="button-text">PLAYBACK</span>
+          <span class="button-text">Playback</span>
         </button>
         <button id="stop-button" class="square" title="Stop playback">
           <svg class="icons"><use href="/icons.svg#stop" /></svg>
-          <span class="button-text">STOP</span>
+          <span class="button-text">Stop</span>
         </button>
         <button id="save-wav-button" class="square" title="Save WAV" aria-label="Save WAV">
           <svg class="icons"><use href="/icons.svg#download" /></svg>
-          <span class="button-text">SAVE</span>
+          <span class="button-text">Save</span>
         </button>
         <button id="tap-button" class="square" title="Tap tempo">
           <svg class="icons"><use href="/icons.svg#tap_pad" /></svg>
-          <span class="button-text">TAP</span>
+          <span class="button-text">Tap</span>
         </button>
         <button id="toggle-sound-button" class="square" title="Toggle sound">
           <svg class="icons"><use href="/icons.svg#sound" /></svg>
-          <span class="button-text">SOUND</span>
+          <span class="button-text">Sound</span>
         </button>
         <button id="haptic-button" class="square" title="Toggle haptic feedback">
           <svg class="icons"><use href="/icons.svg#haptic" /></svg>
-          <span class="button-text">HAPTIC</span>
+          <span class="button-text">Haptic</span>
         </button>
         <button id="reset-button" class="square" title="Reset to default">
           <svg class="icons"><use href="/icons.svg#reset" /></svg>
-          <span class="button-text">RESET</span>
+          <span class="button-text">Reset</span>
         </button>
       </div>
 
@@ -189,11 +189,11 @@
     <div class="module-footer wrapper colored">
       <button id="timeline-guides-button" title="Toggle playback guides">
         <svg class="icons" role="img"><use href="/icons.svg#guides" /></svg>
-        <span class="button-text">GUIDES</span>
+        <span class="button-text">Guides</span>
       </button>
       <button id="timeline-bright-button" title="Toggle bright guides">
         <svg class="icons" role="img"><use href="/icons.svg#sun" /></svg>
-        <span class="button-text">BRIGHT</span>
+        <span class="button-text">Bright</span>
       </button>
     </div>
   </div>
@@ -230,23 +230,23 @@
     <div class="module-footer wrapper colored">
       <button id="playlist-previous-button" class="square" title="Previous recording" aria-label="Previous recording">
         <svg class="icons" role="img"><use href="/icons.svg#skip_left" /></svg>
-        <span class="button-text">PREVIOUS</span>
+        <span class="button-text">Previous</span>
       </button>
       <button id="playlist-next-button" class="square" title="Next recording" aria-label="Next recording">
         <svg class="icons" role="img"><use href="/icons.svg#skip_right" /></svg>
-        <span class="button-text">NEXT</span>
+        <span class="button-text">Next</span>
       </button>
       <button id="playlist-clear-button" class="square" title="Clear recordings" aria-label="Clear recordings">
         <svg class="icons" role="img"><use href="/icons.svg#delete" /></svg>
-        <span class="button-text">CLEAR</span>
+        <span class="button-text">Clear</span>
       </button>
       <button id="playlist-load-button" class="square" title="Import recordings" aria-label="Import recordings">
         <svg class="icons" role="img"><use href="/icons.svg#open" /></svg>
-        <span class="button-text">OPEN</span>
+        <span class="button-text">Open</span>
       </button>
       <button id="playlist-save-button" class="square" title="Export recordings" aria-label="Export recordings">
         <svg class="icons" role="img"><use href="/icons.svg#download" /></svg>
-        <span class="button-text">SAVE</span>
+        <span class="button-text">Save</span>
       </button>
     </div>
     <input type="file" id="playlist-file-input" accept="application/json,.json">
@@ -272,19 +272,19 @@
     <div class="module-footer wrapper colored">
       <button id="history-sort-button" class="square" title="SORT: Descending" aria-label="Sort history" aria-pressed="true">
         <svg class="icons" role="img"><use href="/icons.svg#arrow_up_down" /></svg>
-        <span class="button-text">SORT</span>
+        <span class="button-text">Sort</span>
       </button>
       <button id="history-view-button" class="square" title="VIEW: List" aria-label="Change History view" aria-pressed="false">
         <svg class="icons" role="img"><use href="/icons.svg#view_list" /></svg>
-        <span class="button-text">VIEW</span>
+        <span class="button-text">View</span>
       </button>
       <button id="history-undo-button" class="square" title="Undo pattern change" aria-label="Undo pattern change">
         <svg class="icons" role="img"><use href="/icons.svg#undo" /></svg>
-        <span class="button-text">UNDO</span>
+        <span class="button-text">Undo</span>
       </button>
       <button id="history-redo-button" class="square" title="Redo pattern change" aria-label="Redo pattern change">
         <svg class="icons" role="img"><use href="/icons.svg#redo" /></svg>
-        <span class="button-text">REDO</span>
+        <span class="button-text">Redo</span>
       </button>
     </div>
   </div>
@@ -296,19 +296,19 @@
     <div class="module-footer wrapper colored">
       <button id="open-button" class="square" title="Open pattern">
         <svg class="icons"><use href="/icons.svg#open" /></svg>
-        <span class="button-text">OPEN</span>
+        <span class="button-text">Open</span>
       </button>
       <button id="save-button" class="square" title="Save pattern">
         <svg class="icons"><use href="/icons.svg#download" /></svg>
-        <span class="button-text">SAVE</span>
+        <span class="button-text">Save</span>
       </button>
       <button id="apply-button" class="square" title="Apply pattern data">
         <svg class="icons"><use href="/icons.svg#check" /></svg>
-        <span class="button-text">APPLY</span>
+        <span class="button-text">Apply</span>
       </button>
       <button id="copy-button" class="square" title="Copy pattern">
         <svg class="icons"><use href="/icons.svg#copy" /></svg>
-        <span class="button-text">COPY</span>
+        <span class="button-text">Copy</span>
       </button>
     </div>
     <input type="file" id="file-input" accept="application/json,.json,.txt">

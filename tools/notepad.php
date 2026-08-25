@@ -27,35 +27,35 @@
         <svg class="icons">
           <use href="/icons.svg#speech" />
         </svg>
-        <span class="button-text">SPEECH</span>
+        <span class="button-text">Speech</span>
       </button>
 
       <button id="notepad-download-button" class="square" title="Download text" disabled>
         <svg class="icons">
           <use href="/icons.svg#download" />
         </svg>
-        <span class="button-text">DOWNLOAD</span>
+        <span class="button-text">Download</span>
       </button>
 
       <button id="notepad-clear-button" class="square" title="Clear text">
         <svg class="icons">
           <use href="/icons.svg#delete" />
         </svg>
-        <span class="button-text">CLEAR</span>
+        <span class="button-text">Clear</span>
       </button>
 
       <button id="notepad-copy-button" class="square" title="Copy text">
         <svg class="icons">
           <use href="/icons.svg#copy" />
         </svg>
-        <span class="button-text">COPY</span>
+        <span class="button-text">Copy</span>
       </button>
 
       <button id="notepad-paste-button" class="square" title="Paste text">
         <svg class="icons">
           <use href="/icons.svg#paste" />
         </svg>
-        <span class="button-text">PASTE</span>
+        <span class="button-text">Paste</span>
       </button>
 
     </div>

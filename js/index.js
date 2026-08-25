@@ -788,7 +788,7 @@ function setupTimelineSaveButton() {
   saveButton.title = "Save bitmap";
   saveButton.innerHTML = `
     <svg class="icons"><use href="/icons.svg#photo" /></svg>
-    <span class="button-text">SAVE</span>`;
+    <span class="button-text">Save</span>`;
 
   saveButton.addEventListener("click", async () => {
     const release = getReleaseFromPath();
@@ -817,17 +817,16 @@ function getStatusTargetLabel(target) {
   const isLabel = target.tagName && target.tagName.toLowerCase() === 'label';
 
   if (isLabel) {
-    const labelName = (target.textContent || '').trim().replace(/:\s*$/, '').toUpperCase() || 'LABEL';
+    const labelName = (target.textContent || '').trim().replace(/:\s*$/, '') || 'Label';
     const sentenceTooltip = /[.!?]$/.test(tooltip) ? tooltip : `${tooltip}.`;
     return `${labelName}: ${sentenceTooltip}`;
   }
 
   const buttonText = target.querySelector('.button-text')?.textContent?.trim();
   const ariaLabel = target.getAttribute('aria-label')?.trim();
-  const idText = target.id ? target.id.replace(/-button$/i, '').toUpperCase() : '';
-  const fallback = (target.textContent || '').trim().split(/\s+/).slice(0, 2).join(' ').toUpperCase();
-  const nameRaw = buttonText || ariaLabel || idText || fallback || 'BUTTON';
-  const name = String(nameRaw).toUpperCase();
+  const idText = target.id ? target.id.replace(/-button$/i, '').replace(/-/g, ' ') : '';
+  const fallback = (target.textContent || '').trim().split(/\s+/).slice(0, 2).join(' ');
+  const name = String(buttonText || ariaLabel || idText || fallback || 'Button');
 
   const sentenceTooltip = /[.!?]$/.test(tooltip) ? tooltip : `${tooltip}.`;
 

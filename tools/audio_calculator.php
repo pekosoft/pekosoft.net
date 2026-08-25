@@ -35,7 +35,7 @@
           <svg class="icons" role="img">
             <use href="/icons.svg#reset" />
           </svg>
-          <span class="button-text">RESET</span>
+          <span class="button-text">Reset</span>
         </button>
       </div>
 
@@ -161,7 +161,7 @@
         <svg class="icons">
           <use href="/icons.svg#copy" />
         </svg>
-        <span class="button-text">COPY</span>
+        <span class="button-text">Copy</span>
       </button>
       <button id="info-display-selected-button" class="square info-display-button button-on" title="Selected value" aria-label="Selected value" aria-pressed="true" data-panel-view="selected">
         <svg class="icons">

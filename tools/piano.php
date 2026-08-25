@@ -28,21 +28,21 @@
         <svg class="icons" role="img"><use href="/icons.svg#increase" /></svg>
       </button>
       <button id="glide-button" class="square icon-only" title="Toggle glide mode" aria-label="Toggle glide mode"><svg class="icons" role="img"><use href="/icons.svg#drag" /></svg></button>
-      <button id="toggle-octaves-button" title="Toggle octave labels"><svg class="icons" role="img"><use href="/icons.svg#1_8" /></svg><span class="button-text">OCTAVES</span></button>
-      <button id="toggle-notes-button" title="Toggle note display"><svg class="icons" role="img"><use href="/icons.svg#letter_c" /></svg><span class="button-text">NOTES</span></button>
+      <button id="toggle-octaves-button" title="Toggle octave labels"><svg class="icons" role="img"><use href="/icons.svg#1_8" /></svg><span class="button-text">Octaves</span></button>
+      <button id="toggle-notes-button" title="Toggle note display"><svg class="icons" role="img"><use href="/icons.svg#letter_c" /></svg><span class="button-text">Notes</span></button>
     </div>
   </div>
 
   <div id="controls-container" class="container">
     <div class="module-body controls border">
       <div class="controls-buttons wrapper">
-        <button id="play-button" title="Play recording"><svg class="icons" role="img"><use href="/icons.svg#play" /></svg><span class="button-text">PLAY</span></button>
-        <button id="record-button" title="Record notes"><svg class="icons" role="img"><use href="/icons.svg#record" /></svg><span class="button-text">RECORD</span></button>
-        <button id="loop-button" title="Loop playback"><svg class="icons" role="img"><use href="/icons.svg#loop" /></svg><span class="button-text">LOOP</span></button>
-        <button id="haptic-button" title="Toggle haptic feedback"><svg class="icons" role="img"><use href="/icons.svg#haptic" /></svg><span class="button-text">HAPTIC</span></button>
-        <button id="sound-master-button" title="Toggle all sounds"><svg class="icons" role="img"><use href="/icons.svg#sound" /></svg><span class="button-text">SOUND</span></button>
-        <button id="save-controls-button" title="Save recording as WAV"><svg class="icons" role="img"><use href="/icons.svg#download" /></svg><span class="button-text">SAVE</span></button>
-        <button id="reset-button" title="Reset to default"><svg class="icons" role="img"><use href="/icons.svg#reset" /></svg><span class="button-text">RESET</span></button>
+        <button id="play-button" title="Play recording"><svg class="icons" role="img"><use href="/icons.svg#play" /></svg><span class="button-text">Play</span></button>
+        <button id="record-button" title="Record notes"><svg class="icons" role="img"><use href="/icons.svg#record" /></svg><span class="button-text">Record</span></button>
+        <button id="loop-button" title="Loop playback"><svg class="icons" role="img"><use href="/icons.svg#loop" /></svg><span class="button-text">Loop</span></button>
+        <button id="haptic-button" title="Toggle haptic feedback"><svg class="icons" role="img"><use href="/icons.svg#haptic" /></svg><span class="button-text">Haptic</span></button>
+        <button id="sound-master-button" title="Toggle all sounds"><svg class="icons" role="img"><use href="/icons.svg#sound" /></svg><span class="button-text">Sound</span></button>
+        <button id="save-controls-button" title="Save recording as WAV"><svg class="icons" role="img"><use href="/icons.svg#download" /></svg><span class="button-text">Save</span></button>
+        <button id="reset-button" title="Reset to default"><svg class="icons" role="img"><use href="/icons.svg#reset" /></svg><span class="button-text">Reset</span></button>
       </div>
 
       <div class="controls-values wrapper">
@@ -94,11 +94,11 @@
     <div class="module-footer wrapper colored">
       <button id="timeline-guides-button" class="button-on" title="Toggle piano roll guides">
         <svg class="icons" role="img"><use href="/icons.svg#guides" /></svg>
-        <span class="button-text">GUIDES</span>
+        <span class="button-text">Guides</span>
       </button>
       <button id="timeline-bright-button" title="Toggle bright guides">
         <svg class="icons" role="img"><use href="/icons.svg#sun" /></svg>
-        <span class="button-text">BRIGHT</span>
+        <span class="button-text">Bright</span>
       </button>
     </div>
   </div>
@@ -110,15 +110,15 @@
     <div class="module-footer wrapper colored">
       <button id="open-button" title="Open recording">
         <svg class="icons" role="img"><use href="/icons.svg#open" /></svg>
-        <span class="button-text">OPEN</span>
+        <span class="button-text">Open</span>
       </button>
       <button id="save-button" title="Save recording">
         <svg class="icons" role="img"><use href="/icons.svg#download" /></svg>
-        <span class="button-text">SAVE</span>
+        <span class="button-text">Save</span>
       </button>
       <button id="copy-button" title="Copy recording">
         <svg class="icons" role="img"><use href="/icons.svg#copy" /></svg>
-        <span class="button-text">COPY</span>
+        <span class="button-text">Copy</span>
       </button>
     </div>
   </div>

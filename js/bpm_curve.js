@@ -855,7 +855,7 @@ class BPMCurve {
     this.toggleValuesButton?.classList.toggle('button-on', this.isValuesVisible);
     this.selectAllPointsButton?.classList.remove('button-on');
     this.playButton.classList.toggle('button-on', this.isPlaying);
-    this.playButton.querySelector('.button-text').textContent = this.isPlaying ? 'PAUSE' : 'PLAY';
+    this.playButton.querySelector('.button-text').textContent = this.isPlaying ? 'Pause' : 'Play';
     this.toneButton?.classList.toggle('button-on', this.isToneEnabled);
     this.beatsButton?.classList.toggle('button-on', this.isBeatsVisible);
     this.guidesButton?.classList.toggle('button-on', this.isGuidesVisible);

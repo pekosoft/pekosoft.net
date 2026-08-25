@@ -44,21 +44,21 @@
         <svg class="icons">
           <use href="/icons.svg#ruler" />
         </svg>
-        <span class="button-text">RULERS</span>
+        <span class="button-text">Rulers</span>
       </button>
 
       <button id="grid-button" class="square" title="Toggle preview grid">
         <svg class="icons">
           <use href="/icons.svg#guides" />
         </svg>
-        <span class="button-text">GRID</span>
+        <span class="button-text">Grid</span>
       </button>
 
       <button id="radius-button" class="square" title="Toggle preview radius">
         <svg class="icons">
           <use href="/icons.svg#crosshair" />
         </svg>
-        <span class="button-text">RADIUS</span>
+        <span class="button-text">Radius</span>
       </button>
     </div>
   </div>
@@ -79,35 +79,35 @@
         <svg class="icons">
           <use href="/icons.svg#skip_left" />
         </svg>
-        <span class="button-text">PREV</span>
+        <span class="button-text">Prev</span>
       </button>
 
       <button id="play-button" class="square" title="Toggle play">
         <svg class="icons">
           <use href="/icons.svg#play" />
         </svg>
-        <span class="button-text">PLAY</span>
+        <span class="button-text">Play</span>
       </button>
 
       <button id="next-button" class="square" title="Next icon">
         <svg class="icons">
           <use href="/icons.svg#skip_right" />
         </svg>
-        <span class="button-text">NEXT</span>
+        <span class="button-text">Next</span>
       </button>
 
       <button id="reverse-button" class="square" title="Toggle playback direction">
         <svg class="icons">
           <use href="/icons.svg#reverse" />
         </svg>
-        <span class="button-text">REVERSE</span>
+        <span class="button-text">Reverse</span>
       </button>
 
       <button id="open-button" class="square" title="Open SVG file">
         <svg class="icons">
           <use href="/icons.svg#eject" />
         </svg>
-        <span class="button-text">OPEN</span>
+        <span class="button-text">Open</span>
       </button>
 
       <input type="file" id="open-file-input" accept=".svg,image/svg+xml" hidden>
@@ -116,21 +116,21 @@
         <svg class="icons">
           <use href="/icons.svg#download" />
         </svg>
-        <span class="button-text">DL SVG</span>
+        <span class="button-text">Download SVG</span>
       </button>
 
       <button id="save-png-button" class="square" title="Download current icon as PNG">
         <svg class="icons">
           <use href="/icons.svg#photo" />
         </svg>
-        <span class="button-text">DL PNG</span>
+        <span class="button-text">Download PNG</span>
       </button>
 
       <button id="reset-button" class="square" title="Reset to default">
         <svg class="icons">
           <use href="/icons.svg#reset" />
         </svg>
-        <span class="button-text">RESET</span>
+        <span class="button-text">Reset</span>
       </button>
 
     </div>
@@ -175,126 +175,126 @@
         <svg class="icons">
           <use href="/icons.svg#rotate" />
         </svg>
-        <span class="button-text">ROTATE</span>
+        <span class="button-text">Rotate</span>
       </button>
 
       <button id="center-button" class="square" title="Center selected elements">
         <svg class="icons">
           <use href="/icons.svg#asterisk" />
         </svg>
-        <span class="button-text">CENTER</span>
+        <span class="button-text">Center</span>
       </button>
 
       <button id="select-all-button" class="square" title="Select all">
         <svg class="icons">
           <use href="/icons.svg#select_all" />
         </svg>
-        <span class="button-text">SELECT ALL</span>
+        <span class="button-text">Select All</span>
       </button>
 
       <button id="select-none-button" class="square" title="Select none">
         <svg class="icons">
           <use href="/icons.svg#select_none" />
         </svg>
-        <span class="button-text">SELECT NONE</span>
+        <span class="button-text">Select None</span>
       </button>
 
       <button id="resize-button" class="square" title="Resize">
         <svg class="icons">
           <use href="/icons.svg#resize" />
         </svg>
-        <span class="button-text">RESIZE</span>
+        <span class="button-text">Resize</span>
       </button>
 
       <button id="draw-button" class="square" title="Draw tool">
         <svg class="icons">
           <use href="/icons.svg#pen" />
         </svg>
-        <span class="button-text">DRAW</span>
+        <span class="button-text">Draw</span>
       </button>
 
       <button id="rectangle-button" class="square" title="Rectangle tool">
         <svg class="icons">
           <use href="/icons.svg#rectangle" />
         </svg>
-        <span class="button-text">RECTANGLE</span>
+        <span class="button-text">Rectangle</span>
       </button>
 
       <button id="rectangle-outline-button" class="square" title="Outlined rectangle tool">
         <svg class="icons">
           <use href="/icons.svg#square" />
         </svg>
-        <span class="button-text">RECT OUT</span>
+        <span class="button-text">Rect Out</span>
       </button>
 
       <button id="circle-button" class="square" title="Circle tool">
         <svg class="icons">
           <use href="/icons.svg#circle" />
         </svg>
-        <span class="button-text">CIRCLE</span>
+        <span class="button-text">Circle</span>
       </button>
 
       <button id="circle-outline-button" class="square" title="Outlined circle tool">
         <svg class="icons">
           <use href="/icons.svg#circle_outlined" />
         </svg>
-        <span class="button-text">CIRC OUT</span>
+        <span class="button-text">Circ Out</span>
       </button>
 
       <button id="select-button" class="square" title="Select tool">
         <svg class="icons">
           <use href="/icons.svg#select_tool" />
         </svg>
-        <span class="button-text">SELECT</span>
+        <span class="button-text">Select</span>
       </button>
 
       <button id="flatten-button" class="square" title="Flatten elements">
         <svg class="icons">
           <use href="/icons.svg#flatten" />
         </svg>
-        <span class="button-text">FLATTEN</span>
+        <span class="button-text">Flatten</span>
       </button>
 
       <button id="edit-copy-button" class="square" title="Copy selected (Ctrl+C)">
         <svg class="icons">
           <use href="/icons.svg#copy" />
         </svg>
-        <span class="button-text">COPY</span>
+        <span class="button-text">Copy</span>
       </button>
 
       <button id="edit-cut-button" class="square" title="Cut selected (Ctrl+X)">
         <svg class="icons">
           <use href="/icons.svg#cut" />
         </svg>
-        <span class="button-text">CUT</span>
+        <span class="button-text">Cut</span>
       </button>
 
       <button id="edit-paste-button" class="square" title="Paste selected (Ctrl+V)">
         <svg class="icons">
           <use href="/icons.svg#paste" />
         </svg>
-        <span class="button-text">PASTE</span>
+        <span class="button-text">Paste</span>
       </button>
 
       <button id="delete-button" class="square" title="Delete selected">
         <svg class="icons">
           <use href="/icons.svg#delete" />
         </svg>
-        <span class="button-text">DELETE</span>
+        <span class="button-text">Delete</span>
       </button>
 
       <button id="undo-button" class="square" title="Undo action">
         <svg class="icons">
           <use href="/icons.svg#undo" />
         </svg>
-        <span class="button-text">UNDO</span>
+        <span class="button-text">Undo</span>
       </button>
 
       <button id="redo-button" class="square" title="Redo action">
         <svg class="icons">
           <use href="/icons.svg#redo" />
         </svg>
-        <span class="button-text">REDO</span>
+        <span class="button-text">Redo</span>
       </button>
 
     </div>
@@ -333,14 +333,14 @@
         <svg class="icons">
           <use href="/icons.svg#guides" />
         </svg>
-        <span class="button-text">GRID</span>
+        <span class="button-text">Grid</span>
       </button>
 
       <button id="size-button" class="square" title="Toggle half icon size">
         <svg class="icons">
           <use href="/icons.svg#small_large" />
         </svg>
-        <span class="button-text">SIZE</span>
+        <span class="button-text">Size</span>
       </button>
     </div>
   </div>
@@ -356,21 +356,21 @@
         <svg class="icons">
           <use href="/icons.svg#field" />
         </svg>
-        <span class="button-text">CURRENT</span>
+        <span class="button-text">Current</span>
       </button>
 
       <button id="panel-all-button" class="square" title="Show all icons">
         <svg class="icons">
           <use href="/icons.svg#timeline" />
         </svg>
-        <span class="button-text">ALL</span>
+        <span class="button-text">All</span>
       </button>
 
       <button id="copy-button" class="square" title="Copy symbol code">
         <svg class="icons">
           <use href="/icons.svg#copy" />
         </svg>
-        <span class="button-text">COPY</span>
+        <span class="button-text">Copy</span>
       </button>
     </div>
   </div>

@@ -1235,7 +1235,7 @@ html.invert-colors .container:fullscreen {
   left: 0;
   right: 0;
   margin: 0;
-  background-color: var(--grey1);
+  background-color: var(--black);
   border: 4px solid var(--grey1);
   padding: 0px;
   z-index: 999;
@@ -1281,7 +1281,7 @@ html.invert-colors .container:fullscreen {
   left: 0;
   right: 0;
   margin: 0;
-  background-color: var(--grey1);
+  background-color: var(--black);
   border: 4px solid var(--grey1);
   z-index: 999;
   max-width: var(--maxwidth);

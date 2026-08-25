@@ -197,7 +197,7 @@ if (toggleSoundButton) {
       if (muteNode) {
         const now = tapAudioContext.currentTime;
         muteNode.gain.cancelScheduledValues(now);
-        muteNode.gain.setValueAtTime(isSoundOn ? 1 : 0, now);
+        muteNode.gain.setValueAtTime(isSoundOn && localStorage.getItem('global.sound') !== 'false' ? 1 : 0, now);
       }
     }
     applySoundButtonUI();
@@ -603,11 +603,18 @@ function ensureTapMasterMuteGainNode(context) {
   if (!context) return null;
   if (!tapMasterMuteGainNode) {
     tapMasterMuteGainNode = context.createGain();
-    tapMasterMuteGainNode.gain.value = isSoundOn ? 1 : 0;
+    tapMasterMuteGainNode.gain.value = isSoundOn && localStorage.getItem('global.sound') !== 'false' ? 1 : 0;
     tapMasterMuteGainNode.connect(context.destination);
   }
   return tapMasterMuteGainNode;
 }
+
+window.addEventListener('pekosoft:global-sound-change', () => {
+  if (!tapMasterMuteGainNode || !tapAudioContext) return;
+  const now = tapAudioContext.currentTime;
+  tapMasterMuteGainNode.gain.cancelScheduledValues(now);
+  tapMasterMuteGainNode.gain.setValueAtTime(isSoundOn && localStorage.getItem('global.sound') !== 'false' ? 1 : 0, now);
+});
 
 function ensureTapMetersAnalyser(context) {
   if (!context) return null;

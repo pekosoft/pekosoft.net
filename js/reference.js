@@ -68,6 +68,7 @@ const state = {
 };
 
 let referenceAudioContext = null;
+let referenceOutputGainNode = null;
 const playbackState = {
   timeoutIds: [],
   sustainedVoices: [],
@@ -81,7 +82,12 @@ function getReferenceAudioContext() {
 
   if (!referenceAudioContext) {
     referenceAudioContext = new AudioContextClass();
+    referenceOutputGainNode = referenceAudioContext.createGain();
+    referenceOutputGainNode.connect(referenceAudioContext.destination);
+    window.addEventListener('pekosoft:global-sound-change', updateReferenceOutputGain);
   }
+
+  updateReferenceOutputGain();
 
   if (referenceAudioContext.state === 'suspended') {
     referenceAudioContext.resume().catch(() => {
@@ -90,6 +96,13 @@ function getReferenceAudioContext() {
   }
 
   return referenceAudioContext;
+}
+
+function updateReferenceOutputGain() {
+  if (!referenceOutputGainNode || !referenceAudioContext) return;
+  const now = referenceAudioContext.currentTime;
+  referenceOutputGainNode.gain.cancelScheduledValues(now);
+  referenceOutputGainNode.gain.setValueAtTime(localStorage.getItem('global.sound') !== 'false' ? 1 : 0, now);
 }
 
 function buildPlayButtonHtml(modeKey, payload = {}) {
@@ -186,7 +199,8 @@ function scheduleTransientSequence(audioContext, steps) {
       gain: step.gain ?? 0.22,
       pitchRatio: step.pitchRatio ?? 1,
       durationSec: step.durationSec ?? 0.12,
-      baseFrequencyHz: step.baseFrequencyHz ?? 220
+      baseFrequencyHz: step.baseFrequencyHz ?? 220,
+      destinationNode: referenceOutputGainNode
     });
 
     if (voice) {
@@ -230,7 +244,8 @@ function playNoteTone(audioContext, hzValue) {
     audioContext,
     tone: 'sine',
     frequency,
-    standardGain: 0.2
+    standardGain: 0.2,
+    destinationNode: referenceOutputGainNode
   });
 
   if (!voice) return;

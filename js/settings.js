@@ -9,6 +9,7 @@ window.FactoryDefaults = {
   gridSize: 16,
   guides: true,
   brightGuides: false,
+  sound: true,
   headers: true,
   layout: true,
   haptics: false,
@@ -32,6 +33,7 @@ document.addEventListener("DOMContentLoaded", () => {
     fontSizeKnob: document.getElementById("font-size-knob"),
     guides: document.getElementById("guides"),
     brightGuides: document.getElementById("bright-guides"),
+    sound: document.getElementById("sound"),
     headers: document.getElementById("headers"),
     layout: document.getElementById("layout"),
     haptics: document.getElementById("haptics"),
@@ -156,6 +158,12 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  if (settings.sound) {
+    settings.sound.addEventListener("change", () => {
+      saveSoundSetting();
+    });
+  }
+
   if (settings.haptics) {
     settings.haptics.addEventListener("change", () => {
       saveHapticsSetting();
@@ -246,7 +254,6 @@ document.addEventListener("DOMContentLoaded", () => {
   if (settings.resetButton) {
     settings.resetButton.addEventListener("click", () => {
       resetSettings();
-      window.location.reload();
     });
   }
 
@@ -266,10 +273,17 @@ document.addEventListener("DOMContentLoaded", () => {
         ? window.PekoBrightGuides.getGlobal()
         : (localStorage.getItem("global.bright_guides") ?? String(defaults.brightGuides)) === "true";
     }
+    if (settings.sound) {
+      settings.sound.checked = window.PekoSound
+        ? window.PekoSound.getGlobal()
+        : (localStorage.getItem("global.sound") ?? String(defaults.sound)) === "true";
+    }
     const savedGridSize = normalizeGridSize(parseInt(localStorage.getItem("global.grid_size") ?? `${defaults.gridSize}`, 10));
     setGridSize(savedGridSize, false);
     if (settings.haptics) {
-      settings.haptics.checked = (localStorage.getItem("global.haptics") ?? defaults.haptics) === "true";
+      settings.haptics.checked = window.PekoHaptics
+        ? window.PekoHaptics.getGlobal()
+        : (localStorage.getItem("global.haptics") ?? defaults.haptics) === "true";
     }
     if (settings.headers) {
       settings.headers.checked = localStorage.getItem("global.headers") !== "false";
@@ -322,11 +336,23 @@ document.addEventListener("DOMContentLoaded", () => {
     localStorage.setItem("global.guides", settings.guides.checked);
   }
 
+  function saveSoundSetting() {
+    if (window.PekoSound) {
+      window.PekoSound.setGlobal(settings.sound.checked);
+      return;
+    }
+    localStorage.setItem("global.sound", String(settings.sound.checked));
+  }
+
   function saveGridSizeSetting() {
     localStorage.setItem("global.grid_size", getCurrentGridSize());
   }
 
   function saveHapticsSetting() {
+    if (window.PekoHaptics) {
+      window.PekoHaptics.setGlobal(settings.haptics.checked);
+      return;
+    }
     localStorage.setItem("global.haptics", settings.haptics.checked);
   }
 
@@ -429,7 +455,16 @@ document.addEventListener("DOMContentLoaded", () => {
     if (window.PekoGuides) window.PekoGuides.setGlobal(defaults.guides);
     localStorage.setItem("global.bright_guides", defaults.brightGuides);
     if (window.PekoBrightGuides) window.PekoBrightGuides.setGlobal(defaults.brightGuides);
-    localStorage.setItem("global.haptics", defaults.haptics);
+    if (window.PekoSound) {
+      window.PekoSound.setGlobal(defaults.sound);
+    } else {
+      localStorage.setItem("global.sound", defaults.sound);
+    }
+    if (window.PekoHaptics) {
+      window.PekoHaptics.setGlobal(defaults.haptics);
+    } else {
+      localStorage.setItem("global.haptics", defaults.haptics);
+    }
     localStorage.setItem("global.headers", defaults.headers);
     localStorage.setItem("global.layout", defaults.layout);
     localStorage.setItem("global.toggle_button_text", defaults.toggleButtonText);
@@ -463,6 +498,8 @@ document.addEventListener("DOMContentLoaded", () => {
     if (typeof applyColorTheme === "function") applyColorTheme(defaults.theme);
     if (typeof updateFooterVisibility === "function") updateFooterVisibility();
     if (typeof stopSitePlay === "function") stopSitePlay();
+    loadSettings();
+    if (window.applySiteSettings) window.applySiteSettings();
   }
 
   function normalizeGridSize(value) {

@@ -100,6 +100,7 @@ let mediaSource = null;
 let analyserNode = null;
 let meterSinkGainNode = null;
 let toneAnalyserNode = null;
+let toneOutputGainNode = null;
 let timeDomainBuffer = null;
 let toneVoice = null;
 
@@ -550,6 +551,7 @@ function applyDetectedFrequency(frequency, nowMs) {
 async function ensureAudioContext() {
   if (!audioContext) {
     audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    window.addEventListener('pekosoft:global-sound-change', updateToneOutputGain);
   }
   if (audioContext.state === 'suspended') {
     await audioContext.resume();
@@ -623,9 +625,19 @@ function ensureToneMetersAnalyserNode() {
     toneAnalyserNode = audioContext.createAnalyser();
     toneAnalyserNode.fftSize = 2048;
     toneAnalyserNode.smoothingTimeConstant = 0.15;
-    toneAnalyserNode.connect(audioContext.destination);
+    toneOutputGainNode = audioContext.createGain();
+    toneAnalyserNode.connect(toneOutputGainNode);
+    toneOutputGainNode.connect(audioContext.destination);
+    updateToneOutputGain();
   }
   return toneAnalyserNode;
+}
+
+function updateToneOutputGain() {
+  if (!toneOutputGainNode || !audioContext) return;
+  const now = audioContext.currentTime;
+  toneOutputGainNode.gain.cancelScheduledValues(now);
+  toneOutputGainNode.gain.setValueAtTime(localStorage.getItem('global.sound') !== 'false' ? 1 : 0, now);
 }
 
 async function startListening() {

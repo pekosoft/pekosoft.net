@@ -75,11 +75,28 @@ let metronomeScaleFrame = null;
 const minBPM = 30;
 const maxBPM = 320;
 
+function isGlobalSoundOn() {
+  return localStorage.getItem('global.sound') !== 'false';
+}
+
+function isOutputSoundOn() {
+  return isSoundOn && isGlobalSoundOn();
+}
+
+function updateMasterSoundOutput() {
+  const muteGain = ensureMasterMuteGainNode();
+  if (!muteGain || !audioContext) return;
+
+  const now = audioContext.currentTime;
+  muteGain.gain.cancelScheduledValues(now);
+  muteGain.gain.setValueAtTime(isOutputSoundOn() ? 1 : 0, now);
+}
+
 function ensureMasterMuteGainNode() {
   if (!audioContext) return null;
   if (!masterMuteGainNode) {
     masterMuteGainNode = audioContext.createGain();
-    masterMuteGainNode.gain.value = isSoundOn ? 1 : 0;
+    masterMuteGainNode.gain.value = isOutputSoundOn() ? 1 : 0;
     masterMuteGainNode.connect(audioContext.destination);
   }
   return masterMuteGainNode;
@@ -197,6 +214,10 @@ document.addEventListener('DOMContentLoaded', () => {
   bpmInput.setAttribute('max', maxBPM);
   updateSoundButton();
   updateBlinkButton();
+});
+
+window.addEventListener('pekosoft:global-sound-change', () => {
+  updateMasterSoundOutput();
 });
 
 // BPM Logic
@@ -978,12 +999,7 @@ toggleSoundButton.addEventListener('click', () => {
       // Resume is best-effort; the next gesture can retry.
     });
   }
-  const muteGain = ensureMasterMuteGainNode();
-  if (muteGain && audioContext) {
-    const now = audioContext.currentTime;
-    muteGain.gain.cancelScheduledValues(now);
-    muteGain.gain.setValueAtTime(isSoundOn ? 1 : 0, now);
-  }
+  updateMasterSoundOutput();
   saveSettings();
 });
 toggleBlinkButton.addEventListener('click', () => {

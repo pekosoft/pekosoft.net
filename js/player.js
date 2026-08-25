@@ -1256,6 +1256,13 @@ mainAnalyser.fftSize = 2048;
 // Master gain node - controls speaker output without interrupting analyser feed
 let masterGain = mainAudioContext.createGain();
 masterGain.connect(mainAudioContext.destination);
+let playerSoundMuted = false;
+
+function updatePlayerMasterGain() {
+    masterGain.gain.value = !playerSoundMuted && localStorage.getItem('global.sound') !== 'false' ? 1 : 0;
+}
+
+window.addEventListener('pekosoft:global-sound-change', updatePlayerMasterGain);
 
 let bassFilter = mainAudioContext.createBiquadFilter();
 bassFilter.type = 'lowshelf';
@@ -2317,7 +2324,8 @@ window.addEventListener('load', () => {
     updateLoopPlaybackMode();
 
     const savedMuted = localStorage.getItem(STORAGE.sound) === 'true';
-    masterGain.gain.value = savedMuted ? 0 : 1;
+    playerSoundMuted = savedMuted;
+    updatePlayerMasterGain();
     toggleSound.classList.toggle('button-on', !savedMuted);
 
     renderPanel();
@@ -2513,15 +2521,15 @@ toggleLoop.addEventListener('click', () => {
 
 // Toggle sound (master output only; meters keep running)
 toggleSound.addEventListener('click', () => {
-    const nowMuted = masterGain.gain.value > 0;
+    playerSoundMuted = !playerSoundMuted;
     if (mainAudioContext && mainAudioContext.state === 'suspended') {
         mainAudioContext.resume().catch(() => {
             // Resume is best-effort; the next gesture can retry.
         });
     }
-    masterGain.gain.value = nowMuted ? 0 : 1;
-    localStorage.setItem(STORAGE.sound, nowMuted);
-    toggleSound.classList.toggle('button-on', !nowMuted);
+    updatePlayerMasterGain();
+    localStorage.setItem(STORAGE.sound, playerSoundMuted);
+    toggleSound.classList.toggle('button-on', !playerSoundMuted);
 });
 
 if (copyButton) {

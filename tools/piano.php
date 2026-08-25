@@ -127,7 +127,7 @@
 
   <script src="/js/modules.js?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/js/modules.js'); ?>"></script>
   <script src="/js/drag.js?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/js/drag.js'); ?>"></script>
-  <script type="module" src="/js/piano.js"></script>
+  <script type="module" src="/js/piano.js?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/js/piano.js'); ?>"></script>
   <?php require($_SERVER['DOCUMENT_ROOT'] . "/elements/beta_footer.php"); ?>
 </body>
 

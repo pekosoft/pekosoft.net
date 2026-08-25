@@ -474,8 +474,27 @@ function applyPanelWrap(textareas, enabled) {
   });
 }
 
+const panelWrapRegistryKey = "global.wrap.modules";
+const panelWrapControlKeys = [
+  "audio_calculator:panel-wrap-button",
+  "blockchain:panel-wrap-button",
+  "bpm_calculator:panel-wrap-button",
+  "bpm_circle:panel-wrap-button",
+  "bpm_curve:panel-wrap-button",
+  "circle_of_fifths:panel-wrap-button",
+  "drum_machine:panel-wrap-button",
+  "icons:panel-wrap-button",
+  "metronome:panel-wrap-button",
+  "piano:panel-wrap-button",
+  "player:panel-wrap-button",
+  "tap_pad:panel-wrap-button",
+  "tuner:panel-wrap-button",
+  "turntable:panel-wrap-button"
+];
+
 function setGlobalPanelWrap(enabled) {
   const nextState = !!enabled;
+  window.PekoLocalToggleRegistry?.setAll(panelWrapRegistryKey, panelWrapControlKeys, nextState);
   localStorage.setItem("global.wrap", String(nextState));
 
   for (let index = localStorage.length - 1; index >= 0; index -= 1) {
@@ -496,8 +515,27 @@ function setGlobalPanelWrap(enabled) {
   }));
 }
 
+function syncGlobalPanelWrapFromTools() {
+  const buttons = [...document.querySelectorAll(".panel-wrap-button")];
+  if (!buttons.length) return;
+  const registry = window.PekoLocalToggleRegistry;
+  const enabled = registry
+    ? registry.syncButtons(panelWrapRegistryKey, panelWrapControlKeys, localStorage.getItem("global.wrap") === "true", buttons)
+    : buttons.some((button) => button.classList.contains("button-on"));
+  localStorage.setItem("global.wrap", String(enabled));
+
+  const input = document.getElementById("toggle-wrap");
+  const settingsButton = document.querySelector('[data-setting-toggle="toggle-wrap"]');
+  if (input) input.checked = enabled;
+  if (settingsButton) {
+    settingsButton.classList.toggle("button-on", enabled);
+    settingsButton.setAttribute("aria-pressed", String(enabled));
+  }
+}
+
 window.PekoWrap = {
-  setGlobal: setGlobalPanelWrap
+  setGlobal: setGlobalPanelWrap,
+  syncFromTools: syncGlobalPanelWrapFromTools
 };
 
 function escapeHtml(text) {
@@ -852,6 +890,7 @@ function setupPanelWrapToggle() {
           const btn = f.querySelector(".panel-wrap-button");
           if (btn) btn.classList.toggle("button-on", nextState);
         });
+        syncGlobalPanelWrapFromTools();
       });
     }
     wrapButton.classList.toggle("button-on", isWrapOn);

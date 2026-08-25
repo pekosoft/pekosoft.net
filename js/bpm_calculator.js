@@ -1265,10 +1265,12 @@ function ensureMasterOutputGainNode() {
 function updateMasterOutputMute() {
   if (!audioContext || !masterOutputGainNode) return;
   const now = audioContext.currentTime;
-  const target = state.isSoundOn ? 1 : 0;
+  const target = state.isSoundOn && localStorage.getItem('global.sound') !== 'false' ? 1 : 0;
   masterOutputGainNode.gain.cancelScheduledValues(now);
   masterOutputGainNode.gain.setValueAtTime(target, now);
 }
+
+window.addEventListener('pekosoft:global-sound-change', updateMasterOutputMute);
 
 function playClick(when, durationSec) {
   if (!audioContext) return;

@@ -327,7 +327,7 @@
   <script src="/js/drag.js?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/js/drag.js'); ?>"></script>
   <script src="/js/svg_utils.js"></script>
   <script src="/js/svg_timeline.js"></script>
-  <script src="/js/<?php echo $release; ?>.js"></script>
+  <script src="/js/<?php echo $release; ?>.js?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/js/' . $release . '.js'); ?>"></script>
   <?php require($_SERVER['DOCUMENT_ROOT'] . "/elements/footer.php"); ?>
 </body>
 

@@ -42,6 +42,289 @@ function isDesktopSidebarLayout() {
   return window.matchMedia("(min-width: 800px)").matches;
 }
 
+function getCurrentToolControlKey(button) {
+  const slug = (window.location.pathname || '')
+    .replace(/\/$/, '')
+    .split('/')
+    .pop()
+    ?.replace(/\.php$/i, '') || 'index';
+  return `${slug}:${button.id}`;
+}
+
+function getLocalToggleRegistry(storageKey, controlKeys, defaultEnabled) {
+  let registry = {};
+  try {
+    const saved = JSON.parse(localStorage.getItem(storageKey) || '{}');
+    if (saved && typeof saved === 'object') registry = saved;
+  } catch (_) {
+    // A malformed registry is replaced with the current global default.
+  }
+
+  controlKeys.forEach((key) => {
+    if (typeof registry[key] !== 'boolean') registry[key] = defaultEnabled;
+  });
+  return registry;
+}
+
+function saveLocalToggleRegistry(storageKey, registry) {
+  localStorage.setItem(storageKey, JSON.stringify(registry));
+}
+
+function setLocalToggleRegistryState(storageKey, controlKeys, enabled) {
+  const registry = getLocalToggleRegistry(storageKey, controlKeys, enabled);
+  controlKeys.forEach((key) => {
+    registry[key] = enabled;
+  });
+  saveLocalToggleRegistry(storageKey, registry);
+}
+
+function syncLocalToggleRegistryFromButtons(storageKey, controlKeys, defaultEnabled, buttons) {
+  const registry = getLocalToggleRegistry(storageKey, controlKeys, defaultEnabled);
+  buttons.forEach((button) => {
+    registry[getCurrentToolControlKey(button)] = button.classList.contains('button-on');
+  });
+  saveLocalToggleRegistry(storageKey, registry);
+  return Object.values(registry).some(Boolean);
+}
+
+window.PekoLocalToggleRegistry = {
+  getCurrentToolControlKey,
+  get: getLocalToggleRegistry,
+  save: saveLocalToggleRegistry,
+  setAll: setLocalToggleRegistryState,
+  syncButtons: syncLocalToggleRegistryFromButtons
+};
+
+const SOUND_REGISTRY_KEY = 'global.sound.modules';
+const SOUND_CONTROL_KEYS = [
+  'bpm_calculator:toggle-sound-button',
+  'bpm_circle:sound-master-button',
+  'bpm_curve:sound-button',
+  'bpm_curve:beat-sound-button',
+  'circle_of_fifths:sound-master-button',
+  'drum_machine:toggle-sound-button',
+  'metronome:toggle-sound-button',
+  'piano:sound-master-button',
+  'player:toggle-sound-button',
+  'tap_pad:toggle-sound-button',
+  'turntable:toggle-sound-button'
+];
+
+function getSoundButtons() {
+  return [...document.querySelectorAll('#toggle-sound-button, #sound-master-button, #sound-button, #beat-sound-button')];
+}
+
+function getGlobalSound() {
+  return localStorage.getItem('global.sound') !== 'false';
+}
+
+function syncGlobalSoundSetting() {
+  const soundInput = document.getElementById('sound');
+  const soundButton = document.querySelector('[data-setting-toggle="sound"]');
+  const enabled = getGlobalSound();
+
+  if (soundInput instanceof HTMLInputElement) soundInput.checked = enabled;
+  if (soundButton) {
+    soundButton.classList.toggle('button-on', enabled);
+    soundButton.setAttribute('aria-pressed', String(enabled));
+  }
+}
+
+function updateGlobalSoundIndicator(enabled) {
+  localStorage.setItem('global.sound', String(enabled));
+  syncGlobalSoundSetting();
+  dispatchGlobalSoundChange(enabled);
+}
+
+let isSyncingToolSoundButtons = false;
+
+function syncToolSoundButtons(enabled) {
+  const buttons = getSoundButtons();
+  isSyncingToolSoundButtons = true;
+  try {
+    buttons.forEach((button) => {
+      if (button.classList.contains('button-on') !== enabled) button.click();
+    });
+  } finally {
+    isSyncingToolSoundButtons = false;
+  }
+}
+
+function restoreToolSoundButtons() {
+  const registry = getLocalToggleRegistry(SOUND_REGISTRY_KEY, SOUND_CONTROL_KEYS, getGlobalSound());
+  const buttons = getSoundButtons();
+  isSyncingToolSoundButtons = true;
+  try {
+    buttons.forEach((button) => {
+      const enabled = registry[getCurrentToolControlKey(button)];
+      if (button.classList.contains('button-on') !== enabled) button.click();
+    });
+  } finally {
+    isSyncingToolSoundButtons = false;
+  }
+}
+
+function dispatchGlobalSoundChange(enabled) {
+  window.dispatchEvent(new CustomEvent('pekosoft:global-sound-change', {
+    detail: { enabled }
+  }));
+}
+
+function setGlobalSound(enabled) {
+  const nextState = !!enabled;
+  setLocalToggleRegistryState(SOUND_REGISTRY_KEY, SOUND_CONTROL_KEYS, nextState);
+  syncToolSoundButtons(nextState);
+  updateGlobalSoundIndicator(nextState);
+}
+
+function syncGlobalSoundFromTools() {
+  const buttons = getSoundButtons();
+  if (!buttons.length) return;
+  const anyEnabled = syncLocalToggleRegistryFromButtons(
+    SOUND_REGISTRY_KEY,
+    SOUND_CONTROL_KEYS,
+    getGlobalSound(),
+    buttons
+  );
+  updateGlobalSoundIndicator(anyEnabled);
+}
+
+window.PekoSound = {
+  getGlobal: getGlobalSound,
+  setGlobal: setGlobalSound,
+  syncSetting: syncGlobalSoundSetting,
+  syncFromTools: syncGlobalSoundFromTools
+};
+
+window.addEventListener('storage', (event) => {
+  if (event.key !== 'global.sound') return;
+  setGlobalSound(event.newValue !== 'false');
+});
+
+function initializeGlobalSoundSetting() {
+  syncGlobalSoundSetting();
+  restoreToolSoundButtons();
+}
+
+function getGlobalHaptics() {
+  return localStorage.getItem('global.haptics') === 'true';
+}
+
+const HAPTICS_REGISTRY_KEY = 'global.haptics.modules';
+const HAPTICS_CONTROL_KEYS = [
+  'drum_machine:haptic-button',
+  'metronome:haptic-button',
+  'piano:haptic-button',
+  'tap_pad:haptic-button',
+  'turntable:haptic-button'
+];
+
+function clearStoredHapticsField(storageKey, field) {
+  try {
+    const stored = JSON.parse(localStorage.getItem(storageKey) || '{}');
+    if (!stored || typeof stored !== 'object') return;
+    delete stored[field];
+    localStorage.setItem(storageKey, JSON.stringify(stored));
+  } catch (_) {
+    localStorage.removeItem(storageKey);
+  }
+}
+
+function clearHapticsLocalOverrides() {
+  ['metronome.haptic', 'tap_pad.haptic', 'turntable.haptic'].forEach((key) => localStorage.removeItem(key));
+  clearStoredHapticsField('drum_machine.state', 'haptic');
+  clearStoredHapticsField('piano.settings', 'hapticEnabled');
+}
+
+function syncGlobalHapticsSetting() {
+  const hapticsInput = document.getElementById('haptics');
+  const hapticsButton = document.querySelector('[data-setting-toggle="haptics"]');
+  const enabled = getGlobalHaptics();
+
+  if (hapticsInput instanceof HTMLInputElement) hapticsInput.checked = enabled;
+  if (hapticsButton) {
+    hapticsButton.classList.toggle('button-on', enabled);
+    hapticsButton.setAttribute('aria-pressed', String(enabled));
+  }
+}
+
+function updateGlobalHapticsIndicator(enabled) {
+  localStorage.setItem('global.haptics', String(enabled));
+  syncGlobalHapticsSetting();
+}
+
+let isSyncingToolHapticsButtons = false;
+
+function syncToolHapticsButtons(enabled) {
+  const buttons = document.querySelectorAll('#haptic-button');
+  isSyncingToolHapticsButtons = true;
+  try {
+    buttons.forEach((button) => {
+      if (button.classList.contains('button-on') !== enabled) button.click();
+    });
+  } finally {
+    isSyncingToolHapticsButtons = false;
+  }
+}
+
+function restoreToolHapticsButtons() {
+  const registry = getLocalToggleRegistry(HAPTICS_REGISTRY_KEY, HAPTICS_CONTROL_KEYS, getGlobalHaptics());
+  const buttons = document.querySelectorAll('#haptic-button');
+  isSyncingToolHapticsButtons = true;
+  try {
+    buttons.forEach((button) => {
+      const enabled = registry[getCurrentToolControlKey(button)];
+      if (button.classList.contains('button-on') !== enabled) button.click();
+    });
+  } finally {
+    isSyncingToolHapticsButtons = false;
+  }
+}
+
+function setGlobalHaptics(enabled) {
+  const nextState = !!enabled;
+  clearHapticsLocalOverrides();
+  setLocalToggleRegistryState(HAPTICS_REGISTRY_KEY, HAPTICS_CONTROL_KEYS, nextState);
+  syncToolHapticsButtons(nextState);
+  updateGlobalHapticsIndicator(nextState);
+}
+
+function syncGlobalHapticsFromTools() {
+  const buttons = [...document.querySelectorAll('#haptic-button')];
+  if (!buttons.length) return;
+  const anyEnabled = syncLocalToggleRegistryFromButtons(
+    HAPTICS_REGISTRY_KEY,
+    HAPTICS_CONTROL_KEYS,
+    getGlobalHaptics(),
+    buttons
+  );
+  updateGlobalHapticsIndicator(anyEnabled);
+}
+
+window.PekoHaptics = {
+  getGlobal: getGlobalHaptics,
+  setGlobal: setGlobalHaptics,
+  syncSetting: syncGlobalHapticsSetting,
+  syncFromTools: syncGlobalHapticsFromTools
+};
+
+function initializeGlobalHapticsSetting() {
+  syncGlobalHapticsSetting();
+  restoreToolHapticsButtons();
+}
+
+document.addEventListener('click', (event) => {
+  if (isSyncingToolSoundButtons) return;
+  if (event.target.closest('#toggle-sound-button, #sound-master-button, #sound-button, #beat-sound-button')) {
+    syncGlobalSoundFromTools();
+  }
+});
+
+document.addEventListener('click', (event) => {
+  if (isSyncingToolHapticsButtons) return;
+  if (event.target.closest('#haptic-button')) syncGlobalHapticsFromTools();
+});
+
 function syncSidebarState() {
   const tocOpen = document.getElementById('toc')?.classList.contains('toc-open') || false;
   const settingsOpen = document.getElementById('settings-panel')?.classList.contains('settings-panel-open') || false;
@@ -915,6 +1198,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
   updateModeButtonState();
   updateFullscreenButtonState();
+  initializeGlobalSoundSetting();
+  initializeGlobalHapticsSetting();
   restoreDesktopSidebarState();
   syncSidebarState();
 

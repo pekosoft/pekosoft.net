@@ -666,6 +666,7 @@
       this.compressor.connect(this.masterGain);
       this.masterGain.connect(this.audioContext.destination);
       this.applyMasterGain();
+      window.addEventListener('pekosoft:global-sound-change', () => this.applyMasterGain());
 
       window.__pekosoftMetersSource = {
         analyser: this.analyser,
@@ -686,7 +687,8 @@
     applyMasterGain() {
       if (!this.masterGain || !this.audioContext) return;
       const now = this.audioContext.currentTime;
-      const gain = this.state.sound ? this.state.volume / 100 : 0;
+      const globalSoundOn = localStorage.getItem('global.sound') !== 'false';
+      const gain = this.state.sound && globalSoundOn ? this.state.volume / 100 : 0;
       this.masterGain.gain.cancelScheduledValues(now);
       this.masterGain.gain.setValueAtTime(gain, now);
     }

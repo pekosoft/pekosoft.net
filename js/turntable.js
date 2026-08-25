@@ -65,7 +65,7 @@ function ensureMasterMuteGainNode() {
   if (!audioContext) return null;
   if (!masterMuteGainNode) {
     masterMuteGainNode = audioContext.createGain();
-    masterMuteGainNode.gain.value = isTonePlaying ? 1 : 0;
+    masterMuteGainNode.gain.value = isTonePlaying && localStorage.getItem('global.sound') !== 'false' ? 1 : 0;
     masterMuteGainNode.connect(audioContext.destination);
   }
   return masterMuteGainNode;
@@ -1003,12 +1003,18 @@ toggleSoundButton.addEventListener('click', () => {
   if (muteGain && audioContext) {
     const now = audioContext.currentTime;
     muteGain.gain.cancelScheduledValues(now);
-    muteGain.gain.setTargetAtTime(isTonePlaying ? 1 : 0, now, 0.015);
+    muteGain.gain.setTargetAtTime(isTonePlaying && localStorage.getItem('global.sound') !== 'false' ? 1 : 0, now, 0.015);
   }
   if (audioContext) {
     touchMetersActivity(audioContext.currentTime);
   }
   updateMetersSourceBridge();
+});
+
+window.addEventListener('pekosoft:global-sound-change', () => {
+  const muteGain = ensureMasterMuteGainNode();
+  if (!muteGain || !audioContext) return;
+  muteGain.gain.setTargetAtTime(isTonePlaying && localStorage.getItem('global.sound') !== 'false' ? 1 : 0, audioContext.currentTime, 0.015);
 });
 
 volumeSlider.addEventListener('input', () => {

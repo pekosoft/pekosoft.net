@@ -169,6 +169,7 @@ class BPMVisualizer {
   async initAudio() {
     try {
       this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      window.addEventListener('pekosoft:global-sound-change', () => this.updateMasterSoundOutput());
       this.ensureMetersAnalyser();
       this.updateMetersSourceBridge();
     } catch (e) {
@@ -180,7 +181,7 @@ class BPMVisualizer {
     if (!this.audioContext) return null;
     if (!this.masterMuteGainNode) {
       this.masterMuteGainNode = this.audioContext.createGain();
-      this.masterMuteGainNode.gain.value = this.isSoundMasterEnabled ? 1 : 0;
+      this.masterMuteGainNode.gain.value = this.isSoundMasterEnabled && localStorage.getItem('global.sound') !== 'false' ? 1 : 0;
       this.masterMuteGainNode.connect(this.audioContext.destination);
     }
     return this.masterMuteGainNode;
@@ -782,16 +783,20 @@ class BPMVisualizer {
         // Resume is best-effort; the next gesture can retry.
       });
     }
-    const muteGain = this.ensureMasterMuteGainNode();
-    if (muteGain && this.audioContext) {
-      const now = this.audioContext.currentTime;
-      muteGain.gain.cancelScheduledValues(now);
-      muteGain.gain.setValueAtTime(this.isSoundMasterEnabled ? 1 : 0, now);
-    }
+    this.updateMasterSoundOutput();
     localStorage.setItem('bpm_circle.sound_master_enabled', this.isSoundMasterEnabled);
     if (this.displayMode === 'active') {
       this.updateInfoDisplay();
     }
+  }
+
+  updateMasterSoundOutput() {
+    const muteGain = this.ensureMasterMuteGainNode();
+    if (!muteGain || !this.audioContext) return;
+    const now = this.audioContext.currentTime;
+    const globalSoundOn = localStorage.getItem('global.sound') !== 'false';
+    muteGain.gain.cancelScheduledValues(now);
+    muteGain.gain.setValueAtTime(this.isSoundMasterEnabled && globalSoundOn ? 1 : 0, now);
   }
 
   tick() {

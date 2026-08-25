@@ -617,6 +617,7 @@
           this.masterGain.connect(this.compressor);
           this.compressor.connect(this.audioContext.destination);
           this.updateMasterGain();
+          window.addEventListener('pekosoft:global-sound-change', () => this.updateMasterGain());
           this.updateMetersSource();
         } catch (_) {
           this.audioContext = null;
@@ -641,7 +642,8 @@
 
     updateMasterGain() {
       if (!this.masterGain || !this.audioContext) return;
-      const gain = this.soundEnabled ? Math.pow(this.clamp(this.volume, 0, 100) / 100, 1.15) * 0.34 : 0;
+      const globalSoundOn = localStorage.getItem('global.sound') !== 'false';
+      const gain = this.soundEnabled && globalSoundOn ? Math.pow(this.clamp(this.volume, 0, 100) / 100, 1.15) * 0.34 : 0;
       this.masterGain.gain.setTargetAtTime(gain, this.audioContext.currentTime, 0.01);
     }
 

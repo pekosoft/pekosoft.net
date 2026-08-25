@@ -34,8 +34,9 @@ class Piano {
     this.lastNotePlayed = settings.lastNotePlayed || null;
     this.hapticEnabled = settings.hapticEnabled || false;
     this.volume = Number.isFinite(settings.volume) ? settings.volume : 100;
-    this.masterGain.gain.value = this.volume / 100;
     this.isSoundEnabled = settings.isSoundEnabled !== undefined ? settings.isSoundEnabled : true;
+    this.updateMasterGain();
+    window.addEventListener('pekosoft:global-sound-change', () => this.updateMasterGain());
     this.glideEnabled = settings.glideEnabled !== undefined ? settings.glideEnabled : true;
     this.timelineGuides = settings.timelineGuides !== undefined ? settings.timelineGuides : true;
     this.timelineBright = localStorage.getItem('piano.timeline_bright') === null
@@ -891,10 +892,15 @@ class Piano {
       }
       this.isSoundEnabled = !this.isSoundEnabled;
       button.classList.toggle('button-on', this.isSoundEnabled);
-      // Mute or unmute master output
-      this.masterGain.gain.value = this.isSoundEnabled ? this.volume / 100 : 0;
+      this.updateMasterGain();
       this.saveSettings();
     });
+  }
+
+  updateMasterGain() {
+    if (!this.masterGain) return;
+    const globalSoundOn = localStorage.getItem('global.sound') !== 'false';
+    this.masterGain.gain.value = this.isSoundEnabled && globalSoundOn ? this.volume / 100 : 0;
   }
 
   initCopyButton() {
@@ -921,12 +927,12 @@ class Piano {
     const updateVolume = (newVolume) => {
       this.volume = clampVolume(newVolume);
       volumeSlider.value = String(this.volume);
-      this.masterGain.gain.value = this.volume / 100;
+      this.updateMasterGain();
       this.saveSettings();
     };
 
     volumeSlider.value = String(this.volume);
-    this.masterGain.gain.value = this.volume / 100;
+    this.updateMasterGain();
 
     volumeSlider.addEventListener('input', (event) => {
       updateVolume(event.target.value);

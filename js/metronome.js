@@ -1086,7 +1086,7 @@ function stopHoldVolumeDecrease() {
   clearInterval(volumeDecreaseInterval);
 }
 
-function handleHold(startFn, stopFn, element) {
+function handleHold(startFn, stopFn, activateFn, element) {
   let activePointerId = null;
 
   const stop = (event) => {
@@ -1115,12 +1115,18 @@ function handleHold(startFn, stopFn, element) {
 
   element.addEventListener('pointerup', stop);
   element.addEventListener('pointercancel', stop);
+
+  element.addEventListener('keydown', (event) => {
+    if (event.key !== 'Enter' && event.key !== ' ') return;
+    event.preventDefault();
+    activateFn();
+  });
 }
 
-handleHold(startHoldIncrease, stopHoldIncrease, increaseButton);
-handleHold(startHoldDecrease, stopHoldDecrease, decreaseButton);
-handleHold(startHoldVolumeIncrease, stopHoldVolumeIncrease, volumeIncreaseButton);
-handleHold(startHoldVolumeDecrease, stopHoldVolumeDecrease, volumeDecreaseButton);
+handleHold(startHoldIncrease, stopHoldIncrease, increaseBPM, increaseButton);
+handleHold(startHoldDecrease, stopHoldDecrease, decreaseBPM, decreaseButton);
+handleHold(startHoldVolumeIncrease, stopHoldVolumeIncrease, increaseVolume, volumeIncreaseButton);
+handleHold(startHoldVolumeDecrease, stopHoldVolumeDecrease, decreaseVolume, volumeDecreaseButton);
 
 // Get CSS variables
 

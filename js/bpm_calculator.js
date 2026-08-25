@@ -1141,7 +1141,7 @@ resetButton.addEventListener('click', () => {
 
 // HOLD
 
-function handleHold(startFn, stopFn, element) {
+function handleHold(startFn, stopFn, activateFn, element) {
   let activePointerId = null;
 
   const stop = (event) => {
@@ -1169,6 +1169,12 @@ function handleHold(startFn, stopFn, element) {
   });
   element.addEventListener('pointerup', stop);
   element.addEventListener('pointercancel', stop);
+
+  element.addEventListener('keydown', (event) => {
+    if (event.key !== 'Enter' && event.key !== ' ') return;
+    event.preventDefault();
+    activateFn();
+  });
 }
 
 let increaseInterval, decreaseInterval, volumeIncreaseInterval, volumeDecreaseInterval;
@@ -1199,10 +1205,10 @@ function adjustVolume(delta) {
   saveState();
 }
 
-handleHold(startIncrease, stopIncrease, increaseButton);
-handleHold(startDecrease, stopDecrease, decreaseButton);
-handleHold(startVolumeIncrease, stopVolumeIncrease, volumeIncreaseButton);
-handleHold(startVolumeDecrease, stopVolumeDecrease, volumeDecreaseButton);
+handleHold(startIncrease, stopIncrease, () => adjustBPM(1), increaseButton);
+handleHold(startDecrease, stopDecrease, () => adjustBPM(-1), decreaseButton);
+handleHold(startVolumeIncrease, stopVolumeIncrease, () => adjustVolume(1), volumeIncreaseButton);
+handleHold(startVolumeDecrease, stopVolumeDecrease, () => adjustVolume(-1), volumeDecreaseButton);
 
 function getCssVariable(name) {
   return getComputedStyle(document.documentElement).getPropertyValue(name).trim();

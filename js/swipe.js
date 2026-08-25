@@ -6,8 +6,7 @@ const fallbackSwipePages = [
   "tap_pad",
   "bpm_calculator",
   "metronome",
-  "turntable",
-  "settings"
+  "turntable"
 ];
 
 // Determine current page name

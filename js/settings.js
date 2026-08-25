@@ -466,6 +466,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Reset settings to defaults
   function resetSettings() {
+    const stopButton = document.getElementById("stop-button");
+    const toolResetButton = document.getElementById("reset-button");
+
+    stopButton?.click();
+    toolResetButton?.click();
+
     localStorage.clear();
     localStorage.setItem("global.grid", defaults.grid);
     localStorage.setItem("global.grid_size", defaults.gridSize);

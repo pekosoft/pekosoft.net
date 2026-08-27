@@ -45,5 +45,11 @@
       </svg>
       <span class="button-text">Bright</span>
     </button>
+    <button id="tool-color-button" class="square" title="Toggle multicolor meters">
+      <svg class="icons">
+        <use href="/icons.svg#alpha" />
+      </svg>
+      <span class="button-text">Color</span>
+    </button>
   </div>
 </div>

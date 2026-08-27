@@ -23,6 +23,7 @@
 
   const guidesButton = document.getElementById('tool-guides-button');
   const brightButton = document.getElementById('tool-bright-button');
+  const colorButton = document.getElementById('tool-color-button');
   const availableModes = Object.keys(canvasByMode).filter((mode) => !!canvasByMode[mode]);
   if (!availableModes.length) return;
 
@@ -44,6 +45,10 @@
     return saved === null
       ? (window.PekoBrightGuides?.getGlobal() || false)
       : saved === 'on';
+  }
+
+  function getSavedMulticolor() {
+    return localStorage.getItem(`${storagePrefix}.multicolor`) !== 'off';
   }
 
   function resizeCanvasToDisplaySize(canvas, ctx) {
@@ -370,6 +375,7 @@
 
   let guidesOn = getSavedGuides();
   let brightGuides = getSavedBright();
+  let multicolorOn = getSavedMulticolor();
 
   function applyMode(nextMode) {
     if (!availableModes.includes(nextMode)) return;
@@ -403,6 +409,14 @@
     }
     if (brightButton) {
       brightButton.classList.toggle('button-on', brightGuides);
+    }
+  }
+
+  function applyMulticolor(nextState) {
+    multicolorOn = !!nextState;
+    localStorage.setItem(`${storagePrefix}.multicolor`, multicolorOn ? 'on' : 'off');
+    if (colorButton) {
+      colorButton.classList.toggle('button-on', multicolorOn);
     }
   }
 
@@ -449,6 +463,19 @@
       g: Math.round(a.g + ((b.g - a.g) * t)),
       b: Math.round(a.b + ((b.b - a.b) * t))
     };
+  }
+
+  function getMeterColor(source, ratio, reverse = false) {
+    const t = Math.max(0, Math.min(1, ratio));
+    if (!multicolorOn) return source.palette.primary;
+    return reverse
+      ? mixRgb(source.palette.primary, source.palette.secondary, t)
+      : mixRgb(source.palette.secondary, source.palette.primary, t);
+  }
+
+  function getMeterColorStyle(source, ratio, reverse = false) {
+    const rgb = getMeterColor(source, ratio, reverse);
+    return `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`;
   }
 
   function getSourceConfig() {
@@ -505,18 +532,19 @@
     }
 
     ctx.lineWidth = 1;
-    ctx.strokeStyle = `rgb(${source.palette.primary.r}, ${source.palette.primary.g}, ${source.palette.primary.b})`;
-    ctx.beginPath();
-
     const sliceWidth = width / data.length;
     let x = 0;
-    for (let i = 0; i < data.length; i++) {
+    for (let i = 1; i < data.length; i++) {
+      const previousY = height / 2 - (((data[i - 1] - 128) / 128) * height / 2);
       const y = height / 2 - (((data[i] - 128) / 128) * height / 2);
-      if (i === 0) ctx.moveTo(x, y);
-      else ctx.lineTo(x, y);
+      const amplitude = Math.abs((data[i] - 128) / 128);
+      ctx.strokeStyle = getMeterColorStyle(source, amplitude, true);
+      ctx.beginPath();
+      ctx.moveTo(x, previousY);
+      ctx.lineTo(x + sliceWidth, y);
+      ctx.stroke();
       x += sliceWidth;
     }
-    ctx.stroke();
   }
 
   function renderOscilloscope(ctx, canvas, analyser, source) {
@@ -544,8 +572,7 @@
       const value = data[i] / 255;
       const h = Math.round(value * height);
       const t = i / Math.max(1, barCount - 1);
-      const rgb = mixRgb(source.palette.secondary, source.palette.primary, t);
-      ctx.fillStyle = `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`;
+      ctx.fillStyle = getMeterColorStyle(source, t);
       ctx.fillRect(i * barWidth, height - h, Math.max(1, barWidth - 1), h);
     }
   }
@@ -630,9 +657,6 @@
     ctx.clearRect(0, 0, width, height);
     drawGuidesBehind('wavescope', ctx, width, height, source, 0);
 
-    const r = source.palette.primary.r;
-    const g = source.palette.primary.g;
-    const b = source.palette.primary.b;
     const outputGain = source.outputGain ? Math.max(0, Math.min(1, source.outputGain())) : 1;
     const isStereo = source.channelCount > 1;
     const lanes = isStereo
@@ -691,18 +715,21 @@
 
       if (!segments.length) return;
 
-      ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
       segments.forEach((segment) => {
-        ctx.beginPath();
-        ctx.moveTo(segment.top[0].x, segment.top[0].y);
         for (let i = 1; i < segment.top.length; i++) {
+          const amplitude = Math.max(
+            Math.abs(segment.top[i].y - lane.centerY),
+            Math.abs(segment.bottom[i].y - lane.centerY)
+          ) / laneAmplitude;
+          ctx.fillStyle = getMeterColorStyle(source, amplitude, true);
+          ctx.beginPath();
+          ctx.moveTo(segment.top[i - 1].x, segment.top[i - 1].y);
           ctx.lineTo(segment.top[i].x, segment.top[i].y);
-        }
-        for (let i = segment.bottom.length - 1; i >= 0; i--) {
           ctx.lineTo(segment.bottom[i].x, segment.bottom[i].y);
+          ctx.lineTo(segment.bottom[i - 1].x, segment.bottom[i - 1].y);
+          ctx.closePath();
+          ctx.fill();
         }
-        ctx.closePath();
-        ctx.fill();
       });
     });
   }
@@ -723,11 +750,24 @@
     const leftWidth = Math.round(width * left);
     const rightWidth = Math.round(width * right);
 
-    ctx.fillStyle = `rgb(${source.palette.primary.r}, ${source.palette.primary.g}, ${source.palette.primary.b})`;
-    ctx.fillRect(0, 0, leftWidth, barHeight);
+    const drawChannel = (top, valueWidth) => {
+      if (!valueWidth) return;
+      if (!multicolorOn) {
+        ctx.fillStyle = getMeterColorStyle(source, 0);
+        ctx.fillRect(0, top, valueWidth, barHeight);
+        return;
+      }
+      const gradient = ctx.createLinearGradient(0, top, width, top);
+      gradient.addColorStop(0, getMeterColorStyle(source, 0, true));
+      gradient.addColorStop(1, getMeterColorStyle(source, 1, true));
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, top, valueWidth, barHeight);
+    };
+
+    drawChannel(0, leftWidth);
 
     if (channels > 1) {
-      ctx.fillRect(0, barHeight + gap, rightWidth, barHeight);
+      drawChannel(barHeight + gap, rightWidth);
     }
   }
 
@@ -900,6 +940,10 @@
     brightButton.addEventListener('click', () => applyBright(!brightGuides));
   }
 
+  if (colorButton) {
+    colorButton.addEventListener('click', () => applyMulticolor(!multicolorOn));
+  }
+
   window.addEventListener('pekosoft:bright-guides-global-change', (event) => {
     applyBright(event.detail?.enabled, false);
   });
@@ -914,6 +958,7 @@
   applyMode(activeMode);
   applyGuides(guidesOn);
   applyBright(brightGuides);
+  applyMulticolor(multicolorOn);
   window.__pekosoftClearMeterFrame = clearMeterFrame;
   requestAnimationFrame(tick);
 })();

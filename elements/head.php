@@ -70,7 +70,7 @@ $sectionTitleMap = [
 	'about.php' => 'About',
 ];
 $sectionTitle = $sectionTitleMap[$currentScript] ?? '';
-$releaseSlug = isset($_GET['r']) ? basename((string) $_GET['r']) : '';
+$releaseSlug = isset($_GET['t']) ? basename((string) $_GET['t']) : '';
 $releaseTitle = $releaseTitleMap[$releaseSlug] ?? $releaseTitleMap[$releaseSlug . '.php'] ?? '';
 $documentTitle = $sectionTitle && $releaseTitle
 	? ($releaseSlug === 'index' ? 'Pekosoft - ' . $sectionTitle : 'Pekosoft - ' . $sectionTitle . ' - ' . $releaseTitle)
@@ -82,7 +82,7 @@ $previewSlug = $releaseTitle !== '' && $sectionTitle !== ''
 	? $releaseSlug
 	: pathinfo($canonicalSlug, PATHINFO_FILENAME);
 if ($sectionTitle && $releaseTitle) {
-	$canonicalUrl .= '?r=' . rawurlencode($releaseSlug);
+	$canonicalUrl .= '?t=' . rawurlencode($releaseSlug);
 }
 $ogImage = 'https://pekosoft.net/png/og/index.png';
 if ($previewSlug !== '') {

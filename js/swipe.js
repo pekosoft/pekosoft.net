@@ -11,7 +11,7 @@ const fallbackSwipePages = [
 
 // Determine current page name
 const params = new URLSearchParams(window.location.search);
-let current = params.get("r");
+let current = params.get("t");
 
 if (!current) {
   const pathPage = pageFromPathname(window.location.pathname);
@@ -29,10 +29,10 @@ function pageFromHref(href) {
     const url = new URL(href, window.location.origin);
     const pathPage = pageFromPathname(url.pathname);
 
-    // For context pages, the release lives in ?r=...
+    // For context pages, the tool lives in ?t=...
     if (pathPage === "about" || pathPage === "help" || pathPage === "history") {
-      const release = url.searchParams.get("r");
-      return release || null;
+      const tool = url.searchParams.get("t");
+      return tool || null;
     }
 
     return pathPage;
@@ -124,11 +124,11 @@ function buildPageUrl(page) {
     "notepad"
   ];
 
-  if (path.includes("about.php")) return `/about.php?r=${page}`;
-  if (path.includes("help.php")) return `/help.php?r=${page}`;
-  if (path.includes("history.php")) return `/history.php?r=${page}`;
-  if (path.includes("js.php")) return `/js.php?r=${page}`;
-  if (path.includes("css.php")) return `/css.php?r=${page}`;
+  if (path.includes("about.php")) return `/about.php?t=${page}`;
+  if (path.includes("help.php")) return `/help.php?t=${page}`;
+  if (path.includes("history.php")) return `/history.php?t=${page}`;
+  if (path.includes("js.php")) return `/js.php?t=${page}`;
+  if (path.includes("css.php")) return `/css.php?t=${page}`;
   return toolPages.includes(page) ? `/${page}` : `/${page}.php`;
 }
 

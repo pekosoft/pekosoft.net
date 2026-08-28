@@ -1,5 +1,5 @@
 <?php
-$requestedRelease = isset($_GET['r']) ? basename((string) $_GET['r']) : '';
+$requestedRelease = isset($_GET['t']) ? basename((string) $_GET['t']) : '';
 if ($requestedRelease === 'settings') {
   require($_SERVER['DOCUMENT_ROOT'] . '/404.php');
   exit;
@@ -12,7 +12,7 @@ if ($requestedRelease === 'settings') {
   <?php require($_SERVER['DOCUMENT_ROOT'] . "/elements/head.php"); ?>
   <?php
   require($_SERVER['DOCUMENT_ROOT'] . "/elements/release_type.php");
-  $release = isset($_GET['r']) ? basename($_GET['r']) : 'default'; // Fallback to 'default' if not provided
+  $release = isset($_GET['t']) ? basename($_GET['t']) : 'default'; // Fallback to 'default' if not provided
   $releaseName = getReleaseTitle($release);
   $releasePage = "History";
 

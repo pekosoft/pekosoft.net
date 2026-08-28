@@ -7,7 +7,7 @@
       <use href="/icons.svg#about" />
     </svg>
     <span class="status-text" role="status" aria-live="polite" data-status-text>Ctrl-click element for Help</span>
-    <a class="status-help" data-status-help href="/help.php?r=index" aria-label="Open Help">
+    <a class="status-help" data-status-help href="/help.php?t=index" aria-label="Open Help">
       <svg class="icons" aria-hidden="true">
         <use href="/icons.svg#about" data-status-icon />
       </svg>

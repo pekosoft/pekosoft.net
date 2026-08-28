@@ -525,7 +525,7 @@ function isCurrentNavigationUrl(candidateUrl, currentUrl) {
   }
 
   return candidatePath === currentPath &&
-    (candidateUrl.searchParams.get('r') || '') === (currentUrl.searchParams.get('r') || '');
+    (candidateUrl.searchParams.get('t') || '') === (currentUrl.searchParams.get('t') || '');
 }
 
 function markActiveFooterLink() {
@@ -884,23 +884,26 @@ function getStatusDescriptor(target) {
 function getCurrentHelpRelease() {
   const path = (window.location.pathname || '').replace(/\/$/, '');
   const slug = path.split('/').pop()?.replace(/\.php$/i, '') || 'index';
-  if (slug === 'help') return new URLSearchParams(window.location.search).get('r') || 'index';
-  return slug;
+  if (slug === 'help') {
+    const parameters = new URLSearchParams(window.location.search);
+    return parameters.get('t')?.toLocaleLowerCase() || 'index';
+  }
+  return slug.toLocaleLowerCase();
 }
 
 function getStatusHelpHref(descriptor) {
-  const parameters = new URLSearchParams({ r: getCurrentHelpRelease() });
+  const parameters = new URLSearchParams({ t: getCurrentHelpRelease() });
   if (descriptor?.entry) {
-    parameters.set('entry', descriptor.entry);
-    parameters.set('kind', descriptor.kind);
+    parameters.set('e', descriptor.entry.toLocaleLowerCase());
+    parameters.set('k', descriptor.kind.toLocaleLowerCase());
   }
   return `/help.php?${parameters.toString()}`;
 }
 
 function scrollToRequestedHelpEntry() {
   const parameters = new URLSearchParams(window.location.search);
-  const entry = parameters.get('entry');
-  const kind = parameters.get('kind')?.replace(/s$/, '').toLocaleLowerCase();
+  const entry = parameters.get('e');
+  const kind = parameters.get('k')?.replace(/s$/, '').toLocaleLowerCase();
   const path = window.location.pathname.replace(/\/$/, '');
   if (!entry || !/\/help(?:\.php)?$/.test(path)) return;
 
@@ -1056,21 +1059,21 @@ const SITE_PLAY_SEQUENCE = [
   '/bpm_calculator',
   '/metronome',
   '/turntable',
-  '/help.php?r=index',
-  '/help.php?r=tap_pad',
-  '/help.php?r=bpm_calculator',
-  '/help.php?r=metronome',
-  '/help.php?r=turntable',
-  '/history.php?r=index',
-  '/history.php?r=tap_pad',
-  '/history.php?r=bpm_calculator',
-  '/history.php?r=metronome',
-  '/history.php?r=turntable',
-  '/about.php?r=index',
-  '/about.php?r=tap_pad',
-  '/about.php?r=bpm_calculator',
-  '/about.php?r=metronome',
-  '/about.php?r=turntable',
+  '/help.php?t=index',
+  '/help.php?t=tap_pad',
+  '/help.php?t=bpm_calculator',
+  '/help.php?t=metronome',
+  '/help.php?t=turntable',
+  '/history.php?t=index',
+  '/history.php?t=tap_pad',
+  '/history.php?t=bpm_calculator',
+  '/history.php?t=metronome',
+  '/history.php?t=turntable',
+  '/about.php?t=index',
+  '/about.php?t=tap_pad',
+  '/about.php?t=bpm_calculator',
+  '/about.php?t=metronome',
+  '/about.php?t=turntable',
   '/bitcoin.php'
 ];
 

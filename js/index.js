@@ -812,29 +812,106 @@ function setupTimelineSaveButton() {
   footer.appendChild(saveButton);
 }
 
-function getStatusTargetLabel(target) {
+function getStatusAssociatedLabel(target) {
   if (!target) return null;
 
-  const tooltip = target.getAttribute('title')?.trim();
-  if (!tooltip) return null;
-
-  const isLabel = target.tagName && target.tagName.toLowerCase() === 'label';
-
-  if (isLabel) {
-    const labelName = (target.textContent || '').trim().replace(/:\s*$/, '') || 'Label';
-    const sentenceTooltip = /[.!?]$/.test(tooltip) ? tooltip : `${tooltip}.`;
-    return `${labelName}: ${sentenceTooltip}`;
+  if (target.id) {
+    const associated = Array.from(document.querySelectorAll('label')).find((label) => label.htmlFor === target.id);
+    if (associated) return associated;
   }
 
-  const buttonText = target.querySelector('.button-text')?.textContent?.trim();
-  const ariaLabel = target.getAttribute('aria-label')?.trim();
-  const idText = target.id ? target.id.replace(/-button$/i, '').replace(/-/g, ' ') : '';
+  return target.closest('.pair')?.querySelector('label') || null;
+}
+
+function getStatusElementName(target, associatedLabel = getStatusAssociatedLabel(target)) {
+  const labelName = associatedLabel?.textContent?.trim().replace(/:\s*$/, '');
+  if (labelName) return labelName;
+
+  const buttonText = target.querySelector?.('.button-text')?.textContent?.trim();
+  const ariaLabel = target.getAttribute?.('aria-label')?.trim();
+  const idText = target.id
+    ? target.id.replace(/-(button|slider|input|field|select|knob)$/i, '').replace(/-/g, ' ').replace(/\b\w/g, (letter) => letter.toUpperCase())
+    : '';
   const fallback = (target.textContent || '').trim().split(/\s+/).slice(0, 2).join(' ');
-  const name = String(buttonText || ariaLabel || idText || fallback || 'Button');
+  return String(buttonText || ariaLabel || idText || fallback || 'Help');
+}
 
-  const sentenceTooltip = /[.!?]$/.test(tooltip) ? tooltip : `${tooltip}.`;
+function getStatusDescriptor(target) {
+  if (!target) return null;
 
-  return `${name}: ${sentenceTooltip}`;
+  const tagName = target.tagName?.toLowerCase();
+  const associatedLabel = getStatusAssociatedLabel(target);
+  const iconFromButton = target.querySelector?.('use')?.getAttribute('href')?.split('#')[1];
+  const range = target.closest('.range-input-wrapper')?.querySelector('input[type="range"]');
+  let kind = 'button';
+  let icon = iconFromButton || 'square';
+  let entryTarget = target;
+
+  if (tagName === 'label') {
+    kind = 'label';
+    icon = 'label';
+  } else if (target.classList.contains('knob-control')) {
+    kind = 'knob';
+    icon = 'knob';
+  } else if (tagName === 'select') {
+    kind = 'menu';
+    icon = 'menu';
+  } else if (tagName === 'input' && target.type === 'range') {
+    kind = 'slider';
+    icon = 'slider';
+  } else if (tagName === 'input') {
+    kind = 'field';
+    icon = 'field';
+  } else if (range) {
+    kind = 'slider';
+    entryTarget = range;
+  }
+
+  const name = getStatusElementName(entryTarget, associatedLabel);
+  const tooltip = target.getAttribute('title')?.trim()
+    || associatedLabel?.getAttribute('title')?.trim()
+    || target.getAttribute('aria-label')?.trim();
+  const sentenceTooltip = tooltip && (/[.!?]$/.test(tooltip) ? tooltip : `${tooltip}.`);
+
+  return {
+    icon,
+    entry: name,
+    kind,
+    label: sentenceTooltip ? `${name}: ${sentenceTooltip}` : name,
+  };
+}
+
+function getCurrentHelpRelease() {
+  const path = (window.location.pathname || '').replace(/\/$/, '');
+  const slug = path.split('/').pop()?.replace(/\.php$/i, '') || 'index';
+  if (slug === 'help') return new URLSearchParams(window.location.search).get('r') || 'index';
+  return slug;
+}
+
+function getStatusHelpHref(descriptor) {
+  const parameters = new URLSearchParams({ r: getCurrentHelpRelease() });
+  if (descriptor?.entry) {
+    parameters.set('entry', descriptor.entry);
+    parameters.set('kind', descriptor.kind);
+  }
+  return `/help.php?${parameters.toString()}`;
+}
+
+function scrollToRequestedHelpEntry() {
+  const parameters = new URLSearchParams(window.location.search);
+  const entry = parameters.get('entry');
+  const kind = parameters.get('kind')?.replace(/s$/, '').toLocaleLowerCase();
+  const path = window.location.pathname.replace(/\/$/, '');
+  if (!entry || !/\/help(?:\.php)?$/.test(path)) return;
+
+  const normalizedEntry = entry.trim().replace(/:\s*$/, '').toLocaleLowerCase();
+  const headings = Array.from(document.querySelectorAll('.feature-row h1')).filter((element) => {
+    const headingName = (element.childNodes[0]?.textContent || element.textContent || '').trim().replace(/:\s*$/, '').toLocaleLowerCase();
+    return headingName.split('/').map((name) => name.trim()).includes(normalizedEntry);
+  });
+  const heading = headings.find((element) => element.querySelector('.object')?.textContent?.trim().replace(/s$/, '').toLocaleLowerCase() === kind)
+    || headings[0];
+  heading?.closest('.feature-row')?.scrollIntoView({ block: 'start' });
 }
 
 function createControlsFooter() {
@@ -859,25 +936,35 @@ function setupStatusBars() {
   const bars = document.querySelectorAll('[data-statusbar]');
   if (!bars.length) return;
 
-  const statusTargetSelector = 'button[title], a[title], label[title]';
+  const statusTargetSelector = 'button[title], a[title], label[title], input:not([type="file"]), select';
 
   bars.forEach((bar) => {
     const textNode = bar.querySelector('[data-status-text]');
-    if (!textNode) return;
+    const helpLink = bar.querySelector('[data-status-help]');
+    const iconNode = bar.querySelector('[data-status-icon]');
+    if (!textNode || !helpLink || !iconNode) return;
 
     const ready = bar.getAttribute('data-status-ready') || 'READY';
     const root = document;
     let tapTimer = null;
 
+    const isMovingToStatusHelp = (relatedTarget) => relatedTarget?.closest?.('[data-status-help]') === helpLink;
+
     const setReady = () => {
       textNode.textContent = ready;
+      iconNode.setAttribute('href', '/icons.svg#about');
+      helpLink.href = getStatusHelpHref();
+      helpLink.hidden = true;
     };
 
     const showFromTarget = (target) => {
-      const label = getStatusTargetLabel(target);
-      if (label) {
-        textNode.textContent = label;
-      }
+      const descriptor = getStatusDescriptor(target);
+      if (!descriptor) return;
+      textNode.textContent = descriptor.label;
+      iconNode.setAttribute('href', `/icons.svg#${descriptor.icon}`);
+      helpLink.href = getStatusHelpHref(descriptor);
+      helpLink.setAttribute('aria-label', `Open Help for ${descriptor.entry}`);
+      helpLink.hidden = false;
     };
 
     setReady();
@@ -897,6 +984,7 @@ function setupStatusBars() {
       if (!fromButton) return;
       const toButton = event.relatedTarget && event.relatedTarget.closest ? event.relatedTarget.closest(statusTargetSelector) : null;
       if (toButton === fromButton) return;
+      if (isMovingToStatusHelp(event.relatedTarget)) return;
       setReady();
     });
 
@@ -915,6 +1003,7 @@ function setupStatusBars() {
       if (!fromButton) return;
       const toButton = event.relatedTarget && event.relatedTarget.closest ? event.relatedTarget.closest(statusTargetSelector) : null;
       if (toButton === fromButton) return;
+      if (isMovingToStatusHelp(event.relatedTarget)) return;
       setReady();
     });
 
@@ -922,13 +1011,34 @@ function setupStatusBars() {
       const target = event.target.closest(statusTargetSelector);
       if (!target) return;
 
+      if (event.ctrlKey || event.metaKey) {
+        const descriptor = getStatusDescriptor(target);
+        if (!descriptor) return;
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        window.location.assign(getStatusHelpHref(descriptor));
+        return;
+      }
+
       showFromTarget(target);
       if (tapTimer) clearTimeout(tapTimer);
       tapTimer = window.setTimeout(() => {
         setReady();
         tapTimer = null;
       }, 1200);
-    });
+    }, true);
+
+    root.addEventListener('keydown', (event) => {
+      if (event.key !== 'Enter' || (!event.ctrlKey && !event.metaKey)) return;
+      const target = event.target.closest(statusTargetSelector);
+      if (!target) return;
+
+      const descriptor = getStatusDescriptor(target);
+      if (!descriptor) return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      window.location.assign(getStatusHelpHref(descriptor));
+    }, true);
 
     root.addEventListener('pointerdown', (event) => {
       const target = event.target.closest(statusTargetSelector);
@@ -1163,6 +1273,10 @@ document.addEventListener('DOMContentLoaded', function () {
   setupTimelineSaveButton();
   ensureControlsFooters();
   setupStatusBars();
+  scrollToRequestedHelpEntry();
+  const alignRequestedHelpEntry = () => window.setTimeout(scrollToRequestedHelpEntry, 0);
+  window.addEventListener('load', alignRequestedHelpEntry, { once: true });
+  window.addEventListener('pageshow', alignRequestedHelpEntry, { once: true });
   setupSitePlayMode();
 });
 

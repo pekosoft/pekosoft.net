@@ -2,11 +2,16 @@
 
 <div class="footer colored">
 
-  <div class="footer-status statusbar" role="status" aria-live="polite" data-statusbar data-status-ready="Ready: Hover or tap element for help.">
+  <div class="footer-status statusbar" data-statusbar data-status-ready="Ctrl-click element for Help">
     <svg class="icons" aria-hidden="true">
       <use href="/icons.svg#about" />
     </svg>
-    <span class="status-text" data-status-text>Ready: Hover or tap element for help.</span>
+    <span class="status-text" role="status" aria-live="polite" data-status-text>Ctrl-click element for Help</span>
+    <a class="status-help" data-status-help href="/help.php?r=index" aria-label="Open Help">
+      <svg class="icons" aria-hidden="true">
+        <use href="/icons.svg#about" data-status-icon />
+      </svg>
+    </a>
   </div>
 </div>
 

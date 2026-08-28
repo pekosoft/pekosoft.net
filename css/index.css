@@ -843,6 +843,19 @@ html.modules-page body:not(.layout-two-columns) {
   flex: 0 0 auto;
 }
 
+.status-help {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  color: var(--color1);
+}
+
+.status-help[hidden],
+.statusbar [data-status-close][hidden] {
+  display: none;
+}
+
 .status-text {
   flex: 1 1 auto;
   min-width: 0;
@@ -1846,6 +1859,7 @@ button.grey .icons {
   align-items: flex-start;
   gap: 20px;
   margin-bottom: 16px;
+  scroll-margin-top: 64px;
   text-align: left;
   padding: 16px;
 }

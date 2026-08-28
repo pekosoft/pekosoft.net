@@ -852,8 +852,14 @@ html.modules-page body:not(.layout-two-columns) {
 }
 
 .status-help[hidden],
+.statusbar [data-status-back][hidden],
 .statusbar [data-status-close][hidden] {
   display: none;
+}
+
+.statusbar [data-status-back]:disabled {
+  color: var(--grey2);
+  cursor: default;
 }
 
 .status-text {

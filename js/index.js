@@ -939,13 +939,14 @@ function setupStatusBars() {
   const bars = document.querySelectorAll('[data-statusbar]');
   if (!bars.length) return;
 
-  const statusTargetSelector = 'button[title], a[title], label[title], input:not([type="file"]), select';
+  const statusTargetSelector = 'button[title]:not([data-status-back]), a[title], label[title], input:not([type="file"]), select';
 
   bars.forEach((bar) => {
     const textNode = bar.querySelector('[data-status-text]');
     const helpLink = bar.querySelector('[data-status-help]');
     const iconNode = bar.querySelector('[data-status-icon]');
-    if (!textNode || !helpLink || !iconNode) return;
+    const backButton = bar.querySelector('[data-status-back]');
+    if (!textNode || !helpLink || !iconNode || !backButton) return;
 
     const ready = bar.getAttribute('data-status-ready') || 'READY';
     const root = document;
@@ -958,6 +959,8 @@ function setupStatusBars() {
       iconNode.setAttribute('href', '/icons.svg#about');
       helpLink.href = getStatusHelpHref();
       helpLink.hidden = true;
+      backButton.hidden = false;
+      backButton.disabled = window.history.length <= 1;
     };
 
     const showFromTarget = (target) => {
@@ -968,7 +971,12 @@ function setupStatusBars() {
       helpLink.href = getStatusHelpHref(descriptor);
       helpLink.setAttribute('aria-label', `Open Help for ${descriptor.entry}`);
       helpLink.hidden = false;
+      backButton.hidden = true;
     };
+
+    backButton.addEventListener('click', () => {
+      if (!backButton.disabled) window.history.back();
+    });
 
     setReady();
 

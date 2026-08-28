@@ -27,7 +27,7 @@
   </svg>
   <div class="justify">
     <h1>Open Source</h1>
-    Everything is released under the Apache license.
+    Pekosoft is available on <a href="https://github.com/pekosoft">GitHub</a> for transparency, documentation, review and discussion. Copyright &copy; Pekosoft. All rights reserved.
   </div>
 </div>
 

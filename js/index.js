@@ -974,9 +974,20 @@ function setupStatusBars() {
       backButton.hidden = true;
     };
 
+    const showBackStatus = () => {
+      textNode.textContent = backButton.getAttribute('title') || 'Back';
+    };
+
     backButton.addEventListener('click', () => {
-      if (!backButton.disabled) window.history.back();
+      if (backButton.disabled) return;
+      stopSitePlay();
+      window.history.back();
     });
+    backButton.addEventListener('mouseover', showBackStatus);
+    backButton.addEventListener('mouseout', setReady);
+    backButton.addEventListener('focusin', showBackStatus);
+    backButton.addEventListener('focusout', setReady);
+    backButton.addEventListener('pointerdown', showBackStatus);
 
     setReady();
 
@@ -1129,9 +1140,6 @@ function updatePlayButtonState() {
 
   const active = isSitePlayActive();
   button.classList.toggle('button-on', active);
-  button.setAttribute('title', 'Play all pages');
-  button.setAttribute('aria-label', 'Play all pages');
-  button.innerHTML = '<svg class="icons" role="img"><use href="/icons.svg#play"></use></svg>Play';
 }
 
 function stopSitePlay() {
@@ -1230,6 +1238,8 @@ function setupSitePlayMode() {
   updatePlayButtonState();
   scheduleSitePlayAdvance();
 }
+
+window.addEventListener('pageshow', updatePlayButtonState);
 
 // Check for mode preference on page load
 document.addEventListener('DOMContentLoaded', function () {

@@ -975,7 +975,7 @@ function setupStatusBars() {
     };
 
     const showBackStatus = () => {
-      textNode.textContent = backButton.getAttribute('title') || 'Back';
+      textNode.textContent = 'Back: Previous page.';
     };
 
     backButton.addEventListener('click', () => {

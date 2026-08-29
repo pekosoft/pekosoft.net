@@ -718,13 +718,18 @@ function updatePanelDownloadButtonState(panelContainer) {
     const placeholder = (textarea.getAttribute("placeholder") || "").trim();
     return value.length > 0 && value !== placeholder;
   });
-  const buttons = panelContainer.querySelectorAll(".panel-download-button");
+  const buttons = panelContainer.querySelectorAll("#copy-button, .panel-download-button, .panel-speech-button");
 
   buttons.forEach((button) => {
     const isDisabled = !hasContent;
     button.disabled = isDisabled;
     button.classList.toggle("grey", isDisabled);
     button.setAttribute("aria-disabled", String(isDisabled));
+    if (isDisabled && button.classList.contains("panel-speech-button")) {
+      button.classList.remove("button-on");
+      button.setAttribute("aria-pressed", "false");
+      button.title = "Speak panel text";
+    }
   });
 }
 

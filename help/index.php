@@ -269,6 +269,11 @@
   <div class="justify"><h1>SPEECH <span class="object">button</span></h1>Speaks current Panel text. Press again to stop.</div>
 </div>
 
+<div class="feature-row border">
+  <svg class="standard-image-help"><use href="/icons.svg#download"></use></svg>
+  <div class="justify"><h1>DOWNLOAD <span class="object">button</span></h1>Downloads current Panel text as a text file.</div>
+</div>
+
 <div class="feature-row module">
   <svg class="standard-image-help">
     <use href="/icons.svg#view_grid"></use>

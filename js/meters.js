@@ -565,7 +565,7 @@
 
     drawGuidesBehind('spectroscope', ctx, width, height, source, 0);
 
-    const barCount = 128;
+    const barCount = 32;
     const barWidth = width / barCount;
 
     for (let i = 0; i < barCount; i++) {

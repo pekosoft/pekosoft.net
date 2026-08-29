@@ -531,7 +531,7 @@
     <use href="/icons.svg#eq"></use>
   </svg>
   <div class="justify">
-    <h1>SPECTROSCOPE <span class="object">button</span></h1>Shows the spectroscope meter view.
+    <h1>SPECTROSCOPE <span class="object">button</span></h1>Shows 32 logarithmic frequency bands from 20 Hz to the analyser's Nyquist frequency, including frequencies through 20 kHz.
   </div>
 </div>
 

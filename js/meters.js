@@ -567,9 +567,21 @@
 
     const barCount = 32;
     const barWidth = width / barCount;
+    const minimumFrequencyHz = 20;
+    const nyquistFrequencyHz = Math.max(minimumFrequencyHz + 1, (source?.sampleRate || 44100) / 2);
+    const frequencyBinWidthHz = nyquistFrequencyHz / data.length;
 
     for (let i = 0; i < barCount; i++) {
-      const value = data[i] / 255;
+      const startFrequencyHz = minimumFrequencyHz * Math.pow(nyquistFrequencyHz / minimumFrequencyHz, i / barCount);
+      const endFrequencyHz = minimumFrequencyHz * Math.pow(nyquistFrequencyHz / minimumFrequencyHz, (i + 1) / barCount);
+      const startBin = Math.max(0, Math.floor(startFrequencyHz / frequencyBinWidthHz));
+      const endBin = Math.min(data.length, Math.max(startBin + 1, Math.ceil(endFrequencyHz / frequencyBinWidthHz)));
+      let value = 0;
+
+      for (let bin = startBin; bin < endBin; bin++) {
+        value = Math.max(value, data[bin] / 255);
+      }
+
       const h = Math.round(value * height);
       const t = i / Math.max(1, barCount - 1);
       ctx.fillStyle = getMeterColorStyle(source, t);

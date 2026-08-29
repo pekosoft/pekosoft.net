@@ -552,14 +552,25 @@ function markActiveTocButton() {
   if (!tocButtons.length) return;
 
   const currentUrl = new URL(window.location.href);
+  const currentPath = normalizeNavigationPath(currentUrl.pathname);
+  const contextPages = new Set(['/about', '/help', '/history']);
+  const currentTool = currentUrl.searchParams.get('t') || '';
+  const isContextPage = contextPages.has(currentPath);
   let currentMarked = false;
 
   tocButtons.forEach(button => {
     const buttonUrl = new URL(button.dataset.href || '', window.location.origin);
-    const isCurrent = !currentMarked && isCurrentNavigationUrl(buttonUrl, currentUrl);
+    const isCurrentPage = isCurrentNavigationUrl(buttonUrl, currentUrl);
+    const isCurrentRelease = isContextPage
+      && button.getAttribute('aria-label') !== 'Tool'
+      && normalizeNavigationPath(buttonUrl.pathname) === `/${currentTool}`;
+    const isCurrentTool = !isContextPage
+      && button.getAttribute('aria-label') === 'Tool'
+      && isCurrentPage;
+    const isCurrent = isCurrentRelease || isCurrentTool || (!currentMarked && isCurrentPage);
 
     if (isCurrent) {
-      currentMarked = true;
+      if (isCurrentPage) currentMarked = true;
       button.setAttribute('aria-current', 'page');
     } else {
       button.removeAttribute('aria-current');

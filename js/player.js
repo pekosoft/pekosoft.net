@@ -106,11 +106,6 @@ function updateMetersSourceBridge() {
         channelCount: loadedChannelCount || 1,
         sampleRate: mainAudioContext.sampleRate,
         mediaElement: audioPlayer,
-        outputGain: () => {
-            const elementVolume = Math.max(0, Math.min(1, Number(audioPlayer.volume) || 0));
-            const masterEnabled = (masterGain && Number(masterGain.gain.value) > 0) ? 1 : 0;
-            return elementVolume * masterEnabled;
-        },
         isActive: () => Boolean(inputSource || recordingSource || (!audioPlayer.paused && !audioPlayer.ended)),
         isStopped: () => {
             if (!audioPlayer.paused) return false;

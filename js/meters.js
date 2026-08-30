@@ -529,7 +529,6 @@
       analyserRight,
       channelCount,
       sampleRate,
-      outputGain: typeof source.outputGain === 'function' ? source.outputGain : null,
       isActive: typeof source.isActive === 'function' ? source.isActive : null,
       isStopped: typeof source.isStopped === 'function' ? source.isStopped : null,
       palette: getMeterPalette()
@@ -709,7 +708,6 @@
     ctx.clearRect(0, 0, width, height);
     drawGuidesBehind('wavescope', ctx, width, height, source, 0);
 
-    const outputGain = source.outputGain ? Math.max(0, Math.min(1, source.outputGain())) : 1;
     const isStereo = source.channelCount > 1;
     const lanes = isStereo
       ? [
@@ -755,8 +753,8 @@
           continue;
         }
 
-        const yMax = lane.centerY - (maxValue * laneAmplitude * outputGain);
-        const yMin = lane.centerY - (minValue * laneAmplitude * outputGain);
+        const yMax = lane.centerY - (maxValue * laneAmplitude);
+        const yMin = lane.centerY - (minValue * laneAmplitude);
         segmentTop.push({ x, y: yMax });
         segmentBottom.push({ x, y: yMin });
       }

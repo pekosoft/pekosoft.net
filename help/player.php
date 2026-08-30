@@ -134,7 +134,7 @@
   </svg>
   <div class="justify">
     <h1>SOUND <span class="object">button</span></h1>
-    Toggles speaker output. <span class="default">Default: on.</span>
+    Toggles speaker output. Playback and Meters continue while muted. <span class="default">Default: on.</span>
   </div>
 </div>
 

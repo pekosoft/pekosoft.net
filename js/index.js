@@ -361,6 +361,19 @@ function restoreDesktopSidebarState() {
   syncSidebarState();
 }
 
+function closeMobileToc() {
+  if (isDesktopSidebarLayout()) return;
+
+  const toc = document.getElementById('toc');
+  if (!toc?.classList.contains('toc-open')) return;
+
+  toc.classList.remove('toc-open');
+  syncSidebarState();
+}
+
+window.addEventListener('pagehide', closeMobileToc);
+window.addEventListener('pageshow', closeMobileToc);
+
 function toggleMenu() {
   const toc = document.getElementById('toc');
   const settingsPanel = document.getElementById('settings-panel');
@@ -992,6 +1005,7 @@ function setupStatusBars() {
     backButton.addEventListener('click', () => {
       if (backButton.disabled) return;
       stopSitePlay();
+      closeMobileToc();
       window.history.back();
     });
     backButton.addEventListener('mouseover', showBackStatus);

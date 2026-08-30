@@ -2309,7 +2309,7 @@ body.module-order-dragging .module-maximized .module-header * {
   padding: 8px;
   overflow: hidden;
   background-color: var(--grey1);
-  border: 1px solid var(--grey1);
+  border: 1px solid var(--white);
   color: var(--white);
   font-size: var(--font-size);
   line-height: 16px;
@@ -2325,6 +2325,10 @@ body.module-order-dragging .module-maximized .module-header * {
   gap: 12px;
   width: 100%;
   min-width: 0;
+}
+
+.module-panel-menu select {
+  border: 1px solid var(--white);
 }
 
 body.hide-module-headers .module-header {

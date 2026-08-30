@@ -513,7 +513,7 @@
     <use href="/icons.svg#meter"></use>
   </svg>
   <div class="justify">
-    <h1>Meters <span class="object">module</span></h1>Shows shared meter views for the generated drum signal, including while SOUND is muted.
+    <h1>Meters <span class="object">module</span></h1>Shows shared meter views for the generated drum signal, including while SOUND is muted. The active view updates up to 60 times per second.
   </div>
 </div>
 
@@ -531,7 +531,7 @@
     <use href="/icons.svg#eq"></use>
   </svg>
   <div class="justify">
-    <h1>SPECTROSCOPE <span class="object">button</span></h1>Shows 32 logarithmic frequency bands from 20 Hz to the analyser's Nyquist frequency, including frequencies through 20 kHz.
+    <h1>SPECTROSCOPE <span class="object">button</span></h1>Shows 32 logarithmic frequency bands from 20 Hz to the analyser's Nyquist frequency, including frequencies through 20 kHz. New peaks respond immediately and decay briefly between transient sounds.
   </div>
 </div>
 
@@ -540,7 +540,7 @@
     <use href="/icons.svg#meter"></use>
   </svg>
   <div class="justify">
-    <h1>LEVEL <span class="object">button</span></h1>Shows the level meter view.
+    <h1>LEVEL <span class="object">button</span></h1>Shows output level with immediate peak response and a short release between transient sounds.
   </div>
 </div>
 
@@ -549,7 +549,7 @@
     <use href="/icons.svg#wavelength"></use>
   </svg>
   <div class="justify">
-    <h1>OSCILLOSCOPE <span class="object">button</span></h1>Shows the oscilloscope meter view.
+    <h1>OSCILLOSCOPE <span class="object">button</span></h1>Shows the waveform and holds the latest triggered frame between transient sounds.
   </div>
 </div>
 

@@ -333,7 +333,7 @@
   </svg>
   <div class="justify">
     <h1>Meters <span class="object">module</span></h1>
-    Shows shared meter views: spectroscope, level meter, oscilloscope and wavescope.
+    Shows shared meter views: spectroscope, level meter, oscilloscope and wavescope. The active view updates up to 60 times per second.
   </div>
 </div>
 
@@ -363,7 +363,7 @@
   </svg>
   <div class="justify">
     <h1>SPECTROSCOPE <span class="object">button</span></h1>
-    Shows 32 logarithmic frequency bands from 20 Hz to the analyser's Nyquist frequency, including frequencies through 20 kHz.
+    Shows 32 logarithmic frequency bands from 20 Hz to the analyser's Nyquist frequency, including frequencies through 20 kHz. New peaks respond immediately and decay briefly between transient sounds.
   </div>
 </div>
 
@@ -373,7 +373,7 @@
   </svg>
   <div class="justify">
     <h1>LEVEL <span class="object">button</span></h1>
-    Shows the level meter view.
+    Shows output level with immediate peak response and a short release between transient sounds.
   </div>
 </div>
 
@@ -383,7 +383,7 @@
   </svg>
   <div class="justify">
     <h1>OSCILLOSCOPE <span class="object">button</span></h1>
-    Shows the oscilloscope view.
+    Shows the waveform and holds the latest triggered frame between transient sounds.
   </div>
 </div>
 

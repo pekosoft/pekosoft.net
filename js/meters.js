@@ -284,17 +284,27 @@
 
   const timeArray = new Uint8Array(2048);
   const timeArrayR = new Uint8Array(2048);
-  const freqArray = new Uint8Array(2048);
+  let freqArray = new Uint8Array(0);
 
   const pausedFrameState = {
     oscilloscopeReady: false,
     oscilloscopeData: new Uint8Array(2048),
     spectrumReady: false,
-    spectrumData: new Uint8Array(2048),
     levelReady: false,
     levelLeft: 0,
     levelRight: 0,
     levelChannels: 1
+  };
+
+  const levelDisplayState = {
+    left: 0,
+    right: 0,
+    lastUpdateMs: 0
+  };
+
+  const spectrumDisplayState = {
+    levels: new Float32Array(32),
+    lastUpdateMs: 0
   };
 
   const wavescopeState = {
@@ -376,6 +386,10 @@
   let guidesOn = getSavedGuides();
   let brightGuides = getSavedBright();
   let multicolorOn = getSavedMulticolor();
+  let meterNeedsRedraw = true;
+  let wasMeterActive = false;
+  let meterPalette = null;
+  const meterReleaseMs = 350;
 
   function applyMode(nextMode) {
     if (!availableModes.includes(nextMode)) return;
@@ -391,6 +405,7 @@
       if (!button) return;
       button.classList.toggle('button-on', mode === activeMode);
     });
+    meterNeedsRedraw = true;
   }
 
   function applyGuides(nextState) {
@@ -399,6 +414,7 @@
     if (guidesButton) {
       guidesButton.classList.toggle('button-on', guidesOn);
     }
+    meterNeedsRedraw = true;
   }
 
   function applyBright(nextState, persist = true) {
@@ -410,6 +426,7 @@
     if (brightButton) {
       brightButton.classList.toggle('button-on', brightGuides);
     }
+    meterNeedsRedraw = true;
   }
 
   function applyMulticolor(nextState) {
@@ -418,6 +435,7 @@
     if (colorButton) {
       colorButton.classList.toggle('button-on', multicolorOn);
     }
+    meterNeedsRedraw = true;
   }
 
   function parseCssColorToRgb(input, fallback) {
@@ -478,6 +496,21 @@
     return `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`;
   }
 
+  function getMeterPalette() {
+    if (meterPalette) return meterPalette;
+
+    const fallbackSecondary = { r: 0, g: 96, b: 192 };
+    const fallbackPrimary = { r: 0, g: 128, b: 255 };
+    const fallbackWhite = { r: 255, g: 255, b: 255 };
+    const css = getComputedStyle(document.documentElement);
+    meterPalette = {
+      secondary: parseCssColorToRgb(css.getPropertyValue('--color2'), fallbackSecondary),
+      primary: parseCssColorToRgb(css.getPropertyValue('--color1'), fallbackPrimary),
+      white: parseCssColorToRgb(css.getPropertyValue('--white'), fallbackWhite)
+    };
+    return meterPalette;
+  }
+
   function getSourceConfig() {
     const source = window.__pekosoftMetersSource;
     if (!source) return null;
@@ -490,15 +523,6 @@
     const channelCount = Number.isFinite(source.channelCount) ? source.channelCount : (analyserRight ? 2 : 1);
     const sampleRate = Number.isFinite(source.sampleRate) ? source.sampleRate : 44100;
 
-    const fallbackSecondary = { r: 0, g: 96, b: 192 };
-    const fallbackPrimary = { r: 0, g: 128, b: 255 };
-    const fallbackWhite = { r: 255, g: 255, b: 255 };
-
-    const css = getComputedStyle(document.documentElement);
-    const secondary = parseCssColorToRgb(css.getPropertyValue('--color2'), fallbackSecondary);
-    const primary = parseCssColorToRgb(css.getPropertyValue('--color1'), fallbackPrimary);
-    const white = parseCssColorToRgb(css.getPropertyValue('--white'), fallbackWhite);
-
     return {
       analyser,
       analyserLeft,
@@ -508,23 +532,12 @@
       outputGain: typeof source.outputGain === 'function' ? source.outputGain : null,
       isActive: typeof source.isActive === 'function' ? source.isActive : null,
       isStopped: typeof source.isStopped === 'function' ? source.isStopped : null,
-      palette: { secondary, primary, white }
+      palette: getMeterPalette()
     };
   }
 
   function drawOscilloscopeFromData(ctx, width, height, data, source, shouldCache = false) {
-    let maxAbs = 0;
-    for (let i = 0; i < data.length; i++) {
-      const centered = (data[i] - 128) / 128;
-      const abs = Math.abs(centered);
-      if (abs > maxAbs) maxAbs = abs;
-    }
-
     drawGuidesBehind('oscilloscope', ctx, width, height, null, 0);
-
-    if (maxAbs < 0.004) {
-      return;
-    }
 
     if (shouldCache) {
       pausedFrameState.oscilloscopeData.set(data);
@@ -553,13 +566,25 @@
     const height = canvas.height / (window.devicePixelRatio || 1);
 
     analyser.getByteTimeDomainData(timeArray);
+    let hasSignal = false;
+    for (let i = 0; i < timeArray.length; i++) {
+      if (Math.abs((timeArray[i] - 128) / 128) >= 0.004) {
+        hasSignal = true;
+        break;
+      }
+    }
+    if (!hasSignal && !meterNeedsRedraw) return;
+
     ctx.clearRect(0, 0, width, height);
+    if (!hasSignal && pausedFrameState.oscilloscopeReady) {
+      drawOscilloscopeFromData(ctx, width, height, pausedFrameState.oscilloscopeData, source, false);
+      return;
+    }
     drawOscilloscopeFromData(ctx, width, height, timeArray, source, true);
   }
 
   function drawSpectrumFromData(ctx, width, height, source, data, shouldCache = false) {
     if (shouldCache) {
-      pausedFrameState.spectrumData.set(data);
       pausedFrameState.spectrumReady = true;
     }
 
@@ -569,24 +594,36 @@
     const barWidth = width / barCount;
     const minimumFrequencyHz = 20;
     const nyquistFrequencyHz = Math.max(minimumFrequencyHz + 1, (source?.sampleRate || 44100) / 2);
-    const frequencyBinWidthHz = nyquistFrequencyHz / data.length;
+    const frequencyBinWidthHz = shouldCache ? nyquistFrequencyHz / data.length : 0;
+    const nowMs = performance.now();
+    const elapsedMs = spectrumDisplayState.lastUpdateMs ? nowMs - spectrumDisplayState.lastUpdateMs : 0;
+    const release = elapsedMs > 0 ? Math.exp(-elapsedMs / meterReleaseMs) : 0;
 
     for (let i = 0; i < barCount; i++) {
       const startFrequencyHz = minimumFrequencyHz * Math.pow(nyquistFrequencyHz / minimumFrequencyHz, i / barCount);
       const endFrequencyHz = minimumFrequencyHz * Math.pow(nyquistFrequencyHz / minimumFrequencyHz, (i + 1) / barCount);
-      const startBin = Math.max(0, Math.floor(startFrequencyHz / frequencyBinWidthHz));
-      const endBin = Math.min(data.length, Math.max(startBin + 1, Math.ceil(endFrequencyHz / frequencyBinWidthHz)));
-      let value = 0;
+      let currentValue = 0;
 
-      for (let bin = startBin; bin < endBin; bin++) {
-        value = Math.max(value, data[bin] / 255);
+      if (shouldCache) {
+        const startBin = Math.max(0, Math.floor(startFrequencyHz / frequencyBinWidthHz));
+        const endBin = Math.min(data.length, Math.max(startBin + 1, Math.ceil(endFrequencyHz / frequencyBinWidthHz)));
+        for (let bin = startBin; bin < endBin; bin++) {
+          currentValue = Math.max(currentValue, data[bin] / 255);
+        }
       }
 
+      const previousValue = spectrumDisplayState.levels[i];
+      const value = shouldCache
+        ? (currentValue >= previousValue ? currentValue : Math.max(currentValue, previousValue * release))
+        : previousValue;
+      if (shouldCache) spectrumDisplayState.levels[i] = value < 0.001 ? 0 : value;
       const h = Math.round(value * height);
       const t = i / Math.max(1, barCount - 1);
       ctx.fillStyle = getMeterColorStyle(source, t);
       ctx.fillRect(i * barWidth, height - h, Math.max(1, barWidth - 1), h);
     }
+
+    if (shouldCache) spectrumDisplayState.lastUpdateMs = nowMs;
   }
 
   function renderSpectrum(ctx, canvas, source) {
@@ -594,6 +631,9 @@
     const width = canvas.width / (window.devicePixelRatio || 1);
     const height = canvas.height / (window.devicePixelRatio || 1);
 
+    if (freqArray.length !== source.analyser.frequencyBinCount) {
+      freqArray = new Uint8Array(source.analyser.frequencyBinCount);
+    }
     source.analyser.getByteFrequencyData(freqArray);
     ctx.clearRect(0, 0, width, height);
     drawSpectrumFromData(ctx, width, height, source, freqArray, true);
@@ -798,13 +838,21 @@
       return Math.sqrt(sum / timeArray.length);
     };
 
-    const left = getRms(source.analyserLeft || source.analyser);
-    const right = source.channelCount > 1 && source.analyserRight ? getRms(source.analyserRight) : left;
+    const currentLeft = getRms(source.analyserLeft || source.analyser);
+    const currentRight = source.channelCount > 1 && source.analyserRight ? getRms(source.analyserRight) : currentLeft;
+    const nowMs = performance.now();
+    const elapsedMs = levelDisplayState.lastUpdateMs ? nowMs - levelDisplayState.lastUpdateMs : 0;
+    const release = elapsedMs > 0 ? Math.exp(-elapsedMs / meterReleaseMs) : 0;
+    const left = currentLeft >= levelDisplayState.left ? currentLeft : Math.max(currentLeft, levelDisplayState.left * release);
+    const right = currentRight >= levelDisplayState.right ? currentRight : Math.max(currentRight, levelDisplayState.right * release);
+    levelDisplayState.left = left < 0.001 ? 0 : left;
+    levelDisplayState.right = right < 0.001 ? 0 : right;
+    levelDisplayState.lastUpdateMs = nowMs;
 
     const channels = source.channelCount > 1 ? 2 : 1;
 
     ctx.clearRect(0, 0, width, height);
-    drawLevelFromValues(ctx, width, height, source, left, right, channels, true);
+    drawLevelFromValues(ctx, width, height, source, levelDisplayState.left, levelDisplayState.right, channels, true);
   }
 
   function clearMeterFrame(modeToClear = activeMode) {
@@ -869,61 +917,71 @@
     }
   }
 
-  const activeRenderIntervalMs = 1000 / 30;
-  let lastActiveRenderMs = 0;
+  function drawIdleMeterFrame(canvas, ctx, source) {
+    if (source && activeMode === 'wavescope') {
+      renderWavescope(ctx, canvas, source);
+      return;
+    }
+
+    resizeCanvasToDisplaySize(canvas, ctx);
+    const width = canvas.width / (window.devicePixelRatio || 1) || canvas.clientWidth;
+    const height = canvas.height / (window.devicePixelRatio || 1) || canvas.clientHeight;
+    ctx.clearRect(0, 0, width, height);
+
+    if (!source) {
+      drawGuidesBehind(activeMode, ctx, width, height, null);
+      return;
+    }
+
+    if (activeMode === 'oscilloscope' && pausedFrameState.oscilloscopeReady) {
+      drawOscilloscopeFromData(ctx, width, height, pausedFrameState.oscilloscopeData, source, false);
+    } else if (activeMode === 'spectroscope' && pausedFrameState.spectrumReady) {
+      drawSpectrumFromData(ctx, width, height, source, null, false);
+    } else if (activeMode === 'level' && pausedFrameState.levelReady) {
+      drawLevelFromValues(
+        ctx,
+        width,
+        height,
+        source,
+        pausedFrameState.levelLeft,
+        pausedFrameState.levelRight,
+        pausedFrameState.levelChannels,
+        false
+      );
+    } else {
+      drawGuidesBehind(activeMode, ctx, width, height, source);
+    }
+  }
+
+  const meterFrameIntervalMs = 1000 / 60;
+  let lastMeterFrameMs = 0;
 
   function tick(timestamp) {
+    const elapsedMs = timestamp - lastMeterFrameMs;
+    if (lastMeterFrameMs && elapsedMs < meterFrameIntervalMs) {
+      requestAnimationFrame(tick);
+      return;
+    }
+    lastMeterFrameMs = timestamp - (elapsedMs % meterFrameIntervalMs);
+
     const source = getSourceConfig();
+    const sourceIsActive = Boolean(source && (!source.isActive || source.isActive()));
+    const releaseIsActive = Boolean(source && !sourceIsActive && (
+      (activeMode === 'spectroscope' && spectrumDisplayState.levels.some((value) => value > 0))
+      || (activeMode === 'level' && (levelDisplayState.left > 0 || levelDisplayState.right > 0))
+    ));
+    const meterIsActive = sourceIsActive || releaseIsActive;
+    const activityEnded = wasMeterActive && !meterIsActive;
     const canvas = canvasByMode[activeMode];
     if (canvas) {
       const ctx = canvas.getContext('2d');
       if (ctx) {
-        if (!source) {
-          resizeCanvasToDisplaySize(canvas, ctx);
-          const width = canvas.width / (window.devicePixelRatio || 1) || canvas.clientWidth;
-          const height = canvas.height / (window.devicePixelRatio || 1) || canvas.clientHeight;
-          ctx.clearRect(0, 0, width, height);
-          drawGuidesBehind(activeMode, ctx, width, height, null);
-        } else if (source.isActive && !source.isActive()) {
-          // Paused/inactive sources still need redraws so guide toggles and resize
-          // apply immediately instead of waiting for playback to resume.
-          resizeCanvasToDisplaySize(canvas, ctx);
-          const width = canvas.width / (window.devicePixelRatio || 1) || canvas.clientWidth;
-          const height = canvas.height / (window.devicePixelRatio || 1) || canvas.clientHeight;
-          ctx.clearRect(0, 0, width, height);
-
-          if (activeMode === 'oscilloscope') {
-            if (pausedFrameState.oscilloscopeReady) {
-              drawOscilloscopeFromData(ctx, width, height, pausedFrameState.oscilloscopeData, source, false);
-            } else {
-              drawGuidesBehind('oscilloscope', ctx, width, height, source);
-            }
-          } else if (activeMode === 'wavescope') {
-            renderWavescope(ctx, canvas, source);
-          } else if (activeMode === 'spectroscope') {
-            if (pausedFrameState.spectrumReady) {
-              drawSpectrumFromData(ctx, width, height, source, pausedFrameState.spectrumData, false);
-            } else {
-              drawGuidesBehind('spectroscope', ctx, width, height, source);
-            }
-          } else if (activeMode === 'level') {
-            if (pausedFrameState.levelReady) {
-              drawLevelFromValues(
-                ctx,
-                width,
-                height,
-                source,
-                pausedFrameState.levelLeft,
-                pausedFrameState.levelRight,
-                pausedFrameState.levelChannels,
-                false
-              );
-            } else {
-              drawGuidesBehind('level', ctx, width, height, source);
-            }
+        if (!meterIsActive) {
+          if (meterNeedsRedraw || activityEnded) {
+            drawIdleMeterFrame(canvas, ctx, source);
+            meterNeedsRedraw = false;
           }
-        } else if (timestamp - lastActiveRenderMs >= activeRenderIntervalMs) {
-          lastActiveRenderMs = timestamp;
+        } else {
           if (activeMode === 'oscilloscope') {
             renderOscilloscope(ctx, canvas, source.analyser, source);
           } else if (activeMode === 'wavescope') {
@@ -933,9 +991,11 @@
           } else if (activeMode === 'level') {
             renderLevel(ctx, canvas, source);
           }
+          meterNeedsRedraw = false;
         }
       }
     }
+    wasMeterActive = meterIsActive;
     requestAnimationFrame(tick);
   }
 
@@ -955,6 +1015,25 @@
   if (colorButton) {
     colorButton.addEventListener('click', () => applyMulticolor(!multicolorOn));
   }
+
+  if (typeof ResizeObserver !== 'undefined') {
+    const resizeObserver = new ResizeObserver(() => {
+      meterNeedsRedraw = true;
+    });
+    Object.values(canvasByMode).forEach((canvas) => {
+      if (canvas) resizeObserver.observe(canvas);
+    });
+  } else {
+    window.addEventListener('resize', () => {
+      meterNeedsRedraw = true;
+    });
+  }
+
+  const themeObserver = new MutationObserver(() => {
+    meterPalette = null;
+    meterNeedsRedraw = true;
+  });
+  themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
 
   window.addEventListener('pekosoft:bright-guides-global-change', (event) => {
     applyBright(event.detail?.enabled, false);

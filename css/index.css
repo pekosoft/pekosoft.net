@@ -2151,6 +2151,7 @@ button.grey .icons {
   box-sizing: border-box;
   background-color: var(--grey1);
   cursor: move;
+  touch-action: manipulation;
   user-select: none;
 }
 

@@ -220,7 +220,7 @@
   </svg>
   <div class="justify">
     <h1>Modules</h1>
-    Each tool is made up of two or more modules. Depending on the tool, these are Instrument, Controls, Timeline, Playlist, History, Panel and Meters. Modules can be toggled from Menu.
+    Each tool is made up of two or more modules. Depending on the tool, these are Instrument, Controls, Timeline, Playlist, History, Panel and Meters. Modules can be toggled from Menu. Double click or double tap a module header to minimize or restore it when the two-module Layout is off.
   </div>
 </div>
 

@@ -380,6 +380,13 @@ function setupModuleHeader(id) {
     }
   });
 
+  header.addEventListener("dblclick", (event) => {
+    if (event.target.closest("button, a, input, select, textarea, label")) return;
+    if (minimizeBtn.disabled) return;
+    event.preventDefault();
+    minimizeBtn.click();
+  });
+
   document.addEventListener("pointerdown", (event) => {
     const target = event.target;
     if (!(target instanceof Node)) return;

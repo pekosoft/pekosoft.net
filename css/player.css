@@ -48,6 +48,7 @@ audio::-webkit-media-controls-time-remaining-display {
 }
 
 #tool-container .standard {
+  container-type: inline-size;
   min-height: 0;
   height: 100%;
   padding: 0;
@@ -63,7 +64,8 @@ audio::-webkit-media-controls-time-remaining-display {
   width: 100%;
   height: 100%;
   text-align: center;
-  font-size: clamp(48px, 12vw, 180px);
+  font-family: Consolas, monospace;
+  font-size: min(clamp(48px, 12vw, 180px), 19cqw);
   line-height: 1;
   color: var(--white);
   letter-spacing: 2px;

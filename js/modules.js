@@ -272,9 +272,14 @@ function createModuleHeader(id) {
 }
 
 function createModuleIconPanel(id) {
+  const cfg = moduleConfig[id] || { icon: "tool" };
   const panel = document.createElement("div");
   panel.className = "module-icon-panel";
   panel.id = id + "-icon-panel";
+  panel.innerHTML = `
+    <svg class="module-icon-panel-background" viewBox="0 0 512 512" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+      <use href="/icons.svg#${cfg.icon}" width="512" height="512" />
+    </svg>`;
   panel.hidden = true;
   return panel;
 }

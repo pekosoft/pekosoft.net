@@ -2248,6 +2248,17 @@ body.module-order-dragging .module-maximized .module-header * {
   background: var(--grey1);
 }
 
+.module-icon-panel-background {
+  position: absolute;
+  top: 12.5%;
+  left: 12.5%;
+  display: block;
+  width: 75%;
+  height: 75%;
+  fill: var(--grey2);
+  pointer-events: none;
+}
+
 .module-icon-panel[hidden] {
   display: none;
 }
@@ -2256,6 +2267,8 @@ body.module-order-dragging .module-maximized .module-header * {
   --module-panel-menu-label-width: 120px;
   --module-panel-menu-label-gap: 8px;
   display: flex;
+  position: relative;
+  z-index: 1;
   flex-direction: column;
   align-items: flex-start;
   gap: 8px;

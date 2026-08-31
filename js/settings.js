@@ -524,6 +524,19 @@ document.addEventListener("DOMContentLoaded", () => {
     if (typeof stopSitePlay === "function") stopSitePlay();
     loadSettings();
     if (window.applySiteSettings) window.applySiteSettings();
+
+    // Restore any minimized modules immediately, no page refresh needed
+    document.querySelectorAll(".module-minimized").forEach((container) => {
+      container.classList.remove("module-minimized");
+      container.querySelector(".module-minimize-btn")?.classList.remove("button-on");
+    });
+
+    // Close the settings panel on mobile
+    if (typeof isDesktopSidebarLayout === "function" && !isDesktopSidebarLayout()) {
+      const settingsPanel = document.getElementById("settings-panel");
+      settingsPanel?.classList.remove("settings-panel-open");
+      document.getElementById("toggle-settings-panel-button")?.setAttribute("aria-expanded", "false");
+    }
   }
 
   function normalizeGridSize(value) {

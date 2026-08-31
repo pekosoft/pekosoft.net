@@ -139,14 +139,6 @@ document.addEventListener('DOMContentLoaded', function () {
     rememberTextChange(beforeSnapshot);
   }
 
-  function replaceAllText(text) {
-    const beforeSnapshot = getTextSnapshot();
-    textarea.value = text;
-    textarea.setSelectionRange(text.length, text.length);
-    textarea.focus();
-    rememberTextChange(beforeSnapshot);
-  }
-
   async function copyToClipboard() {
     if (!navigator.clipboard?.writeText) return;
     try {
@@ -266,7 +258,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   if (clearButton) {
     clearButton.addEventListener('click', function () {
-      replaceAllText('');
+      replaceSelectedOrAllText('');
     });
   }
 

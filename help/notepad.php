@@ -77,7 +77,7 @@
   </svg>
   <div class="justify">
     <h1>CLEAR <span class="object">button</span></h1>
-    Clears the text.
+    Clears selection or text.
   </div>
 </div>
 

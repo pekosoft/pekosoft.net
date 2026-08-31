@@ -279,6 +279,13 @@
           <span class="button-text">Reverse</span>
         </button>
 
+        <button id="copy-audio-button" class="square" title="Copy audio to clipboard">
+          <svg class="icons">
+            <use href="/icons.svg#copy" />
+          </svg>
+          <span class="button-text">Copy</span>
+        </button>
+
         <button id="cut-button" class="square" title="Cut to clipboard">
           <svg class="icons">
             <use href="/icons.svg#cut" />

@@ -61,6 +61,7 @@ const fadeInButton = document.getElementById('fade-in-button');
 const fadeOutButton = document.getElementById('fade-out-button');
 const normalizeButton = document.getElementById('normalize-button');
 const reverseButton = document.getElementById('reverse-button');
+const copyAudioButton = document.getElementById('copy-audio-button');
 const cutButton = document.getElementById('cut-button');
 const pasteButton = document.getElementById('paste-button');
 const deleteButton = document.getElementById('delete-button');
@@ -1191,6 +1192,7 @@ function updateActionButtonStates() {
     setButtonGrey(fadeOutButton, !hasTimelineDuration || isRecording);
     setButtonGrey(normalizeButton, !hasTimelineDuration || isRecording);
     setButtonGrey(reverseButton, !hasTimelineDuration || isRecording);
+    setButtonGrey(copyAudioButton, !hasTimelineDuration || isRecording);
     setButtonGrey(cutButton, !hasTimelineDuration || isRecording);
     setButtonGrey(pasteButton, !hasAudioClipboard || isRecording);
     setButtonGrey(deleteButton, !hasTimelineDuration || isRecording);
@@ -2263,6 +2265,12 @@ function bindWaveformEditControls() {
             await reverseBufferRange();
         });
     }
+
+        if (copyAudioButton) {
+                copyAudioButton.addEventListener('click', () => {
+                        copySelectionToAudioClipboard();
+                });
+        }
 
     if (cutButton) {
         cutButton.addEventListener('click', async () => {

@@ -390,7 +390,17 @@
 
 <div class="feature-row border">
   <svg class="standard-image-help">
-    <use href="/icons.svg#tool"></use>
+    <use href="/icons.svg#copy"></use>
+  </svg>
+  <div class="justify">
+    <h1>COPY <span class="object">button</span></h1>
+    Copies selected range (or full waveform when no selection) to the audio clipboard.
+  </div>
+</div>
+
+<div class="feature-row border">
+  <svg class="standard-image-help">
+    <use href="/icons.svg#cut"></use>
   </svg>
   <div class="justify">
     <h1>CUT <span class="object">button</span></h1>
@@ -400,7 +410,7 @@
 
 <div class="feature-row border">
   <svg class="standard-image-help">
-    <use href="/icons.svg#copy"></use>
+    <use href="/icons.svg#paste"></use>
   </svg>
   <div class="justify">
     <h1>PASTE <span class="object">button</span></h1>
@@ -435,16 +445,6 @@
   <div class="justify">
     <h1>REDO <span class="object">button</span></h1>
     Reapplies undone waveform edit state.
-  </div>
-</div>
-
-<div class="feature-row border">
-  <svg class="standard-image-help">
-    <use href="/icons.svg#copy"></use>
-  </svg>
-  <div class="justify">
-    <h1>COPY <span class="object">button</span></h1>
-    Copies selected range (or full waveform when no selection) to audio clipboard.
   </div>
 </div>
 

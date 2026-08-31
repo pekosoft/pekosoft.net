@@ -224,6 +224,16 @@
   </div>
 </div>
 
+<div class="feature-row border">
+  <svg class="standard-image-help">
+    <use href="/icons.svg#more"></use>
+  </svg>
+  <div class="justify">
+    <h1>MORE <span class="object">button</span></h1>
+    Opens module-specific options. Unavailable while the module is minimized.
+  </div>
+</div>
+
 <div class="feature-row module">
   <svg class="standard-image-help">
     <use href="/icons.svg#tool"></use>

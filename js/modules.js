@@ -15,6 +15,18 @@ const moduleConfig = {
   panel:    { icon: "panel",    title: "Panel" }
 };
 
+function syncModuleMoreButtonState(container) {
+  const moreBtn = container?.querySelector(".module-more-btn");
+  if (!moreBtn) return;
+
+  const disabled = container.classList.contains("module-minimized");
+  moreBtn.disabled = disabled;
+  moreBtn.classList.toggle("grey", disabled);
+  moreBtn.setAttribute("aria-disabled", String(disabled));
+}
+
+window.syncModuleMoreButtonState = syncModuleMoreButtonState;
+
 function toggleModule(id) {
   const container = document.getElementById(id + "-container");
   const pageButton = document.getElementById(id + "-toggle");
@@ -35,6 +47,7 @@ function toggleModule(id) {
     container.classList.remove("module-minimized", "module-maximized");
     container.querySelector(".module-minimize-btn")?.classList.remove("button-on");
     container.querySelector(".module-maximize-btn")?.classList.remove("button-on");
+    syncModuleMoreButtonState(container);
     localStorage.setItem(stateKey, "normal");
   }
 
@@ -175,6 +188,7 @@ function disableMinimizeForTwoColumnLayout() {
       minimizeBtn.setAttribute("aria-disabled", "true");
       minimizeBtn.title = "Minimize";
     }
+    syncModuleMoreButtonState(container);
     localStorage.setItem("module_" + id + "_state", "normal");
   });
 }
@@ -405,6 +419,7 @@ function setupModuleHeader(id) {
     collapseIconPanel();
     localStorage.setItem("module_" + id + "_state", isMinimized ? "minimized" : "normal");
     collapseMore();
+    syncModuleMoreButtonState(container);
     syncMaximizedModuleState();
   });
 
@@ -416,6 +431,7 @@ function setupModuleHeader(id) {
     collapseIconPanel();
     localStorage.setItem("module_" + id + "_state", isMaximized ? "maximized" : "normal");
     collapseMore();
+    syncModuleMoreButtonState(container);
     syncMaximizedModuleState();
   });
 
@@ -459,6 +475,7 @@ function setupModuleHeader(id) {
   }
 
   updateMinimizeButtonState();
+  syncModuleMoreButtonState(container);
   syncMaximizedModuleState();
 }
 

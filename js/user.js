@@ -85,6 +85,7 @@ document.addEventListener("DOMContentLoaded", () => {
       document.querySelectorAll(".module-more-btn").forEach(button => {
         button.classList.remove("button-on");
         button.setAttribute("aria-expanded", "false");
+        window.syncModuleMoreButtonState?.(button.closest(".container"));
       });
       document.querySelectorAll(".module-header-actions").forEach(actions => {
         actions.hidden = true;
@@ -110,6 +111,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (twoColumnLayoutActive && container.classList.contains("module-minimized")) {
         container.classList.remove("module-minimized");
         if (minimizeBtn) minimizeBtn.classList.remove("button-on");
+        window.syncModuleMoreButtonState?.(container);
         if (id) localStorage.setItem("module_" + id + "_state", "normal");
       }
 

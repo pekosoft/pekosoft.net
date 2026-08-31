@@ -51,13 +51,15 @@ function pageFromPathname(pathname) {
 }
 
 function getNavPages() {
-  const footerLinks = Array.from(document.querySelectorAll(".footer a[href]"));
+  // Nav links moved from footer to TOC buttons (data-href, not href)
+  const tocButtons = Array.from(document.querySelectorAll("#toc .toc-button[data-href]"));
+  const excludedPages = ["bitcoin"];
   const pages = [];
-  footerLinks.forEach((a) => {
-    const href = a.getAttribute("href") || "";
+  tocButtons.forEach((btn) => {
+    const href = btn.getAttribute("data-href") || "";
     if (href === "#") return;
     const page = pageFromHref(href);
-    if (page && !pages.includes(page)) pages.push(page);
+    if (page && !excludedPages.includes(page) && !pages.includes(page)) pages.push(page);
   });
   return pages.length > 0 ? pages : fallbackSwipePages;
 }

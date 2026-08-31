@@ -10,7 +10,7 @@
   $availableModules = ["tool", "controls", "timeline", "panel", "meters"];
   ?>
   <meta name="keywords" content="turntable, record player, emulated turntable, turntable simulator, record player simulator, emulated turntable">
-  <link rel="stylesheet" type="text/css" href="/css/<?php echo $release; ?>.css">
+  <link rel="stylesheet" type="text/css" href="/css/<?php echo $release; ?>.css?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/css/' . $release . '.css'); ?>">
 </head>
 
 <body>

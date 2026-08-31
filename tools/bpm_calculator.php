@@ -202,7 +202,7 @@
 
       <div class="controls-buttons wrapper">
 
-        <button id="toggle-play-button" class="square" title="Toggle playback">
+        <button id="toggle-play-button" class="square" title="Toggle play">
           <svg class="icons">
             <use href="/icons.svg#play" />
           </svg>
@@ -356,7 +356,7 @@
         <span class="button-text">Guides</span>
       </button>
 
-      <button id="timeline-bright-button" class="square" title="Toggle bright guides">
+      <button id="timeline-bright-button" data-shared-timeline-bright class="square" title="Toggle bright guides">
         <svg class="icons">
           <use href="/icons.svg#sun" />
         </svg>

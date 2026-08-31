@@ -10,7 +10,7 @@
   $availableModules = ["tool", "controls"];
   ?>
   <meta name="keywords" content="bpm reference, note frequency chart, scale reference, chord reference">
-  <link rel="stylesheet" type="text/css" href="/css/<?php echo $release; ?>.css">
+  <link rel="stylesheet" type="text/css" href="/css/<?php echo $release; ?>.css?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/css/' . $release . '.css'); ?>">
 </head>
 
 <body>

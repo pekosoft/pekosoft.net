@@ -10,7 +10,7 @@
   $availableModules = ["tool", "controls", "timeline", "panel", "meters"];
   ?>
   <meta name="keywords" content="tuner, guitar tuner, bass tuner, chromatic tuner, reference tone, pitch detection">
-  <link rel="stylesheet" type="text/css" href="/css/<?php echo $release; ?>.css">
+  <link rel="stylesheet" type="text/css" href="/css/<?php echo $release; ?>.css?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/css/' . $release . '.css'); ?>">
 </head>
 
 <body>

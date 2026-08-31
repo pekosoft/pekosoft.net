@@ -11,7 +11,7 @@
   $availableModules = ["tool", "controls", "timeline", "playlist", "panel", "meters"];
   ?>
   <meta name="keywords" content="player, audio player, music player, audio file player, online audio player, online music player, web audio player, web music player">
-  <link rel="stylesheet" type="text/css" href="/css/<?php echo $release; ?>.css">
+  <link rel="stylesheet" type="text/css" href="/css/<?php echo $release; ?>.css?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/css/' . $release . '.css'); ?>">
 </head>
 
 <body>

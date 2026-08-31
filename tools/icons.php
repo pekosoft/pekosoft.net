@@ -9,7 +9,7 @@
   $releasePage = "";
   ?>
   <meta name="keywords" content="icons">
-  <link rel="stylesheet" type="text/css" href="/css/<?php echo $release; ?>.css">
+  <link rel="stylesheet" type="text/css" href="/css/<?php echo $release; ?>.css?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/css/' . $release . '.css'); ?>">
 </head>
 
 <body>

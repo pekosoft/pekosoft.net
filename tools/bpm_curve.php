@@ -10,7 +10,7 @@
   $availableModules = ["tool", "controls", "timeline", "panel", "meters"];
   ?>
   <meta name="keywords" content="bpm curve, tempo curve, tempo editor, bpm tool, curve editor, bpm envelope, tempo envelope">
-  <link rel="stylesheet" type="text/css" href="/css/<?php echo $release; ?>.css">
+  <link rel="stylesheet" type="text/css" href="/css/<?php echo $release; ?>.css?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/css/' . $release . '.css'); ?>">
 </head>
 
 <body>

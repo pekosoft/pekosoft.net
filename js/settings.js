@@ -15,6 +15,7 @@ window.FactoryDefaults = {
   haptics: false,
   toggleButtonText: false,
   alpha: false,
+  multicolor: true,
   wrap: false,
   inputBackgroundsEnabled: true,
   theme: "dark",
@@ -40,6 +41,7 @@ document.addEventListener("DOMContentLoaded", () => {
     toggleButtonText: document.getElementById("toggle-button-text"),
     fontSizeSelector: document.getElementById("font_size_selector"),
     toggleAlpha: document.getElementById("toggle-alpha"),
+    multicolor: document.getElementById("multicolor"),
     toggleWrap: document.getElementById("toggle-wrap"),
     resetButton: document.getElementById("reset-settings-button"),
     defaultBPM: document.getElementById("default_bpm"),
@@ -225,6 +227,12 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  if (settings.multicolor) {
+    settings.multicolor.addEventListener("change", () => {
+      setGlobalMulticolor(settings.multicolor.checked);
+    });
+  }
+
   if (settings.toggleWrap) {
     settings.toggleWrap.addEventListener("change", () => {
       saveWrapSetting();
@@ -319,6 +327,9 @@ document.addEventListener("DOMContentLoaded", () => {
     if (settings.toggleAlpha) {
       settings.toggleAlpha.checked = (localStorage.getItem("global.alpha") ?? defaults.alpha) === "true";
     }
+    if (settings.multicolor) {
+      settings.multicolor.checked = (localStorage.getItem("global.multicolor") ?? String(defaults.multicolor)) === "true";
+    }
     if (settings.toggleWrap) {
       settings.toggleWrap.checked = (localStorage.getItem("global.wrap") ?? defaults.wrap) === "true";
     }
@@ -392,6 +403,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function saveAlphaSetting() {
     localStorage.setItem("global.alpha", settings.toggleAlpha.checked);
+  }
+
+  function setGlobalMulticolor(nextState) {
+    const enabled = !!nextState;
+    localStorage.setItem("global.multicolor", String(enabled));
+    for (let index = localStorage.length - 1; index >= 0; index -= 1) {
+      const key = localStorage.key(index);
+      if (/^meters\..+\.multicolor$/.test(key || "")) {
+        localStorage.removeItem(key);
+      }
+    }
+    window.dispatchEvent(new CustomEvent("pekosoft:multicolor-global-change", {
+      detail: { enabled }
+    }));
   }
 
   function saveWrapSetting() {
@@ -494,6 +519,7 @@ document.addEventListener("DOMContentLoaded", () => {
     localStorage.setItem("global.toggle_button_text", defaults.toggleButtonText);
     localStorage.setItem("global.font_size", defaults.fontSize);
     localStorage.setItem("global.alpha", defaults.alpha);
+    setGlobalMulticolor(defaults.multicolor);
     if (window.PekoWrap) {
       window.PekoWrap.setGlobal(defaults.wrap);
     } else {

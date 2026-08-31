@@ -420,8 +420,13 @@
 </div>
 
 <div class="feature-row border">
-  <svg class="standard-image-help"><use href="/icons.svg#alpha"></use></svg>
+  <svg class="standard-image-help"><use href="/icons.svg#color_depth"></use></svg>
   <div class="justify"><h1>Alpha <span class="object">option</span></h1>Applies transparency to selected interface surfaces.</div>
+</div>
+
+<div class="feature-row border">
+  <svg class="standard-image-help"><use href="/icons.svg#alpha"></use></svg>
+  <div class="justify"><h1>Multicolor <span class="object">option</span></h1>Toggles multicolor rendering across Meters. A module-local COLOR button overrides this setting for its own Meters module. <span class="default">Default: on.</span></div>
 </div>
 
 <div class="feature-row border">

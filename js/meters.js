@@ -48,7 +48,10 @@
   }
 
   function getSavedMulticolor() {
-    return localStorage.getItem(`${storagePrefix}.multicolor`) !== 'off';
+    const saved = localStorage.getItem(`${storagePrefix}.multicolor`);
+    return saved === null
+      ? localStorage.getItem('global.multicolor') !== 'false'
+      : saved === 'on';
   }
 
   function resizeCanvasToDisplaySize(canvas, ctx) {
@@ -429,9 +432,11 @@
     meterNeedsRedraw = true;
   }
 
-  function applyMulticolor(nextState) {
+  function applyMulticolor(nextState, persist = true) {
     multicolorOn = !!nextState;
-    localStorage.setItem(`${storagePrefix}.multicolor`, multicolorOn ? 'on' : 'off');
+    if (persist) {
+      localStorage.setItem(`${storagePrefix}.multicolor`, multicolorOn ? 'on' : 'off');
+    }
     if (colorButton) {
       colorButton.classList.toggle('button-on', multicolorOn);
     }
@@ -1037,6 +1042,10 @@
     applyBright(event.detail?.enabled, false);
   });
 
+  window.addEventListener('pekosoft:multicolor-global-change', (event) => {
+    applyMulticolor(event.detail?.enabled, false);
+  });
+
   const resetButton = document.getElementById('reset-button');
   if (resetButton) {
     resetButton.addEventListener('click', () => {
@@ -1047,7 +1056,7 @@
   applyMode(activeMode);
   applyGuides(guidesOn);
   applyBright(brightGuides);
-  applyMulticolor(multicolorOn);
+  applyMulticolor(multicolorOn, false);
   window.__pekosoftClearMeterFrame = clearMeterFrame;
   requestAnimationFrame(tick);
 })();

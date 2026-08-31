@@ -120,7 +120,6 @@ const STORAGE = {
     input: 'player.input',
     volume: 'player.volume',
     loop: 'player.loop',
-    sound: 'player.sound',
     toolMeter: 'player.tool_meter',
     panelSource: 'player.panel_source',
     inputMonitor: 'player.input_monitor',
@@ -2318,10 +2317,10 @@ window.addEventListener('load', () => {
     loopEnabled = localStorage.getItem(STORAGE.loop) === 'true';
     updateLoopPlaybackMode();
 
-    const savedMuted = localStorage.getItem(STORAGE.sound) === 'true';
-    playerSoundMuted = savedMuted;
+    localStorage.removeItem('player.sound');
+    playerSoundMuted = false;
     updatePlayerMasterGain();
-    toggleSound.classList.toggle('button-on', !savedMuted);
+    toggleSound.classList.add('button-on');
 
     renderPanel();
     updateTimeFieldBars();
@@ -2523,7 +2522,6 @@ toggleSound.addEventListener('click', () => {
         });
     }
     updatePlayerMasterGain();
-    localStorage.setItem(STORAGE.sound, playerSoundMuted);
     toggleSound.classList.toggle('button-on', !playerSoundMuted);
 });
 

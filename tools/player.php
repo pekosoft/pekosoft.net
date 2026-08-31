@@ -229,6 +229,78 @@
 
   <div id="timeline-container" class="container">
     <div class="module-body canvas-container border">
+      <div class="controls-buttons wrapper">
+        <button id="timeline-pan-button" class="square" title="Toggle pan line">
+          <svg class="icons">
+            <use href="/icons.svg#slider" />
+          </svg>
+          <span class="button-text">Pan</span>
+        </button>
+
+        <button id="select-all-button" class="square" title="Select full waveform">
+          <svg class="icons">
+            <use href="/icons.svg#select_all" />
+          </svg>
+          <span class="button-text">All</span>
+        </button>
+
+        <button id="select-none-button" class="square" title="Clear waveform selection">
+          <svg class="icons">
+            <use href="/icons.svg#select_none" />
+          </svg>
+          <span class="button-text">None</span>
+        </button>
+
+        <button id="fade-in-button" class="square" title="Fade in using selected curve">
+          <svg class="icons">
+            <use href="/icons.svg#arrow_up" />
+          </svg>
+          <span class="button-text">Fade In</span>
+        </button>
+
+        <button id="fade-out-button" class="square" title="Fade out using selected curve">
+          <svg class="icons">
+            <use href="/icons.svg#arrow_down" />
+          </svg>
+          <span class="button-text">Fade Out</span>
+        </button>
+
+        <button id="normalize-button" class="square" title="Normalize to 0 dB">
+          <svg class="icons">
+            <use href="/icons.svg#eq" />
+          </svg>
+          <span class="button-text">Normalize</span>
+        </button>
+
+        <button id="reverse-button" class="square" title="Reverse">
+          <svg class="icons">
+            <use href="/icons.svg#reverse" />
+          </svg>
+          <span class="button-text">Reverse</span>
+        </button>
+
+        <button id="cut-button" class="square" title="Cut to clipboard">
+          <svg class="icons">
+            <use href="/icons.svg#cut" />
+          </svg>
+          <span class="button-text">Cut</span>
+        </button>
+
+        <button id="paste-button" class="square" title="Paste from clipboard">
+          <svg class="icons">
+            <use href="/icons.svg#paste" />
+          </svg>
+          <span class="button-text">Paste</span>
+        </button>
+
+        <button id="delete-button" class="square" title="Delete">
+          <svg class="icons">
+            <use href="/icons.svg#delete" />
+          </svg>
+          <span class="button-text">Delete</span>
+        </button>
+      </div>
+
       <div class="timeline-scroll scrollable">
       <div class="player-timeline">
         <canvas id="timeline-ruler" width="4096" height="24"></canvas>
@@ -283,81 +355,11 @@
         <span class="button-text">Snap</span>
       </button>
 
-      <button id="timeline-pan-button" class="square" title="Toggle pan line">
-        <svg class="icons">
-          <use href="/icons.svg#slider" />
-        </svg>
-        <span class="button-text">Pan</span>
-      </button>
-
       <button id="waveform-color-button" class="square" title="Toggle multi-color waveform">
         <svg class="icons">
           <use href="/icons.svg#alpha" />
         </svg>
         <span class="button-text">Color</span>
-      </button>
-
-      <button id="select-all-button" class="square" title="Select full waveform">
-        <svg class="icons">
-          <use href="/icons.svg#select_all" />
-        </svg>
-        <span class="button-text">All</span>
-      </button>
-
-      <button id="select-none-button" class="square" title="Clear waveform selection">
-        <svg class="icons">
-          <use href="/icons.svg#select_none" />
-        </svg>
-        <span class="button-text">None</span>
-      </button>
-
-      <button id="fade-in-button" class="square" title="Fade in using selected curve">
-        <svg class="icons">
-          <use href="/icons.svg#arrow_up" />
-        </svg>
-        <span class="button-text">Fade In</span>
-      </button>
-
-      <button id="fade-out-button" class="square" title="Fade out using selected curve">
-        <svg class="icons">
-          <use href="/icons.svg#arrow_down" />
-        </svg>
-        <span class="button-text">Fade Out</span>
-      </button>
-
-      <button id="normalize-button" class="square" title="Normalize to 0 dB">
-        <svg class="icons">
-          <use href="/icons.svg#eq" />
-        </svg>
-        <span class="button-text">Normalize</span>
-      </button>
-
-      <button id="reverse-button" class="square" title="Reverse">
-        <svg class="icons">
-          <use href="/icons.svg#reverse" />
-        </svg>
-        <span class="button-text">Reverse</span>
-      </button>
-
-      <button id="cut-button" class="square" title="Cut to clipboard">
-        <svg class="icons">
-          <use href="/icons.svg#tool" />
-        </svg>
-        <span class="button-text">Cut</span>
-      </button>
-
-      <button id="paste-button" class="square" title="Paste from clipboard">
-        <svg class="icons">
-          <use href="/icons.svg#copy" />
-        </svg>
-        <span class="button-text">Paste</span>
-      </button>
-
-      <button id="delete-button" class="square" title="Delete">
-        <svg class="icons">
-          <use href="/icons.svg#delete" />
-        </svg>
-        <span class="button-text">Delete</span>
       </button>
 
       <button id="undo-button" class="square" title="Undo waveform edit">

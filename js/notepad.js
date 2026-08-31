@@ -49,9 +49,22 @@ document.addEventListener('DOMContentLoaded', function () {
   const pasteButton = document.getElementById('notepad-paste-button');
   const textarea = document.getElementById('Textarea');
   const STORAGE_KEY = 'notepad.text';
+  let currentUtterance = null;
+  let isSpeaking = false;
 
-  function updateDownloadButtonState() {
-    if (downloadButton) downloadButton.disabled = !textarea.value;
+  function updateTextActionButtonStates() {
+    const isEmpty = !textarea.value;
+    [
+      { button: downloadButton, isDisabled: isEmpty },
+      { button: clearButton, isDisabled: isEmpty },
+      { button: copyButton, isDisabled: isEmpty },
+      { button: speechButton, isDisabled: isEmpty && !isSpeaking }
+    ].forEach(({ button, isDisabled }) => {
+      if (!button) return;
+      button.disabled = isDisabled;
+      button.classList.toggle('grey', isDisabled);
+      button.setAttribute('aria-disabled', String(isDisabled));
+    });
   }
 
   if (textarea) {
@@ -59,11 +72,11 @@ document.addEventListener('DOMContentLoaded', function () {
     if (savedText !== null) {
       textarea.value = savedText;
     }
-    updateDownloadButtonState();
+    updateTextActionButtonStates();
 
     textarea.addEventListener('input', function () {
       localStorage.setItem(STORAGE_KEY, textarea.value);
-      updateDownloadButtonState();
+      updateTextActionButtonStates();
     });
   }
 
@@ -82,15 +95,13 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   }
 
-  let currentUtterance = null;
-  let isSpeaking = false;
-
   function setSpeechState(active) {
     isSpeaking = active;
     if (!speechButton) return;
     speechButton.classList.toggle('button-on', active);
     speechButton.setAttribute('aria-pressed', active ? 'true' : 'false');
     speechButton.title = active ? 'Stop speaking' : 'Speak text';
+    updateTextActionButtonStates();
   }
 
   function stopSpeech() {

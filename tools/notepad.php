@@ -23,28 +23,28 @@
     </div>
     <div class="module-footer wrapper colored">
 
-      <button id="notepad-speech-button" class="square" title="Speak text">
+      <button id="notepad-speech-button" class="square grey" title="Speak text" disabled aria-disabled="true">
         <svg class="icons">
           <use href="/icons.svg#speech" />
         </svg>
         <span class="button-text">Speech</span>
       </button>
 
-      <button id="notepad-download-button" class="square" title="Download text" disabled>
+      <button id="notepad-download-button" class="square grey" title="Download text" disabled aria-disabled="true">
         <svg class="icons">
           <use href="/icons.svg#download" />
         </svg>
         <span class="button-text">Download</span>
       </button>
 
-      <button id="notepad-clear-button" class="square" title="Clear text">
+      <button id="notepad-clear-button" class="square grey" title="Clear text" disabled aria-disabled="true">
         <svg class="icons">
           <use href="/icons.svg#delete" />
         </svg>
         <span class="button-text">Clear</span>
       </button>
 
-      <button id="notepad-copy-button" class="square" title="Copy text">
+      <button id="notepad-copy-button" class="square grey" title="Copy text" disabled aria-disabled="true">
         <svg class="icons">
           <use href="/icons.svg#copy" />
         </svg>

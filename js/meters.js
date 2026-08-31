@@ -715,7 +715,7 @@
         { centerY: height * 0.75, historyMin: wavescopeState.historyMinR, historyMax: wavescopeState.historyMaxR }
       ]
       : [{ centerY: height * 0.5, historyMin: wavescopeState.historyMinL, historyMax: wavescopeState.historyMaxL }];
-    const laneAmplitude = isStereo ? (height * 0.18) : (height * 0.35);
+    const laneAmplitude = isStereo ? (height * 0.18) : (height * 0.5);
 
     const hasRenderableSamples = lanes.some((lane) => {
       for (let i = 0; i < lane.historyMin.length; i++) {
@@ -891,7 +891,7 @@
       const lanes = isStereo
         ? [{ label: 'L', center: 0.25 }, { label: 'R', center: 0.75 }]
         : [{ label: '', center: 0.5 }];
-      const laneAmplitude = isStereo ? 0.18 : 0.35;
+      const laneAmplitude = isStereo ? 0.18 : 0.5;
 
       drawWaveformValueSeparator(ctx, height);
       lanes.forEach(({ label, center }) => {

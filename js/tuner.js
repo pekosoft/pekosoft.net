@@ -2,11 +2,11 @@
 // pekosoft.net/js/tuner.js
 
 const listenButton = document.getElementById('listen-button');
-const toneButton = document.getElementById('tone-button');
 const holdButton = document.getElementById('hold-button');
 
 const profileSelect = document.getElementById('profile-select');
 const followButton = document.getElementById('follow-button');
+const soundToggleButton = document.getElementById('sound-button');
 const clearPanelButton = document.getElementById('clear-panel-button');
 const resetButton = document.getElementById('reset-button');
 
@@ -55,11 +55,9 @@ const STORAGE = {
   profile: 'tuner.profile',
   followTarget: 'tuner.follow_target',
   chromaticOctave: 'tuner.chromatic_octave',
-  chromaticIndex: 'tuner.chromatic_index',
-  guitarIndex: 'tuner.guitar_index',
-  bassIndex: 'tuner.bass_index',
   toneType: 'tuner.tone_type',
   volume: 'tuner.volume',
+  soundOn: 'tuner.sound_on',
   guides: 'tuner.show_guides',
   panel: 'tuner.panel',
   timeline: 'tuner.timeline'
@@ -70,23 +68,22 @@ const state = {
   followTarget: true,
   hold: false,
   listening: false,
-  toneOn: false,
-  toneRunning: false,
   detectedHz: 0,
   smoothedHz: 0,
   detectedMidi: null,
   detectedNote: '--',
-  targetNote: 'E2',
-  targetHz: 82.407,
+  targetNote: '--',
+  targetHz: 0,
   cents: 0,
   chromaticOctave: 4,
-  chromaticIndex: 9,
+  chromaticIndex: -1,
   selectedIndex: {
-    guitar: 0,
-    bass: 0
+    guitar: -1,
+    bass: -1
   },
   toneType: 'sine',
   volume: 30,
+  soundOn: true,
   showGuides: true,
   timeline: [],
   lastTimelineTs: 0,
@@ -102,7 +99,8 @@ let meterSinkGainNode = null;
 let toneAnalyserNode = null;
 let toneOutputGainNode = null;
 let timeDomainBuffer = null;
-let toneVoice = null;
+let targetToneVoice = null;
+let targetToneRunning = false;
 
 const TUNER_TIMELINE_WIDTH = 4096;
 const TUNER_TIMELINE_MIN_HEIGHT = 256;
@@ -165,7 +163,8 @@ function getProfileTargets(profile) {
 
 function getCurrentSelectedIndex() {
   if (state.profile === 'chromatic') return state.chromaticIndex;
-  return state.selectedIndex[state.profile] || 0;
+  const selectedIndex = state.selectedIndex[state.profile];
+  return Number.isInteger(selectedIndex) ? selectedIndex : -1;
 }
 
 function setCurrentSelectedIndex(index) {
@@ -178,8 +177,9 @@ function setCurrentSelectedIndex(index) {
 
 function getCurrentTarget() {
   const targets = getProfileTargets(state.profile);
-  if (!targets.length) return null;
-  const index = Math.max(0, Math.min(getCurrentSelectedIndex(), targets.length - 1));
+  const selectedIndex = getCurrentSelectedIndex();
+  if (!targets.length || selectedIndex === -1) return null;
+  const index = Math.max(0, Math.min(selectedIndex, targets.length - 1));
   return targets[index];
 }
 
@@ -194,8 +194,8 @@ function updateCurrentTarget() {
   state.targetNote = target.noteName;
   state.targetHz = target.hz;
 
-  if (state.toneRunning && toneVoice) {
-    updateToneFrequency(target.hz);
+  if (targetToneRunning && targetToneVoice) {
+    updateVoiceFrequency(targetToneVoice, target.hz);
   }
 }
 
@@ -220,25 +220,44 @@ function renderTargetButtons() {
   const targets = getProfileTargets(state.profile);
   targetGrid.innerHTML = '';
 
+  const showButtonText = document.body.classList.contains('show-button-text');
+
   targets.forEach((target, index) => {
     const button = document.createElement('button');
-    button.className = 'square tuner-target-button';
-    if (index === getCurrentSelectedIndex()) {
-      button.classList.add('button-on');
-    }
+    button.className = showButtonText ? 'tuner-target-button' : 'square tuner-target-button';
+    button.title = `Set target to ${target.noteName}`;
 
-    button.innerHTML = `<span class="button-note">${target.noteName}</span>`;
-    button.addEventListener('click', () => {
-      setCurrentSelectedIndex(index);
+    button.innerHTML = `<svg class="icons"><use href="/icons.svg#asterisk" /></svg><span class="button-text">${target.noteName}</span>`;
+    button.addEventListener('click', async () => {
+      const isAlreadySelected = index === getCurrentSelectedIndex();
+      setCurrentSelectedIndex(isAlreadySelected ? -1 : index);
       state.followTarget = false;
       updateFollowButton();
       updateCurrentTarget();
+
+      if (isAlreadySelected) {
+        stopTargetTone();
+      } else {
+        stopTargetTone();
+        await startTargetTone(target);
+      }
+
       saveSettings();
-      renderTargetButtons();
+      updateTargetSelection();
       syncReadout();
     });
 
     targetGrid.appendChild(button);
+  });
+
+  updateTargetSelection();
+}
+
+// Toggle which target button looks selected, without rebuilding the button set
+function updateTargetSelection() {
+  const selectedIndex = getCurrentSelectedIndex();
+  Array.from(targetGrid.children).forEach((button, index) => {
+    button.classList.toggle('button-on', index === selectedIndex);
   });
 }
 
@@ -304,10 +323,6 @@ function updateHoldButton() {
 
 function updateListenButton() {
   listenButton.classList.toggle('button-on', state.listening);
-}
-
-function updateToneButton() {
-  toneButton.classList.toggle('button-on', state.toneOn);
 }
 
 function getTunerTimelineHeight() {
@@ -534,7 +549,7 @@ function applyDetectedFrequency(frequency, nowMs) {
     const nearestIndex = findNearestTargetIndexByMidi(targets, midi);
     setCurrentSelectedIndex(nearestIndex);
     updateCurrentTarget();
-    renderTargetButtons();
+    updateTargetSelection();
   }
 
   if (state.targetHz > 0) {
@@ -580,8 +595,8 @@ function updateMetersSourceBridge() {
       analyser: toneAnalyserNode,
       channelCount: 1,
       sampleRate: audioContext.sampleRate,
-      isActive: () => state.toneRunning,
-      isStopped: () => !state.toneRunning
+      isActive: () => targetToneRunning,
+      isStopped: () => !targetToneRunning
     };
     return;
   }
@@ -635,10 +650,22 @@ function ensureToneMetersAnalyserNode() {
 
 function updateToneOutputGain() {
   if (!toneOutputGainNode || !audioContext) return;
+  const globalSoundOn = localStorage.getItem('global.sound') !== 'false';
   const now = audioContext.currentTime;
   toneOutputGainNode.gain.cancelScheduledValues(now);
-  toneOutputGainNode.gain.setValueAtTime(localStorage.getItem('global.sound') !== 'false' ? 1 : 0, now);
+  toneOutputGainNode.gain.setValueAtTime(state.soundOn && globalSoundOn ? 1 : 0, now);
 }
+
+function updateSoundToggleButton() {
+  soundToggleButton?.classList.toggle('button-on', state.soundOn);
+}
+
+soundToggleButton?.addEventListener('click', () => {
+  state.soundOn = !state.soundOn;
+  updateSoundToggleButton();
+  updateToneOutputGain();
+  saveSettings();
+});
 
 async function startListening() {
   if (state.listening) return;
@@ -725,59 +752,11 @@ function processPitchFrame() {
   state.rafId = requestAnimationFrame(processPitchFrame);
 }
 
-async function startTone() {
-  if (state.toneRunning) {
-    state.toneOn = true;
-    updateToneGain();
-    updateToneButton();
-    updateMetersSourceBridge();
-    return;
-  }
-
-  try {
-    await ensureAudioContext();
-    const target = getCurrentTarget();
-    const toneDestinationNode = ensureToneMetersAnalyserNode() || audioContext.destination;
-    if (!target) return;
-
-    if (typeof window.createSustainedToneVoice === 'function') {
-      toneVoice = window.createSustainedToneVoice({
-        audioContext,
-        tone: state.toneType,
-        frequency: target.hz,
-        destinationNode: toneDestinationNode,
-        standardGain: state.volume / 100,
-        pianoPeakGain: Math.max(state.volume / 100, 0.0001),
-        pianoBodyGain: Math.max((state.volume / 100) * 0.5, 0.0001)
-      });
-    } else {
-      const oscillator = audioContext.createOscillator();
-      const gainNode = audioContext.createGain();
-      oscillator.type = state.toneType;
-      oscillator.frequency.setValueAtTime(target.hz, audioContext.currentTime);
-      gainNode.gain.setValueAtTime(0, audioContext.currentTime);
-      gainNode.gain.linearRampToValueAtTime(state.volume / 100, audioContext.currentTime + 0.03);
-      oscillator.connect(gainNode);
-      gainNode.connect(toneDestinationNode);
-      oscillator.start();
-      toneVoice = { oscillator, gainNode, tone: state.toneType };
-    }
-
-    state.toneRunning = true;
-    state.toneOn = true;
-    updateToneGain();
-    updateToneButton();
-    updateMetersSourceBridge();
-  } catch (error) {
-    console.error('Unable to start tuner reference tone:', error);
-  }
-}
-
-function updateToneFrequency(frequency) {
-  if (!toneVoice || !toneVoice.oscillator) return;
+function updateVoiceFrequency(voice, frequency) {
+  if (!voice || !voice.oscillator) return;
 
   if (typeof window.updateSustainedToneFrequency === 'function') {
-    window.updateSustainedToneFrequency(toneVoice, {
+    window.updateSustainedToneFrequency(voice, {
       frequency,
       audioContext,
       glideSec: 0.012
@@ -786,62 +765,96 @@ function updateToneFrequency(frequency) {
   }
 
   if (audioContext) {
-    toneVoice.oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
+    voice.oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
   } else {
-    toneVoice.oscillator.frequency.value = frequency;
+    voice.oscillator.frequency.value = frequency;
   }
 }
 
-function updateToneGain() {
-  if (!toneVoice || !toneVoice.gainNode || !audioContext) return;
+function updateVoiceGain(voice, audible) {
+  if (!voice || !voice.gainNode || !audioContext) return;
 
-  const targetGain = state.toneOn ? clamp(state.volume / 100, 0, 1) : 0;
+  const targetGain = audible ? clamp(state.volume / 100, 0, 1) : 0;
   const now = audioContext.currentTime;
-  toneVoice.gainNode.gain.cancelScheduledValues(now);
-  toneVoice.gainNode.gain.setTargetAtTime(targetGain, now, 0.015);
+  voice.gainNode.gain.cancelScheduledValues(now);
+  voice.gainNode.gain.setTargetAtTime(targetGain, now, 0.015);
 }
 
-function stopTone() {
-  if (!toneVoice || !toneVoice.oscillator) {
-    state.toneRunning = false;
-    state.toneOn = false;
-    updateToneButton();
-    updateMetersSourceBridge();
+function createToneVoice(frequency, destinationNode) {
+  if (typeof window.createSustainedToneVoice === 'function') {
+    return window.createSustainedToneVoice({
+      audioContext,
+      tone: state.toneType,
+      frequency,
+      destinationNode,
+      standardGain: state.volume / 100,
+      pianoPeakGain: Math.max(state.volume / 100, 0.0001),
+      pianoBodyGain: Math.max((state.volume / 100) * 0.5, 0.0001)
+    });
+  }
+
+  const oscillator = audioContext.createOscillator();
+  const gainNode = audioContext.createGain();
+  oscillator.type = state.toneType;
+  oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
+  gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+  gainNode.gain.linearRampToValueAtTime(state.volume / 100, audioContext.currentTime + 0.03);
+  oscillator.connect(gainNode);
+  gainNode.connect(destinationNode);
+  oscillator.start();
+  return { oscillator, gainNode, tone: state.toneType };
+}
+
+function releaseToneVoice(voice) {
+  if (!voice || !voice.oscillator) return;
+
+  if (typeof window.releaseSustainedToneVoice === 'function' && audioContext) {
+    window.releaseSustainedToneVoice({
+      audioContext,
+      voice,
+      releaseSec: 0.08
+    });
     return;
   }
 
-  if (typeof window.releaseSustainedToneVoice === 'function' && audioContext) {
-    const voiceToRelease = toneVoice;
-    toneVoice = null;
-    window.releaseSustainedToneVoice({
-      audioContext,
-      voice: voiceToRelease,
-      releaseSec: 0.08
-    });
-  } else {
-    const now = audioContext ? audioContext.currentTime : 0;
-    const gainNode = toneVoice.gainNode;
-    const oscillator = toneVoice.oscillator;
-    gainNode.gain.cancelScheduledValues(now);
-    gainNode.gain.setValueAtTime(gainNode.gain.value, now);
-    gainNode.gain.linearRampToValueAtTime(0, now + 0.08);
-    oscillator.stop(now + 0.09);
-    oscillator.onended = () => {
-      try { oscillator.disconnect(); } catch (error) { }
-      try { gainNode.disconnect(); } catch (error) { }
-    };
-    toneVoice = null;
-  }
+  const now = audioContext ? audioContext.currentTime : 0;
+  const gainNode = voice.gainNode;
+  const oscillator = voice.oscillator;
+  gainNode.gain.cancelScheduledValues(now);
+  gainNode.gain.setValueAtTime(gainNode.gain.value, now);
+  gainNode.gain.linearRampToValueAtTime(0, now + 0.08);
+  oscillator.stop(now + 0.09);
+  oscillator.onended = () => {
+    try { oscillator.disconnect(); } catch (error) { }
+    try { gainNode.disconnect(); } catch (error) { }
+  };
+}
 
-  state.toneRunning = false;
-  state.toneOn = false;
-  updateToneButton();
+async function startTargetTone(target) {
+  if (!target) return;
+
+  try {
+    await ensureAudioContext();
+    const toneDestinationNode = ensureToneMetersAnalyserNode() || audioContext.destination;
+    targetToneVoice = createToneVoice(target.hz, toneDestinationNode);
+    targetToneRunning = true;
+    updateMetersSourceBridge();
+  } catch (error) {
+    console.error('Unable to start tuner target tone:', error);
+  }
+}
+
+function stopTargetTone() {
+  releaseToneVoice(targetToneVoice);
+  targetToneVoice = null;
+  targetToneRunning = false;
   updateMetersSourceBridge();
 }
 
 function setProfile(profileName) {
   if (!PROFILE_TEMPLATES[profileName]) return;
 
+  stopTargetTone();
   state.profile = profileName;
   updateProfileSelect();
 
@@ -861,25 +874,25 @@ function saveSettings() {
   localStorage.setItem(STORAGE.profile, state.profile);
   localStorage.setItem(STORAGE.followTarget, String(state.followTarget));
   localStorage.setItem(STORAGE.chromaticOctave, String(state.chromaticOctave));
-  localStorage.setItem(STORAGE.chromaticIndex, String(state.chromaticIndex));
-  localStorage.setItem(STORAGE.guitarIndex, String(state.selectedIndex.guitar || 0));
-  localStorage.setItem(STORAGE.bassIndex, String(state.selectedIndex.bass || 0));
   localStorage.setItem(STORAGE.toneType, state.toneType);
   localStorage.setItem(STORAGE.volume, String(state.volume));
+  localStorage.setItem(STORAGE.soundOn, String(state.soundOn));
   localStorage.setItem(STORAGE.guides, String(state.showGuides));
   localStorage.setItem(STORAGE.panel, tunerText.value);
   localStorage.setItem(STORAGE.timeline, JSON.stringify(state.timeline));
 }
 
 function loadSettings() {
+  localStorage.removeItem('tuner.chromatic_index');
+  localStorage.removeItem('tuner.guitar_index');
+  localStorage.removeItem('tuner.bass_index');
+
   const savedProfile = localStorage.getItem(STORAGE.profile);
   const savedFollowTarget = localStorage.getItem(STORAGE.followTarget);
   const savedChromaticOctave = parseInt(localStorage.getItem(STORAGE.chromaticOctave), 10);
-  const savedChromaticIndex = parseInt(localStorage.getItem(STORAGE.chromaticIndex), 10);
-  const savedGuitarIndex = parseInt(localStorage.getItem(STORAGE.guitarIndex), 10);
-  const savedBassIndex = parseInt(localStorage.getItem(STORAGE.bassIndex), 10);
   const savedToneType = localStorage.getItem(STORAGE.toneType);
   const savedVolume = parseInt(localStorage.getItem(STORAGE.volume), 10);
+  const savedSoundOn = localStorage.getItem(STORAGE.soundOn);
   const savedGuides = localStorage.getItem(STORAGE.guides);
   const savedPanel = localStorage.getItem(STORAGE.panel);
   const savedTimeline = localStorage.getItem(STORAGE.timeline);
@@ -896,20 +909,12 @@ function loadSettings() {
     state.chromaticOctave = clamp(savedChromaticOctave, 0, 8);
   }
 
-  if (Number.isFinite(savedChromaticIndex)) {
-    state.chromaticIndex = clamp(savedChromaticIndex, 0, 11);
-  }
-
-  if (Number.isFinite(savedGuitarIndex)) {
-    state.selectedIndex.guitar = clamp(savedGuitarIndex, 0, PROFILE_TEMPLATES.guitar.length - 1);
-  }
-
-  if (Number.isFinite(savedBassIndex)) {
-    state.selectedIndex.bass = clamp(savedBassIndex, 0, PROFILE_TEMPLATES.bass.length - 1);
-  }
-
   state.toneType = normalizeToneType(savedToneType || 'sine');
   state.volume = Number.isFinite(savedVolume) ? clamp(savedVolume, 0, 100) : 30;
+
+  if (savedSoundOn !== null) {
+    state.soundOn = savedSoundOn === 'true';
+  }
 
   if (savedGuides !== null) {
     state.showGuides = savedGuides === 'true';
@@ -947,7 +952,7 @@ function loadSettings() {
   updateGuidesButton();
   updateHoldButton();
   updateListenButton();
-  updateToneButton();
+  updateSoundToggleButton();
 
   if (state.profile === 'chromatic') {
     chromaticOctaveInput.disabled = false;
@@ -967,7 +972,7 @@ function clearPanel() {
 }
 
 function resetAll() {
-  stopTone();
+  stopTargetTone();
   stopListening();
 
   state.profile = 'guitar';
@@ -977,15 +982,16 @@ function resetAll() {
   state.smoothedHz = 0;
   state.detectedMidi = null;
   state.detectedNote = '--';
-  state.targetNote = 'E2';
-  state.targetHz = parseNoteName('E2').hz;
+  state.targetNote = '--';
+  state.targetHz = 0;
   state.cents = 0;
   state.chromaticOctave = 4;
-  state.chromaticIndex = 9;
-  state.selectedIndex.guitar = 0;
-  state.selectedIndex.bass = 0;
+  state.chromaticIndex = -1;
+  state.selectedIndex.guitar = -1;
+  state.selectedIndex.bass = -1;
   state.toneType = 'sine';
   state.volume = 30;
+  state.soundOn = true;
   state.showGuides = localStorage.getItem('global.guides') !== 'false';
   state.timeline = [];
   state.lastTimelineTs = 0;
@@ -1006,7 +1012,7 @@ function resetAll() {
   updateGuidesButton();
   updateHoldButton();
   updateListenButton();
-  updateToneButton();
+  updateSoundToggleButton();
 
   updateCurrentTarget();
   renderTargetButtons();
@@ -1020,19 +1026,6 @@ listenButton.addEventListener('click', () => {
   } else {
     startListening();
   }
-});
-
-toneButton.addEventListener('click', () => {
-  if (!state.toneRunning) {
-    state.toneOn = true;
-    startTone();
-    return;
-  }
-
-  state.toneOn = !state.toneOn;
-  updateToneButton();
-  updateToneGain();
-  updateMetersSourceBridge();
 });
 
 holdButton.addEventListener('click', () => {
@@ -1058,6 +1051,7 @@ chromaticOctaveInput.addEventListener('input', () => {
   if (!Number.isFinite(value)) return;
   state.chromaticOctave = clamp(value, 0, 8);
   chromaticOctaveInput.value = String(state.chromaticOctave);
+  stopTargetTone();
   updateCurrentTarget();
   renderTargetButtons();
   syncReadout();
@@ -1068,16 +1062,10 @@ toneTypeSelect.addEventListener('change', () => {
   state.toneType = normalizeToneType(toneTypeSelect.value);
   toneTypeSelect.value = state.toneType;
 
-  if (state.toneRunning) {
-    const keepAudible = state.toneOn;
-    stopTone();
-    startTone();
-    if (!keepAudible) {
-      state.toneOn = false;
-      updateToneButton();
-      updateToneGain();
-      updateMetersSourceBridge();
-    }
+  if (targetToneRunning) {
+    const target = getCurrentTarget();
+    stopTargetTone();
+    startTargetTone(target);
   }
 
   saveSettings();
@@ -1086,7 +1074,7 @@ toneTypeSelect.addEventListener('change', () => {
 volumeSlider.addEventListener('input', () => {
   state.volume = clamp(parseInt(volumeSlider.value, 10) || 0, 0, 100);
   volumeSlider.value = String(state.volume);
-  updateToneGain();
+  updateVoiceGain(targetToneVoice, targetToneRunning);
   saveSettings();
 });
 
@@ -1135,14 +1123,14 @@ function bindHoldAction(button, action) {
 bindHoldAction(volumeIncreaseButton, () => {
   state.volume = clamp(state.volume + 1, 0, 100);
   volumeSlider.value = String(state.volume);
-  updateToneGain();
+  updateVoiceGain(targetToneVoice, targetToneRunning);
   saveSettings();
 });
 
 bindHoldAction(volumeDecreaseButton, () => {
   state.volume = clamp(state.volume - 1, 0, 100);
   volumeSlider.value = String(state.volume);
-  updateToneGain();
+  updateVoiceGain(targetToneVoice, targetToneRunning);
   saveSettings();
 });
 
@@ -1165,7 +1153,7 @@ clearPanelButton.addEventListener('click', clearPanel);
 resetButton.addEventListener('click', resetAll);
 
 window.addEventListener('beforeunload', () => {
-  stopTone();
+  stopTargetTone();
   stopListening();
   if (state.rafId) {
     cancelAnimationFrame(state.rafId);

@@ -19,26 +19,28 @@
   <!-- TOOL -->
 
   <div id="tool-container" class="container">
-    <div class="module-body standard border tuner-stage-wrapper">
-      <div class="tuner-stage">
-        <div class="tuner-readout-block">
-          <div id="detected-note" class="tuner-detected-note">--</div>
-          <div id="detected-hz" class="tuner-detected-hz">0.00 HZ</div>
-          <div id="cents-readout" class="tuner-cents">0 cents</div>
-          <div id="status-readout" class="tuner-status">Mic off</div>
-        </div>
+    <div class="module-body border">
+      <div id="target-grid" class="controls-buttons wrapper"></div>
 
-        <div class="tuner-meter" aria-label="Pitch deviation meter">
-          <div class="tuner-meter-label tuner-meter-label-left">-50</div>
-          <div class="tuner-meter-label tuner-meter-label-center">0</div>
-          <div class="tuner-meter-label tuner-meter-label-right">+50</div>
-          <div class="tuner-meter-track">
-            <div class="tuner-meter-center-line"></div>
-            <div id="tuner-needle" class="tuner-needle"></div>
+      <div class="standard tuner-stage-wrapper">
+        <div class="tuner-stage">
+          <div class="tuner-readout-block">
+            <div id="detected-note" class="tuner-detected-note">--</div>
+            <div id="detected-hz" class="tuner-detected-hz">0.00 HZ</div>
+            <div id="cents-readout" class="tuner-cents">0 cents</div>
+            <div id="status-readout" class="tuner-status">Mic off</div>
+          </div>
+
+          <div class="tuner-meter" aria-label="Pitch deviation meter">
+            <div class="tuner-meter-label tuner-meter-label-left">-50</div>
+            <div class="tuner-meter-label tuner-meter-label-center">0</div>
+            <div class="tuner-meter-label tuner-meter-label-right">+50</div>
+            <div class="tuner-meter-track">
+              <div class="tuner-meter-center-line"></div>
+              <div id="tuner-needle" class="tuner-needle"></div>
+            </div>
           </div>
         </div>
-
-        <div id="target-grid" class="tuner-target-grid"></div>
       </div>
     </div>
 
@@ -48,13 +50,6 @@
           <use href="/icons.svg#mic" />
         </svg>
         <span class="button-text">Listen</span>
-      </button>
-
-      <button id="tone-button" class="square" title="Toggle reference tone playback">
-        <svg class="icons">
-          <use href="/icons.svg#sound" />
-        </svg>
-        <span class="button-text">Tone</span>
       </button>
 
       <button id="hold-button" class="square" title="Freeze detected readout">
@@ -74,9 +69,16 @@
       <div class="controls-buttons wrapper">
         <button id="follow-button" class="square button-on" title="Follow nearest target note automatically">
           <svg class="icons">
-            <use href="/icons.svg#field" />
+            <use href="/icons.svg#asterisk" />
           </svg>
           <span class="button-text">Follow</span>
+        </button>
+
+        <button id="sound-button" class="square button-on" title="Toggle sound">
+          <svg class="icons">
+            <use href="/icons.svg#sound" />
+          </svg>
+          <span class="button-text">Sound</span>
         </button>
 
         <button id="clear-panel-button" class="square" title="Clear panel output">

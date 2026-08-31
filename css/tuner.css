@@ -3,13 +3,13 @@
 
 .tuner-stage-wrapper {
   padding: 16px;
-  user-select: none;
-  -webkit-user-select: none;
 }
 
 .tuner-stage {
   display: grid;
   gap: 16px;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .tuner-readout-block {
@@ -92,29 +92,6 @@
   width: 2px;
   left: calc(50% - 1px);
   background: var(--white);
-}
-
-.tuner-target-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(84px, 1fr));
-  gap: 8px;
-}
-
-.tuner-target-button {
-  min-height: 40px;
-}
-
-.tuner-target-button .button-note {
-  display: inline-block;
-  font-size: 16px;
-  line-height: 1;
-}
-
-.tuner-target-button .button-hz {
-  display: block;
-  font-size: 12px;
-  color: var(--grey2);
-  line-height: 1.2;
 }
 
 #controls-container .controls-values.wrapper .pair input[readonly] {

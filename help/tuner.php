@@ -14,7 +14,7 @@
   </svg>
   <div class="justify">
     <h1>Instrument <span class="object">module</span></h1>
-    Main tuning display. Shows detected note, frequency in HZ, cents offset from current target, a meter with center at 0 cents, and selectable target note buttons.
+    Main tuning display. Shows detected note, frequency in HZ, cents offset from current target, a meter with center at 0 cents, and target note buttons that toggle their own reference tone.
   </div>
 </div>
 
@@ -25,16 +25,6 @@
   <div class="justify">
     <h1>LISTEN <span class="object">button</span></h1>
     Toggles microphone input for live pitch detection. Browser may request microphone permission on first use. <span class="default">Default: off.</span>
-  </div>
-</div>
-
-<div class="feature-row border">
-  <svg class="standard-image-help">
-    <use href="/icons.svg#sound"></use>
-  </svg>
-  <div class="justify">
-    <h1>TONE <span class="object">button</span></h1>
-    Toggles continuous playback of the currently selected target note as a reference tone.
   </div>
 </div>
 
@@ -114,7 +104,7 @@
   </svg>
   <div class="justify">
     <h1>Controls <span class="object">module</span></h1>
-    Contains profile menu, follow mode, fields for detected and target values, tone type menu, and volume slider.
+    Contains profile menu, follow and sound toggles, fields for detected and target values, tone type menu, and volume slider.
   </div>
 </div>
 
@@ -130,11 +120,21 @@
 
 <div class="feature-row border">
   <svg class="standard-image-help">
-    <use href="/icons.svg#field"></use>
+    <use href="/icons.svg#asterisk"></use>
   </svg>
   <div class="justify">
     <h1>FOLLOW <span class="object">button</span></h1>
     Auto-selects nearest target note from active profile during live detection. Turning this off lets you lock a target manually by pressing one of the target note buttons. <span class="default">Default: on.</span>
+  </div>
+</div>
+
+<div class="feature-row border">
+  <svg class="standard-image-help">
+    <use href="/icons.svg#sound"></use>
+  </svg>
+  <div class="justify">
+    <h1>SOUND <span class="object">button</span></h1>
+    Toggles output from target note buttons. <span class="default">Default: on.</span>
   </div>
 </div>
 
@@ -174,7 +174,7 @@
   </svg>
   <div class="justify">
     <h1>Volume <span class="object">slider</span></h1>
-    Sets reference tone output volume from 0 to 100. Decrease and Increase buttons support hold. <span class="default">Default: 30.</span>
+    Sets target and reference tone output volume from 0 to 100. Decrease and Increase buttons support hold. <span class="default">Default: 30.</span>
   </div>
 </div>
 

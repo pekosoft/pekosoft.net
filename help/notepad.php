@@ -50,7 +50,16 @@
   </svg>
   <div class="justify">
     <h1>COPY <span class="object">button</span></h1>
-    Copies the text to clipboard.
+    Copies selection or text to clipboard.
+  </div>
+</div>
+
+<div class="feature-row border"><svg class="standard-image-help">
+    <use href="/icons.svg#cut"></use>
+  </svg>
+  <div class="justify">
+    <h1>CUT <span class="object">button</span></h1>
+    Cuts selection or text to clipboard.
   </div>
 </div>
 
@@ -59,6 +68,6 @@
   </svg>
   <div class="justify">
     <h1>PASTE <span class="object">button</span></h1>
-    Pastes clipboard text at the cursor.
+    Pastes clipboard text over selection or replaces text.
   </div>
 </div>

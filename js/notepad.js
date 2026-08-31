@@ -8,12 +8,6 @@ function clearTextarea() {
   textarea.dispatchEvent(new Event('input', { bubbles: true }));
 }
 
-function copyToClipboard() {
-  var textarea = document.getElementById("Textarea");
-  textarea.select();
-  document.execCommand("copy");
-}
-
 function downloadText() {
   var textarea = document.getElementById("Textarea");
   var text = textarea.value;
@@ -46,11 +40,47 @@ document.addEventListener('DOMContentLoaded', function () {
   const speechButton = document.getElementById('notepad-speech-button');
   const downloadButton = document.getElementById('notepad-download-button');
   const copyButton = document.getElementById('notepad-copy-button');
+  const cutButton = document.getElementById('notepad-cut-button');
   const pasteButton = document.getElementById('notepad-paste-button');
   const textarea = document.getElementById('Textarea');
   const STORAGE_KEY = 'notepad.text';
   let currentUtterance = null;
   let isSpeaking = false;
+
+  function getSelectedOrAllText() {
+    const { selectionStart, selectionEnd, value } = textarea;
+    return selectionStart === selectionEnd ? value : value.slice(selectionStart, selectionEnd);
+  }
+
+  function replaceSelectedOrAllText(text) {
+    const { selectionStart, selectionEnd } = textarea;
+    if (selectionStart === selectionEnd) {
+      textarea.value = text;
+    } else {
+      textarea.setRangeText(text, selectionStart, selectionEnd, 'end');
+    }
+    textarea.focus();
+    textarea.dispatchEvent(new Event('input', { bubbles: true }));
+  }
+
+  async function copyToClipboard() {
+    if (!navigator.clipboard?.writeText) return;
+    try {
+      await navigator.clipboard.writeText(getSelectedOrAllText());
+    } catch {
+      // Clipboard permission is controlled by the browser.
+    }
+  }
+
+  async function cutToClipboard() {
+    if (!navigator.clipboard?.writeText) return;
+    try {
+      await navigator.clipboard.writeText(getSelectedOrAllText());
+      replaceSelectedOrAllText('');
+    } catch {
+      // Clipboard permission is controlled by the browser.
+    }
+  }
 
   function updateTextActionButtonStates() {
     const isEmpty = !textarea.value;
@@ -58,6 +88,7 @@ document.addEventListener('DOMContentLoaded', function () {
       { button: downloadButton, isDisabled: isEmpty },
       { button: clearButton, isDisabled: isEmpty },
       { button: copyButton, isDisabled: isEmpty },
+      { button: cutButton, isDisabled: isEmpty },
       { button: speechButton, isDisabled: isEmpty && !isSpeaking }
     ].forEach(({ button, isDisabled }) => {
       if (!button) return;
@@ -87,9 +118,7 @@ document.addEventListener('DOMContentLoaded', function () {
       const text = await navigator.clipboard.readText();
       if (!text) return;
 
-      textarea.setRangeText(text, textarea.selectionStart, textarea.selectionEnd, 'end');
-      textarea.focus();
-      textarea.dispatchEvent(new Event('input', { bubbles: true }));
+      replaceSelectedOrAllText(text);
     } catch {
       // Clipboard permission is controlled by the browser.
     }
@@ -162,6 +191,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
   if (copyButton) {
     copyButton.addEventListener('click', copyToClipboard);
+  }
+
+  if (cutButton) {
+    cutButton.addEventListener('click', cutToClipboard);
   }
 
   if (pasteButton) {

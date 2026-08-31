@@ -316,7 +316,7 @@ canvas {
 }
 
 .playlist-data tbody tr.active {
-  background: var(--color1);
+  background: var(--grey1);
 }
 
 .playlist-data tbody tr.dead td {

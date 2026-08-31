@@ -23,6 +23,34 @@
     </div>
     <div class="module-footer wrapper colored">
 
+      <button id="notepad-undo-button" class="square grey" title="Undo" disabled aria-disabled="true">
+        <svg class="icons">
+          <use href="/icons.svg#undo" />
+        </svg>
+        <span class="button-text">Undo</span>
+      </button>
+
+      <button id="notepad-redo-button" class="square grey" title="Redo" disabled aria-disabled="true">
+        <svg class="icons">
+          <use href="/icons.svg#redo" />
+        </svg>
+        <span class="button-text">Redo</span>
+      </button>
+
+      <button id="notepad-select-all-button" class="square grey" title="Select all" disabled aria-disabled="true">
+        <svg class="icons">
+          <use href="/icons.svg#select_all" />
+        </svg>
+        <span class="button-text">Select all</span>
+      </button>
+
+      <button id="notepad-select-none-button" class="square grey" title="Select none" disabled aria-disabled="true">
+        <svg class="icons">
+          <use href="/icons.svg#select_none" />
+        </svg>
+        <span class="button-text">Select none</span>
+      </button>
+
       <button id="notepad-speech-button" class="square grey" title="Speak text" disabled aria-disabled="true">
         <svg class="icons">
           <use href="/icons.svg#speech" />
@@ -70,7 +98,7 @@
 
   <script src="/js/modules.js?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/js/modules.js'); ?>"></script>
   <script src="/js/drag.js?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/js/drag.js'); ?>"></script>
-  <script src="/js/<?php echo $release; ?>.js"></script>
+  <script src="/js/<?php echo $release; ?>.js?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/js/' . $release . '.js'); ?>"></script>
 
   <?php require($_SERVER['DOCUMENT_ROOT'] . "/elements/beta_footer.php"); ?>
 </body>

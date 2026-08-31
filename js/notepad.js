@@ -1,13 +1,6 @@
 // Pekosoft Notepad
 // pekosoft.net/js/notepad.js
 
-function clearTextarea() {
-  var textarea = document.getElementById("Textarea");
-  textarea.value = "";
-  localStorage.removeItem('notepad.text');
-  textarea.dispatchEvent(new Event('input', { bubbles: true }));
-}
-
 function downloadText() {
   var textarea = document.getElementById("Textarea");
   var text = textarea.value;
@@ -42,10 +35,92 @@ document.addEventListener('DOMContentLoaded', function () {
   const copyButton = document.getElementById('notepad-copy-button');
   const cutButton = document.getElementById('notepad-cut-button');
   const pasteButton = document.getElementById('notepad-paste-button');
+  const undoButton = document.getElementById('notepad-undo-button');
+  const redoButton = document.getElementById('notepad-redo-button');
+  const selectAllButton = document.getElementById('notepad-select-all-button');
+  const selectNoneButton = document.getElementById('notepad-select-none-button');
   const textarea = document.getElementById('Textarea');
   const STORAGE_KEY = 'notepad.text';
+  const MAX_HISTORY_ENTRIES = 100;
   let currentUtterance = null;
   let isSpeaking = false;
+  let beforeInputSnapshot = null;
+  let isRestoringHistory = false;
+  const undoStack = [];
+  const redoStack = [];
+
+  function getTextSnapshot() {
+    return {
+      value: textarea.value,
+      selectionStart: textarea.selectionStart,
+      selectionEnd: textarea.selectionEnd
+    };
+  }
+
+  function snapshotsMatch(first, second) {
+    return first.value === second.value
+      && first.selectionStart === second.selectionStart
+      && first.selectionEnd === second.selectionEnd;
+  }
+
+  function updateButtonState(button, isDisabled) {
+    if (!button) return;
+    button.disabled = isDisabled;
+    button.classList.toggle('grey', isDisabled);
+    button.setAttribute('aria-disabled', String(isDisabled));
+  }
+
+  function updateHistoryButtonStates() {
+    updateButtonState(undoButton, undoStack.length === 0);
+    updateButtonState(redoButton, redoStack.length === 0);
+  }
+
+  function updateSelectionButtonStates() {
+    const hasText = textarea.value.length > 0;
+    const hasSelection = textarea.selectionStart !== textarea.selectionEnd;
+    updateButtonState(selectAllButton, !hasText);
+    updateButtonState(selectNoneButton, !hasSelection);
+  }
+
+  function persistTextAndUpdateButtons() {
+    localStorage.setItem(STORAGE_KEY, textarea.value);
+    updateTextActionButtonStates();
+    updateSelectionButtonStates();
+    updateHistoryButtonStates();
+  }
+
+  function rememberTextChange(beforeSnapshot) {
+    const afterSnapshot = getTextSnapshot();
+    if (!beforeSnapshot || snapshotsMatch(beforeSnapshot, afterSnapshot)) {
+      persistTextAndUpdateButtons();
+      return;
+    }
+    undoStack.push(beforeSnapshot);
+    if (undoStack.length > MAX_HISTORY_ENTRIES) undoStack.shift();
+    redoStack.length = 0;
+    persistTextAndUpdateButtons();
+  }
+
+  function restoreTextSnapshot(snapshot) {
+    isRestoringHistory = true;
+    textarea.value = snapshot.value;
+    textarea.setSelectionRange(snapshot.selectionStart, snapshot.selectionEnd);
+    textarea.focus();
+    isRestoringHistory = false;
+    persistTextAndUpdateButtons();
+  }
+
+  function undoTextChange() {
+    if (!undoStack.length) return;
+    redoStack.push(getTextSnapshot());
+    restoreTextSnapshot(undoStack.pop());
+  }
+
+  function redoTextChange() {
+    if (!redoStack.length) return;
+    undoStack.push(getTextSnapshot());
+    restoreTextSnapshot(redoStack.pop());
+  }
 
   function getSelectedOrAllText() {
     const { selectionStart, selectionEnd, value } = textarea;
@@ -53,6 +128,7 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   function replaceSelectedOrAllText(text) {
+    const beforeSnapshot = getTextSnapshot();
     const { selectionStart, selectionEnd } = textarea;
     if (selectionStart === selectionEnd) {
       textarea.value = text;
@@ -60,7 +136,15 @@ document.addEventListener('DOMContentLoaded', function () {
       textarea.setRangeText(text, selectionStart, selectionEnd, 'end');
     }
     textarea.focus();
-    textarea.dispatchEvent(new Event('input', { bubbles: true }));
+    rememberTextChange(beforeSnapshot);
+  }
+
+  function replaceAllText(text) {
+    const beforeSnapshot = getTextSnapshot();
+    textarea.value = text;
+    textarea.setSelectionRange(text.length, text.length);
+    textarea.focus();
+    rememberTextChange(beforeSnapshot);
   }
 
   async function copyToClipboard() {
@@ -104,11 +188,21 @@ document.addEventListener('DOMContentLoaded', function () {
       textarea.value = savedText;
     }
     updateTextActionButtonStates();
+    updateSelectionButtonStates();
+    updateHistoryButtonStates();
+
+    textarea.addEventListener('beforeinput', function () {
+      if (!isRestoringHistory) beforeInputSnapshot = getTextSnapshot();
+    });
 
     textarea.addEventListener('input', function () {
-      localStorage.setItem(STORAGE_KEY, textarea.value);
-      updateTextActionButtonStates();
+      if (!isRestoringHistory) rememberTextChange(beforeInputSnapshot);
+      beforeInputSnapshot = null;
     });
+
+    textarea.addEventListener('select', updateSelectionButtonStates);
+    textarea.addEventListener('keyup', updateSelectionButtonStates);
+    textarea.addEventListener('click', updateSelectionButtonStates);
   }
 
   async function pasteFromClipboard() {
@@ -171,7 +265,9 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   if (clearButton) {
-    clearButton.addEventListener('click', clearTextarea);
+    clearButton.addEventListener('click', function () {
+      replaceAllText('');
+    });
   }
 
   if (speechButton) {
@@ -199,6 +295,30 @@ document.addEventListener('DOMContentLoaded', function () {
 
   if (pasteButton) {
     pasteButton.addEventListener('click', pasteFromClipboard);
+  }
+
+  if (undoButton) {
+    undoButton.addEventListener('click', undoTextChange);
+  }
+
+  if (redoButton) {
+    redoButton.addEventListener('click', redoTextChange);
+  }
+
+  if (selectAllButton) {
+    selectAllButton.addEventListener('click', function () {
+      textarea.focus();
+      textarea.select();
+      updateSelectionButtonStates();
+    });
+  }
+
+  if (selectNoneButton) {
+    selectNoneButton.addEventListener('click', function () {
+      textarea.focus();
+      textarea.setSelectionRange(textarea.selectionEnd, textarea.selectionEnd);
+      updateSelectionButtonStates();
+    });
   }
 
   window.addEventListener('beforeunload', function () {

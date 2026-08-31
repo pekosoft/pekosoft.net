@@ -19,6 +19,42 @@
 </div>
 
 <div class="feature-row border"><svg class="standard-image-help">
+    <use href="/icons.svg#undo"></use>
+  </svg>
+  <div class="justify">
+    <h1>UNDO <span class="object">button</span></h1>
+    Restores the previous text change.
+  </div>
+</div>
+
+<div class="feature-row border"><svg class="standard-image-help">
+    <use href="/icons.svg#redo"></use>
+  </svg>
+  <div class="justify">
+    <h1>REDO <span class="object">button</span></h1>
+    Restores the next text change.
+  </div>
+</div>
+
+<div class="feature-row border"><svg class="standard-image-help">
+    <use href="/icons.svg#select_all"></use>
+  </svg>
+  <div class="justify">
+    <h1>SELECT ALL <span class="object">button</span></h1>
+    Selects all text.
+  </div>
+</div>
+
+<div class="feature-row border"><svg class="standard-image-help">
+    <use href="/icons.svg#select_none"></use>
+  </svg>
+  <div class="justify">
+    <h1>SELECT NONE <span class="object">button</span></h1>
+    Clears selection.
+  </div>
+</div>
+
+<div class="feature-row border"><svg class="standard-image-help">
     <use href="/icons.svg#speech"></use>
   </svg>
   <div class="justify">

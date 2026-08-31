@@ -1354,6 +1354,10 @@ html.invert-colors .container:fullscreen {
   margin-bottom: 24px;
 }
 
+.settings-controls-start {
+  margin-top: 24px;
+}
+
 .settings-toggle-row > .toc-button {
   width: 100%;
 }

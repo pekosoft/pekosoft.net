@@ -1273,7 +1273,7 @@ html.invert-colors .container:fullscreen {
   min-height: 0;
   width: calc(100% + 4px);
   margin-left: -4px;
-  padding-top: 0;
+  padding: 0 0 4px;
   overflow-y: auto;
   overscroll-behavior-y: contain;
 }

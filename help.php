@@ -35,7 +35,7 @@ if ($requestedRelease === 'settings') {
       if (file_exists($filePath)) {
         include($filePath);
       } else {
-        echo "<div class='standard padded colored'><h1>Help file not found</h1>This help file does not exist: <code>$filePath</code></div>";
+        echo "<div class='standard padded colored'><h1>Help file not found</h1>This Help entry is not available.</div>";
       }
       ?>
     </div>

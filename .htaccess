@@ -1,3 +1,5 @@
+Options -Indexes
+
 RewriteEngine On
 
 # Redirect www to non-www

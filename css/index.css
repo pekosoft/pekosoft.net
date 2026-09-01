@@ -1545,9 +1545,9 @@ html.invert-colors .container:fullscreen {
   display: flex;
   flex: 0 0 auto;
   margin-top: auto;
-  align-items: center;
+  align-items: flex-end;
   justify-content: center;
-  height: 48px;
+  height: 56px;
   width: 100%;
   padding: 0;
 }

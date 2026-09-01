@@ -99,7 +99,7 @@
 
       </div>
 
-        <div class="settings-panel-close">
+      <div class="toc-close">
           <button id="toggle-settings-panel-close-button" class="square transparent" title="Close" aria-label="Close">
             <svg class="icons" role="img">
               <use href="/icons.svg#close" />

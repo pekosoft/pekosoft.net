@@ -557,12 +557,12 @@ document.addEventListener("DOMContentLoaded", () => {
       container.querySelector(".module-minimize-btn")?.classList.remove("button-on");
     });
 
-    // Close the settings panel on mobile
-    if (typeof isDesktopSidebarLayout === "function" && !isDesktopSidebarLayout()) {
-      const settingsPanel = document.getElementById("settings-panel");
-      settingsPanel?.classList.remove("settings-panel-open");
-      document.getElementById("toggle-settings-panel-button")?.setAttribute("aria-expanded", "false");
-    }
+    document.getElementById("toc")?.classList.remove("toc-open");
+    document.getElementById("settings-panel")?.classList.remove("settings-panel-open");
+    document.getElementById("toggle-settings-panel-button")?.setAttribute("aria-expanded", "false");
+    document.body.classList.remove("toc-sidebar-open", "settings-sidebar-open");
+
+    localStorage.clear();
   }
 
   function normalizeGridSize(value) {

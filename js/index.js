@@ -1179,12 +1179,7 @@ function stopSitePlay() {
 function startSitePlay() {
   setSitePlayActive(true);
   updatePlayButtonState();
-  const first = SITE_PLAY_SEQUENCE[0];
-  if (getCurrentPageRef() !== first) {
-    window.location.href = first;
-    return;
-  }
-  window.location.href = getNextSitePlayHref();
+  scheduleSitePlayAdvance();
 }
 
 function scheduleSitePlayAdvance() {

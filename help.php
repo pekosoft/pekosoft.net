@@ -12,15 +12,16 @@ if ($requestedRelease === 'settings') {
   <?php require($_SERVER['DOCUMENT_ROOT'] . "/elements/head.php");
   require($_SERVER['DOCUMENT_ROOT'] . "/elements/release_type.php");
   $release = isset($_GET['t']) ? basename($_GET['t']) : 'default';
-  $releaseName = getReleaseTitle($release);
-  $releasePage = "Help";
   $filePath = $_SERVER['DOCUMENT_ROOT'] . "/help/" . $release . ".php";
+  $hasHelpFile = file_exists($filePath);
+  $releaseName = $hasHelpFile ? getReleaseTitle($release) : 'Help';
+  $releasePage = $hasHelpFile ? 'Help' : '';
   $footerPath = isBetaRelease($release) ? "/elements/beta_footer.php" : "/elements/footer.php";
   ?>
   
 </head>
 
-<body>
+<body class="help-page">
   <?php require($_SERVER['DOCUMENT_ROOT'] . "/elements/toc.php"); ?>
 
   <div class="three-columns-container">
@@ -32,7 +33,7 @@ if ($requestedRelease === 'settings') {
 
     <div class="three-columns column-middle justify">
       <?php
-      if (file_exists($filePath)) {
+      if ($hasHelpFile) {
         include($filePath);
       } else {
         echo "<div class='standard padded colored'><h1>Help file not found</h1>This Help entry is not available.</div>";

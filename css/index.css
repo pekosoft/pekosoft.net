@@ -1657,6 +1657,10 @@ html.invert-colors .container:fullscreen {
   padding-top: 0px;
 }
 
+.help-page .column-middle {
+  margin-top: -16px;
+}
+
 .column-middle-about {
   padding: 8px;
   padding-top: 16px;

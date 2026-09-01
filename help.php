@@ -21,7 +21,7 @@ if ($requestedRelease === 'settings') {
   
 </head>
 
-<body class="help-page">
+<body>
   <?php require($_SERVER['DOCUMENT_ROOT'] . "/elements/toc.php"); ?>
 
   <div class="three-columns-container">
@@ -36,7 +36,7 @@ if ($requestedRelease === 'settings') {
       if ($hasHelpFile) {
         include($filePath);
       } else {
-        echo "<div class='standard padded colored'><h1>Help file not found</h1>This Help entry is not available.</div>";
+        echo "<div class='feature-row border'><div class='justify help-not-found'><h1>Help file not found</h1>This Help entry is not available.</div></div>";
       }
       ?>
     </div>

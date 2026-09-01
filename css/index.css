@@ -1657,10 +1657,6 @@ html.invert-colors .container:fullscreen {
   padding-top: 0px;
 }
 
-.help-page .column-middle {
-  margin-top: -16px;
-}
-
 .column-middle-about {
   padding: 8px;
   padding-top: 16px;
@@ -1884,6 +1880,11 @@ button.grey .icons {
 
 .feature-row h1 {
   margin: 0 0 6px;
+}
+
+.help-not-found {
+  flex: 1;
+  text-align: center;
 }
 
 @media (max-width: 600px) {

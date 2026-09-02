@@ -35,6 +35,7 @@ document.addEventListener('DOMContentLoaded', function () {
   const copyButton = document.getElementById('notepad-copy-button');
   const cutButton = document.getElementById('notepad-cut-button');
   const pasteButton = document.getElementById('notepad-paste-button');
+  const resetButton = document.getElementById('reset-button');
   const undoButton = document.getElementById('notepad-undo-button');
   const redoButton = document.getElementById('notepad-redo-button');
   const selectAllButton = document.getElementById('notepad-select-all-button');
@@ -120,6 +121,17 @@ document.addEventListener('DOMContentLoaded', function () {
     if (!redoStack.length) return;
     undoStack.push(getTextSnapshot());
     restoreTextSnapshot(redoStack.pop());
+  }
+
+  function resetNotepad() {
+    textarea.value = '';
+    textarea.setSelectionRange(0, 0);
+    undoStack.length = 0;
+    redoStack.length = 0;
+    localStorage.removeItem(STORAGE_KEY);
+    updateTextActionButtonStates();
+    updateSelectionButtonStates();
+    updateHistoryButtonStates();
   }
 
   function getSelectedOrAllText() {
@@ -287,6 +299,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
   if (pasteButton) {
     pasteButton.addEventListener('click', pasteFromClipboard);
+  }
+
+  if (resetButton) {
+    resetButton.addEventListener('click', resetNotepad);
   }
 
   if (undoButton) {

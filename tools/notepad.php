@@ -23,6 +23,13 @@
     </div>
     <div class="module-footer wrapper colored">
 
+      <button id="reset-button" class="square" title="Reset to default">
+        <svg class="icons">
+          <use href="/icons.svg#reset" />
+        </svg>
+        <span class="button-text">Reset</span>
+      </button>
+
       <button id="notepad-undo-button" class="square grey" title="Undo" disabled aria-disabled="true">
         <svg class="icons">
           <use href="/icons.svg#undo" />

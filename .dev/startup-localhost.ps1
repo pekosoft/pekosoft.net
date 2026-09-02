@@ -95,12 +95,21 @@ if (-not $phpCgi) {
 }
 
 $caddy = Get-Command caddy -ErrorAction SilentlyContinue
-if (-not $caddy) {
+$caddyPath = if ($caddy) { $caddy.Source } else { $null }
+if (-not $caddyPath) {
+    $winGetPackages = Join-Path $env:LOCALAPPDATA 'Microsoft\WinGet\Packages'
+    if (Test-Path $winGetPackages) {
+        $caddyPath = Get-ChildItem -Path $winGetPackages -Directory -Filter 'CaddyServer.Caddy_*' |
+            ForEach-Object { Get-ChildItem -Path $_.FullName -Filter 'caddy.exe' -File -ErrorAction SilentlyContinue } |
+            Select-Object -First 1 -ExpandProperty FullName
+    }
+}
+if (-not $caddyPath) {
     throw 'Caddy was not found in PATH. Install it with: winget install --id CaddyServer.Caddy --exact'
 }
 
 $phpCgiServer = Start-Process -FilePath $phpCgi.Source -ArgumentList "-b 127.0.0.1:$fastCgiPort" -WorkingDirectory $projectRoot -WindowStyle Hidden -PassThru
-$caddyServer = Start-Process -FilePath $caddy.Source -ArgumentList "run --config `"$caddyfilePath`" --adapter caddyfile" -WorkingDirectory $projectRoot -WindowStyle Hidden -PassThru
+$caddyServer = Start-Process -FilePath $caddyPath -ArgumentList "run --config `"$caddyfilePath`" --adapter caddyfile" -WorkingDirectory $projectRoot -WindowStyle Hidden -PassThru
 
 function Get-HeadResult([string]$Url) {
     $request = [System.Net.HttpWebRequest]::Create($Url)

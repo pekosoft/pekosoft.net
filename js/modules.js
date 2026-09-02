@@ -27,6 +27,33 @@ function syncModuleMoreButtonState(container) {
 
 window.syncModuleMoreButtonState = syncModuleMoreButtonState;
 
+function resetModuleLayout() {
+  document.querySelectorAll(".container").forEach((container) => {
+    const id = container.id.replace(/-container$/, "");
+    const pageButton = document.getElementById(id + "-toggle");
+    const tocButton = document.getElementById(id + "-toggle-toc-button");
+
+    container.classList.remove("hidden", "module-minimized", "module-maximized", "module-icon-panel-open");
+    container.querySelector(".module-minimize-btn")?.classList.remove("button-on");
+    container.querySelector(".module-maximize-btn")?.classList.remove("button-on");
+    container.querySelector(".module-icon-btn")?.classList.remove("button-on");
+    container.querySelector(".module-icon-btn")?.setAttribute("aria-expanded", "false");
+    container.querySelector(".module-more-btn")?.classList.remove("button-on");
+    container.querySelector(".module-more-btn")?.setAttribute("aria-expanded", "false");
+    container.querySelector(".module-header-actions")?.setAttribute("hidden", "");
+    container.querySelector(".module-title")?.removeAttribute("hidden");
+    container.querySelector(".module-icon-panel")?.setAttribute("hidden", "");
+    pageButton?.classList.add("button-on");
+    tocButton?.classList.add("button-on");
+    syncModuleMoreButtonState(container);
+  });
+
+  syncFirstModule();
+  syncMaximizedModuleState();
+}
+
+window.resetModuleLayout = resetModuleLayout;
+
 function toggleModule(id) {
   const container = document.getElementById(id + "-container");
   const pageButton = document.getElementById(id + "-toggle");

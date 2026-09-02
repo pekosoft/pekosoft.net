@@ -494,6 +494,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const stopButton = document.getElementById("stop-button");
     const toolResetButton = document.getElementById("reset-button");
 
+    sessionStorage.setItem("pekosoft.reset-storage-lock", "1");
     stopButton?.click();
     toolResetButton?.click();
 
@@ -551,11 +552,7 @@ document.addEventListener("DOMContentLoaded", () => {
     loadSettings();
     if (window.applySiteSettings) window.applySiteSettings();
 
-    // Restore any minimized modules immediately, no page refresh needed
-    document.querySelectorAll(".module-minimized").forEach((container) => {
-      container.classList.remove("module-minimized");
-      container.querySelector(".module-minimize-btn")?.classList.remove("button-on");
-    });
+    window.resetModuleLayout?.();
 
     document.getElementById("toc")?.classList.remove("toc-open");
     document.getElementById("settings-panel")?.classList.remove("settings-panel-open");

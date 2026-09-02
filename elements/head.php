@@ -94,6 +94,22 @@ if ($previewSlug !== '') {
 ?>
 <script>
 try {
+	const resetStorageLockKey = 'pekosoft.reset-storage-lock';
+	const nativeSetItem = Storage.prototype.setItem;
+	Storage.prototype.setItem = function (key, value) {
+		if (this === localStorage && sessionStorage.getItem(resetStorageLockKey) === '1') return;
+		nativeSetItem.call(this, key, value);
+	};
+
+	const releaseResetStorageLock = (event) => {
+		if (!event.isTrusted) return;
+		sessionStorage.removeItem(resetStorageLockKey);
+	};
+	document.addEventListener('pointerdown', releaseResetStorageLock, true);
+	document.addEventListener('keydown', releaseResetStorageLock, true);
+} catch (_) {}
+
+try {
 	let theme = localStorage.getItem('global.theme');
 	if (theme !== 'dark' && theme !== 'light') {
 		const legacyMode = localStorage.getItem('global.mode');

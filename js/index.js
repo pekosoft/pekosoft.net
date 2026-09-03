@@ -1097,7 +1097,7 @@ function setupStatusBars() {
 
 const SITE_PLAY_STORAGE_KEY = 'global.site_play_active';
 const SITE_PLAY_TIMER_MS = 2500;
-const SITE_PLAY_SEQUENCE = [
+const OFFICIAL_SITE_PLAY_SEQUENCE = [
   '/index.php',
   '/tap_pad',
   '/bpm_calculator',
@@ -1121,7 +1121,28 @@ const SITE_PLAY_SEQUENCE = [
   '/bitcoin.php'
 ];
 
+const BETA_SITE_PLAY_SEQUENCE = [
+  '/beta',
+  '/player',
+  '/visualizer',
+  '/bpm_circle',
+  '/bpm_curve',
+  '/circle_of_fifths',
+  '/drum_machine',
+  '/reference',
+  '/tuner',
+  '/notepad',
+  '/audio_calculator',
+  '/piano',
+  '/icons'
+];
+
 let sitePlayTimer = null;
+
+function getSitePlaySequence() {
+  const sequence = document.getElementById('play-site-button')?.dataset.sitePlaySequence;
+  return sequence === 'beta' ? BETA_SITE_PLAY_SEQUENCE : OFFICIAL_SITE_PLAY_SEQUENCE;
+}
 
 function normalizePageRef(ref) {
   const url = new URL(ref, window.location.origin);
@@ -1132,11 +1153,12 @@ function normalizePageRef(ref) {
 }
 
 function getCurrentPageRef() {
+  const sequence = getSitePlaySequence();
   const current = normalizePageRef(window.location.pathname + window.location.search);
-  if (SITE_PLAY_SEQUENCE.includes(current)) return current;
+  if (sequence.includes(current)) return current;
 
   const currentPath = normalizePageRef(window.location.pathname);
-  return SITE_PLAY_SEQUENCE.includes(currentPath) ? currentPath : current;
+  return sequence.includes(currentPath) ? currentPath : current;
 }
 
 function isSitePlayActive() {
@@ -1152,11 +1174,12 @@ function setSitePlayActive(active) {
 }
 
 function getNextSitePlayHref() {
+  const sequence = getSitePlaySequence();
   const current = getCurrentPageRef();
-  const currentIndex = SITE_PLAY_SEQUENCE.indexOf(current);
-  if (currentIndex < 0) return SITE_PLAY_SEQUENCE[0];
-  if (currentIndex >= SITE_PLAY_SEQUENCE.length - 1) return SITE_PLAY_SEQUENCE[0];
-  return SITE_PLAY_SEQUENCE[currentIndex + 1];
+  const currentIndex = sequence.indexOf(current);
+  if (currentIndex < 0) return sequence[0];
+  if (currentIndex >= sequence.length - 1) return sequence[0];
+  return sequence[currentIndex + 1];
 }
 
 function updatePlayButtonState() {

@@ -43,7 +43,7 @@
         Fullscreen
       </button>
 
-      <button id="play-site-button" class="toc-button" title="Play all pages" aria-label="Play all pages">
+      <button id="play-site-button" class="toc-button" title="Play all pages" aria-label="Play all pages" data-site-play-sequence="<?php echo $isBetaRelease ? 'beta' : 'official'; ?>">
         <svg class="icons" role="img">
           <use href="/icons.svg#play" />
         </svg>

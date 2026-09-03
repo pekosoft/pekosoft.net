@@ -23,13 +23,6 @@
     </div>
     <div class="module-footer wrapper colored">
 
-      <button id="reset-button" class="square" title="Reset to default">
-        <svg class="icons">
-          <use href="/icons.svg#reset" />
-        </svg>
-        <span class="button-text">Reset</span>
-      </button>
-
       <button id="notepad-undo-button" class="square grey" title="Undo" disabled aria-disabled="true">
         <svg class="icons">
           <use href="/icons.svg#undo" />
@@ -58,6 +51,27 @@
         <span class="button-text">Select none</span>
       </button>
 
+      <button id="notepad-copy-button" class="square grey" title="Copy text" disabled aria-disabled="true">
+        <svg class="icons">
+          <use href="/icons.svg#copy" />
+        </svg>
+        <span class="button-text">Copy</span>
+      </button>
+
+      <button id="notepad-cut-button" class="square grey" title="Cut text" disabled aria-disabled="true">
+        <svg class="icons">
+          <use href="/icons.svg#cut" />
+        </svg>
+        <span class="button-text">Cut</span>
+      </button>
+
+      <button id="notepad-paste-button" class="square" title="Paste text">
+        <svg class="icons">
+          <use href="/icons.svg#paste" />
+        </svg>
+        <span class="button-text">Paste</span>
+      </button>
+
       <button id="notepad-speech-button" class="square grey" title="Speak text" disabled aria-disabled="true">
         <svg class="icons">
           <use href="/icons.svg#speech" />
@@ -79,25 +93,11 @@
         <span class="button-text">Clear</span>
       </button>
 
-      <button id="notepad-copy-button" class="square grey" title="Copy text" disabled aria-disabled="true">
+      <button id="reset-button" class="square" title="Reset to default">
         <svg class="icons">
-          <use href="/icons.svg#copy" />
+          <use href="/icons.svg#reset" />
         </svg>
-        <span class="button-text">Copy</span>
-      </button>
-
-      <button id="notepad-cut-button" class="square grey" title="Cut text" disabled aria-disabled="true">
-        <svg class="icons">
-          <use href="/icons.svg#cut" />
-        </svg>
-        <span class="button-text">Cut</span>
-      </button>
-
-      <button id="notepad-paste-button" class="square" title="Paste text">
-        <svg class="icons">
-          <use href="/icons.svg#paste" />
-        </svg>
-        <span class="button-text">Paste</span>
+        <span class="button-text">Reset</span>
       </button>
 
     </div>

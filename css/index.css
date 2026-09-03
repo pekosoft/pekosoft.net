@@ -1490,7 +1490,7 @@ html.invert-colors .container:fullscreen {
 
   body.toc-sidebar-open,
   body.settings-sidebar-open {
-    width: calc(var(--site-frame-width) - var(--toc-sidebar-space, 0px) - var(--settings-sidebar-space, 0px));
+    width: auto;
     max-width: none;
     margin-left: calc(var(--site-frame-offset) + var(--toc-sidebar-space, 0px));
     margin-right: calc(var(--site-frame-offset) + var(--settings-sidebar-space, 0px));
@@ -1506,7 +1506,7 @@ html.invert-colors .container:fullscreen {
 
   html.modules-page.layout-two-columns body.toc-sidebar-open,
   html.modules-page.layout-two-columns body.settings-sidebar-open {
-    width: calc(var(--site-frame-width) - var(--toc-sidebar-space, 0px) - var(--settings-sidebar-space, 0px));
+    width: auto;
     max-width: none;
     margin-left: calc(var(--site-frame-offset) + var(--toc-sidebar-space, 0px));
     margin-right: calc(var(--site-frame-offset) + var(--settings-sidebar-space, 0px));

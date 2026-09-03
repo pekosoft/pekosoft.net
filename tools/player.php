@@ -35,11 +35,6 @@
 
       <div class="controls-buttons wrapper">
 
-        <button id="bass-knob" class="knob-control" type="button" title="Bass" aria-label="Bass"></button>
-        <button id="treble-knob" class="knob-control" type="button" title="Treble" aria-label="Treble"></button>
-        <button id="balance-knob" class="knob-control" type="button" title="Balance" aria-label="Balance"></button>
-        <button id="speed-knob" class="knob-control" type="button" title="Speed" aria-label="Speed"></button>
-
         <button id="eject-button" class="square" title="Open files">
           <svg class="icons">
             <use href="/icons.svg#eject" />
@@ -220,6 +215,13 @@
             </button>
           </div>
         </div>
+      </div>
+
+      <div class="controls-knobs wrapper">
+        <div class="controls-knob"><button id="bass-knob" class="knob-control" type="button" title="Bass" aria-label="Bass"></button><span>Bass</span></div>
+        <div class="controls-knob"><button id="treble-knob" class="knob-control" type="button" title="Treble" aria-label="Treble"></button><span>Treble</span></div>
+        <div class="controls-knob"><button id="balance-knob" class="knob-control" type="button" title="Balance" aria-label="Balance"></button><span>Balance</span></div>
+        <div class="controls-knob"><button id="speed-knob" class="knob-control" type="button" title="Speed" aria-label="Speed"></button><span>Speed</span></div>
       </div>
 
     </div>

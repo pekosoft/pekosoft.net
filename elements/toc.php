@@ -74,7 +74,7 @@
 
         <div class="setting-row settings-controls-start">
           <label for="grid-size-value" title="Grid size" class="settings-control-label">Size:</label>
-          <div class="knob-wrap"><input type="number" id="grid-size-value" class="knob-value" value="16" readonly><button id="grid-size-knob" class="knob-control" type="button" title="Grid size" aria-label="Size"></button></div>
+          <div class="knob-wrap"><input type="number" id="grid-size-value" class="knob-value" value="16" readonly><button id="settings-grid-size-knob" class="knob-control" type="button" title="Grid size" aria-label="Size"></button></div>
         </div>
         <div class="setting-row">
           <label for="font_size_selector" title="Default font size" class="settings-control-label">Font:</label>

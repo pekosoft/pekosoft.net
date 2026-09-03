@@ -29,7 +29,7 @@ window.FactoryDefaults = {
 document.addEventListener("DOMContentLoaded", () => {
   const settings = {
     grid: document.getElementById("grid"),
-    gridSizeKnob: document.getElementById("grid-size-knob"),
+    gridSizeKnob: document.getElementById("settings-grid-size-knob"),
     gridSizeValue: document.getElementById("grid-size-value"),
     fontSizeKnob: document.getElementById("font-size-knob"),
     guides: document.getElementById("guides"),

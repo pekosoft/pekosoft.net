@@ -71,10 +71,6 @@
 
     <div class="controls-buttons wrapper">
 
-      <button id="grid-size-knob" class="knob-control" type="button" title="Grid size: 16 px" aria-label="Grid size"></button>
-
-      <button id="speed-knob" class="knob-control" type="button" title="Speed: 100%" aria-label="Playback speed 100 percent"></button>
-
       <button id="prev-button" class="square" title="Previous icon">
         <svg class="icons">
           <use href="/icons.svg#skip_left" />
@@ -297,6 +293,11 @@
         <span class="button-text">Redo</span>
       </button>
 
+    </div>
+
+    <div class="controls-knobs wrapper">
+      <div class="controls-knob"><button id="icons-grid-size-knob" class="knob-control" type="button" title="Grid size: 16 px" aria-label="Grid size"></button><span>Grid size</span></div>
+      <div class="controls-knob"><button id="speed-knob" class="knob-control" type="button" title="Speed: 100%" aria-label="Playback speed 100 percent"></button><span>Speed</span></div>
     </div>
 
     </div>

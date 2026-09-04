@@ -46,6 +46,15 @@ const viewToggleText = document.getElementById('toggle-view-text');
 const sortToggleButton = document.getElementById('toggle-sort-button');
 const sortToggleText = document.getElementById('toggle-sort-text');
 
+function setupReferenceToolMenu() {
+  const menuControls = document.getElementById('reference-tool-menu-controls');
+  const iconPanel = document.getElementById('tool-icon-panel');
+  if (!menuControls || !iconPanel) return;
+
+  iconPanel.appendChild(menuControls);
+  menuControls.hidden = false;
+}
+
 const STORAGE = {
   mode: 'reference.mode',
   visibility: 'reference.column_visibility',
@@ -1128,6 +1137,7 @@ tableScrollContainer.addEventListener('click', (event) => {
 
 loadSettings();
 updateModeButtons();
+document.addEventListener('DOMContentLoaded', setupReferenceToolMenu);
 updateColumnButtons();
 updateViewButton();
 updateSortButton();

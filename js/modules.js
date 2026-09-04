@@ -54,12 +54,23 @@ function resetModuleLayout() {
 
 window.resetModuleLayout = resetModuleLayout;
 
+function isLockedModule(container) {
+  return container?.classList.contains("one-module-tool");
+}
+
 function toggleModule(id) {
   const container = document.getElementById(id + "-container");
   const pageButton = document.getElementById(id + "-toggle");
   const tocButton = document.getElementById(id + "-toggle-toc-button");
 
   if (!container) return;
+  if (isLockedModule(container)) {
+    container.classList.remove("hidden");
+    pageButton?.classList.add("button-on");
+    tocButton?.classList.add("button-on");
+    localStorage.setItem("module_" + id, "visible");
+    return;
+  }
 
   const isNowHidden = container.classList.toggle("hidden");
   const stateKey = "module_" + id + "_state";
@@ -271,11 +282,12 @@ function restoreModuleStates() {
     const tocButton = document.getElementById(id + "-toggle-toc-button");
     const state = localStorage.getItem("module_" + id);
 
-    const isVisible = state !== "hidden";
+    const isVisible = isLockedModule(container) || state !== "hidden";
 
     if (container) container.classList.toggle("hidden", !isVisible);
     if (pageButton) pageButton.classList.toggle("button-on", isVisible);
     if (tocButton) tocButton.classList.toggle("button-on", isVisible);
+    if (isLockedModule(container)) localStorage.setItem("module_" + id, "visible");
   });
 }
 
@@ -334,7 +346,7 @@ function setupModuleHeader(id) {
   const iconPanel = createModuleIconPanel(id);
   header.insertAdjacentElement("afterend", iconPanel);
 
-  if (typeof setupModuleDrag === "function") {
+  if (!isLockedModule(container) && typeof setupModuleDrag === "function") {
     setupModuleDrag(container, header, id);
   }
 
@@ -346,6 +358,12 @@ function setupModuleHeader(id) {
   const maximizeBtn = header.querySelector(".module-maximize-btn");
   const fullscreenBtn = header.querySelector(".module-fullscreen-btn");
   const closeBtn = header.querySelector(".module-close-btn");
+
+  if (isLockedModule(container)) {
+    closeBtn.classList.add("grey");
+    closeBtn.disabled = true;
+    closeBtn.setAttribute("aria-disabled", "true");
+  }
 
   actions.id = id + "-module-actions";
   iconBtn.setAttribute("aria-controls", actions.id);
@@ -482,6 +500,7 @@ function setupModuleHeader(id) {
   });
 
   closeBtn.addEventListener("click", () => {
+    if (isLockedModule(container)) return;
     toggleModule(id);
     collapseIconPanel();
     collapseMore();

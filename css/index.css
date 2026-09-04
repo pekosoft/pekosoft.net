@@ -328,6 +328,7 @@ table {
   width: 100%;
   table-layout: fixed;
   border-collapse: collapse;
+  border: 1px solid var(--grey1);
   max-width: var(--maxwidth);
 }
 

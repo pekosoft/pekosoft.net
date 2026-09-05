@@ -67,7 +67,7 @@ audio::-webkit-media-controls-time-remaining-display {
   font-family: Consolas, monospace;
   font-size: min(clamp(48px, 12vw, 180px), 19cqw);
   line-height: 1;
-  color: var(--white);
+  color: var(--grey1);
   letter-spacing: 2px;
   user-select: none;
 }

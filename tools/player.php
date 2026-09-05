@@ -470,30 +470,31 @@
 
   <div id="panel-container" class="container">
     <div class="module-body standard border">
+      <div class="controls-buttons wrapper">
+        <button id="panel-meta-button" class="square" title="Show file metadata">
+          <svg class="icons">
+            <use href="/icons.svg#tag" />
+          </svg>
+          <span class="button-text">Meta</span>
+        </button>
+
+        <button id="panel-input-button" class="square" title="Show audio input details">
+          <svg class="icons">
+            <use href="/icons.svg#mic" />
+          </svg>
+          <span class="button-text">Input</span>
+        </button>
+
+        <button id="panel-playlist-button" class="square" title="Show playlist data">
+          <svg class="icons">
+            <use href="/icons.svg#view_list" />
+          </svg>
+          <span class="button-text">Playlist</span>
+        </button>
+      </div>
       <textarea id="player-text" placeholder="Player data will appear here."></textarea>
     </div>
     <div class="module-footer wrapper colored">
-      <button id="panel-meta-button" class="square" title="Show file metadata">
-        <svg class="icons">
-          <use href="/icons.svg#tag" />
-        </svg>
-        <span class="button-text">Meta</span>
-      </button>
-
-      <button id="panel-input-button" class="square" title="Show audio input details">
-        <svg class="icons">
-          <use href="/icons.svg#mic" />
-        </svg>
-        <span class="button-text">Input</span>
-      </button>
-
-      <button id="panel-playlist-button" class="square" title="Show playlist data">
-        <svg class="icons">
-          <use href="/icons.svg#view_list" />
-        </svg>
-        <span class="button-text">Playlist</span>
-      </button>
-
       <button id="copy-button" class="square" title="Copy data">
         <svg class="icons">
           <use href="/icons.svg#copy" />

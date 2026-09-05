@@ -1748,7 +1748,7 @@ a:has(> svg.icons) {
 }
 
 #tool-container.one-module-tool {
-  height: calc(var(--visual-viewport-height, 100dvh) - 112px);
+  height: calc(var(--visual-viewport-height, 100dvh) - 128px);
 }
 
 #tool-container.one-module-tool > .module-header {

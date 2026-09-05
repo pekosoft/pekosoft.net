@@ -471,7 +471,7 @@
 
 <div class="feature-row border">
   <svg class="standard-image-help"><use href="/icons.svg#reset"></use></svg>
-  <div class="justify"><h1>Reset <span class="object">button</span></h1>Restores all global customization to factory defaults.</div>
+  <div class="justify"><h1>Reset <span class="object">button</span></h1>Restores all global customization and table column widths to factory defaults.</div>
 </div>
 
 <div class="feature-row module">

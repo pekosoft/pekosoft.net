@@ -14,7 +14,7 @@
   </svg>
   <div class="justify">
     <h1>Instrument <span class="object">module</span></h1>
-    This table shows values and information for the current BPM. This is also where you choose what note value to visualize. Columns: Select, Note, Value, MS, HZ, CM, Inches, USA, UK, BPM, Diff, Percent, Rest, Play and Close. Rows: Triplet, base and dotted notes in the values of 8/1 to 1/128. All rows and columns can be toggled.
+    This table shows values and information for the current BPM. This is also where you choose what note value to visualize. Drag a column header edge to resize that column. Double-click the edge to restore its default width. Columns: Select, Note, Value, MS, HZ, CM, Inches, USA, UK, BPM, Diff, Percent, Rest, Play and Close. Rows: Triplet, base and dotted notes in the values of 8/1 to 1/128. All rows and columns can be toggled.
   </div>
 </div>
 
@@ -175,7 +175,7 @@
   </svg>
   <div class="justify">
     <h1>RESET <span class="object">button</span></h1>
-    Resets session and all settings.
+    Resets session, all settings and table column widths.
   </div>
 </div>
 

@@ -490,6 +490,157 @@ function CountRows() {
   return rowCount;
 }
 
+const resizableTableControllers = new WeakMap();
+
+function resetResizableTables() {
+  document.querySelectorAll('table.scrollable-table').forEach((table) => {
+    resizableTableControllers.get(table)?.reset();
+  });
+}
+
+window.PekoTables = {
+  reset: resetResizableTables
+};
+
+function setupResizableTables() {
+  document.querySelectorAll('table.scrollable-table').forEach((table) => {
+    if (table.dataset.resizableColumns === 'true') return;
+
+    const getVisibleHeaders = () => [...table.querySelectorAll('thead th')]
+      .filter((header) => getComputedStyle(header).display !== 'none');
+    let resizingHeader = null;
+    let startX = 0;
+    let startWidth = 0;
+    let startTableWidth = 0;
+
+    const syncColumnWidths = () => {
+      if (resizingHeader) return;
+
+      const headers = getVisibleHeaders();
+      if (!headers.length) return;
+
+      headers.forEach((header) => {
+        const width = Math.round(header.getBoundingClientRect().width);
+        if (width > 0 && !header.dataset.defaultColumnWidth) {
+          header.dataset.defaultColumnWidth = String(width);
+        }
+        if (width > 0 && !header.dataset.columnWidth) {
+          header.dataset.columnWidth = String(width);
+          header.style.width = `${width}px`;
+        }
+      });
+
+      const totalWidth = headers.reduce((width, header) => {
+        return width + Number(header.dataset.columnWidth || 0);
+      }, 0);
+      if (totalWidth > 0) table.style.width = `${totalWidth}px`;
+    };
+
+    const finishResize = () => {
+      if (!resizingHeader) return;
+      resizingHeader.classList.remove('column-resizing');
+      resizingHeader = null;
+    };
+
+    const reset = () => {
+      finishResize();
+      table.classList.remove('resizable-columns');
+      table.style.removeProperty('width');
+      table.querySelectorAll('thead th').forEach((header) => {
+        header.style.removeProperty('width');
+        delete header.dataset.columnWidth;
+        delete header.dataset.defaultColumnWidth;
+        header.classList.remove('column-resize-target', 'column-resizing');
+      });
+      syncColumnWidths();
+      table.classList.add('resizable-columns');
+    };
+
+    table.addEventListener('pointermove', (event) => {
+      if (resizingHeader) {
+        const width = Math.max(48, startWidth + event.clientX - startX);
+        const widthChange = width - startWidth;
+        resizingHeader.dataset.columnWidth = String(Math.round(width));
+        resizingHeader.style.width = `${Math.round(width)}px`;
+        table.style.width = `${Math.round(startTableWidth + widthChange)}px`;
+        return;
+      }
+
+      const header = event.target.closest('th');
+      table.querySelectorAll('.column-resize-target').forEach((target) => {
+        target.classList.remove('column-resize-target');
+      });
+      if (!header || !table.tHead?.contains(header)) return;
+
+      const bounds = header.getBoundingClientRect();
+      if (event.clientX >= bounds.right - 8) {
+        header.classList.add('column-resize-target');
+      }
+    });
+
+    table.addEventListener('pointerleave', () => {
+      if (resizingHeader) return;
+      table.querySelectorAll('.column-resize-target').forEach((header) => {
+        header.classList.remove('column-resize-target');
+      });
+    });
+
+    table.addEventListener('pointerdown', (event) => {
+      if (event.button !== 0) return;
+
+      const header = event.target.closest('th');
+      if (!header || !table.tHead?.contains(header)) return;
+
+      const bounds = header.getBoundingClientRect();
+      if (event.clientX < bounds.right - 8) return;
+
+      event.preventDefault();
+      resizingHeader = header;
+      startX = event.clientX;
+      startWidth = bounds.width;
+      startTableWidth = table.getBoundingClientRect().width;
+      header.classList.add('column-resizing');
+      header.setPointerCapture(event.pointerId);
+    });
+
+    table.addEventListener('pointerup', finishResize);
+    table.addEventListener('pointercancel', finishResize);
+    table.addEventListener('lostpointercapture', finishResize);
+
+    table.addEventListener('dblclick', (event) => {
+      const header = event.target.closest('th');
+      if (!header || !table.tHead?.contains(header)) return;
+
+      const bounds = header.getBoundingClientRect();
+      if (event.clientX < bounds.right - 8) return;
+
+      const defaultWidth = Number(header.dataset.defaultColumnWidth);
+      if (!Number.isFinite(defaultWidth) || defaultWidth <= 0) return;
+
+      event.preventDefault();
+      const currentWidth = bounds.width;
+      header.dataset.columnWidth = String(defaultWidth);
+      header.style.width = `${defaultWidth}px`;
+      table.style.width = `${Math.round(table.getBoundingClientRect().width + defaultWidth - currentWidth)}px`;
+    });
+
+    table.dataset.resizableColumns = 'true';
+    syncColumnWidths();
+    table.classList.add('resizable-columns');
+    resizableTableControllers.set(table, { reset });
+
+    const observer = new MutationObserver(() => {
+      window.requestAnimationFrame(syncColumnWidths);
+    });
+    observer.observe(table.tHead, {
+      attributes: true,
+      attributeFilter: ['style'],
+      childList: true,
+      subtree: true
+    });
+  });
+}
+
 const COLOR_THEME_STORAGE_KEY = 'global.theme';
 
 function getColorTheme() {
@@ -1377,6 +1528,7 @@ document.addEventListener('DOMContentLoaded', function () {
   ensureControlsFooters();
   setupStatusBars();
   scrollToRequestedHelpEntry();
+  setupResizableTables();
   const alignRequestedHelpEntry = () => window.setTimeout(scrollToRequestedHelpEntry, 0);
   window.addEventListener('load', alignRequestedHelpEntry, { once: true });
   window.addEventListener('pageshow', alignRequestedHelpEntry, { once: true });

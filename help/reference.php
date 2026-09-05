@@ -4,7 +4,7 @@
   </svg>
   <div class="justify">
     <h1>General</h1>
-    Pekosoft Reference is a lookup tool with two views. Includes BPM, Notes, Scales and Chords data. Columns can be toggled in standard view.
+    Pekosoft Reference is a lookup tool with two views. Includes BPM, Notes, Scales and Chords data. Columns can be toggled and resized by dragging a column header edge in standard view. Double-click the edge to restore its default width.
   </div>
 </div>
 
@@ -14,7 +14,7 @@
   </svg>
   <div class="justify">
     <h1>RESET <span class="object">button</span></h1>
-    Resets session and all settings.
+    Resets session, all settings and table column widths.
   </div>
 </div>
 

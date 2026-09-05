@@ -392,6 +392,20 @@ td > input[type="number"] {
   border: 0;
 }
 
+.scrollable-table.resizable-columns {
+  max-width: none;
+}
+
+.scrollable-table.resizable-columns td,
+.scrollable-table.resizable-columns th {
+  min-width: 0;
+}
+
+.scrollable-table.resizable-columns th.column-resize-target,
+.scrollable-table.resizable-columns th.column-resizing {
+  cursor: col-resize;
+}
+
 tbody tr:hover {
   background: var(--grey1);
 }

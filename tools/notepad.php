@@ -17,7 +17,7 @@
 
   <!-- TOOL -->
 
-  <div id="tool-container" class="container">
+  <div id="tool-container" class="container one-module-tool">
     <div class="module-body border">
       <textarea id="Textarea" rows="20" cols="50"></textarea>
     </div>

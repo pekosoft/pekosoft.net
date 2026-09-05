@@ -1,6 +1,10 @@
 /* Pekosoft Notepad */
 
 #Textarea {
+	flex: 1 1 auto;
+	min-height: 0;
+	height: 100%;
+	max-width: none;
 	font-family: Arial, sans-serif;
 	font-size: var(--font-size);
 }

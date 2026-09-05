@@ -1,23 +1,6 @@
 /* Pekosoft Reference */
 /* pekosoft.net/css/reference.css */
 
-#tool-container.one-module-tool {
-  height: calc(var(--visual-viewport-height, 100dvh) - 128px);
-}
-
-#tool-container.one-module-tool > .module-header {
-  cursor: default;
-}
-
-@media (min-width: 800px) {
-  html.modules-page.layout-two-columns #tool-container.one-module-tool {
-    flex: 0 0 100%;
-    width: 100%;
-    max-width: var(--maxwidth);
-    height: calc(var(--visual-viewport-height, 100dvh) - 178px);
-  }
-}
-
 #tool-container .standard {
   padding: 0;
   overflow: auto;

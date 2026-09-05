@@ -392,7 +392,7 @@ function setupModuleHeader(id) {
   }
 
   function updateMinimizeButtonState() {
-    const disabled = isTwoColumnLayoutActive();
+    const disabled = isLockedModule(container) || isTwoColumnLayoutActive();
     minimizeBtn.classList.toggle("grey", disabled);
     minimizeBtn.disabled = disabled;
     minimizeBtn.setAttribute("aria-disabled", disabled ? "true" : "false");
@@ -456,7 +456,7 @@ function setupModuleHeader(id) {
   });
 
   minimizeBtn.addEventListener("click", () => {
-    if (isTwoColumnLayoutActive()) return;
+    if (isLockedModule(container) || isTwoColumnLayoutActive()) return;
     const isMinimized = container.classList.toggle("module-minimized");
     container.classList.remove("module-maximized");
     minimizeBtn.classList.toggle("button-on", isMinimized);
@@ -512,7 +512,7 @@ function setupModuleHeader(id) {
   });
 
   const savedState = localStorage.getItem("module_" + id + "_state");
-  if (savedState === "minimized" && !isTwoColumnLayoutActive()) {
+  if (savedState === "minimized" && !isLockedModule(container) && !isTwoColumnLayoutActive()) {
     container.classList.add("module-minimized");
     minimizeBtn.classList.add("button-on");
   } else if (savedState === "maximized") {

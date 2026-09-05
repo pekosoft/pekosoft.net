@@ -14,7 +14,6 @@
     "circle_of_fifths.timeline_guides",
     "drum_machine.timeline_guides",
     "player.show_guides",
-    "player.tool_guides",
     "piano.timeline_guides",
     "tuner.show_guides",
     "visualizer.show_guides",

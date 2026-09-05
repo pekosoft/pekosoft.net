@@ -125,7 +125,6 @@ const STORAGE = {
     panelSource: 'player.panel_source',
     inputMonitor: 'player.input_monitor',
     showGuides: 'player.show_guides',
-    toolGuides: 'player.tool_guides',
     timelineZoom: 'player.timeline_zoom',
     timelineRuler: 'player.timeline_ruler',
     bpmRuler: 'player.bpm_ruler',
@@ -188,11 +187,7 @@ let showWaveformMultiColor = savedWaveformMultiColor === null ? true : savedWave
 if (savedWaveformMultiColor === null) {
     localStorage.setItem(STORAGE.waveformMultiColor, 'true');
 }
-const savedToolGuides = localStorage.getItem(STORAGE.toolGuides);
-let showToolGuides = savedToolGuides === null ? true : savedToolGuides === 'true';
-if (savedToolGuides === null) {
-    localStorage.setItem(STORAGE.toolGuides, 'true');
-}
+localStorage.removeItem('player.tool_guides');
 let mediaRecorder;
 let audioChunks = [];
 let startTime;
@@ -1717,7 +1712,6 @@ function updateToolMeterButtonStates() {
     if (toolSpectrogramButton) toolSpectrogramButton.classList.toggle('button-on', saved === 'spectrogram');
     if (toolLevelButton) toolLevelButton.classList.toggle('button-on', saved === 'level');
     if (toolOscilloscopeButton) toolOscilloscopeButton.classList.toggle('button-on', saved === 'oscilloscope');
-    if (toolGuidesButton) toolGuidesButton.classList.toggle('button-on', showToolGuides);
 }
 
 function applySavedToolGuides() {

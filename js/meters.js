@@ -418,6 +418,7 @@
       guidesButton.classList.toggle('button-on', guidesOn);
     }
     meterNeedsRedraw = true;
+    requestAnimationFrame(redrawMeterFrame);
   }
 
   function applyBright(nextState, persist = true) {
@@ -954,6 +955,18 @@
     } else {
       drawGuidesBehind(activeMode, ctx, width, height, source);
     }
+  }
+
+  function redrawMeterFrame() {
+    const source = getSourceConfig();
+    const canvas = canvasByMode[activeMode];
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    drawIdleMeterFrame(canvas, ctx, source);
+    meterNeedsRedraw = false;
   }
 
   const meterFrameIntervalMs = 1000 / 60;

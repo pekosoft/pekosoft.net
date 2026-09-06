@@ -497,7 +497,7 @@ document.addEventListener("DOMContentLoaded", () => {
     sessionStorage.setItem("pekosoft.reset-storage-lock", "1");
     stopButton?.click();
     toolResetButton?.click();
-    window.PekoTables?.reset();
+    if (!toolResetButton) window.PekoTables?.reset();
 
     localStorage.clear();
     localStorage.setItem("global.grid", defaults.grid);

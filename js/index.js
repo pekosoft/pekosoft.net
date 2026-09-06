@@ -493,7 +493,7 @@ function CountRows() {
 const resizableTableControllers = new WeakMap();
 
 function resetResizableTables() {
-  document.querySelectorAll('table.scrollable-table').forEach((table) => {
+  document.querySelectorAll('table.resizable-columns').forEach((table) => {
     resizableTableControllers.get(table)?.reset();
   });
 }
@@ -503,8 +503,9 @@ window.PekoTables = {
 };
 
 function setupResizableTables() {
-  document.querySelectorAll('table.scrollable-table').forEach((table) => {
+  document.querySelectorAll('table').forEach((table) => {
     if (table.dataset.resizableColumns === 'true') return;
+    if (!table.tHead || !table.tHead.querySelector('th')) return;
 
     const getVisibleHeaders = () => [...table.querySelectorAll('thead th')]
       .filter((header) => getComputedStyle(header).display !== 'none');
@@ -542,8 +543,18 @@ function setupResizableTables() {
 
     const finishResize = () => {
       if (!resizingHeader) return;
-      resizingHeader.classList.remove('column-resizing');
+      setResizingColumn(resizingHeader, false);
       resizingHeader = null;
+    };
+
+    const setResizingColumn = (header, isResizing) => {
+      const columnIndex = getVisibleHeaders().indexOf(header);
+      if (columnIndex < 0) return;
+
+      [...table.rows].forEach((row) => {
+        if (row.parentElement?.tagName === 'TFOOT') return;
+        row.cells[columnIndex]?.classList.toggle('column-resizing', isResizing);
+      });
     };
 
     const reset = () => {
@@ -555,6 +566,9 @@ function setupResizableTables() {
         delete header.dataset.columnWidth;
         delete header.dataset.defaultColumnWidth;
         header.classList.remove('column-resize-target', 'column-resizing');
+      });
+      table.querySelectorAll('td.column-resizing').forEach((cell) => {
+        cell.classList.remove('column-resizing');
       });
       syncColumnWidths();
       table.classList.add('resizable-columns');
@@ -615,7 +629,7 @@ function setupResizableTables() {
       startWidth = bounds.width;
       startTableWidth = table.getBoundingClientRect().width;
       resizeMoved = false;
-      header.classList.add('column-resizing');
+      setResizingColumn(header, true);
       header.setPointerCapture(event.pointerId);
     });
 
@@ -667,6 +681,10 @@ function setupResizableTables() {
     });
   });
 }
+
+document.addEventListener('click', (event) => {
+  if (event.target.closest('#reset-button')) resetResizableTables();
+});
 
 const COLOR_THEME_STORAGE_KEY = 'global.theme';
 

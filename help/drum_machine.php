@@ -152,7 +152,7 @@
     <use href="/icons.svg#reset"></use>
   </svg>
   <div class="justify">
-    <h1>RESET <span class="object">button</span></h1>Stops playback, completes an active recording, and restores Drum Machine settings, voices and pattern to defaults. Playlist recordings remain available.
+    <h1>RESET <span class="object">button</span></h1>Stops playback, completes an active recording, and restores Drum Machine settings, voices, pattern and table column widths to defaults. Playlist recordings remain available.
   </div>
 </div>
 
@@ -323,7 +323,7 @@
     <use href="/icons.svg#view_list"></use>
   </svg>
   <div class="justify">
-    <h1>Playlist <span class="object">module</span></h1>Stores completed recordings in order. Each row shows the recording name, four-lane preview, duration, hit count, recorded BPM, added time and actions. Recordings persist between visits.
+    <h1>Playlist <span class="object">module</span></h1>Stores completed recordings in order. Each row shows the recording name, four-lane preview, duration, hit count, recorded BPM, added time and actions. Drag a column header edge to resize that column. On touchscreens, drag the right side of the header. Double-click or double-tap the edge to restore its default width. Recordings persist between visits.
   </div>
 </div>
 
@@ -404,7 +404,7 @@
     <use href="/icons.svg#undo"></use>
   </svg>
   <div class="justify">
-    <h1>History <span class="object">module</span></h1>Shows the current session's labeled pattern-edit history. The highlighted row is the current pattern state.
+    <h1>History <span class="object">module</span></h1>Shows the current session's labeled pattern-edit history. Drag a column header edge to resize that column. On touchscreens, drag the right side of the header. Double-click or double-tap the edge to restore its default width. The highlighted row is the current pattern state.
   </div>
 </div>
 

@@ -1104,7 +1104,6 @@ resetButton.addEventListener('click', () => {
   timelineStartTime = 0;
   pausedElapsedMs = 0;
   state = createDefaultState();
-  window.PekoTables?.reset();
   timelineFollow?.setEnabled(state.followTimeline);
   timelineFollow?.reset();
 

@@ -144,7 +144,7 @@
   </svg>
   <div class="justify">
     <h1>RESET <span class="object">button</span></h1>
-    Resets session and settings.
+    Resets session, settings and Playlist column widths.
   </div>
 </div>
 
@@ -454,7 +454,7 @@
   </svg>
   <div class="justify">
     <h1>Playlist <span class="object">module</span></h1>
-    Manages queued tracks and per-row actions.
+    Manages queued tracks and per-row actions. Drag a column header edge to resize that column. On touchscreens, drag the right side of the header. Double-click or double-tap the edge to restore its default width.
   </div>
 </div>
 

@@ -406,6 +406,10 @@ td > input[type="number"] {
   cursor: col-resize;
 }
 
+.scrollable-table.resizable-columns th {
+  touch-action: pan-y pinch-zoom;
+}
+
 tbody tr:hover {
   background: var(--grey1);
 }

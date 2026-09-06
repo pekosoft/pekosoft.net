@@ -512,6 +512,10 @@ function setupResizableTables() {
     let startX = 0;
     let startWidth = 0;
     let startTableWidth = 0;
+    let lastTouchResizeTap = null;
+    let resizeMoved = false;
+
+    const getResizeEdgeWidth = (event) => event.pointerType === 'touch' ? 24 : 8;
 
     const syncColumnWidths = () => {
       if (resizingHeader) return;
@@ -556,8 +560,19 @@ function setupResizableTables() {
       table.classList.add('resizable-columns');
     };
 
+    const resetColumnWidth = (header) => {
+      const defaultWidth = Number(header.dataset.defaultColumnWidth);
+      if (!Number.isFinite(defaultWidth) || defaultWidth <= 0) return;
+
+      const currentWidth = header.getBoundingClientRect().width;
+      header.dataset.columnWidth = String(defaultWidth);
+      header.style.width = `${defaultWidth}px`;
+      table.style.width = `${Math.round(table.getBoundingClientRect().width + defaultWidth - currentWidth)}px`;
+    };
+
     table.addEventListener('pointermove', (event) => {
       if (resizingHeader) {
+        if (Math.abs(event.clientX - startX) > 3) resizeMoved = true;
         const width = Math.max(48, startWidth + event.clientX - startX);
         const widthChange = width - startWidth;
         resizingHeader.dataset.columnWidth = String(Math.round(width));
@@ -573,7 +588,7 @@ function setupResizableTables() {
       if (!header || !table.tHead?.contains(header)) return;
 
       const bounds = header.getBoundingClientRect();
-      if (event.clientX >= bounds.right - 8) {
+      if (event.clientX >= bounds.right - getResizeEdgeWidth(event)) {
         header.classList.add('column-resize-target');
       }
     });
@@ -592,18 +607,36 @@ function setupResizableTables() {
       if (!header || !table.tHead?.contains(header)) return;
 
       const bounds = header.getBoundingClientRect();
-      if (event.clientX < bounds.right - 8) return;
+  if (event.clientX < bounds.right - getResizeEdgeWidth(event)) return;
 
       event.preventDefault();
       resizingHeader = header;
       startX = event.clientX;
       startWidth = bounds.width;
       startTableWidth = table.getBoundingClientRect().width;
+      resizeMoved = false;
       header.classList.add('column-resizing');
       header.setPointerCapture(event.pointerId);
     });
 
-    table.addEventListener('pointerup', finishResize);
+    table.addEventListener('pointerup', (event) => {
+      const header = resizingHeader;
+      finishResize();
+      if (!header || event.pointerType !== 'touch') return;
+
+      if (resizeMoved) {
+        lastTouchResizeTap = null;
+        return;
+      }
+
+      const now = event.timeStamp;
+      const isDoubleTap = lastTouchResizeTap?.header === header && now - lastTouchResizeTap.time < 350;
+      lastTouchResizeTap = { header, time: now };
+      if (isDoubleTap) {
+        resetColumnWidth(header);
+        lastTouchResizeTap = null;
+      }
+    });
     table.addEventListener('pointercancel', finishResize);
     table.addEventListener('lostpointercapture', finishResize);
 
@@ -612,16 +645,10 @@ function setupResizableTables() {
       if (!header || !table.tHead?.contains(header)) return;
 
       const bounds = header.getBoundingClientRect();
-      if (event.clientX < bounds.right - 8) return;
-
-      const defaultWidth = Number(header.dataset.defaultColumnWidth);
-      if (!Number.isFinite(defaultWidth) || defaultWidth <= 0) return;
+      if (event.clientX < bounds.right - getResizeEdgeWidth(event)) return;
 
       event.preventDefault();
-      const currentWidth = bounds.width;
-      header.dataset.columnWidth = String(defaultWidth);
-      header.style.width = `${defaultWidth}px`;
-      table.style.width = `${Math.round(table.getBoundingClientRect().width + defaultWidth - currentWidth)}px`;
+      resetColumnWidth(header);
     });
 
     table.dataset.resizableColumns = 'true';

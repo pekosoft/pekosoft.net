@@ -330,6 +330,7 @@ table {
   border-collapse: collapse;
   border: 1px solid var(--grey1);
   max-width: var(--maxwidth);
+  user-select: text;
 }
 
 thead {
@@ -359,6 +360,10 @@ th {
   text-align: center;
   width: 110px;
   min-width: 110px;
+}
+
+th {
+  user-select: none;
 }
 
 td:first-child,

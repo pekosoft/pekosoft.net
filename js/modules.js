@@ -836,6 +836,7 @@ function setupPanelWrapToggle() {
 
   let currentUtterance = null;
   let isSpeaking = false;
+  const maximumSpeechChunkLength = 2000;
 
   const setSpeechState = (active) => {
     isSpeaking = active;
@@ -855,6 +856,25 @@ function setupPanelWrapToggle() {
     setSpeechState(false);
   };
 
+  const splitSpeechText = (text) => {
+    const chunks = [];
+    let remaining = text.trim();
+
+    while (remaining.length > maximumSpeechChunkLength) {
+      const newline = remaining.lastIndexOf("\n", maximumSpeechChunkLength);
+      const sentence = remaining.lastIndexOf(". ", maximumSpeechChunkLength);
+      const word = remaining.lastIndexOf(" ", maximumSpeechChunkLength);
+      const boundary = Math.max(newline, sentence, word);
+      const end = boundary > 0 ? boundary + 1 : maximumSpeechChunkLength;
+
+      chunks.push(remaining.slice(0, end).trim());
+      remaining = remaining.slice(end).trim();
+    }
+
+    if (remaining) chunks.push(remaining);
+    return chunks;
+  };
+
   const startSpeech = () => {
     if (!window.speechSynthesis || typeof SpeechSynthesisUtterance === "undefined") return;
     const text = textareas.map((textarea) => textarea.value.trim()).filter(Boolean).join("\n\n");
@@ -863,17 +883,38 @@ function setupPanelWrapToggle() {
       return;
     }
 
-    window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(text);
-    currentUtterance = utterance;
+    if (window.speechSynthesis.speaking || window.speechSynthesis.pending) {
+      window.speechSynthesis.cancel();
+    }
 
-    utterance.onend = utterance.onerror = () => {
-      if (currentUtterance !== utterance) return;
-      currentUtterance = null;
-      setSpeechState(false);
+    const chunks = splitSpeechText(text);
+    let chunkIndex = 0;
+
+    const speakNextChunk = () => {
+      const utterance = new SpeechSynthesisUtterance(chunks[chunkIndex]);
+      currentUtterance = utterance;
+
+      utterance.onend = () => {
+        if (currentUtterance !== utterance) return;
+        chunkIndex += 1;
+        if (chunkIndex < chunks.length) {
+          speakNextChunk();
+          return;
+        }
+        currentUtterance = null;
+        setSpeechState(false);
+      };
+
+      utterance.onerror = () => {
+        if (currentUtterance !== utterance) return;
+        currentUtterance = null;
+        setSpeechState(false);
+      };
+
+      window.speechSynthesis.speak(utterance);
     };
 
-    window.speechSynthesis.speak(utterance);
+    speakNextChunk();
     setSpeechState(true);
   };
 

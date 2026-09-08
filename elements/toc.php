@@ -10,11 +10,6 @@
   </div>
 
   <div class="top-heading-title">
-    <div class="top-heading-logo" aria-label="Pekosoft">
-      <svg class="assets" viewBox="0 0 512 101.87" role="img" aria-label="Pekosoft">
-        <use href="/assets.svg#logo" />
-      </svg>
-    </div>
     <h1 class="release-title">
       <?php echo $releaseName; ?><?php if ($releasePage !== ''): ?> <span><?php echo $releasePage; ?></span><?php endif; ?>
     </h1>

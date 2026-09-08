@@ -84,6 +84,11 @@ if (!in_array($requestPath, ['/', '/index.php'], true)) {
       </a>
     </div>
 
+    <div class="index-pekosoft-logo">
+      <a href="/" title="Pekosoft">
+        <svg class="assets" viewBox="0 0 512 101.87" role="img" aria-label="Pekosoft"><use href="/assets.svg#logo" /></svg>
+      </a>
+    </div>
     <div>Copyright &copy; <a href="https://pekosoft.net">Pekosoft</a>. All rights reserved.</div>
     <div>Produced at <a href="https://focusstudios.no">Focus Studios</a> by <a href="https://peko.net">Ole Peko Sørensen</a>.</div>
 

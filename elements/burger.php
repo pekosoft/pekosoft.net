@@ -28,11 +28,11 @@ $hasPlaylistModule = in_array('playlist', $availableModules, true);
     <div class="toc-content">
       <div class="toc-column">
 
-    <button class="toc-button" data-href="/index.php" title="Pekosoft" aria-label="Pekosoft">
+    <button class="toc-button" data-href="<?php echo $isBetaRelease ? '/beta.php' : '/index.php'; ?>" title="<?php echo $isBetaRelease ? 'Beta' : 'Pekosoft'; ?>" aria-label="<?php echo $isBetaRelease ? 'Beta' : 'Pekosoft'; ?>">
       <svg class="icons" role="img">
-        <use href="/icons.svg#index"></use>
+        <use href="/icons.svg#<?php echo $isBetaRelease ? 'beta' : 'index'; ?>"></use>
       </svg>
-      Pekosoft
+      <?php echo $isBetaRelease ? 'Beta' : 'Pekosoft'; ?>
     </button>
 
       </div>

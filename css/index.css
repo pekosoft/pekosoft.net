@@ -1134,24 +1134,8 @@ li h1 img {
   white-space: nowrap;
 }
 
-.top-heading .top-heading-logo {
-  display: none;
-}
-
-.index-page .top-heading .top-heading-logo {
-  display: flex;
-  align-items: center;
-  height: var(--size2);
-}
-
 .index-page .top-heading-title .release-title {
-  display: none;
-}
-
-.top-heading-logo .assets {
   display: block;
-  width: auto;
-  height: var(--size2);
 }
 
 .top-heading .settings-panel .knob-control {
@@ -1571,6 +1555,10 @@ html.invert-colors .container:fullscreen {
   justify-content: center;
   align-items: center;
   gap: 16px;
+  margin-bottom: 16px;
+}
+
+.index-pekosoft-logo {
   margin-bottom: 16px;
 }
 

@@ -7,7 +7,6 @@
   $release = "beta";
   $releaseName = "Beta";
   $releasePage = "";
-  $hideReleaseMenu = true;
   ?>
   <link rel="stylesheet" type="text/css" href="/css/<?php echo $release; ?>.css">
 </head>
@@ -48,6 +47,11 @@
   </div>
 
   <div class="index-site-info">
+    <div class="index-pekosoft-logo">
+      <a href="/" title="Pekosoft">
+        <svg class="assets" viewBox="0 0 512 101.87" role="img" aria-label="Pekosoft"><use href="/assets.svg#logo" /></svg>
+      </a>
+    </div>
     <div>Tests and ideas - not for real use.</div>
   </div>
 

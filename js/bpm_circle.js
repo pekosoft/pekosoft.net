@@ -68,6 +68,7 @@ class BPMVisualizer {
     this.DEFAULT_VOLUME = 100;
     this.interval = null;
     this.isPlaying = false;
+    this.isSoundMasterEnabled = true;
 
     this.audioContext = null;
     this.metersAnalyser = null;
@@ -128,8 +129,6 @@ class BPMVisualizer {
       128: { segments: [], count: 128 }
     };
     this.isLoopEnabled = true;
-
-    this.isSoundMasterEnabled = true;
 
     this.displayMode = 'selected';
     this.initInfoDisplayButtons();
@@ -646,27 +645,26 @@ class BPMVisualizer {
     this.updateMetersSourceBridge();
   }
 
-  togglePlayback() {
-    this.isPlaying = !this.isPlaying;
-    this.toggleButton.classList.toggle('playing', this.isPlaying);
-    this.toggleButton.classList.toggle('button-on', this.isPlaying);
-    
+  async togglePlayback() {
     if (this.isPlaying) {
-      if (this.audioContext && this.audioContext.state === 'suspended') {
-        this.audioContext.resume().catch(() => {
-          // Resume is best-effort; the next gesture can retry.
-        });
-      }
-      this.lastTickTime = performance.now();
-      this.tick();
-      this.updateBPM(true);
-    } else {
-      if (this.interval) {
-        clearInterval(this.interval);
-        this.interval = null;
+      this.stopPlayback();
+      return;
+    }
+
+    if (this.audioContext && this.audioContext.state === 'suspended') {
+      try {
+        await this.audioContext.resume();
+      } catch (_) {
+        return;
       }
     }
 
+    this.isPlaying = true;
+    this.toggleButton.classList.add('playing');
+    this.toggleButton.classList.add('button-on');
+    this.lastTickTime = performance.now();
+    this.tick();
+    this.updateBPM(true);
     this.updateMetersSourceBridge();
   }
 
@@ -977,6 +975,7 @@ class BPMVisualizer {
       this.isSoundMasterEnabled = true;
       this.setToggleButtonState(this.soundMasterButton, true);
     }
+    this.updateMasterSoundOutput();
 
     const savedDisplayMode = localStorage.getItem('bpm_circle.info_display');
     if (savedDisplayMode === 'selected' || savedDisplayMode === 'active' || savedDisplayMode === 'all') {

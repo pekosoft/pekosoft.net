@@ -704,10 +704,17 @@ function getOrderedRows(table) {
   return rows;
 }
 
+function getColumnWidths() {
+  return new Map([...headerRow.cells]
+    .filter((header) => header.dataset.columnWidth)
+    .map((header) => [header.title, header.dataset.columnWidth]));
+}
+
 function renderTable() {
   const table = TABLES[state.activeMode];
   const visibility = state.visibility[state.activeMode];
   const aligns = table.aligns || [];
+  const columnWidths = getColumnWidths();
 
   headerRow.innerHTML = '';
   resultTable.innerHTML = '';
@@ -718,6 +725,11 @@ function renderTable() {
     const th = document.createElement('th');
     th.textContent = columnLabel;
     th.title = columnLabel;
+    const width = columnWidths.get(columnLabel);
+    if (width) {
+      th.dataset.columnWidth = width;
+      th.style.width = `${width}px`;
+    }
 
     if (state.activeMode === 'bpm' && index === 0) {
       th.innerHTML = `${columnLabel} <svg class="icons icons-small reference-external-icon"><use href="/icons.svg#external" /></svg>`;

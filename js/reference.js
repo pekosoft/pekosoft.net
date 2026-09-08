@@ -588,6 +588,49 @@ const TABLES = {
   }
 };
 
+const REFERENCE_HEADER_TOOLTIPS = {
+  bpm: {
+    BPM: 'Beats per minute',
+    WRITING: 'Written note name',
+    PARITY: 'Note division parity',
+    HALF: 'Half note',
+    DOUBLE: 'Double note',
+    TRIPLET: 'Triplet note',
+    DOTTED: 'Dotted note',
+    SPB: 'Seconds per beat',
+    BPS: 'Beats per second',
+    PLAY: 'Play note'
+  },
+  notes: {
+    NOTE: 'Note name',
+    MIDI: 'MIDI note number',
+    HZ: 'Frequency in Hertz',
+    'WAVE CM': 'Wavelength in centimeters',
+    'PIANO KEY': 'Piano key number',
+    PLAY: 'Play note'
+  },
+  scales: {
+    SCALE: 'Scale name',
+    INTERVALS: 'Scale intervals',
+    DEGREES: 'Scale degrees',
+    'C EXAMPLE': 'Example in C',
+    COUNT: 'Number of notes',
+    PLAY: 'Play scale'
+  },
+  chords: {
+    CHORD: 'Chord name',
+    FORMULA: 'Chord formula',
+    SEMITONES: 'Semitone intervals',
+    'C EXAMPLE': 'Example in C',
+    NOTES: 'Chord notes',
+    PLAY: 'Play chord'
+  }
+};
+
+function getReferenceHeaderTooltip(modeKey, columnLabel) {
+  return REFERENCE_HEADER_TOOLTIPS[modeKey]?.[columnLabel] || columnLabel;
+}
+
 function loadSettings() {
   const savedMode = localStorage.getItem(STORAGE.mode);
   if (savedMode && TABLES[savedMode]) {
@@ -707,7 +750,7 @@ function getOrderedRows(table) {
 function getColumnWidths() {
   return new Map([...headerRow.cells]
     .filter((header) => header.dataset.columnWidth)
-    .map((header) => [header.title, header.dataset.columnWidth]));
+    .map((header) => [header.dataset.columnLabel, header.dataset.columnWidth]));
 }
 
 function renderTable() {
@@ -724,7 +767,8 @@ function renderTable() {
 
     const th = document.createElement('th');
     th.textContent = columnLabel;
-    th.title = columnLabel;
+    th.dataset.columnLabel = columnLabel;
+    th.title = getReferenceHeaderTooltip(state.activeMode, columnLabel);
     const width = columnWidths.get(columnLabel);
     if (width) {
       th.dataset.columnWidth = width;

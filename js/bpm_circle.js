@@ -67,7 +67,9 @@ class BPMVisualizer {
     this.DEFAULT_BEAT_SOUND = 'click';
     this.DEFAULT_VOLUME = 100;
     this.interval = null;
+    this.nextTickTime = null;
     this.isPlaying = false;
+    this.isPaused = false;
     this.isSoundMasterEnabled = true;
 
     this.audioContext = null;
@@ -615,6 +617,7 @@ class BPMVisualizer {
 
     this.isSoundMasterEnabled = true;
     this.soundMasterButton.classList.add('button-on');
+    this.updateMasterSoundOutput();
 
     // Reset info panel
     this.selectedSegmentInfo = null;
@@ -647,7 +650,7 @@ class BPMVisualizer {
 
   async togglePlayback() {
     if (this.isPlaying) {
-      this.stopPlayback();
+      this.pausePlayback();
       return;
     }
 
@@ -660,23 +663,51 @@ class BPMVisualizer {
     }
 
     this.isPlaying = true;
-    this.toggleButton.classList.add('playing');
-    this.toggleButton.classList.add('button-on');
+    const isResuming = this.isPaused;
+    this.isPaused = false;
+    this.syncPlaybackButtonState();
     this.lastTickTime = performance.now();
-    this.tick();
+    if (!isResuming) {
+      this.tick();
+    }
     this.updateBPM(true);
     this.updateMetersSourceBridge();
   }
 
-  stopPlayback() {
+  pausePlayback() {
     this.isPlaying = false;
-    this.toggleButton.classList.remove('playing');
-    this.toggleButton.classList.remove('button-on');
+    this.isPaused = true;
+    this.syncPlaybackButtonState();
 
     if (this.interval) {
-      clearInterval(this.interval);
+      clearTimeout(this.interval);
       this.interval = null;
     }
+    this.nextTickTime = null;
+
+    this.updateMetersSourceBridge();
+  }
+
+  syncPlaybackButtonState() {
+    this.toggleButton.classList.toggle('playing', this.isPlaying);
+    this.toggleButton.classList.toggle('button-on', this.isPlaying);
+    this.toggleButton.title = this.isPlaying ? 'Pause playback' : (this.isPaused ? 'Resume playback' : 'Start playback');
+    const buttonText = this.toggleButton.querySelector('.button-text');
+    if (buttonText) {
+      buttonText.textContent = this.isPlaying ? 'Pause' : 'Play';
+    }
+  }
+
+  stopPlayback() {
+    this.isPlaying = false;
+    this.isPaused = false;
+    this.syncPlaybackButtonState();
+
+    if (this.interval) {
+      clearTimeout(this.interval);
+      this.interval = null;
+    }
+    this.nextTickTime = null;
 
     Object.values(this.noteGroups).forEach(group => {
       group.segments.forEach(segment => {
@@ -723,18 +754,26 @@ class BPMVisualizer {
     this.updateInfoDisplay();
     
     if (this.interval) {
-      clearInterval(this.interval);
+      clearTimeout(this.interval);
+      this.interval = null;
     }
 
     if (startPlaying && this.isPlaying) {
-      const beatDuration = (60000 / bpm); 
-      const interval128 = beatDuration / 16; 
-
-      this.interval = setInterval(() => {
+      const interval128 = 60000 / bpm / 32;
+      this.nextTickTime = performance.now() + interval128;
+      const scheduleTick = () => {
+        if (!this.isPlaying) {
+          this.interval = null;
+          this.nextTickTime = null;
+          return;
+        }
         const now = performance.now();
         this.lastTickTime = now;
         this.tick();
-      }, interval128);
+        this.nextTickTime += interval128;
+        this.interval = window.setTimeout(scheduleTick, Math.max(0, this.nextTickTime - performance.now()));
+      };
+      this.interval = window.setTimeout(scheduleTick, interval128);
     }
 
     if (bpm) {
@@ -861,15 +900,16 @@ class BPMVisualizer {
     
     if (!this.isLoopEnabled && this.currentBeats[128] === 0) {
       this.isPlaying = false;
-      this.toggleButton.classList.remove('playing');
-      this.toggleButton.classList.remove('button-on');
+      this.isPaused = false;
+      this.syncPlaybackButtonState();
       if (this.interval) {
-        clearInterval(this.interval);
+        clearTimeout(this.interval);
         this.interval = null;
       }
+      this.nextTickTime = null;
     }
     
-    this.updateLineRotation();
+    this.updateLineRotation(beat128);
     
     if (this.displayMode === 'active') {
       this.updateInfoDisplay();
@@ -885,14 +925,14 @@ class BPMVisualizer {
     localStorage.setItem('bpm_circle.line_visible', this.isLineVisible);
   }
 
-  updateLineRotation() {
+  updateLineRotation(beat128) {
     if (!this.lastTickTime) {
       this.lastTickTime = performance.now();
       return;
     }
     
     const rotationPerBeat = 360 / 128; 
-    this.lineRotation = (this.currentBeats[128] * rotationPerBeat) % 360;
+    this.lineRotation = (beat128 * rotationPerBeat) % 360;
     
     this.beatLine.setAttribute('transform', `rotate(${this.lineRotation})`);
   }

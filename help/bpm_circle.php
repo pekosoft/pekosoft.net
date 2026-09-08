@@ -123,7 +123,7 @@
   </svg>
   <div class="justify">
     <h1>PLAY <span class="object">button</span></h1>
-    Toggles playback of the circle and timeline. Button text changes to PAUSE while playing. <span class="default">Default: off.</span>
+    Starts playback of the circle and timeline. Press again to pause while retaining position, then press again to resume. Button text changes to PAUSE while playing. <span class="default">Default: off.</span>
   </div>
 </div>
 

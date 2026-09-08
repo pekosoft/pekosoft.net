@@ -1636,13 +1636,11 @@ async function shareCurrentPage() {
 // Function to attach main TOC commands
 
 document.addEventListener("DOMContentLoaded", () => {
-  const toc = document.getElementById("toc");
   const shareTocButton = document.getElementById("share-toc-button");
 
   if (shareTocButton) {
     shareTocButton.addEventListener("click", async () => {
       await shareCurrentPage();
-      toc?.classList.remove('toc-open');
     });
   }
 

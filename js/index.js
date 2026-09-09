@@ -515,8 +515,26 @@ function setupResizableTables() {
     let startTableWidth = 0;
     let lastTouchResizeTap = null;
     let resizeMoved = false;
+    let defaultsAreFinalized = false;
 
     const getResizeEdgeWidth = (event) => event.pointerType === 'touch' ? 24 : 8;
+    const getMinimumTableWidth = () => table.parentElement?.clientWidth || 0;
+    const rebaseColumnWidths = (headers, updateDefaults = false) => {
+      const widths = headers.map((header) => ({
+        header,
+        width: Math.round(header.getBoundingClientRect().width)
+      }));
+
+      widths.forEach(({ header, width }) => {
+        if (width <= 0) return;
+        header.dataset.columnWidth = String(width);
+        if (updateDefaults) header.dataset.defaultColumnWidth = String(width);
+        header.style.width = `${width}px`;
+      });
+
+      const totalWidth = widths.reduce((width, column) => width + column.width, 0);
+      if (totalWidth > 0) table.style.width = `${Math.max(totalWidth, getMinimumTableWidth())}px`;
+    };
 
     const syncColumnWidths = () => {
       if (resizingHeader) return;
@@ -538,7 +556,15 @@ function setupResizableTables() {
       const totalWidth = headers.reduce((width, header) => {
         return width + Number(header.dataset.columnWidth || 0);
       }, 0);
-      if (totalWidth > 0) table.style.width = `${totalWidth}px`;
+      const minimumTableWidth = getMinimumTableWidth();
+      if (totalWidth < minimumTableWidth) {
+        rebaseColumnWidths(headers);
+      }
+
+      const syncedWidth = headers.reduce((width, header) => {
+        return width + Number(header.dataset.columnWidth || 0);
+      }, 0);
+      if (syncedWidth > 0) table.style.width = `${Math.max(syncedWidth, minimumTableWidth)}px`;
     };
 
     const finishResize = () => {
@@ -581,7 +607,7 @@ function setupResizableTables() {
       const currentWidth = header.getBoundingClientRect().width;
       header.dataset.columnWidth = String(defaultWidth);
       header.style.width = `${defaultWidth}px`;
-      table.style.width = `${Math.round(table.getBoundingClientRect().width + defaultWidth - currentWidth)}px`;
+      table.style.width = `${Math.max(getMinimumTableWidth(), Math.round(table.getBoundingClientRect().width + defaultWidth - currentWidth))}px`;
     };
 
     table.addEventListener('pointermove', (event) => {
@@ -591,7 +617,7 @@ function setupResizableTables() {
         const widthChange = width - startWidth;
         resizingHeader.dataset.columnWidth = String(Math.round(width));
         resizingHeader.style.width = `${Math.round(width)}px`;
-        table.style.width = `${Math.round(startTableWidth + widthChange)}px`;
+        table.style.width = `${Math.max(getMinimumTableWidth(), Math.round(startTableWidth + widthChange))}px`;
         return;
       }
 
@@ -620,8 +646,18 @@ function setupResizableTables() {
       const header = event.target.closest('th');
       if (!header || !table.tHead?.contains(header)) return;
 
-      const bounds = header.getBoundingClientRect();
-  if (event.clientX < bounds.right - getResizeEdgeWidth(event)) return;
+      let bounds = header.getBoundingClientRect();
+      if (event.clientX < bounds.right - getResizeEdgeWidth(event)) return;
+
+      const headers = getVisibleHeaders();
+      const storedWidth = headers.reduce((width, visibleHeader) => {
+        return width + Number(visibleHeader.dataset.columnWidth || 0);
+      }, 0);
+      if (storedWidth < getMinimumTableWidth()) {
+        rebaseColumnWidths(headers, !defaultsAreFinalized);
+        defaultsAreFinalized = true;
+        bounds = header.getBoundingClientRect();
+      }
 
       event.preventDefault();
       resizingHeader = header;
@@ -669,6 +705,15 @@ function setupResizableTables() {
     syncColumnWidths();
     table.classList.add('resizable-columns');
     resizableTableControllers.set(table, { reset });
+
+    window.requestAnimationFrame(() => {
+      const headers = getVisibleHeaders();
+      const storedWidth = headers.reduce((width, header) => {
+        return width + Number(header.dataset.columnWidth || 0);
+      }, 0);
+      if (storedWidth < getMinimumTableWidth()) rebaseColumnWidths(headers, true);
+      defaultsAreFinalized = true;
+    });
 
     const observer = new MutationObserver(() => {
       window.requestAnimationFrame(syncColumnWidths);

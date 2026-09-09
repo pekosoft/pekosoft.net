@@ -399,6 +399,7 @@ td > input[type="number"] {
 
 table.resizable-columns {
   max-width: none;
+  min-width: 100%;
 }
 
 table.resizable-columns td,

@@ -204,20 +204,21 @@
         <table class="recording-playlist-data">
           <thead>
             <tr>
-              <th class="recording-col-index">#</th>
-              <th class="recording-col-name">Recording</th>
-              <th class="recording-col-preview">Preview</th>
-              <th class="recording-col-duration">Duration</th>
-              <th class="recording-col-hits">Hits</th>
-              <th class="recording-col-bpm">BPM</th>
-              <th class="recording-col-added">Added</th>
-              <th class="recording-col-actions">Actions</th>
+              <th class="recording-col-index" title="Recording number">#</th>
+              <th class="recording-col-name" title="Recording name">Recording</th>
+              <th class="recording-col-preview" title="Recording preview">Preview</th>
+              <th class="recording-col-duration" title="Recording duration">Duration</th>
+              <th class="recording-col-hits" title="Number of hits">Hits</th>
+              <th class="recording-col-bpm" title="Recording BPM">BPM</th>
+              <th class="recording-col-added" title="Added to playlist">Added</th>
+              <th class="recording-col-play" title="Play recording">Play</th>
+              <th class="recording-col-remove" title="Remove recording">Remove</th>
             </tr>
           </thead>
           <tbody id="recording-playlist-items"></tbody>
           <tfoot>
             <tr>
-              <td colspan="8">
+              <td colspan="9">
                 <span class="recording-playlist-summary">Recordings: <span id="recording-playlist-count">0</span></span>
                 <span class="recording-playlist-summary">Total duration: <span id="recording-playlist-duration">00:00:000</span></span>
                 <span class="recording-playlist-summary">Total hits: <span id="recording-playlist-hits">0</span></span>
@@ -258,10 +259,10 @@
         <table class="recording-playlist-data history-playlist-data">
           <thead>
             <tr>
-              <th class="recording-col-index">#</th>
-              <th class="history-col-icon">Type</th>
-              <th class="history-col-label">Change</th>
-              <th class="history-col-time">Time</th>
+              <th class="recording-col-index" title="Change number">#</th>
+              <th class="history-col-icon" title="Change type">Type</th>
+              <th class="history-col-label" title="Applied change">Change</th>
+              <th class="history-col-time" title="Change time">Time</th>
             </tr>
           </thead>
           <tbody id="pattern-history-list" role="listbox" aria-label="Pattern edit history"></tbody>

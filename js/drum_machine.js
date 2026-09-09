@@ -536,10 +536,8 @@
           addedCell.className = "recording-col-added";
           addedCell.textContent = this.formatRecordingAdded(recording.createdAt);
 
-          const actionsCell = document.createElement("td");
-          actionsCell.className = "recording-col-actions";
-          const actions = document.createElement("div");
-          actions.className = "recording-playlist-actions";
+          const playCell = document.createElement("td");
+          playCell.className = "recording-col-play";
 
           const playButton = document.createElement("button");
           playButton.type = "button";
@@ -558,9 +556,11 @@
           removeButton.innerHTML = '<svg class="icons" role="img"><use href="/icons.svg#delete" /></svg>';
           removeButton.addEventListener("click", () => this.removeRecording(index));
 
-          actions.append(playButton, removeButton);
-          actionsCell.appendChild(actions);
-          row.append(indexCell, nameCell, previewCell, durationCell, hitsCell, bpmCell, addedCell, actionsCell);
+          const removeCell = document.createElement("td");
+          removeCell.className = "recording-col-remove";
+          playCell.appendChild(playButton);
+          removeCell.appendChild(removeButton);
+          row.append(indexCell, nameCell, previewCell, durationCell, hitsCell, bpmCell, addedCell, playCell, removeCell);
           this.elements.playlistItems.appendChild(row);
         });
 

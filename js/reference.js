@@ -567,22 +567,22 @@ function makeChordsRows() {
 
 const TABLES = {
   bpm: {
-    columns: ['BPM', 'WRITING', 'PARITY', 'HALF', 'DOUBLE', 'TRIPLET', 'DOTTED', 'SPB', 'BPS', 'PLAY'],
+    columns: ['BPM', 'Writing', 'Parity', 'Half', 'Double', 'Triplet', 'Dotted', 'SPB', 'BPS', 'Play'],
     aligns: ['right', 'left', 'left', 'right', 'right', 'right', 'right', 'right', 'right', 'center'],
     rows: makeBpmRows()
   },
   notes: {
-    columns: ['NOTE', 'MIDI', 'HZ', 'WAVE CM', 'PIANO KEY', 'PLAY'],
+    columns: ['Note', 'MIDI', 'Hz', 'Wave cm', 'Piano key', 'Play'],
     aligns: ['left', 'right', 'right', 'right', 'right', 'center'],
     rows: makeNotesRows()
   },
   scales: {
-    columns: ['SCALE', 'INTERVALS', 'DEGREES', 'C EXAMPLE', 'COUNT', 'PLAY'],
+    columns: ['Scale', 'Intervals', 'Degrees', 'C example', 'Count', 'Play'],
     aligns: ['left', 'left', 'left', 'left', 'right', 'center'],
     rows: makeScalesRows()
   },
   chords: {
-    columns: ['CHORD', 'FORMULA', 'SEMITONES', 'C EXAMPLE', 'NOTES', 'PLAY'],
+    columns: ['Chord', 'Formula', 'Semitones', 'C example', 'Notes', 'Play'],
     aligns: ['left', 'left', 'left', 'left', 'right', 'center'],
     rows: makeChordsRows()
   }
@@ -591,39 +591,39 @@ const TABLES = {
 const REFERENCE_HEADER_TOOLTIPS = {
   bpm: {
     BPM: 'Beats per minute',
-    WRITING: 'Written note name',
-    PARITY: 'Note division parity',
-    HALF: 'Half note',
-    DOUBLE: 'Double note',
-    TRIPLET: 'Triplet note',
-    DOTTED: 'Dotted note',
+    Writing: 'Written note name',
+    Parity: 'Note division parity',
+    Half: 'Half note',
+    Double: 'Double note',
+    Triplet: 'Triplet note',
+    Dotted: 'Dotted note',
     SPB: 'Seconds per beat',
     BPS: 'Beats per second',
-    PLAY: 'Play note'
+    Play: 'Play note'
   },
   notes: {
-    NOTE: 'Note name',
+    Note: 'Note name',
     MIDI: 'MIDI note number',
-    HZ: 'Frequency in Hertz',
-    'WAVE CM': 'Wavelength in centimeters',
-    'PIANO KEY': 'Piano key number',
-    PLAY: 'Play note'
+    Hz: 'Frequency in Hertz',
+    'Wave cm': 'Wavelength in centimeters',
+    'Piano key': 'Piano key number',
+    Play: 'Play note'
   },
   scales: {
-    SCALE: 'Scale name',
-    INTERVALS: 'Scale intervals',
-    DEGREES: 'Scale degrees',
-    'C EXAMPLE': 'Example in C',
-    COUNT: 'Number of notes',
-    PLAY: 'Play scale'
+    Scale: 'Scale name',
+    Intervals: 'Scale intervals',
+    Degrees: 'Scale degrees',
+    'C example': 'Example in C',
+    Count: 'Number of notes',
+    Play: 'Play scale'
   },
   chords: {
-    CHORD: 'Chord name',
-    FORMULA: 'Chord formula',
-    SEMITONES: 'Semitone intervals',
-    'C EXAMPLE': 'Example in C',
-    NOTES: 'Chord notes',
-    PLAY: 'Play chord'
+    Chord: 'Chord name',
+    Formula: 'Chord formula',
+    Semitones: 'Semitone intervals',
+    'C example': 'Example in C',
+    Notes: 'Chord notes',
+    Play: 'Play chord'
   }
 };
 

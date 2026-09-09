@@ -323,7 +323,7 @@
     <use href="/icons.svg#view_list"></use>
   </svg>
   <div class="justify">
-    <h1>Playlist <span class="object">module</span></h1>Stores completed recordings in order. Each row shows the recording name, four-lane preview, duration, hit count, recorded BPM, added time and actions. Drag a column header edge to resize that column. On touchscreens, drag the right side of the header. Double-click or double-tap the edge to restore its default width. Recordings persist between visits.
+    <h1>Playlist <span class="object">module</span></h1>Stores completed recordings in order. Each row shows the recording name, four-lane preview, duration, hit count, recorded BPM, added time, and separate Play and Remove columns. Drag a column header edge to resize that column. On touchscreens, drag the right side of the header. Double-click or double-tap the edge to restore its default width. Recordings persist between visits.
   </div>
 </div>
 

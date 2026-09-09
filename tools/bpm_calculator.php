@@ -23,21 +23,21 @@
       <table class="over scrollable-table">
         <thead>
           <tr>
-            <th id="select-header" title="Select row">SELECT</th>
-            <th id="note-header" title="Note symbol">NOTE</th>
-            <th id="value-header" title="Note value">VALUE</th>
-            <th id="ms-header" title="Delay time in milliseconds">MS</th>
-            <th id="hz-header" title="Frequency in Hertz">HZ</th>
-            <th id="cm-header" title="Wavelength in centimeters">CM</th>
-            <th id="inches-header" title="Wavelength in inches">IN</th>
+            <th id="select-header" title="Select row">Select</th>
+            <th id="note-header" title="Note symbol">Note</th>
+            <th id="value-header" title="Note value">Value</th>
+            <th id="ms-header" title="Delay time in milliseconds">Ms</th>
+            <th id="hz-header" title="Frequency in Hertz">Hz</th>
+            <th id="cm-header" title="Wavelength in centimeters">Cm</th>
+            <th id="inches-header" title="Wavelength in inches">Inches</th>
             <th id="usa-header" title="American name">USA</th>
             <th id="uk-header" title="British name">UK</th>
             <th id="bpm-header" title="Corresponding BPM">BPM</th>
-            <th id="diff-header" title="Difference in BPM">DIFF</th>
-            <th id="percent-header" title="Percentage relative to the Crotchet">PERCENT</th>
-            <th id="rest-header" title="Rest symbol">REST</th>
-            <th id="play-header" title="Play note duration">PLAY</th>
-            <th id="close-header" title="Close row">CLOSE</th>
+            <th id="diff-header" title="Difference in BPM">Diff</th>
+            <th id="percent-header" title="Percentage relative to the Crotchet">Percent</th>
+            <th id="rest-header" title="Rest symbol">Rest</th>
+            <th id="play-header" title="Play note duration">Play</th>
+            <th id="close-header" title="Close row">Close</th>
           </tr>
         </thead>
         <tbody id="result-table">

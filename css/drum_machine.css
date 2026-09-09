@@ -377,8 +377,9 @@
   width: 160px;
 }
 
-.recording-col-actions {
-  width: 88px;
+.recording-col-play,
+.recording-col-remove {
+  width: 44px;
 }
 
 .recording-preview-canvas {
@@ -388,13 +389,8 @@
   margin: auto;
 }
 
-.recording-playlist-actions {
-  display: flex;
-  justify-content: center;
-  gap: 4px;
-}
-
-.recording-playlist-actions button {
+.recording-col-play button,
+.recording-col-remove button {
   min-width: var(--size2);
 }
 

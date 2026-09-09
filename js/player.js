@@ -4101,8 +4101,8 @@ function renderPlaylist() {
         addedCell.className = 'col-added';
         addedCell.textContent = formatAddedTimestamp(item.addedAt);
 
-        const actionsCell = document.createElement('td');
-        actionsCell.className = 'col-actions';
+        const playCell = document.createElement('td');
+        playCell.className = 'col-play';
 
         const playBtn = document.createElement('button');
         playBtn.className = 'action-btn square icon-only';
@@ -4124,8 +4124,10 @@ function renderPlaylist() {
         removeBtn.innerHTML = '<svg class="icons" role="img"><use href="/icons.svg#delete" /></svg>';
         removeBtn.addEventListener('click', () => removeFromPlaylist(index));
 
-        actionsCell.appendChild(playBtn);
-        actionsCell.appendChild(removeBtn);
+        const removeCell = document.createElement('td');
+        removeCell.className = 'col-remove';
+        playCell.appendChild(playBtn);
+        removeCell.appendChild(removeBtn);
 
         row.appendChild(indexCell);
         row.appendChild(nameCell);
@@ -4136,7 +4138,8 @@ function renderPlaylist() {
         row.appendChild(typeCell);
         row.appendChild(modifiedCell);
         row.appendChild(addedCell);
-        row.appendChild(actionsCell);
+        row.appendChild(playCell);
+        row.appendChild(removeCell);
 
         playlistItems.appendChild(row);
     });

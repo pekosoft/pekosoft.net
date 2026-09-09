@@ -396,8 +396,9 @@ canvas {
   white-space: nowrap;
 }
 
-.col-actions {
-  width: 80px;
+.col-play,
+.col-remove {
+  width: 40px;
   text-align: center;
 }
 

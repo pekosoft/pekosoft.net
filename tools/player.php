@@ -395,23 +395,24 @@
         <table class="playlist-data">
           <thead>
             <tr>
-              <th class="col-index">#</th>
-              <th class="col-name">Filename</th>
-              <th class="col-waveform">Waveform</th>
-              <th class="col-duration">Duration</th>
-              <th class="col-channels">Ch</th>
-              <th class="col-size">Size</th>
-              <th class="col-type">Type</th>
-              <th class="col-modified">Modified</th>
-              <th class="col-added">Added</th>
-              <th class="col-actions">Actions</th>
+              <th class="col-index" title="Track number">#</th>
+              <th class="col-name" title="Filename">Filename</th>
+              <th class="col-waveform" title="Waveform preview">Waveform</th>
+              <th class="col-duration" title="Track duration">Duration</th>
+              <th class="col-channels" title="Audio channels">Ch</th>
+              <th class="col-size" title="File size">Size</th>
+              <th class="col-type" title="File type">Type</th>
+              <th class="col-modified" title="Last modified">Modified</th>
+              <th class="col-added" title="Added to playlist">Added</th>
+              <th class="col-play" title="Play track">Play</th>
+              <th class="col-remove" title="Remove track">Remove</th>
             </tr>
           </thead>
           <tbody id="playlist-items">
           </tbody>
           <tfoot>
             <tr class="playlist-summary-row">
-              <td colspan="10">
+              <td colspan="11">
                 <span class="playlist-summary-item">Tracks: <span id="playlist-total-tracks">0</span></span>
                 <span class="playlist-summary-item">Total duration: <span id="playlist-total-duration">00:00:000</span></span>
                 <span class="playlist-summary-item">Total bytes: <span id="playlist-total-bytes">0</span></span>

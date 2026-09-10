@@ -43,7 +43,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // FONT SIZE
 
-    const fontSize = localStorage.getItem("global.font_size") || "large";
+    const fontSize = localStorage.getItem("global.font_size") || "medium";
     applyFontSize(fontSize);
 
     // BUTTON TEXT TOGGLE

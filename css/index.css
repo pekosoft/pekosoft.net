@@ -32,6 +32,8 @@
 html {
   background-color: var(--black);
   font-size: var(--font-size);
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 html.modules-loading .container {

@@ -293,13 +293,6 @@ canvas {
   margin: 0;
 }
 
-.playlist-data thead {
-  position: static;
-  top: auto;
-  z-index: auto;
-  background: #000;
-}
-
 .playlist-data th {
   padding: 8px;
   text-align: center;

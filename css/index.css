@@ -343,12 +343,6 @@ thead {
   z-index: 2;
 }
 
-#playlist-container thead {
-  position: static;
-  top: auto;
-  z-index: auto;
-}
-
 tr {
   height: 40px;
 }

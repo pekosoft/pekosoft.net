@@ -281,46 +281,6 @@
   <path d="M256 32c-88.4 0-160 71.6-160 160 0 48.6 23.3 91.7 56 120v48h208v-48c32.7-28.3 56-71.4 56-120 0-88.4-71.6-160-160-160zm-48 400v16c0 8.8 7.2 16 16 16h64c8.8 0 16-7.2 16-16v-16h-96zm0-32h96v-32h-96v32z" />
 </symbol>
 
-<symbol id="blockchain" viewBox="0 0 512 512">
-  <!-- Block 1 outline -->
-  <rect x="16" y="176" width="128" height="12"/>
-  <rect x="16" y="324" width="128" height="12"/>
-  <rect x="16" y="176" width="12" height="160"/>
-  <rect x="132" y="176" width="12" height="160"/>
-  <!-- Block 1 hash lines -->
-  <rect x="34" y="208" width="92" height="10"/>
-  <rect x="34" y="230" width="70" height="10"/>
-  <rect x="34" y="252" width="82" height="10"/>
-  <rect x="34" y="274" width="58" height="10"/>
-  <rect x="34" y="296" width="76" height="10"/>
-  <!-- Connector 1 -->
-  <rect x="144" y="244" width="48" height="24"/>
-  <!-- Block 2 outline -->
-  <rect x="192" y="176" width="128" height="12"/>
-  <rect x="192" y="324" width="128" height="12"/>
-  <rect x="192" y="176" width="12" height="160"/>
-  <rect x="308" y="176" width="12" height="160"/>
-  <!-- Block 2 hash lines -->
-  <rect x="210" y="208" width="92" height="10"/>
-  <rect x="210" y="230" width="70" height="10"/>
-  <rect x="210" y="252" width="82" height="10"/>
-  <rect x="210" y="274" width="58" height="10"/>
-  <rect x="210" y="296" width="76" height="10"/>
-  <!-- Connector 2 -->
-  <rect x="320" y="244" width="48" height="24"/>
-  <!-- Block 3 outline -->
-  <rect x="368" y="176" width="128" height="12"/>
-  <rect x="368" y="324" width="128" height="12"/>
-  <rect x="368" y="176" width="12" height="160"/>
-  <rect x="484" y="176" width="12" height="160"/>
-  <!-- Block 3 hash lines -->
-  <rect x="386" y="208" width="92" height="10"/>
-  <rect x="386" y="230" width="70" height="10"/>
-  <rect x="386" y="252" width="82" height="10"/>
-  <rect x="386" y="274" width="58" height="10"/>
-  <rect x="386" y="296" width="76" height="10"/>
-</symbol>
-
 <symbol id="reference" viewBox="0 0 512 512">
   <path transform="matrix(0.647691 0 0 0.647691 -54.89168 567.95209)" d="M294-85q-53.98 0-91.49-37.57T165-214.23v-532.04q0-54.09 37.51-91.66Q240.02-875.5 294-875.5h501V-285q-26.5 0-43.25 21.56T735-214q0 28.5 16.75 50T795-142.5V-85H294Zm-71.5-236.5q15-10.5 32.92-15.75 17.93-5.25 38.58-5.25h28.5V-818H294q-30.17 0-50.83 20.67-20.67 20.66-20.67 50.83v425Zm157.5-21h357.5V-818H380v475.5Zm-157.5 21V-818v496.5Zm70.93 179H697.5q-9.5-15-14.75-33.5t-5.25-38q0-19.98 5.25-37.99T698.5-285h-405q-29.5 0-50.25 20.67-20.75 20.66-20.75 50.58 0 29.75 20.75 50.5t50.18 20.75Z" />
 </symbol>

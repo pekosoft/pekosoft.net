@@ -18,7 +18,6 @@
     "tuner.show_guides",
     "visualizer.show_guides",
     "meters.audio_calculator.guides",
-    "meters.blockchain.guides",
     "meters.bpm_calculator.guides",
     "meters.bpm_circle.guides",
     "meters.bpm_curve.guides",

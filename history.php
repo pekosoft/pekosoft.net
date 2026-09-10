@@ -4,6 +4,10 @@ if ($requestedRelease === 'settings') {
   require($_SERVER['DOCUMENT_ROOT'] . '/404.php');
   exit;
 }
+if ($requestedRelease !== '' && !is_file($_SERVER['DOCUMENT_ROOT'] . "/history/$requestedRelease.txt")) {
+  require($_SERVER['DOCUMENT_ROOT'] . '/404.php');
+  exit;
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">

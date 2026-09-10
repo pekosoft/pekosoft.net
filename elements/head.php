@@ -1,7 +1,7 @@
 <?php
 $currentScript = basename($_SERVER['SCRIPT_NAME']);
 $requestPath = trim(parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH) ?? '', '/');
-$toolPages = ["tap_pad.php", "bpm_calculator.php", "metronome.php", "turntable.php", "bpm_circle.php", "bpm_curve.php", "circle_of_fifths.php", "drum_machine.php", "player.php", "piano.php", "audio_calculator.php", "blockchain.php", "icons.php", "tuner.php", "visualizer.php", "reference.php", "notepad.php"];
+$toolPages = ["tap_pad.php", "bpm_calculator.php", "metronome.php", "turntable.php", "bpm_circle.php", "bpm_curve.php", "circle_of_fifths.php", "drum_machine.php", "player.php", "piano.php", "audio_calculator.php", "icons.php", "tuner.php", "visualizer.php", "reference.php", "notepad.php"];
 $toolSlugs = array_map(function ($toolPage) {
 	return pathinfo($toolPage, PATHINFO_FILENAME);
 }, $toolPages);
@@ -29,8 +29,6 @@ $releaseTitleMap = [
 	'piano.php' => 'Piano',
 	'audio_calculator' => 'Audio Calculator',
 	'audio_calculator.php' => 'Audio Calculator',
-	'blockchain' => 'Blockchain',
-	'blockchain.php' => 'Blockchain',
 	'icons' => 'Icons',
 	'icons.php' => 'Icons',
 	'tuner' => 'Tuner',

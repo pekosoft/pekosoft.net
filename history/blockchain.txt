@@ -1,4 +1,0 @@
-<h1>1.0
-XX-XX-2026
-</h1>
-Introducing: Pekosoft Blockchain. A live Bitcoin blockchain viewer. Recent confirmed blocks are displayed as a scrollable horizontal chain. A WebSocket connection to mempool.space delivers new blocks in real time. The Timeline module shows block intervals against the 10-minute target. The Panel module displays full metadata for the selected block. Initial release.

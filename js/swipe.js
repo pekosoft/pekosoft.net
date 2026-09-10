@@ -118,7 +118,6 @@ function buildPageUrl(page) {
     "player",
     "piano",
     "audio_calculator",
-    "blockchain",
     "icons",
     "tuner",
     "visualizer",

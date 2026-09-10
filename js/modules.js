@@ -552,7 +552,6 @@ function applyPanelWrap(textareas, enabled) {
 const panelWrapRegistryKey = "global.wrap.modules";
 const panelWrapControlKeys = [
   "audio_calculator:panel-wrap-button",
-  "blockchain:panel-wrap-button",
   "bpm_calculator:panel-wrap-button",
   "bpm_circle:panel-wrap-button",
   "bpm_curve:panel-wrap-button",

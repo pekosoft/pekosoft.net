@@ -323,10 +323,6 @@ canvas {
   color: var(--grey2);
 }
 
-.playlist-data tbody tr.dead .playlist-waveform-canvas {
-  opacity: 0.4;
-}
-
 .playlist-data tbody tr:last-child td {
   border-bottom: 1px solid var(--grey1);
 }

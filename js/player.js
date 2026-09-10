@@ -96,6 +96,7 @@ const colorPrimary = cssVars.getPropertyValue('--color1').trim();
 const colorSecondary = cssVars.getPropertyValue('--color2').trim();
 const colorBlack = cssVars.getPropertyValue('--black').trim() || '#000';
 const colorWhite = cssVars.getPropertyValue('--white').trim();
+const colorGrey1 = cssVars.getPropertyValue('--grey1').trim();
 const colorGrey2 = cssVars.getPropertyValue('--grey2').trim();
 const PLAYER_TIMELINE_DETAIL_WIDTH = 4096;
 
@@ -2595,6 +2596,7 @@ if (waveformColorButton) {
         updateWaveformColorButtonState();
         waveformCacheDirty = true;
         redrawTimelineCanvas();
+        redrawPlaylistWaveforms();
     });
 }
 
@@ -3847,7 +3849,7 @@ function createPlaylistWaveformPeaks(audioBuffer, sampleCount = PLAYLIST_WAVEFOR
     return peaks;
 }
 
-function drawPlaylistWaveform(canvasElement, peaks) {
+function drawPlaylistWaveform(canvasElement, peaks, isDead = false) {
     if (!canvasElement) return;
 
     const ctx = canvasElement.getContext('2d');
@@ -3862,19 +3864,38 @@ function drawPlaylistWaveform(canvasElement, peaks) {
     }
 
     const centerY = Math.floor(height / 2);
-    ctx.strokeStyle = colorWhite;
     ctx.lineWidth = 1;
+    const lowFreqRgb = parseCssColorToRgb(colorSecondary, { r: 255, g: 0, b: 255 });
+    const highFreqRgb = parseCssColorToRgb(colorPrimary, { r: 0, g: 128, b: 255 });
+    const deadLowRgb = parseCssColorToRgb(colorGrey2, { r: 68, g: 68, b: 68 });
+    const deadHighRgb = parseCssColorToRgb(colorGrey1, { r: 34, g: 34, b: 34 });
 
     const stepX = width / peaks.length;
     for (let i = 0; i < peaks.length; i++) {
         const amp = Math.max(0, Math.min(1, Number(peaks[i]) || 0));
         const ySpan = Math.max(1, Math.round(amp * (height * 0.5)));
         const x = Math.round((i + 0.5) * stepX);
+        if (isDead) {
+            ctx.strokeStyle = showWaveformMultiColor
+                ? rgbToCss(getWaveformBandColor(deadLowRgb, deadHighRgb, amp))
+                : colorGrey2;
+        } else {
+            ctx.strokeStyle = showWaveformMultiColor
+                ? rgbToCss(getWaveformBandColor(lowFreqRgb, highFreqRgb, amp))
+                : colorPrimary;
+        }
         ctx.beginPath();
         ctx.moveTo(x + 0.5, centerY - ySpan);
         ctx.lineTo(x + 0.5, centerY + ySpan);
         ctx.stroke();
     }
+}
+
+function redrawPlaylistWaveforms() {
+    playlist.forEach((item, index) => {
+        const canvasElement = playlistItems?.querySelector(`tr[data-index="${index}"] .playlist-waveform-canvas`);
+        if (canvasElement) drawPlaylistWaveform(canvasElement, item.waveformPeaks, isDeadPlaylistItem(item));
+    });
 }
 
 function updatePlaylistItemWaveform(item) {
@@ -4073,7 +4094,7 @@ function renderPlaylist() {
         waveformCanvas.className = 'playlist-waveform-canvas';
         waveformCanvas.width = 160;
         waveformCanvas.height = 24;
-        drawPlaylistWaveform(waveformCanvas, item.waveformPeaks);
+        drawPlaylistWaveform(waveformCanvas, item.waveformPeaks, isDead);
         waveformCell.appendChild(waveformCanvas);
 
         const durationCell = document.createElement('td');

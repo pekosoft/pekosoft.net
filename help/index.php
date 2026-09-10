@@ -151,8 +151,7 @@
   </svg>
   <div class="justify">
     <h1>Customizable</h1>
-    Features are added with toggles. Settings can be controlled per tool or globally and are saved automatically. Default
-    presets are provided, and custom values can be stored and shared.
+    Features are added with toggles. Settings can be controlled per tool or globally and are saved automatically.
   </div>
 </div>
 
@@ -376,12 +375,12 @@
 
 <div class="feature-row border">
   <svg class="standard-image-help"><use href="/icons.svg#play"></use></svg>
-  <div class="justify"><h1>Play <span class="object">button</span></h1>Cycles through Pekosoft pages automatically.</div>
+  <div class="justify"><h1>Play <span class="object">button</span></h1>Cycles through pages automatically.</div>
 </div>
 
 <div class="feature-row border">
   <svg class="standard-image-help"><use href="/icons.svg#bars"></use></svg>
-  <div class="justify"><h1>Status bar <span class="object">option</span></h1>Toggles the fixed tool-navigation bar at the bottom of the page.</div>
+  <div class="justify"><h1>Status bar <span class="object">option</span></h1>Toggles the bottom status bar.</div>
 </div>
 
 <div class="feature-row border">
@@ -391,12 +390,12 @@
 
 <div class="feature-row border">
   <svg class="standard-image-help"><use href="/icons.svg#guides"></use></svg>
-  <div class="justify"><h1>Guides <span class="object">option</span></h1>Toggles guides across supported tools and modules. A module-local GUIDES button overrides this setting for its own module only. The Settings button remains blue while at least one guide is on. <span class="default">Default: on.</span></div>
+  <div class="justify"><h1>Guides <span class="object">option</span></h1>Toggles guides across supported tools and modules. A module-local Guides button overrides this setting for its own module only. The Settings button remains blue while at least one guide is on. <span class="default">Default: on.</span></div>
 </div>
 
 <div class="feature-row border">
   <svg class="standard-image-help"><use href="/icons.svg#sun"></use></svg>
-  <div class="justify"><h1>Bright <span class="object">option</span></h1>Makes guides white across supported Timelines and Meters. A module-local BRIGHT button overrides this setting for its own module only. <span class="default">Default: off.</span></div>
+  <div class="justify"><h1>Bright <span class="object">option</span></h1>Makes guides white across supported Timelines and Meters. A module-local Bright button overrides this setting for its own module only. <span class="default">Default: off.</span></div>
 </div>
 
 <div class="feature-row border">
@@ -426,7 +425,7 @@
 
 <div class="feature-row border">
   <svg class="standard-image-help"><use href="/icons.svg#alpha"></use></svg>
-  <div class="justify"><h1>Multicolor <span class="object">option</span></h1>Toggles multicolor rendering across Meters. A module-local COLOR button overrides this setting for its own Meters module. <span class="default">Default: on.</span></div>
+  <div class="justify"><h1>Multicolor <span class="object">option</span></h1>Toggles multicolor rendering across Meters. A module-local Color button overrides this setting for its own Meters module. <span class="default">Default: on.</span></div>
 </div>
 
 <div class="feature-row border">
@@ -471,7 +470,7 @@
 
 <div class="feature-row border">
   <svg class="standard-image-help"><use href="/icons.svg#reset"></use></svg>
-  <div class="justify"><h1>Reset <span class="object">button</span></h1>Restores all global customization and table column widths to factory defaults.</div>
+  <div class="justify"><h1>Reset <span class="object">button</span></h1>Restores all global customization to factory defaults.</div>
 </div>
 
 <div class="feature-row module">

@@ -81,9 +81,6 @@ if (!in_array($requestPath, ['/', '/index.php'], true)) {
       <a href="https://github.com/pekosoft" title="GitHub">
         <svg class="icons" role="img" aria-label="GitHub"><use href="/icons.svg#github"></use></svg>
       </a>
-      <a href="https://github.com/pekosoft/pekosoft.net/actions" title="GitHub Actions" aria-label="GitHub Actions">
-        <svg class="icons" role="img" aria-label="GitHub Actions"><use href="/icons.svg#external"></use></svg>
-      </a>
       <a href="https://facebook.com/pekosoft" title="Facebook">
         <svg class="icons" role="img" aria-label="Facebook"><use href="/icons.svg#facebook"></use></svg>
       </a>

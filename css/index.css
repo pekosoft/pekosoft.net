@@ -1555,6 +1555,14 @@ html.invert-colors .container:fullscreen {
   margin-bottom: 16px;
 }
 
+#github-actions {
+  text-align: left;
+}
+
+.index-action-run {
+  display: block;
+}
+
 .index-pekosoft-logo {
   margin-bottom: 16px;
 }

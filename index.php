@@ -71,10 +71,18 @@ if (!in_array($requestPath, ['/', '/index.php'], true)) {
 
   </div>
 
+  <div id="github-actions" class="standard padded border" aria-live="polite">
+    <h1>Latest updates</h1>
+    <div id="github-actions-runs">Loading</div>
+  </div>
+
   <div class="index-site-info">
     <div class="index-socials">
       <a href="https://github.com/pekosoft" title="GitHub">
         <svg class="icons" role="img" aria-label="GitHub"><use href="/icons.svg#github"></use></svg>
+      </a>
+      <a href="https://github.com/pekosoft/pekosoft.net/actions" title="GitHub Actions" aria-label="GitHub Actions">
+        <svg class="icons" role="img" aria-label="GitHub Actions"><use href="/icons.svg#external"></use></svg>
       </a>
       <a href="https://facebook.com/pekosoft" title="Facebook">
         <svg class="icons" role="img" aria-label="Facebook"><use href="/icons.svg#facebook"></use></svg>
@@ -102,6 +110,7 @@ if (!in_array($requestPath, ['/', '/index.php'], true)) {
   </div>
 
   <?php require($_SERVER['DOCUMENT_ROOT'] . "/elements/footer.php"); ?>
+  <script src="/js/index_page.js?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/js/index_page.js'); ?>"></script>
 </body>
 
 </html>

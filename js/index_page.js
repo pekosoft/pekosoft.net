@@ -12,15 +12,24 @@ function formatActionDate(value) {
   }).format(date);
 }
 
+function getActionRunUrl(run) {
+  if (run && run.head_sha) {
+    return `https://github.com/pekosoft/pekosoft.net/commit/${run.head_sha}`;
+  }
+
+  return run && run.html_url ? run.html_url : '#';
+}
+
 function renderActionRuns(runs) {
   actionsRunsElement.innerHTML = '';
 
   runs.forEach((run) => {
     const row = document.createElement('a');
     row.className = 'index-action-run';
-    row.href = run.html_url;
+    row.href = getActionRunUrl(run);
     row.target = '_blank';
     row.rel = 'noopener noreferrer';
+    row.title = run.display_title || run.name || 'Workflow';
     row.textContent = `${run.display_title || run.name || 'Workflow'} - ${run.head_branch || '-'} | ${run.event || '-'} | ${formatActionDate(run.created_at)}`;
     actionsRunsElement.appendChild(row);
   });

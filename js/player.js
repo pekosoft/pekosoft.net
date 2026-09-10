@@ -3859,9 +3859,7 @@ function drawPlaylistWaveform(canvasElement, peaks, isDead = false) {
     const height = canvasElement.height;
     ctx.clearRect(0, 0, width, height);
 
-    if (!Array.isArray(peaks) || peaks.length === 0) {
-        return;
-    }
+    if (!Array.isArray(peaks) || peaks.length === 0) return;
 
     const centerY = Math.floor(height / 2);
     ctx.lineWidth = 1;
@@ -3902,15 +3900,28 @@ function updatePlaylistItemWaveform(item) {
     if (!item?.file || item.waveformPreviewPending || Array.isArray(item.waveformPeaks)) return;
 
     item.waveformPreviewPending = true;
+    item.waveformLoadingProgress = 0;
+
+    const renderWaveformProgress = () => renderPlaylist();
 
     const reader = new FileReader();
+    reader.onprogress = (event) => {
+        if (!event.lengthComputable || event.total <= 0) return;
+        item.waveformLoadingProgress = Math.min(50, (event.loaded / event.total) * 50);
+        renderWaveformProgress();
+    };
+
     reader.onload = async (event) => {
         try {
             const sourceBuffer = event?.target?.result;
             if (!(sourceBuffer instanceof ArrayBuffer)) return;
 
             const decodeBuffer = sourceBuffer.slice(0);
+            item.waveformLoadingProgress = 75;
+            renderWaveformProgress();
             const decoded = await mainAudioContext.decodeAudioData(decodeBuffer);
+            item.waveformLoadingProgress = 90;
+            renderWaveformProgress();
             item.waveformPeaks = createPlaylistWaveformPeaks(decoded);
             if (!Number.isFinite(item.duration) || item.duration <= 0) {
                 item.duration = decoded.duration;
@@ -3921,14 +3932,19 @@ function updatePlaylistItemWaveform(item) {
             renderPlaylist();
             savePlaylistToStorage();
         } catch (error) {
+            item.waveformLoadingProgress = null;
+            renderWaveformProgress();
             console.error('Error decoding playlist waveform preview:', error);
         } finally {
             item.waveformPreviewPending = false;
+            item.waveformLoadingProgress = null;
         }
     };
 
     reader.onerror = (error) => {
         item.waveformPreviewPending = false;
+        item.waveformLoadingProgress = null;
+        renderWaveformProgress();
         console.error('Error reading playlist file for waveform preview:', error);
     };
 
@@ -4057,7 +4073,8 @@ function addToPlaylist(files) {
                 duration: null,
                 channels: null,
                 waveformPeaks: null,
-                waveformPreviewPending: false
+                waveformPreviewPending: false,
+                waveformLoadingProgress: null
             };
             playlist.push(item);
             updatePlaylistItemDuration(item);
@@ -4090,12 +4107,40 @@ function renderPlaylist() {
 
         const waveformCell = document.createElement('td');
         waveformCell.className = 'col-waveform playlist-waveform';
+        const loadingRow = document.createElement('div');
+        loadingRow.className = 'pair timer-pair playlist-waveform-loading';
+        loadingRow.hidden = Array.isArray(item.waveformPeaks) || !Number.isFinite(item.waveformLoadingProgress);
+
+        const loadingLabel = document.createElement('label');
+        loadingLabel.textContent = 'Loading:';
+        loadingLabel.title = 'Waveform loading progress';
+
+        const loadingInput = document.createElement('input');
+        loadingInput.type = 'number';
+        loadingInput.className = 'playlist-waveform-loading-value';
+        loadingInput.readOnly = true;
+        loadingInput.min = '0';
+        loadingInput.max = '100';
+        loadingInput.step = '1';
+        loadingInput.value = Number.isFinite(item.waveformLoadingProgress)
+            ? String(Math.round(item.waveformLoadingProgress))
+            : '';
+        loadingInput.setAttribute('aria-label', 'Waveform loading progress');
+        loadingRow.append(loadingLabel, loadingInput);
+
         const waveformCanvas = document.createElement('canvas');
         waveformCanvas.className = 'playlist-waveform-canvas';
         waveformCanvas.width = 160;
         waveformCanvas.height = 24;
         drawPlaylistWaveform(waveformCanvas, item.waveformPeaks, isDead);
-        waveformCell.appendChild(waveformCanvas);
+        waveformCell.append(loadingRow, waveformCanvas);
+        if (Number.isFinite(item.waveformLoadingProgress)) {
+            requestAnimationFrame(() => {
+                if (loadingInput.isConnected) {
+                    applyTimeFieldBar(loadingInput, item.waveformLoadingProgress / 100);
+                }
+            });
+        }
 
         const durationCell = document.createElement('td');
         durationCell.className = 'col-duration';

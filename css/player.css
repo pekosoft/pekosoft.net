@@ -399,7 +399,21 @@ canvas {
 }
 
 .playlist-waveform {
+  position: relative;
   padding: 4px 8px;
+}
+
+.playlist-waveform-loading {
+  position: absolute;
+  top: 4px;
+  right: 8px;
+  left: 8px;
+  z-index: 1;
+  min-width: 0;
+}
+
+.playlist-waveform-loading[hidden] {
+  display: none;
 }
 
 .playlist-waveform-canvas {

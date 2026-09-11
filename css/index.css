@@ -1574,6 +1574,14 @@ html.invert-colors .container:fullscreen {
   text-align: left;
 }
 
+#github-actions > h1 {
+  margin-bottom: 8px;
+}
+
+.index-action-item {
+  margin-bottom: 8px;
+}
+
 .index-action-run {
   display: inline;
 }
@@ -1581,11 +1589,6 @@ html.invert-colors .container:fullscreen {
 .index-action-date {
   color: var(--white);
   margin-left: 8px;
-}
-
-.index-action-item + .index-action-item::before {
-  content: '';
-  display: block;
 }
 
 .index-pekosoft-logo {

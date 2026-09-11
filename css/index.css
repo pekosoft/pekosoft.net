@@ -1933,7 +1933,7 @@ a:has(> svg.icons) {
 
 input[type="number"] {
   /* blue bar shown via inline background-size adjustments in JS */
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='1' height='1'><rect width='1' height='1' fill='%230080ff' /></svg>");
+  background-image: linear-gradient(var(--color1), var(--color1));
   background-repeat: no-repeat;
   background-position: left bottom;
   background-size: 0px 4px;

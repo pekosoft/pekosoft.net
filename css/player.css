@@ -33,7 +33,7 @@ audio::-webkit-media-controls-time-remaining-display {
 .time-display {
   width: 100%;
   white-space: nowrap;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='1' height='1'><rect width='1' height='1' fill='%23ff00ff' /></svg>");
+  background-image: linear-gradient(var(--color1), var(--color1));
   background-repeat: no-repeat;
   background-position: left bottom;
   background-size: 0px 4px;

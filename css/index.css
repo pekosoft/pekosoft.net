@@ -1019,6 +1019,21 @@ li h1 img {
   display: inline-block;
 }
 
+a:has(> .assets) {
+  display: inline-block;
+  margin: 4px;
+  line-height: 0;
+}
+
+a:has(> .assets):focus {
+  outline: 1px solid var(--color1);
+  outline-offset: 1px;
+}
+
+a > .assets {
+  margin: 0;
+}
+
 .speaker {
   width: 100%;
   height: auto;

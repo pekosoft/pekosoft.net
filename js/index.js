@@ -1137,12 +1137,13 @@ function getStatusDescriptor(target) {
     || associatedLabel?.getAttribute('title')?.trim()
     || target.getAttribute('aria-label')?.trim();
   const sentenceTooltip = tooltip && (/[.!?]$/.test(tooltip) ? tooltip : `${tooltip}.`);
+  const statusLabel = target.dataset.statusLabel?.trim();
 
   return {
     icon,
     entry: name,
     kind,
-    label: sentenceTooltip ? `${name}: ${sentenceTooltip}` : name,
+    label: statusLabel || (sentenceTooltip ? `${name}: ${sentenceTooltip}` : name),
   };
 }
 

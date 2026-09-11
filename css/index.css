@@ -1560,6 +1560,16 @@ html.invert-colors .container:fullscreen {
 }
 
 .index-action-run {
+  display: inline;
+}
+
+.index-action-date {
+  color: var(--white);
+  margin-left: 8px;
+}
+
+.index-action-item + .index-action-item::before {
+  content: '';
   display: block;
 }
 

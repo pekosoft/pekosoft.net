@@ -3,13 +3,14 @@ const actionsRunsElement = document.getElementById('github-actions-runs');
 function formatActionDate(value) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return '-';
-  return new Intl.DateTimeFormat('en-GB', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  }).format(date);
+
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const year = date.getFullYear();
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+
+  return `${day}-${month}-${year} ${hours}:${minutes}`;
 }
 
 function getActionRunUrl(run) {
@@ -24,14 +25,25 @@ function renderActionRuns(runs) {
   actionsRunsElement.innerHTML = '';
 
   runs.forEach((run) => {
-    const row = document.createElement('a');
-    row.className = 'index-action-run';
-    row.href = getActionRunUrl(run);
-    row.target = '_blank';
-    row.rel = 'noopener noreferrer';
-    row.title = run.display_title || run.name || 'Workflow';
-    row.textContent = `${run.display_title || run.name || 'Workflow'} - ${run.head_branch || '-'} | ${run.event || '-'} | ${formatActionDate(run.created_at)}`;
-    actionsRunsElement.appendChild(row);
+    const item = document.createElement('div');
+    item.className = 'index-action-item';
+
+    const title = document.createElement('a');
+    title.className = 'index-action-run';
+    title.href = getActionRunUrl(run);
+    title.target = '_blank';
+    title.rel = 'noopener noreferrer';
+    title.title = run.display_title || run.name || 'Workflow';
+    title.dataset.statusLabel = title.title;
+    title.textContent = run.display_title || run.name || 'Workflow';
+
+    const date = document.createElement('span');
+    date.className = 'index-action-date';
+    date.textContent = formatActionDate(run.created_at);
+
+    item.appendChild(title);
+    item.appendChild(date);
+    actionsRunsElement.appendChild(item);
   });
 }
 

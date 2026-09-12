@@ -24,11 +24,11 @@ if (!in_array($requestPath, ['/updates', '/updates.php'], true)) {
 
   <div id="updates" class="standard padded border" aria-live="polite">
     <div id="updates-pagination" aria-label="Updates pagination">
-      <button id="updates-previous-button" class="square" title="Previous updates" aria-label="Previous updates" disabled>
+      <button id="updates-previous-button" class="square icon-only" title="Previous updates" aria-label="Previous updates" disabled>
         <svg class="icons" role="img"><use href="/icons.svg#arrow_left"></use></svg>
       </button>
       <span id="updates-page">Page 1</span>
-      <button id="updates-next-button" class="square" title="Next updates" aria-label="Next updates" disabled>
+      <button id="updates-next-button" class="square icon-only" title="Next updates" aria-label="Next updates" disabled>
         <svg class="icons" role="img"><use href="/icons.svg#arrow_right"></use></svg>
       </button>
     </div>

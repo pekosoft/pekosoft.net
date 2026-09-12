@@ -47,7 +47,38 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v5
         with:
-          fetch-depth: 2
+          fetch-depth: 0
+
+      - name: Generate updates feed
+        shell: bash
+        run: |
+          mkdir -p data
+          python3 - <<'PY'
+          import json
+          import subprocess
+          from pathlib import Path
+
+          output = subprocess.check_output(
+            ['git', 'log', '--format=%H%x1f%aI%x1f%s%x1e'],
+            text=True,
+          )
+          runs = []
+          for record in output.split('\x1e'):
+            parts = record.strip().split('\x1f', 2)
+            if len(parts) != 3:
+              continue
+            sha, created_at, title = parts
+            runs.append({
+              'head_sha': sha,
+              'created_at': created_at,
+              'display_title': title,
+            })
+
+          Path('data/updates.json').write_text(
+            json.dumps({'workflow_runs': runs, 'total_count': len(runs)}) + '\n',
+            encoding='utf-8',
+          )
+          PY
 
       - name: Validate deployment settings
         shell: bash
@@ -63,6 +94,7 @@ jobs:
         run: |
           : > "$DEPLOY_UPLOAD_LIST"
           : > "$DEPLOY_DELETE_LIST"
+          echo "data/updates.json" >> "$DEPLOY_UPLOAD_LIST"
 
           mode="$DEPLOY_MODE"
           if [[ "$mode" == "full" ]]; then

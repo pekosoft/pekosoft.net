@@ -1570,7 +1570,8 @@ html.invert-colors .container:fullscreen {
   margin-bottom: 16px;
 }
 
-#github-actions {
+#github-actions,
+#updates {
   text-align: left;
 }
 
@@ -1589,6 +1590,41 @@ html.invert-colors .container:fullscreen {
 .index-action-date {
   color: var(--white);
   margin-left: 8px;
+}
+
+#updates-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+#updates-page {
+  color: var(--white);
+  white-space: nowrap;
+}
+
+#updates-table .updates-col-number {
+  width: 80px;
+  min-width: 80px;
+}
+
+#updates-table .updates-col-title {
+  width: auto;
+  text-align: left;
+}
+
+#updates-table .updates-col-date {
+  width: 240px;
+}
+
+#updates-table .updates-col-commit {
+  width: 140px;
+}
+
+#updates-table th.updates-col-title {
+  text-align: left;
 }
 
 .index-pekosoft-logo {

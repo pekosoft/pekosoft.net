@@ -1,5 +1,6 @@
 # Local debug / scratch artifacts
 js_variable_list.txt
+data/updates.json
 
 # Temporary exports and recordings
 *.wav

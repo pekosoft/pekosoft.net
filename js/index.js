@@ -1360,7 +1360,8 @@ const OFFICIAL_SITE_PLAY_SEQUENCE = [
   '/about.php?t=bpm_calculator',
   '/about.php?t=metronome',
   '/about.php?t=turntable',
-  '/bitcoin.php'
+  '/bitcoin.php',
+  '/updates'
 ];
 
 const BETA_SITE_PLAY_SEQUENCE = [
@@ -1415,7 +1416,8 @@ const BETA_SITE_PLAY_SEQUENCE = [
   '/about.php?t=notepad',
   '/about.php?t=audio_calculator',
   '/about.php?t=piano',
-  '/about.php?t=icons'
+  '/about.php?t=icons',
+  '/updates'
 ];
 
 let sitePlayTimer = null;

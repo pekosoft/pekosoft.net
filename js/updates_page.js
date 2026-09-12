@@ -90,7 +90,7 @@ async function loadUpdates(page = 1) {
   renderUpdatesMessage('Loading');
 
   try {
-    const response = await fetch(`/updates_data.php?per_page=${runsPerPage}&page=${page}`);
+    const response = await fetch(`/updates_data.php?per_page=${runsPerPage}&page=${page}`, { cache: 'no-store' });
     if (!response.ok) throw new Error(`Updates request failed: ${response.status}`);
 
     const data = await response.json();

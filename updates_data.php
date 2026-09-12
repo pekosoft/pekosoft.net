@@ -1,5 +1,6 @@
 <?php
 header('Content-Type: application/json; charset=utf-8');
+header('Cache-Control: no-store, max-age=0');
 
 $cachePath = $_SERVER['DOCUMENT_ROOT'] . '/data/updates.json';
 $updates = is_readable($cachePath) ? json_decode(file_get_contents($cachePath), true) : null;

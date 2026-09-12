@@ -22,7 +22,7 @@ RewriteRule ^tools/([A-Za-z0-9_]+)\.php$ /$1 [R=301,L]
 
 # Root page routes
 RewriteCond %{DOCUMENT_ROOT}/$1.php -f
-RewriteRule ^(beta|bitcoin)/?$ /$1.php [L]
+RewriteRule ^(beta|bitcoin|updates)/?$ /$1.php [L]
 
 # Tool routes
 RewriteCond %{DOCUMENT_ROOT}/tools/$1.php -f

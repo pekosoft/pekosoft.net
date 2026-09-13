@@ -6,6 +6,8 @@ on:
       - main
     paths-ignore:
       - .github/**
+      - .dev/**
+      - .githooks/**
       - .vscode/**
       - .ftpignore
       - .gitignore

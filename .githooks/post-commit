@@ -1,0 +1,4 @@
+#!/bin/sh
+
+repository_root="$(git rev-parse --show-toplevel 2>/dev/null)" || exit 0
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$repository_root/.dev/generate-updates-feed.ps1" >/dev/null 2>&1 || true

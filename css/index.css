@@ -2291,15 +2291,12 @@ body.module-order-dragging {
   user-select: none;
 }
 
-body.module-order-dragging .module-header,
-body.module-order-dragging .module-header * {
+body.module-order-dragging .module-header {
   cursor: move;
 }
 
 .module-maximized .module-header,
-.module-maximized .module-header *,
-body.module-order-dragging .module-maximized .module-header,
-body.module-order-dragging .module-maximized .module-header * {
+body.module-order-dragging .module-maximized .module-header {
   cursor: default;
 }
 

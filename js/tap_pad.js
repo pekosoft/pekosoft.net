@@ -38,6 +38,8 @@ const targetInput = document.getElementById("target");
 const targetKnob = document.getElementById("target-knob");
 const timerButton = document.getElementById("timer-button");
 const toggleSoundButton = document.getElementById("toggle-sound-button");
+const setDefaultBpmButton = document.getElementById("set-default-bpm-button");
+const defaultBpmInput = document.getElementById("default_bpm");
 const beatSoundSelect = document.getElementById("beat-sound-type");
 const volumeSlider = document.getElementById("volume-slider");
 const volumeIncreaseButton = document.getElementById("volume-increase-button");
@@ -79,6 +81,7 @@ applyLineButtonsUI();
 applySoundButtonUI();
 applyBlinkButtonUI();
 applyTapPlaybackButtonUI();
+applySetDefaultBpmButtonUI();
 if (btnGuides) btnGuides.classList.toggle('button-on', showGuides);
 if (beatSoundSelect) beatSoundSelect.value = beatSound;
 if (volumeSlider) volumeSlider.value = String(soundVolume);
@@ -183,6 +186,21 @@ if (btnHaptic) {
   makeKeyboardActivatable(btnHaptic, () => btnHaptic.click());
 }
 
+if (setDefaultBpmButton) {
+  const setCurrentBpmAsDefault = () => {
+    const defaultBpm = getCurrentPadInteger();
+    if (!Number.isFinite(defaultBpm) || defaultBpm < 30 || defaultBpm > 320) return;
+
+    if (defaultBpmInput) {
+      defaultBpmInput.value = String(defaultBpm);
+      defaultBpmInput.dispatchEvent(new Event("input", { bubbles: true }));
+    }
+  };
+
+  setDefaultBpmButton.addEventListener("click", setCurrentBpmAsDefault);
+  makeKeyboardActivatable(setDefaultBpmButton, setCurrentBpmAsDefault);
+}
+
 if (toggleSoundButton) {
   toggleSoundButton.addEventListener("click", () => {
     isSoundOn = !isSoundOn;
@@ -258,6 +276,7 @@ document.getElementById("reset-button").addEventListener("click", () => {
   averageBpmInput.value = "0";
   tapsInput.value = "0";
   tapButton.innerText = "0";
+  applySetDefaultBpmButtonUI();
 
   localStorage.removeItem("tap_pad.target");
   localStorage.removeItem("tap_pad.history");
@@ -364,6 +383,7 @@ tapButton.addEventListener("click", () => {
     averageBpmInput.value = "0";
     tapButton.innerText = tapHistory.length === 1 ? "X" : Math.round(currentBpm);
   }
+  applySetDefaultBpmButtonUI();
 
   const timestamp = new Date().toLocaleTimeString("en-US", {
     hour12: false,
@@ -440,6 +460,15 @@ function applyTapPlaybackButtonUI() {
   if (!tapPlayButton) return;
   tapPlayButton.classList.toggle("button-on", isTapPlaybackOn);
   tapPlayButton.setAttribute("aria-pressed", isTapPlaybackOn ? "true" : "false");
+}
+
+function applySetDefaultBpmButtonUI() {
+  if (!setDefaultBpmButton) return;
+  const bpm = getCurrentPadInteger();
+  const disabled = !Number.isFinite(bpm) || bpm < 30 || bpm > 320;
+  setDefaultBpmButton.disabled = disabled;
+  setDefaultBpmButton.classList.toggle("grey", disabled);
+  setDefaultBpmButton.setAttribute("aria-disabled", String(disabled));
 }
 
 function getCurrentPadInteger() {
@@ -699,6 +728,7 @@ function resetSession({ clearPanel = false } = {}) {
   averageBpmInput.value = "0";
   tapsInput.value = "0";
   tapButton.innerText = "0";
+  applySetDefaultBpmButtonUI();
 }
 
 function trimHistoryToLastSession() {
@@ -732,6 +762,7 @@ function syncStatsFromHistory() {
     averageBpmInput.value = "0";
     tapButton.innerText = "0";
     averageBpm = 0;
+    applySetDefaultBpmButtonUI();
     return;
   }
 
@@ -757,6 +788,8 @@ function syncStatsFromHistory() {
     averageBpmInput.value = "0";
     tapButton.innerText = taps > 1 ? Math.round(currentBpm) : "0";
   }
+
+  applySetDefaultBpmButtonUI();
 }
 
 function drawCurrentPoint(index, bpm, timelineHeight) {

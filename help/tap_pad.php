@@ -92,6 +92,15 @@
 </div>
 
 <div class="feature-row border"><svg class="standard-image-help">
+    <use href="/icons.svg#check"></use>
+  </svg>
+  <div class="justify">
+    <h1>SET <span class="object">button</span></h1>
+    Sets the BPM displayed on the Instrument pad as the shared default BPM.
+  </div>
+</div>
+
+<div class="feature-row border"><svg class="standard-image-help">
     <use href="/icons.svg#reset"></use>
   </svg>
   <div class="justify">

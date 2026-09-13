@@ -72,6 +72,13 @@
           <span class="button-text">Haptic</span>
         </button>
 
+        <button id="set-default-bpm-button" class="square" title="Set default BPM" aria-label="Set default BPM">
+          <svg class="icons">
+            <use href="/icons.svg#check" />
+          </svg>
+          <span class="button-text">Set</span>
+        </button>
+
         <button id="reset-button" class="square" title="Reset to default">
           <svg class="icons">
             <use href="/icons.svg#reset" />

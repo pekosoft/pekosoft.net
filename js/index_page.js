@@ -49,10 +49,8 @@ function renderActionRuns(runs) {
 
 async function loadActionRuns() {
   try {
-    const response = await fetch('https://api.github.com/repos/pekosoft/pekosoft.net/actions/runs?per_page=5', {
-      headers: { Accept: 'application/vnd.github+json' }
-    });
-    if (!response.ok) throw new Error(`GitHub Actions request failed: ${response.status}`);
+    const response = await fetch('/updates_data.php?per_page=5&page=1', { cache: 'no-store' });
+    if (!response.ok) throw new Error(`Updates request failed: ${response.status}`);
 
     const data = await response.json();
     if (!Array.isArray(data.workflow_runs) || data.workflow_runs.length === 0) {
@@ -61,8 +59,8 @@ async function loadActionRuns() {
 
     renderActionRuns(data.workflow_runs);
   } catch (error) {
-    actionsRunsElement.textContent = 'Actions unavailable';
-    console.warn('GitHub Actions could not be loaded:', error);
+    actionsRunsElement.textContent = 'Updates unavailable';
+    console.warn('Updates could not be loaded:', error);
   }
 }
 

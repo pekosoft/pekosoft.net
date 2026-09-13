@@ -71,7 +71,7 @@ function renderUpdates(runs) {
     commitCell.className = 'updates-col-commit';
     commitCell.textContent = (run.head_sha || '-').slice(0, 7);
 
-    row.append(numberCell, titleCell, dateCell, commitCell);
+    row.append(titleCell, dateCell, numberCell, commitCell);
     updatesRunsElement.appendChild(row);
   });
 }

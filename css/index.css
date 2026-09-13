@@ -1605,25 +1605,7 @@ html.invert-colors .container:fullscreen {
   white-space: nowrap;
 }
 
-#updates-table .updates-col-number {
-  width: 80px;
-  min-width: 80px;
-}
-
 #updates-table .updates-col-title {
-  width: auto;
-  text-align: left;
-}
-
-#updates-table .updates-col-date {
-  width: 240px;
-}
-
-#updates-table .updates-col-commit {
-  width: 140px;
-}
-
-#updates-table th.updates-col-title {
   text-align: left;
 }
 

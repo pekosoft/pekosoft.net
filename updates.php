@@ -36,9 +36,9 @@ if (!in_array($requestPath, ['/updates', '/updates.php'], true)) {
       <table id="updates-table" class="over scrollable-table">
         <thead>
           <tr>
-            <th class="updates-col-number" title="Update number">#</th>
             <th class="updates-col-title" title="Update title">Title</th>
             <th class="updates-col-date" title="Update time">Date</th>
+            <th class="updates-col-number" title="Update number">Number</th>
             <th class="updates-col-commit" title="Git commit">Commit</th>
           </tr>
         </thead>

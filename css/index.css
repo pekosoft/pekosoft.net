@@ -1870,7 +1870,6 @@ a:has(> svg.icons) {
   gap: 16px;
   width: 100%;
   padding: 8px;
-  border-top: 4px solid var(--grey1);
 }
 
 .controls-knob {

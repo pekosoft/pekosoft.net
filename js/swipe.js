@@ -53,7 +53,7 @@ function pageFromPathname(pathname) {
 function getNavPages() {
   // Nav links moved from footer to TOC buttons (data-href, not href)
   const tocButtons = Array.from(document.querySelectorAll("#toc .toc-button[data-href]"));
-  const excludedPages = ["bitcoin"];
+  const excludedPages = ["bitcoin", "updates"];
   const pages = [];
   tocButtons.forEach((btn) => {
     const href = btn.getAttribute("data-href") || "";

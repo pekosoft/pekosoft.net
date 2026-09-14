@@ -14,7 +14,7 @@
   </svg>
   <div class="justify">
     <h1>RESET <span class="object">button</span></h1>
-    Resets session, all settings and table column widths.
+    Resets session and settings.
   </div>
 </div>
 
@@ -90,7 +90,7 @@
 
 <div class="feature-row border">
   <svg class="standard-image-help">
-    <use href="/icons.svg#sort_az"></use>
+    <use href="/icons.svg#arrow_up_down"></use>
   </svg>
   <div class="justify">
     <h1>SORT <span class="object">button</span></h1>

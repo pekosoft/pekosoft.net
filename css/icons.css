@@ -27,6 +27,10 @@
   display: block;
 }
 
+#timeline-container.module-maximized .timeline-scroll {
+  overflow-y: auto;
+}
+
 .grid-icon {
   display: flex;
   flex-direction: column;

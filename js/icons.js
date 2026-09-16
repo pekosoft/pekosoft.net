@@ -443,6 +443,25 @@ function getRenderedSelectionBox(elements) {
   return { x: minX, y: minY, width: maxX - minX, height: maxY - minY };
 }
 
+function getElementTransformMatrix(element) {
+  const matrix = element.transform?.baseVal.consolidate()?.matrix;
+  return matrix ? new DOMMatrix([matrix.a, matrix.b, matrix.c, matrix.d, matrix.e, matrix.f]) : new DOMMatrix();
+}
+
+function setElementTransformMatrix(element, matrix) {
+  if (isIdentityMatrix(matrix)) {
+    element.removeAttribute("transform");
+    return;
+  }
+  element.setAttribute("transform", `matrix(${formatNumber(matrix.a)} ${formatNumber(matrix.b)} ${formatNumber(matrix.c)} ${formatNumber(matrix.d)} ${formatNumber(matrix.e)} ${formatNumber(matrix.f)})`);
+}
+
+function applyCanvasTransform(elements, transform) {
+  elements.forEach((element) => {
+    setElementTransformMatrix(element, transform.multiply(getElementTransformMatrix(element)));
+  });
+}
+
 function serializeCurrentSymbol() {
   const id = getCurrentIconId();
   if (!id) return null;
@@ -579,14 +598,12 @@ function rotateSelectionLeft() {
   const beforeSnapshot = getEditSnapshot();
   const hadSelection = selectedElements.size > 0;
   const elements = getSelectionElementsOrAll();
-  const box = getSelectionBox(elements);
+  const box = getRenderedSelectionBox(elements);
   if (!box) return;
   const cx = box.x + box.width / 2;
   const cy = box.y + box.height / 2;
-  elements.forEach((element) => {
-    const existing = element.getAttribute("transform") || "";
-    element.setAttribute("transform", `${existing} rotate(-90 ${formatNumber(cx)} ${formatNumber(cy)})`.trim());
-  });
+  const transform = new DOMMatrix().translate(cx, cy).rotate(-90).translate(-cx, -cy);
+  applyCanvasTransform(elements, transform);
   if (!hadSelection) {
     clearEditorSelection();
     elements.forEach((element) => selectElement(element, true));
@@ -603,10 +620,7 @@ function centerSelection() {
   const beforeSnapshot = getEditSnapshot();
   const offsetX = 256 - (box.x + box.width / 2);
   const offsetY = 256 - (box.y + box.height / 2);
-  elements.forEach((element) => {
-    const existing = element.getAttribute("transform") || "";
-    element.setAttribute("transform", `${existing} translate(${formatNumber(offsetX)} ${formatNumber(offsetY)})`.trim());
-  });
+  applyCanvasTransform(elements, new DOMMatrix().translate(offsetX, offsetY));
   updateCurrentPanelFromPreview();
   rememberEditFromSnapshot(beforeSnapshot);
 }
@@ -876,16 +890,13 @@ function flattenElementsToPath() {
 
 function fitPreviewContentToCanvas() {
   const elements = Array.from(previewIcon.querySelectorAll("path, rect, circle, ellipse, line, polyline, polygon"));
-  const box = getSelectionBox(elements);
+  const box = getRenderedSelectionBox(elements);
   if (!box || box.width <= 0 || box.height <= 0) return false;
 
   const scale = 512 / Math.max(box.width, box.height);
   const offsetX = ((512 - (box.width * scale)) / 2) - (box.x * scale);
   const offsetY = ((512 - (box.height * scale)) / 2) - (box.y * scale);
-  elements.forEach((element) => {
-    const existing = element.getAttribute("transform") || "";
-    element.setAttribute("transform", `${existing} matrix(${formatNumber(scale)} 0 0 ${formatNumber(scale)} ${formatNumber(offsetX)} ${formatNumber(offsetY)})`.trim());
-  });
+  applyCanvasTransform(elements, new DOMMatrix([scale, 0, 0, scale, offsetX, offsetY]));
   return true;
 }
 
@@ -968,7 +979,7 @@ function updateDrawing(point) {
 function startResize(event, point, targetElement) {
   if (!selectedElements.size && targetElement) selectElement(targetElement);
   const elements = Array.from(selectedElements).filter((element) => previewIcon.contains(element));
-  const box = getSelectionBox(elements);
+  const box = getRenderedSelectionBox(elements);
   if (!box) return;
   const historyBefore = getEditSnapshot();
   const center = { x: box.x + box.width / 2, y: box.y + box.height / 2 };
@@ -978,7 +989,7 @@ function startResize(event, point, targetElement) {
     elements,
     center,
     startDistance,
-    startTransforms: elements.map((element) => element.getAttribute("transform") || ""),
+    startMatrices: elements.map(getElementTransformMatrix),
     historyBefore
   };
   if (typeof previewIcon.setPointerCapture === "function") {
@@ -992,9 +1003,12 @@ function updateResize(point) {
   if (!editorPointer || editorPointer.type !== "resize") return;
   const distance = Math.max(1, Math.hypot(point.x - editorPointer.center.x, point.y - editorPointer.center.y));
   const scale = Math.max(0.05, Math.min(8, distance / editorPointer.startDistance));
+  const transform = new DOMMatrix()
+    .translate(editorPointer.center.x, editorPointer.center.y)
+    .scale(scale)
+    .translate(-editorPointer.center.x, -editorPointer.center.y);
   editorPointer.elements.forEach((element, index) => {
-    const existing = editorPointer.startTransforms[index];
-    element.setAttribute("transform", `${existing} translate(${formatNumber(editorPointer.center.x)} ${formatNumber(editorPointer.center.y)}) scale(${formatNumber(scale)}) translate(${formatNumber(-editorPointer.center.x)} ${formatNumber(-editorPointer.center.y)})`.trim());
+    setElementTransformMatrix(element, transform.multiply(editorPointer.startMatrices[index]));
   });
 }
 
@@ -1021,7 +1035,7 @@ function startMove(event, point, targetElement, additive = false) {
     type: "move",
     elements,
     start: point,
-    startTransforms: elements.map((element) => element.getAttribute("transform") || ""),
+    startMatrices: elements.map(getElementTransformMatrix),
     historyBefore: getEditSnapshot(),
     moved: false
   };
@@ -1039,9 +1053,9 @@ function updateMove(point) {
   const dy = point.y - editorPointer.start.y;
   if (dx === 0 && dy === 0) return;
   editorPointer.moved = true;
+  const transform = new DOMMatrix().translate(dx, dy);
   editorPointer.elements.forEach((element, index) => {
-    const existing = editorPointer.startTransforms[index];
-    element.setAttribute("transform", `${existing} translate(${formatNumber(dx)} ${formatNumber(dy)})`.trim());
+    setElementTransformMatrix(element, transform.multiply(editorPointer.startMatrices[index]));
   });
 }
 

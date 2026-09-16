@@ -1032,6 +1032,7 @@ class BPMCurve {
     localStorage.removeItem('bpm_curve.state');
     localStorage.removeItem('bpm_curve.guides');
     localStorage.removeItem('bpm_curve.timeline_guides');
+    this.updateMasterSoundOutput();
     this.syncButtonStates();
     this.syncVolumeControls();
     this.render();

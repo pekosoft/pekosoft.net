@@ -237,7 +237,7 @@ class Piano {
     document.getElementById('recordingText').classList.remove('error');
     document.getElementById('copy-button').classList.remove('copied');
     this.isLooping = false;
-    this.masterGain.gain.value = 1;
+    this.updateMasterGain();
     this.updateNoteLabels();
     this.updateOctaveLabels();
     this.updateRecordingText();

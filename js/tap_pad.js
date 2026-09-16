@@ -305,6 +305,15 @@ document.getElementById("reset-button").addEventListener("click", () => {
   beatSound = "click";
   soundVolume = 100;
 
+  if (tapAudioContext) {
+    const muteNode = ensureTapMasterMuteGainNode(tapAudioContext);
+    if (muteNode) {
+      const now = tapAudioContext.currentTime;
+      muteNode.gain.cancelScheduledValues(now);
+      muteNode.gain.setValueAtTime(localStorage.getItem('global.sound') !== 'false' ? 1 : 0, now);
+    }
+  }
+
   applyTimerButtonUI();
   applyLineButtonsUI();
   applyBlinkButtonUI();

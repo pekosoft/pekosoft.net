@@ -976,6 +976,7 @@ resetButton.addEventListener('click', () => {
   if (signatureSelect) signatureSelect.value = '4/4';
   pendulumDirection = -30;
   updateBPM(120);
+  updateMasterSoundOutput();
   updateSoundButton();
   updateBlinkButton();
   if (volumeSlider) {

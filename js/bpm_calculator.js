@@ -1120,6 +1120,7 @@ resetButton.addEventListener('click', () => {
   resultTable.innerHTML = '';
 
   calculateValues();
+  updateMasterOutputMute();
   updateSoundButton();
   updateLoopButton();
   updatePlayheadButton();

@@ -2525,6 +2525,15 @@ html.modules-page.layout-two-columns .container.module-maximized {
   margin: 0;
 }
 
+#tool-container.one-module-tool.module-maximized {
+  height: 100vh;
+  height: 100dvh;
+  height: var(--visual-viewport-height, var(--module-viewport-height, 100dvh));
+  max-height: 100vh;
+  max-height: 100dvh;
+  max-height: var(--visual-viewport-height, var(--module-viewport-height, 100dvh));
+}
+
 /* Header should not stretch */
 .module-maximized .module-header {
   flex-shrink: 0;

@@ -1106,7 +1106,8 @@ function getStatusDescriptor(target) {
 
   const tagName = target.tagName?.toLowerCase();
   const associatedLabel = getStatusAssociatedLabel(target);
-  const iconFromButton = target.querySelector?.('use')?.getAttribute('href')?.split('#')[1];
+  const iconHref = target.querySelector?.('use')?.getAttribute('href') || '';
+  const iconFromButton = iconHref.split('#')[1];
   const range = target.closest('.range-input-wrapper')?.querySelector('input[type="range"]');
   let kind = 'button';
   let icon = iconFromButton || 'square';
@@ -1141,6 +1142,7 @@ function getStatusDescriptor(target) {
 
   return {
     icon,
+    iconHref,
     entry: name,
     kind,
     label: statusLabel || (sentenceTooltip ? `${name}: ${sentenceTooltip}` : name),
@@ -1233,7 +1235,7 @@ function setupStatusBars() {
       const descriptor = getStatusDescriptor(target);
       if (!descriptor) return;
       textNode.textContent = descriptor.label;
-      iconNode.setAttribute('href', `/icons.svg#${descriptor.icon}`);
+      iconNode.setAttribute('href', descriptor.iconHref || `/icons.svg#${descriptor.icon}`);
       helpLink.href = getStatusHelpHref(descriptor);
       helpLink.setAttribute('aria-label', `Open Help for ${descriptor.entry}`);
       helpLink.hidden = false;

@@ -439,7 +439,7 @@
 </div>
 
 <div class="feature-row border"><svg class="standard-image-help">
-    <use href="/icons.svg#asterisk"></use>
+  <use href="/icons.svg?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/icons.svg'); ?>#follow"></use>
   </svg>
   <div class="justify">
     <h1>FOLLOW <span class="object">button</span></h1>

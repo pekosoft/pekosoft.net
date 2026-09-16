@@ -372,7 +372,7 @@
 
       <button id="follow-button" class="square" title="Follow playback position">
         <svg class="icons">
-          <use href="/icons.svg#asterisk" />
+          <use href="/icons.svg?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/icons.svg'); ?>#follow" />
         </svg>
         <span class="button-text">Follow</span>
       </button>

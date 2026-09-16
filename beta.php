@@ -19,6 +19,7 @@
     <div class="item"><a href="/visualizer" title="Visualizer"><svg class="large-icon" role="img" aria-label="Visualizer"><use href="/icons.svg#visualizer" /></svg></a></div>
     <div class="item"><a href="/bpm_circle" title="BPM Circle"><svg class="large-icon" role="img" aria-label="BPM Circle"><use href="/icons.svg#bpm_circle" /></svg></a></div>
     <div class="item"><a href="/bpm_curve" title="BPM Curve"><svg class="large-icon" role="img" aria-label="BPM Curve"><use href="/icons.svg#bpm_curve" /></svg></a></div>
+    <div class="item"><a href="/clock" title="Clock"><svg class="large-icon" role="img" aria-label="Clock"><use href="/icons.svg#clock" /></svg></a></div>
     <div class="item"><a href="/circle_of_fifths" title="Circle Of Fifths"><svg class="large-icon" role="img" aria-label="Circle Of Fifths"><use href="/icons.svg#circle_of_fifths" /></svg></a></div>
     <div class="item"><a href="/drum_machine" title="Drum Machine"><svg class="large-icon" role="img" aria-label="Drum Machine"><use href="/icons.svg#drum_machine" /></svg></a></div>
     <div class="item"><a href="/reference" title="Reference"><svg class="large-icon" role="img" aria-label="Reference"><use href="/icons.svg#reference" /></svg></a></div>
@@ -36,6 +37,7 @@
       <a href="/visualizer" title="Visualizer">Visualizer - For visualizing audio.</a><br>
       <a href="/bpm_circle" title="BPM Circle">BPM Circle - For visualizing tempo.</a><br>
       <a href="/bpm_curve" title="BPM Curve">BPM Curve - For creating tempo curves.</a><br>
+      <a href="/clock" title="Clock">Clock - For viewing local time and date.</a><br>
       <a href="/circle_of_fifths" title="Circle Of Fifths">Circle Of Fifths - For exploring harmony.</a><br>
       <a href="/drum_machine" title="Drum Machine">Drum Machine - For making beats.</a><br>
       <a href="/reference" title="Reference">Reference - For looking up musical references.</a><br>

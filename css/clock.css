@@ -1,0 +1,326 @@
+/* Pekosoft Clock */
+/* pekosoft.net/css/clock.css */
+
+#tool-container .clock-page {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.clock-hero {
+  align-self: start;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  max-width: 100%;
+  background: var(--black);
+}
+
+.clock-card,
+.calendar-card {
+  display: grid;
+  justify-items: center;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  padding: 8px;
+  background: var(--black);
+}
+
+.clock-card strong,
+.calendar-card strong {
+  max-width: 100%;
+  color: var(--white);
+  font-weight: normal;
+  overflow-wrap: anywhere;
+}
+
+.clock-card strong {
+  margin-top: 1px;
+}
+
+.clock-meta {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  max-width: 100%;
+}
+
+.clock-face {
+  position: relative;
+  width: min(174px, 52vw);
+  height: min(174px, 52vw);
+  border: 3px solid var(--white);
+  border-radius: 50%;
+}
+
+.clock-mark,
+.clock-dot,
+.clock-hand,
+.clock-center {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  background: var(--white);
+}
+
+.clock-mark {
+  width: 11px;
+  height: 11px;
+  background: var(--black);
+  border: 3px solid var(--white);
+  border-radius: 50%;
+}
+
+.clock-mark-12,
+.clock-mark-6 {
+  margin-left: -5.5px;
+}
+
+.clock-mark-12 {
+  top: 10px;
+}
+
+.clock-mark-6 {
+  top: auto;
+  bottom: 10px;
+}
+
+.clock-mark-3,
+.clock-mark-9 {
+  margin-top: -5.5px;
+}
+
+.clock-mark-3 {
+  left: auto;
+  right: 10px;
+}
+
+.clock-mark-9 {
+  left: 10px;
+}
+
+.clock-dot {
+  width: 6px;
+  height: 6px;
+  margin-left: -3px;
+  margin-top: -3px;
+  border-radius: 50%;
+}
+
+.clock-dot-1 { left: 68%; top: 20%; }
+.clock-dot-2 { left: 80%; top: 32%; }
+.clock-dot-4 { left: 80%; top: 68%; }
+.clock-dot-5 { left: 68%; top: 80%; }
+.clock-dot-7 { left: 32%; top: 80%; }
+.clock-dot-8 { left: 20%; top: 68%; }
+.clock-dot-10 { left: 20%; top: 32%; }
+.clock-dot-11 { left: 32%; top: 20%; }
+
+.clock-hand {
+  width: 6px;
+  transform-origin: 50% 100%;
+}
+
+.clock-hour {
+  height: 44px;
+  margin-left: -3px;
+  margin-top: -44px;
+}
+
+.clock-minute {
+  height: 59px;
+  margin-left: -3px;
+  margin-top: -59px;
+}
+
+.clock-second {
+  width: 4px;
+  height: 67px;
+  margin-left: -2px;
+  margin-top: -67px;
+  background: var(--color2);
+}
+
+.clock-center {
+  width: 16px;
+  height: 16px;
+  margin-left: -8px;
+  margin-top: -8px;
+  border-radius: 50%;
+}
+
+.calendar-month {
+  display: grid;
+  gap: 8px;
+  justify-content: center;
+  width: min(288px, 100%);
+  color: var(--white);
+  user-select: text;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: 32px 0 repeat(7, 32px);
+  justify-content: center;
+  gap: 4px;
+  pointer-events: none;
+  user-select: none;
+}
+
+.calendar-week,
+.calendar-day {
+  display: grid;
+  place-items: center;
+  height: 32px;
+  min-width: 0;
+  border: 1px solid var(--grey1);
+}
+
+.calendar-week {
+  width: 32px;
+  background: var(--black);
+  color: var(--white);
+  font-size: 16px;
+  line-height: 1;
+}
+
+.calendar-spacer {
+  width: 0;
+  height: 32px;
+  background: var(--black);
+}
+
+.calendar-day {
+  width: 32px;
+  background: var(--grey1);
+}
+
+.calendar-daynum {
+  color: var(--white);
+  font-size: 16px;
+  line-height: 1;
+}
+
+.calendar-empty {
+  background: var(--black);
+}
+
+.calendar-today {
+  background: var(--grey1);
+  border-color: var(--color1);
+}
+
+.calendar-today .calendar-daynum {
+  color: var(--color1);
+}
+
+@media (min-width: 1200px) {
+  #tool-container .clock-page {
+    align-content: center;
+  }
+
+  .clock-hero {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: stretch;
+  }
+
+  .clock-card,
+  .calendar-card {
+    grid-template-rows: minmax(0, 1fr) auto;
+  }
+
+  .clock-face {
+    width: clamp(174px, 22vw, 360px);
+    height: clamp(174px, 22vw, 360px);
+    border-width: clamp(3px, 0.35vw, 6px);
+  }
+
+  .clock-mark {
+    width: clamp(11px, 1.3vw, 22px);
+    height: clamp(11px, 1.3vw, 22px);
+    border-width: clamp(3px, 0.35vw, 6px);
+  }
+
+  .clock-mark-12,
+  .clock-mark-6 {
+    margin-left: 0;
+    transform: translateX(-50%);
+  }
+
+  .clock-mark-12 { top: clamp(10px, 1.2vw, 20px); }
+  .clock-mark-6 { bottom: clamp(10px, 1.2vw, 20px); }
+
+  .clock-mark-3,
+  .clock-mark-9 {
+    margin-top: 0;
+    transform: translateY(-50%);
+  }
+
+  .clock-mark-3 { right: clamp(10px, 1.2vw, 20px); }
+  .clock-mark-9 { left: clamp(10px, 1.2vw, 20px); }
+
+  .clock-dot {
+    width: 3.45%;
+    height: 3.45%;
+    margin: 0;
+    transform: translate(-50%, -50%);
+  }
+
+  .clock-hand {
+    width: 3.45%;
+    left: 48.275%;
+  }
+
+  .clock-hour {
+    height: 25.287%;
+    margin: -25.287% 0 0;
+  }
+
+  .clock-minute {
+    height: 33.908%;
+    margin: -33.908% 0 0;
+  }
+
+  .clock-second {
+    width: 2.299%;
+    left: 48.851%;
+    height: 38.506%;
+    margin: -38.506% 0 0;
+  }
+
+  .clock-center {
+    width: 9.195%;
+    height: 9.195%;
+    left: 45.403%;
+    top: 45.403%;
+    margin: 0;
+  }
+
+  .calendar-month {
+    grid-template-columns: minmax(0, 1fr);
+    width: min(512px, 100%);
+  }
+
+  .calendar-grid {
+    grid-template-columns: minmax(0, 1fr) 0 repeat(7, minmax(0, 1fr));
+    width: 100%;
+  }
+
+  .calendar-week,
+  .calendar-day {
+    width: auto;
+    height: auto;
+    aspect-ratio: 1;
+  }
+
+  .calendar-spacer {
+    height: auto;
+  }
+
+  .calendar-week,
+  .calendar-daynum {
+    font-size: clamp(16px, 1.3vw, 24px);
+  }
+}

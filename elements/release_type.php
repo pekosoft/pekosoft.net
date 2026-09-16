@@ -6,6 +6,7 @@ function isBetaRelease($release)
     'audio_calculator',
     'bpm_circle',
     'bpm_curve',
+    'clock',
     'circle_of_fifths',
     'drum_machine',
     'icons',

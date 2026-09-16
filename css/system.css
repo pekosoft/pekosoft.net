@@ -1,254 +1,9 @@
 /* Pekosoft System */
 /* pekosoft.net/css/system.css */
 
-#tool-container .system-page {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: 8px;
-}
-
-.system-hero {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  justify-content: center;
-  gap: 8px;
-  max-width: 100%;
-  background: var(--black);
-}
-
-.system-clock-card,
-.system-calendar-card {
-  display: grid;
-  justify-items: center;
-  align-items: center;
-  gap: 8px;
-  min-width: 0;
-  padding: 8px;
-  background: var(--black);
-}
-
-.system-clock-card strong,
-.system-calendar-card strong {
-  max-width: 100%;
-  color: var(--white);
-  font-weight: normal;
-  overflow-wrap: anywhere;
-}
-
-.system-clock-card strong {
-  margin-top: 1px;
-}
-
-.system-clock-meta {
-  display: flex;
-  justify-content: center;
-  gap: 16px;
-  max-width: 100%;
-}
-
-.system-clock-face {
-  position: relative;
-  width: min(174px, 52vw);
-  height: min(174px, 52vw);
-  border: 3px solid var(--white);
-  border-radius: 50%;
-}
-
-.system-clock-mark,
-.system-clock-dot,
-.system-clock-hand,
-.system-clock-center {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  background: var(--white);
-}
-
-.system-clock-mark {
-  width: 11px;
-  height: 11px;
-  background: var(--black);
-  border: 3px solid var(--white);
-  border-radius: 50%;
-}
-
-.system-clock-mark-12,
-.system-clock-mark-6 {
-  margin-left: -5.5px;
-}
-
-.system-clock-mark-12 {
-  top: 10px;
-}
-
-.system-clock-mark-6 {
-  top: auto;
-  bottom: 10px;
-}
-
-.system-clock-mark-3,
-.system-clock-mark-9 {
-  margin-top: -5.5px;
-}
-
-.system-clock-mark-3 {
-  left: auto;
-  right: 10px;
-}
-
-.system-clock-mark-9 {
-  left: 10px;
-}
-
-.system-clock-dot {
-  width: 6px;
-  height: 6px;
-  margin-left: -3px;
-  margin-top: -3px;
-  border-radius: 50%;
-}
-
-.system-clock-dot-1 {
-  left: 68%;
-  top: 20%;
-}
-
-.system-clock-dot-2 {
-  left: 80%;
-  top: 32%;
-}
-
-.system-clock-dot-4 {
-  left: 80%;
-  top: 68%;
-}
-
-.system-clock-dot-5 {
-  left: 68%;
-  top: 80%;
-}
-
-.system-clock-dot-7 {
-  left: 32%;
-  top: 80%;
-}
-
-.system-clock-dot-8 {
-  left: 20%;
-  top: 68%;
-}
-
-.system-clock-dot-10 {
-  left: 20%;
-  top: 32%;
-}
-
-.system-clock-dot-11 {
-  left: 32%;
-  top: 20%;
-}
-
-.system-clock-hand {
-  width: 6px;
-  transform-origin: 50% 100%;
-}
-
-.system-clock-hour {
-  height: 44px;
-  margin-left: -3px;
-  margin-top: -44px;
-}
-
-.system-clock-minute {
-  height: 59px;
-  margin-left: -3px;
-  margin-top: -59px;
-}
-
-.system-clock-second {
-  width: 4px;
-  height: 67px;
-  margin-left: -2px;
-  margin-top: -67px;
-  background: var(--color2);
-}
-
-.system-clock-center {
-  width: 16px;
-  height: 16px;
-  margin-left: -8px;
-  margin-top: -8px;
-  border-radius: 50%;
-}
-
-.system-calendar-month {
-  display: grid;
-  gap: 8px;
-  justify-content: center;
-  width: min(288px, 100%);
-  color: var(--white);
-  user-select: text;
-}
-
-.system-calendar-grid {
-  display: grid;
-  grid-template-columns: 32px 0 repeat(7, 32px);
-  justify-content: center;
-  gap: 4px;
-  pointer-events: none;
-  user-select: none;
-}
-
-.system-calendar-week,
-.system-calendar-day {
-  display: grid;
-  place-items: center;
-  height: 32px;
-  min-width: 0;
-  border: 1px solid var(--grey1);
-}
-
-.system-calendar-week {
-  width: 32px;
-  background: var(--black);
-  color: var(--white);
-  font-size: 16px;
-  line-height: 1;
-}
-
-.system-calendar-spacer {
-  width: 0;
-  height: 32px;
-  background: var(--black);
-}
-
-.system-calendar-day {
-  width: 32px;
-  background: var(--grey1);
-}
-
-.system-calendar-daynum {
-  color: var(--white);
-  font-size: 16px;
-  line-height: 1;
-}
-
-.system-calendar-empty {
-  background: var(--black);
-}
-
-.system-calendar-today {
-  background: var(--grey1);
-  border-color: var(--color1);
-}
-
-.system-calendar-today .system-calendar-daynum {
-  color: var(--color1);
-}
-
 .system-categories {
   display: grid;
-  gap: 8px;
+  gap: 24px;
   background: var(--black);
 }
 
@@ -281,9 +36,16 @@
 }
 
 .system-row-icon {
+  align-self: start;
   width: var(--size2);
   height: var(--size2);
-  margin-left: 8px;
+  margin: 8px 0 0 8px;
+  padding: 0;
+}
+
+.system-row-icon .icons {
+  width: 100%;
+  height: 100%;
   fill: var(--white);
 }
 
@@ -308,13 +70,10 @@
 .system-row strong {
   font-weight: normal;
   color: var(--white);
-}
-
-#system-user-agent {
   white-space: normal;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1200px) {
   .system-hero {
     grid-template-columns: 1fr;
   }

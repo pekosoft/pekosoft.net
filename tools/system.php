@@ -19,39 +19,6 @@
 
   <div id="tool-container" class="container one-module-tool">
     <div id="system-page" class="module-body system-page standard border scrollable" data-client-ip="<?php echo htmlspecialchars($clientIp, ENT_QUOTES, 'UTF-8'); ?>">
-      <div class="system-hero">
-        <div class="system-clock-card" aria-label="Analog clock">
-        <div class="system-clock-face">
-          <div class="system-clock-mark system-clock-mark-12"></div>
-          <div class="system-clock-mark system-clock-mark-3"></div>
-          <div class="system-clock-mark system-clock-mark-6"></div>
-          <div class="system-clock-mark system-clock-mark-9"></div>
-          <div class="system-clock-dot system-clock-dot-1"></div>
-          <div class="system-clock-dot system-clock-dot-2"></div>
-          <div class="system-clock-dot system-clock-dot-4"></div>
-          <div class="system-clock-dot system-clock-dot-5"></div>
-          <div class="system-clock-dot system-clock-dot-7"></div>
-          <div class="system-clock-dot system-clock-dot-8"></div>
-          <div class="system-clock-dot system-clock-dot-10"></div>
-          <div class="system-clock-dot system-clock-dot-11"></div>
-          <div id="system-clock-hour" class="system-clock-hand system-clock-hour"></div>
-          <div id="system-clock-minute" class="system-clock-hand system-clock-minute"></div>
-          <div id="system-clock-second" class="system-clock-hand system-clock-second"></div>
-          <div class="system-clock-center"></div>
-        </div>
-        <div class="system-clock-meta">
-          <strong id="system-hero-local-time">Checking...</strong>
-          <strong id="system-hero-time-zone">Checking...</strong>
-        </div>
-        </div>
-        <div class="system-calendar-card">
-          <div class="system-calendar-month" aria-label="Current month calendar">
-          <div id="system-calendar-grid" class="system-calendar-grid"></div>
-          <strong id="system-hero-local-date">Checking...</strong>
-        </div>
-          </div>
-        </div>
-
       <div class="system-categories">
       <section class="system-category">
       <h1 class="system-category-title">
@@ -59,22 +26,22 @@
       </h1>
       <div class="system-grid">
         <div class="system-row">
-          <svg class="system-row-icon"><use href="/icons.svg#cpu" /></svg>
+          <button class="system-row-icon square icon-only" type="button" title="CPU information" aria-label="CPU information"><svg class="icons"><use href="/icons.svg#cpu" /></svg></button>
           <span>CPU:</span>
           <strong id="system-cpu">Checking...</strong>
         </div>
         <div class="system-row">
-          <svg class="system-row-icon"><use href="/icons.svg#hardware" /></svg>
+          <button class="system-row-icon square icon-only" type="button" title="Logical processor cores" aria-label="Logical processor cores"><svg class="icons"><use href="/icons.svg#hardware" /></svg></button>
           <span>Cores:</span>
           <strong id="system-cores">Checking...</strong>
         </div>
         <div class="system-row">
-          <svg class="system-row-icon"><use href="/icons.svg#ram" /></svg>
+          <button class="system-row-icon square icon-only" type="button" title="Device memory" aria-label="Device memory"><svg class="icons"><use href="/icons.svg#ram" /></svg></button>
           <span>RAM:</span>
           <strong id="system-ram">Checking...</strong>
         </div>
         <div class="system-row">
-          <svg class="system-row-icon"><use href="/icons.svg#touch" /></svg>
+          <button class="system-row-icon square icon-only" type="button" title="Touch support" aria-label="Touch support"><svg class="icons"><use href="/icons.svg#touch" /></svg></button>
           <span>Touch:</span>
           <strong id="system-touch">Checking...</strong>
         </div>
@@ -87,22 +54,22 @@
       </h1>
       <div class="system-grid">
         <div class="system-row">
-          <svg class="system-row-icon"><use href="/icons.svg#display" /></svg>
+          <button class="system-row-icon square icon-only" type="button" title="Screen resolution" aria-label="Screen resolution"><svg class="icons"><use href="/icons.svg#display" /></svg></button>
           <span>Screen:</span>
           <strong id="system-screen">Checking...</strong>
         </div>
         <div class="system-row">
-          <svg class="system-row-icon"><use href="/icons.svg#viewport" /></svg>
+          <button class="system-row-icon square icon-only" type="button" title="Browser viewport" aria-label="Browser viewport"><svg class="icons"><use href="/icons.svg#viewport" /></svg></button>
           <span>Viewport:</span>
           <strong id="system-viewport">Checking...</strong>
         </div>
         <div class="system-row">
-          <svg class="system-row-icon"><use href="/icons.svg#view_grid" /></svg>
+          <button class="system-row-icon square icon-only" type="button" title="Device pixel ratio" aria-label="Device pixel ratio"><svg class="icons"><use href="/icons.svg#view_grid" /></svg></button>
           <span>Pixel ratio:</span>
           <strong id="system-pixel-ratio">Checking...</strong>
         </div>
         <div class="system-row">
-          <svg class="system-row-icon"><use href="/icons.svg#color_depth" /></svg>
+          <button class="system-row-icon square icon-only" type="button" title="Color depth" aria-label="Color depth"><svg class="icons"><use href="/icons.svg#color_depth" /></svg></button>
           <span>Color:</span>
           <strong id="system-color">Checking...</strong>
         </div>
@@ -115,27 +82,27 @@
       </h1>
       <div class="system-grid">
         <div class="system-row">
-          <svg class="system-row-icon"><use href="/icons.svg#software" /></svg>
+          <button class="system-row-icon square icon-only" type="button" title="Operating system" aria-label="Operating system"><svg class="icons"><use href="/icons.svg#software" /></svg></button>
           <span>OS:</span>
           <strong id="system-os">Checking...</strong>
         </div>
         <div class="system-row">
-          <svg class="system-row-icon"><use href="/icons.svg#browser" /></svg>
+          <button class="system-row-icon square icon-only" type="button" title="Browser name and version" aria-label="Browser name and version"><svg class="icons"><use href="/icons.svg#browser" /></svg></button>
           <span>Browser:</span>
           <strong id="system-browser">Checking...</strong>
         </div>
         <div class="system-row">
-          <svg class="system-row-icon"><use href="/icons.svg#language" /></svg>
+          <button class="system-row-icon square icon-only" type="button" title="Browser languages" aria-label="Browser languages"><svg class="icons"><use href="/icons.svg#language" /></svg></button>
           <span>Language:</span>
           <strong id="system-language">Checking...</strong>
         </div>
         <div class="system-row">
-          <svg class="system-row-icon"><use href="/icons.svg#cookies" /></svg>
+          <button class="system-row-icon square icon-only" type="button" title="Cookie support" aria-label="Cookie support"><svg class="icons"><use href="/icons.svg#cookies" /></svg></button>
           <span>Cookies:</span>
           <strong id="system-cookies">Checking...</strong>
         </div>
         <div class="system-row system-row-wide">
-          <svg class="system-row-icon"><use href="/icons.svg#person" /></svg>
+          <button class="system-row-icon square icon-only" type="button" title="Browser user agent" aria-label="Browser user agent"><svg class="icons"><use href="/icons.svg#person" /></svg></button>
           <span>User agent:</span>
           <strong id="system-user-agent">Checking...</strong>
         </div>
@@ -148,12 +115,12 @@
       </h1>
       <div class="system-grid">
         <div class="system-row">
-          <svg class="system-row-icon"><use href="/icons.svg#ip" /></svg>
+          <button class="system-row-icon square icon-only" type="button" title="Client IP address" aria-label="Client IP address"><svg class="icons"><use href="/icons.svg#ip" /></svg></button>
           <span>IP:</span>
           <strong id="system-ip">Checking...</strong>
         </div>
         <div class="system-row">
-          <svg class="system-row-icon"><use href="/icons.svg#online" /></svg>
+          <button class="system-row-icon square icon-only" type="button" title="Network connection" aria-label="Network connection"><svg class="icons"><use href="/icons.svg#online" /></svg></button>
           <span>Online:</span>
           <strong id="system-online">Checking...</strong>
         </div>

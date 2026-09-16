@@ -4,7 +4,7 @@
   </svg>
   <div class="justify">
     <h1>General</h1>
-    Pekosoft System shows client computer, browser, display, network and locale information.
+    Pekosoft System shows client computer, browser, display and network information.
   </div>
 </div>
 
@@ -14,7 +14,7 @@
   </svg>
   <div class="justify">
     <h1>Instrument <span class="object">module</span></h1>
-    A full-width scrollable view of local time, calendar, and available client information.
+    A full-width scrollable view of available client information.
   </div>
 </div>
 
@@ -24,7 +24,7 @@
   </svg>
   <div class="justify">
     <h1>Info <span class="object">fields</span></h1>
-    Lists available values such as CPU detail, cores, RAM estimate, OS, browser, IP, screen, viewport, language and time zone.
+    Lists available values such as CPU detail, cores, RAM estimate, OS, browser, IP, screen, viewport and language.
   </div>
 </div>
 

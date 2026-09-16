@@ -1818,6 +1818,10 @@ a:has(> svg.icons) {
   height: calc(var(--visual-viewport-height, 100dvh) - 128px);
 }
 
+#tool-container.one-module-tool > .module-body.standard {
+  justify-content: flex-start;
+}
+
 #tool-container.one-module-tool > .module-header {
   cursor: default;
 }

@@ -928,7 +928,7 @@
 
 <symbol id="system" viewBox="0 0 512 512">
   <path d="M0 32h512v320H0V32Zm40 40v240h432V72H40Z" />
-  <circle cx="256" cy="192" r="48" fill="none" stroke="currentColor" stroke-width="24" />
+  <path fill-rule="evenodd" d="M256 132a60 60 0 1 1 0 120 60 60 0 0 1 0-120Zm0 24a36 36 0 1 0 0 72 36 36 0 0 0 0-72Z" />
   <rect x="216" y="336" width="80" height="96" />
   <rect x="112" y="416" width="288" height="64" />
 </symbol>

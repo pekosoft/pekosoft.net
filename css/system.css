@@ -1,7 +1,7 @@
 /* Pekosoft System */
 /* pekosoft.net/css/system.css */
 
-.system-page {
+#tool-container .system-page {
   display: grid;
   gap: 8px;
 }

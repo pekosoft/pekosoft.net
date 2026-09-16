@@ -8,6 +8,16 @@
   </div>
 </div>
 
+<div class="feature-row module">
+  <svg class="standard-image-help">
+    <use href="/icons.svg#tool"></use>
+  </svg>
+  <div class="justify">
+    <h1>Instrument <span class="object">module</span></h1>
+    A full-width scrollable view of local time, calendar, and available client information.
+  </div>
+</div>
+
 <div class="feature-row border">
   <svg class="standard-image-help">
     <use href="/icons.svg#field"></use>
@@ -18,7 +28,7 @@
   </div>
 </div>
 
-<div class="feature-row module">
+<div class="feature-row border">
   <svg class="standard-image-help">
     <use href="/icons.svg#hardware"></use>
   </svg>
@@ -60,7 +70,7 @@
 
 <div class="feature-row border">
   <svg class="standard-image-help">
-    <use href="/icons.svg#touch"></use>
+    <use href="/icons.svg#system"></use>
   </svg>
   <div class="justify">
     <h1>Touch <span class="object">field</span></h1>
@@ -68,7 +78,7 @@
   </div>
 </div>
 
-<div class="feature-row module">
+<div class="feature-row border">
   <svg class="standard-image-help">
     <use href="/icons.svg#display"></use>
   </svg>
@@ -118,7 +128,7 @@
   </div>
 </div>
 
-<div class="feature-row module">
+<div class="feature-row border">
   <svg class="standard-image-help">
     <use href="/icons.svg#software"></use>
   </svg>
@@ -178,7 +188,7 @@
   </div>
 </div>
 
-<div class="feature-row module">
+<div class="feature-row border">
   <svg class="standard-image-help">
     <use href="/icons.svg#online"></use>
   </svg>
@@ -214,7 +224,7 @@
   </svg>
   <div class="justify">
     <h1>Clock</h1>
-    Current local time and browser time zone.
+    Current local time, browser time zone, and calendar.
   </div>
 </div>
 

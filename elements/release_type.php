@@ -13,6 +13,7 @@ function isBetaRelease($release)
     'piano',
     'player',
     'reference',
+    'system',
     'tuner',
     'visualizer',
   ];

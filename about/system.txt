@@ -1,4 +1,4 @@
 Pekosoft
 System
-1.0 Alpha
+1.0 Beta
 XX-XX-2026

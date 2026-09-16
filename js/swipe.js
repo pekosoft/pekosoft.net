@@ -111,6 +111,7 @@ function buildPageUrl(page) {
     "bpm_calculator",
     "metronome",
     "turntable",
+    "system",
     "bpm_circle",
     "bpm_curve",
     "circle_of_fifths",

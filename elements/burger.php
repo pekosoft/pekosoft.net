@@ -1,10 +1,10 @@
 <?php
 $release = isset($release) ? $release : '';
-$betaReleases = ['beta', 'player', 'visualizer', 'bpm_circle', 'bpm_curve', 'circle_of_fifths', 'drum_machine', 'reference', 'tuner', 'notepad', 'audio_calculator', 'piano', 'icons'];
+$betaReleases = ['beta', 'player', 'visualizer', 'bpm_circle', 'bpm_curve', 'circle_of_fifths', 'drum_machine', 'reference', 'system', 'tuner', 'notepad', 'audio_calculator', 'piano', 'icons'];
 $isBetaRelease = in_array($release, $betaReleases, true);
 $currentFile = basename($_SERVER['SCRIPT_NAME']);
 $requestPath = trim(parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH) ?? '', '/');
-$toolPages = ["tap_pad.php", "bpm_calculator.php", "metronome.php", "turntable.php", "bpm_circle.php", "bpm_curve.php", "circle_of_fifths.php", "drum_machine.php", "player.php", "piano.php", "audio_calculator.php", "icons.php", "tuner.php", "visualizer.php", "reference.php", "notepad.php"];
+$toolPages = ["tap_pad.php", "bpm_calculator.php", "metronome.php", "turntable.php", "system.php", "bpm_circle.php", "bpm_curve.php", "circle_of_fifths.php", "drum_machine.php", "player.php", "piano.php", "audio_calculator.php", "icons.php", "tuner.php", "visualizer.php", "reference.php", "notepad.php"];
 $toolSlugs = array_map(function ($toolPage) {
   return pathinfo($toolPage, PATHINFO_FILENAME);
 }, $toolPages);
@@ -47,6 +47,7 @@ $hasPlaylistModule = in_array('playlist', $availableModules, true);
       <button class="toc-button" data-href="/circle_of_fifths" title="Circle Of Fifths" aria-label="Circle Of Fifths"><svg class="icons" role="img"><use href="/icons.svg#circle_of_fifths"></use></svg>Circle Of Fifths</button>
       <button class="toc-button" data-href="/drum_machine" title="Drum Machine" aria-label="Drum Machine"><svg class="icons" role="img"><use href="/icons.svg#drum_machine"></use></svg>Drum Machine</button>
       <button class="toc-button" data-href="/reference" title="Reference" aria-label="Reference"><svg class="icons" role="img"><use href="/icons.svg#reference"></use></svg>Reference</button>
+      <button class="toc-button" data-href="/system" title="System" aria-label="System"><svg class="icons" role="img"><use href="/icons.svg#system"></use></svg>System</button>
       <button class="toc-button" data-href="/tuner" title="Tuner" aria-label="Tuner"><svg class="icons" role="img"><use href="/icons.svg#tuner"></use></svg>Tuner</button>
       <button class="toc-button" data-href="/notepad" title="Notepad" aria-label="Notepad"><svg class="icons" role="img"><use href="/icons.svg#notepad"></use></svg>Notepad</button>
       <button class="toc-button" data-href="/audio_calculator" title="Audio Calculator" aria-label="Audio Calculator"><svg class="icons" role="img"><use href="/icons.svg#audio_calculator"></use></svg>Audio Calculator</button>
@@ -80,6 +81,7 @@ $hasPlaylistModule = in_array('playlist', $availableModules, true);
         </svg>
         Turntable
       </button>
+
     <?php endif; ?>
       </div>
 

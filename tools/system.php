@@ -7,6 +7,7 @@
   $release = "system";
   $releaseName = "System";
   $releasePage = "";
+  $availableModules = ["tool"];
   $clientIp = isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : 'Unavailable';
   ?>
   <meta name="keywords" content="system info, computer info, browser info, client info, os, cpu, ram, ip">
@@ -16,9 +17,10 @@
 <body>
   <?php require($_SERVER['DOCUMENT_ROOT'] . "/elements/toc.php"); ?>
 
-  <main id="system-page" class="system-page" data-client-ip="<?php echo htmlspecialchars($clientIp, ENT_QUOTES, 'UTF-8'); ?>">
-    <div class="system-hero standard border">
-      <div class="system-clock-card" aria-label="Analog clock">
+  <div id="tool-container" class="container one-module-tool">
+    <div id="system-page" class="module-body system-page standard border scrollable" data-client-ip="<?php echo htmlspecialchars($clientIp, ENT_QUOTES, 'UTF-8'); ?>">
+      <div class="system-hero">
+        <div class="system-clock-card" aria-label="Analog clock">
         <div class="system-clock-face">
           <div class="system-clock-mark system-clock-mark-12"></div>
           <div class="system-clock-mark system-clock-mark-3"></div>
@@ -41,17 +43,17 @@
           <strong id="system-hero-local-time">Checking...</strong>
           <strong id="system-hero-time-zone">Checking...</strong>
         </div>
-      </div>
-      <div class="system-calendar-card">
-        <div class="system-calendar-month" aria-label="Current month calendar">
+        </div>
+        <div class="system-calendar-card">
+          <div class="system-calendar-month" aria-label="Current month calendar">
           <div id="system-calendar-grid" class="system-calendar-grid"></div>
           <strong id="system-hero-local-date">Checking...</strong>
         </div>
-      </div>
-    </div>
+          </div>
+        </div>
 
-    <div class="system-categories standard border">
-    <section class="system-category">
+      <div class="system-categories">
+      <section class="system-category">
       <h1 class="system-category-title">
         Hardware
       </h1>
@@ -72,14 +74,14 @@
           <strong id="system-ram">Checking...</strong>
         </div>
         <div class="system-row">
-          <svg class="system-row-icon"><use href="/icons.svg#touch" /></svg>
+          <svg class="system-row-icon"><use href="/icons.svg#system" /></svg>
           <span>Touch:</span>
           <strong id="system-touch">Checking...</strong>
         </div>
       </div>
-    </section>
+      </section>
 
-    <section class="system-category">
+      <section class="system-category">
       <h1 class="system-category-title">
         Display
       </h1>
@@ -105,9 +107,9 @@
           <strong id="system-color">Checking...</strong>
         </div>
       </div>
-    </section>
+      </section>
 
-    <section class="system-category">
+      <section class="system-category">
       <h1 class="system-category-title">
         Software
       </h1>
@@ -138,9 +140,9 @@
           <strong id="system-user-agent">Checking...</strong>
         </div>
       </div>
-    </section>
+      </section>
 
-    <section class="system-category">
+      <section class="system-category">
       <h1 class="system-category-title">
         Network
       </h1>
@@ -156,10 +158,12 @@
           <strong id="system-online">Checking...</strong>
         </div>
       </div>
-    </section>
+      </section>
+      </div>
+
     </div>
 
-    <div class="system-actions wrapper colored">
+    <div class="module-footer wrapper colored">
       <button id="system-update-button" class="square" title="Update system info">
         <svg class="icons">
           <use href="/icons.svg#reset" />
@@ -173,10 +177,12 @@
         <span class="button-text">Copy</span>
       </button>
     </div>
-  </main>
+  </div>
 
+  <script src="/js/modules.js?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/js/modules.js'); ?>"></script>
+  <script src="/js/drag.js?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/js/drag.js'); ?>"></script>
   <script src="/js/<?php echo $release; ?>.js?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/js/' . $release . '.js'); ?>"></script>
-  <?php require($_SERVER['DOCUMENT_ROOT'] . "/elements/footer.php"); ?>
+  <?php require($_SERVER['DOCUMENT_ROOT'] . "/elements/beta_footer.php"); ?>
 </body>
 
 </html>

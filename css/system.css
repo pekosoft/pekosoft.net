@@ -2,8 +2,8 @@
 /* pekosoft.net/css/system.css */
 
 .system-page {
-  max-width: var(--maxwidth);
-  margin: 0 auto;
+  display: grid;
+  gap: 8px;
 }
 
 .system-hero {
@@ -22,7 +22,7 @@
   align-items: center;
   gap: 8px;
   min-width: 0;
-  padding: 12px;
+  padding: 8px;
   background: var(--black);
 }
 
@@ -247,7 +247,7 @@
 
 .system-categories {
   display: grid;
-  gap: 16px;
+  gap: 8px;
   background: var(--black);
 }
 
@@ -256,8 +256,8 @@
 }
 
 .system-category-title {
-  margin: 0 0 4px;
-  padding: 8px;
+  margin: 0 0 8px;
+  padding: 0;
   background: var(--black);
   text-align: center;
 }
@@ -309,8 +309,8 @@
   color: var(--white);
 }
 
-.system-actions {
-  margin: 8px auto 0;
+#system-user-agent {
+  white-space: normal;
 }
 
 @media (max-width: 768px) {

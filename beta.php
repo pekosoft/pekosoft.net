@@ -22,6 +22,7 @@
     <div class="item"><a href="/circle_of_fifths" title="Circle Of Fifths"><svg class="large-icon" role="img" aria-label="Circle Of Fifths"><use href="/icons.svg#circle_of_fifths" /></svg></a></div>
     <div class="item"><a href="/drum_machine" title="Drum Machine"><svg class="large-icon" role="img" aria-label="Drum Machine"><use href="/icons.svg#drum_machine" /></svg></a></div>
     <div class="item"><a href="/reference" title="Reference"><svg class="large-icon" role="img" aria-label="Reference"><use href="/icons.svg#reference" /></svg></a></div>
+    <div class="item"><a href="/system" title="System"><svg class="large-icon" role="img" aria-label="System"><use href="/icons.svg#system" /></svg></a></div>
     <div class="item"><a href="/tuner" title="Tuner"><svg class="large-icon" role="img" aria-label="Tuner"><use href="/icons.svg#tuner" /></svg></a></div>
     <div class="item"><a href="/notepad" title="Notepad"><svg class="large-icon" role="img" aria-label="Notepad"><use href="/icons.svg#notepad" /></svg></a></div>
     <div class="item"><a href="/audio_calculator" title="Audio Calculator"><svg class="large-icon" role="img" aria-label="Audio Calculator"><use href="/icons.svg#audio_calculator" /></svg></a></div>
@@ -38,6 +39,7 @@
       <a href="/circle_of_fifths" title="Circle Of Fifths">Circle Of Fifths - For exploring harmony.</a><br>
       <a href="/drum_machine" title="Drum Machine">Drum Machine - For making beats.</a><br>
       <a href="/reference" title="Reference">Reference - For looking up musical references.</a><br>
+      <a href="/system" title="System">System - For viewing client information.</a><br>
       <a href="/tuner" title="Tuner">Tuner - For tuning instruments.</a><br>
       <a href="/notepad" title="Notepad">Notepad - For writing notes.</a><br>
       <a href="/audio_calculator" title="Audio Calculator">Audio Calculator - For calculating audio values.</a><br>

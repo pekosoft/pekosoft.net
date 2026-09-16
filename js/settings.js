@@ -26,6 +26,11 @@ window.FactoryDefaults = {
   speedOfSound: 343
 };
 
+const backgroundImageDatabaseName = "pekosoft-settings";
+const backgroundImageStoreName = "settings";
+const backgroundImageKey = "background-image";
+let backgroundImageUrl = "";
+
 document.addEventListener("DOMContentLoaded", () => {
   const settings = {
     grid: document.getElementById("grid"),
@@ -52,6 +57,8 @@ document.addEventListener("DOMContentLoaded", () => {
     a4HzKnob: document.getElementById("a4-hz-knob"),
     speedOfSound: document.getElementById("speed_of_sound"),
     speedOfSoundKnob: document.getElementById("speed-of-sound-knob"),
+    backgroundImage: document.getElementById("background-image"),
+    backgroundImagePicker: document.getElementById("background-image-picker"),
   };
 
   const defaults = window.FactoryDefaults;
@@ -68,7 +75,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const phoneSettingsQuery = window.matchMedia("(max-width: 799px)");
   let suppressPhoneFieldClick = false;
 
-  document.querySelectorAll(".settings-panel .setting-row :is(label, input, select)").forEach((field) => {
+  document.querySelectorAll(".settings-panel .setting-row:not(.background-image-row) :is(label, input, select)").forEach((field) => {
     field.addEventListener("pointerdown", (event) => {
       if (!phoneSettingsQuery.matches) return;
 
@@ -106,6 +113,7 @@ document.addEventListener("DOMContentLoaded", () => {
   applyButtonTextSetting();
   applyFontSizeSetting();
   applyAlphaSetting();
+  loadBackgroundImageSetting();
   localStorage.removeItem("global.maximize");
   initGridSizeKnob();
   initFontSizeKnob();
@@ -274,6 +282,22 @@ document.addEventListener("DOMContentLoaded", () => {
       settings.speedOfSound.value = `${val}`;
       localStorage.setItem("global.speed_of_sound", val);
       dispatchGlobalDefaultsChange("speed_of_sound");
+    });
+  }
+
+  if (settings.backgroundImage) {
+    settings.backgroundImage.addEventListener("change", () => {
+      const [file] = settings.backgroundImage.files;
+      if (!file) return;
+
+      applyBackgroundImageSetting(file);
+      saveBackgroundImageSetting(file);
+    });
+  }
+
+  if (settings.backgroundImagePicker && settings.backgroundImage) {
+    settings.backgroundImagePicker.addEventListener("click", () => {
+      settings.backgroundImage.click();
     });
   }
 
@@ -469,6 +493,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function applyAlphaSetting() {
     const alphaOn = localStorage.getItem("global.alpha") === "true";
+    document.documentElement.classList.toggle("alpha-enabled", alphaOn);
+    window.dispatchEvent(new CustomEvent("pekosoft:alpha-change", {
+      detail: { enabled: alphaOn }
+    }));
 
     const originalGrey = getComputedStyle(document.documentElement)
       .getPropertyValue("--grey1")
@@ -479,6 +507,86 @@ document.addEventListener("DOMContentLoaded", () => {
       : originalGrey;
 
     document.documentElement.style.setProperty("--grey1", color);
+  }
+
+  function getBackgroundImageDatabase() {
+    return new Promise((resolve, reject) => {
+      const request = indexedDB.open(backgroundImageDatabaseName, 1);
+      request.addEventListener("upgradeneeded", () => {
+        const database = request.result;
+        if (!database.objectStoreNames.contains(backgroundImageStoreName)) {
+          database.createObjectStore(backgroundImageStoreName);
+        }
+      });
+      request.addEventListener("success", () => resolve(request.result));
+      request.addEventListener("error", () => reject(request.error));
+    });
+  }
+
+  function readBackgroundImageSetting() {
+    return getBackgroundImageDatabase().then((database) => new Promise((resolve, reject) => {
+      const request = database.transaction(backgroundImageStoreName).objectStore(backgroundImageStoreName).get(backgroundImageKey);
+      request.addEventListener("success", () => {
+        database.close();
+        resolve(request.result);
+      });
+      request.addEventListener("error", () => {
+        database.close();
+        reject(request.error);
+      });
+    }));
+  }
+
+  function saveBackgroundImageSetting(file) {
+    return getBackgroundImageDatabase().then((database) => new Promise((resolve, reject) => {
+      const transaction = database.transaction(backgroundImageStoreName, "readwrite");
+      transaction.objectStore(backgroundImageStoreName).put(file, backgroundImageKey);
+      transaction.addEventListener("complete", () => {
+        database.close();
+        resolve();
+      });
+      transaction.addEventListener("error", () => {
+        database.close();
+        reject(transaction.error);
+      });
+    })).catch(() => {});
+  }
+
+  function clearBackgroundImageSetting() {
+    if (settings.backgroundImage) settings.backgroundImage.value = "";
+    applyBackgroundImageSetting();
+    return getBackgroundImageDatabase().then((database) => new Promise((resolve, reject) => {
+      const transaction = database.transaction(backgroundImageStoreName, "readwrite");
+      transaction.objectStore(backgroundImageStoreName).delete(backgroundImageKey);
+      transaction.addEventListener("complete", () => {
+        database.close();
+        resolve();
+      });
+      transaction.addEventListener("error", () => {
+        database.close();
+        reject(transaction.error);
+      });
+    })).catch(() => {});
+  }
+
+  function loadBackgroundImageSetting() {
+    return readBackgroundImageSetting()
+      .then((file) => applyBackgroundImageSetting(file instanceof Blob ? file : undefined))
+      .catch(() => {});
+  }
+
+  function applyBackgroundImageSetting(file) {
+    if (backgroundImageUrl) URL.revokeObjectURL(backgroundImageUrl);
+    backgroundImageUrl = "";
+    document.documentElement.style.removeProperty("--selected-background-image");
+    if (!(file instanceof Blob)) {
+      if (settings.backgroundImagePicker) settings.backgroundImagePicker.textContent = "Choose bitmap";
+      return;
+    }
+
+    backgroundImageUrl = URL.createObjectURL(file);
+    document.documentElement.style.setProperty("--selected-background-image", `url("${backgroundImageUrl}")`);
+    if (settings.backgroundImagePicker) settings.backgroundImagePicker.textContent = "Change bitmap";
   }
 
   function expandHex(hex) {
@@ -535,6 +643,7 @@ document.addEventListener("DOMContentLoaded", () => {
     localStorage.setItem("global.default_rpm", defaults.defaultRPM);
     localStorage.setItem("global.a4_hz", defaults.a4Hz);
     localStorage.setItem("global.speed_of_sound", defaults.speedOfSound);
+    clearBackgroundImageSetting();
     dispatchGlobalDefaultsChange("all");
 
     // Also apply immediately

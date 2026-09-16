@@ -30,7 +30,7 @@
 
 #timeline-container .canvas-container {
   padding: 0;
-  background: var(--black);
+  background: var(--panel-background);
 }
 
 #timeline-container .timeline-scroll .timeline-svg {

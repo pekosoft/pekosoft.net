@@ -18,6 +18,8 @@
   --visual-viewport-height: 100dvh;
   --visual-viewport-offset-top: 0px;
   --visual-viewport-bottom-gap: 0px;
+  --panel-background: var(--black);
+  --field-background: transparent;
 }
 
 /* TAGS */
@@ -31,9 +33,18 @@
 
 html {
   background-color: var(--black);
+  background-image: var(--selected-background-image, none);
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-attachment: fixed;
   font-size: var(--font-size);
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
+}
+
+html.alpha-enabled {
+  --panel-background: rgb(from var(--black) r g b / 50%);
 }
 
 html.modules-loading .container {
@@ -75,6 +86,7 @@ h1 {
 
 canvas {
   display: block;
+  background-color: var(--panel-background);
 }
 
 ::selection {
@@ -172,7 +184,7 @@ input[type="number"] {
   height: var(--size2);
   line-height: 16px;
   color: var(--white);
-  background-color: var(--black);
+  background-color: var(--field-background);
   padding: 4px;
   margin: 0px;
   border: 1px solid var(--grey1);
@@ -181,9 +193,15 @@ input[type="number"] {
 
 select {
   padding: 4px;
-  background-color: var(--black);
+  background-color: var(--field-background);
   border-radius: 0;
   padding-top: 2px;
+}
+
+option,
+optgroup {
+  background-color: var(--black);
+  color: var(--white);
 }
 
 input[type="text"] {
@@ -191,7 +209,7 @@ input[type="text"] {
   height: var(--size2);
   line-height: 16px;
   color: var(--white);
-  background-color: var(--black);
+  background-color: var(--field-background);
   padding: 8px;
   margin: 0px;
   border: 1px solid var(--grey1);
@@ -204,7 +222,7 @@ input[type="file"] {
 
 label {
   font-size: var(--font-size);
-  background-color: var(--black);
+  background-color: var(--field-background);
   height: var(--size2);
   color: var(--white);
   padding: 8px;
@@ -450,7 +468,7 @@ tbody tr:hover {
   position: relative;
   overflow: hidden;
   margin: 16px auto 8px;
-  background-color: var(--black);
+  background-color: var(--panel-background);
 }
 
 html.modules-page body:not(.layout-two-columns) > .container.first-module {
@@ -1243,7 +1261,7 @@ body.settings-sidebar-open #toggle-settings-panel-button .icons {
   flex-shrink: 0;
   height: 100%;
   min-height: 256px;
-  background: var(--black);
+  background: var(--panel-background);
 }
 
 .timeline-svg text {
@@ -1288,7 +1306,7 @@ html.invert-colors .container:fullscreen {
   left: 0;
   right: 0;
   margin: 0;
-  background-color: var(--black);
+  background-color: var(--panel-background);
   border: 4px solid var(--grey1);
   padding: 0px;
   z-index: 999;
@@ -1334,7 +1352,7 @@ html.invert-colors .container:fullscreen {
   left: 0;
   right: 0;
   margin: 0;
-  background-color: var(--black);
+  background-color: var(--panel-background);
   border: 4px solid var(--grey1);
   z-index: 999;
   max-width: var(--maxwidth);
@@ -1426,6 +1444,13 @@ html.invert-colors .container:fullscreen {
   padding: 0 10px;
 }
 
+.settings-panel .background-image-row {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 4px;
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
 .settings-panel .settings-control-label {
   display: flex;
   align-items: center;
@@ -1448,10 +1473,15 @@ html.invert-colors .container:fullscreen {
   min-width: 0;
 }
 
+.settings-panel .background-image-picker {
+  min-width: 0;
+  width: 100%;
+}
+
 .settings-panel .knob-value {
   width: 40px;
   text-align: center;
-  background-color: var(--black);
+  background-color: var(--field-background);
   border: 1px solid var(--grey1);
   outline: none;
   color: inherit;
@@ -1495,7 +1525,7 @@ html.invert-colors .container:fullscreen {
     width: var(--sidebar-width);
     margin: 16px 0;
     height: calc(var(--visual-viewport-height, 100dvh) - 80px - var(--sidebar-footer-height, 0px));
-    background-color: var(--black);
+    background-color: var(--panel-background);
   }
 
   .toc-container {
@@ -1625,7 +1655,7 @@ html.invert-colors .container:fullscreen {
   justify-content: center;
   height: 56px;
   width: 100%;
-  padding: 0;
+  padding: 0 0 16px;
 }
 
 .toc-open {
@@ -1761,10 +1791,15 @@ html.invert-colors .container:fullscreen {
 html.show-grid {
   background-image:
     linear-gradient(to right, #101010 1px, transparent 1px),
-    linear-gradient(to bottom, #101010 1px, transparent 1px);
-  background-size: var(--grid-size, 16px) var(--grid-size, 16px);
-  background-position: -1px -1px;
-  background-attachment: fixed;
+    linear-gradient(to bottom, #101010 1px, transparent 1px),
+    var(--selected-background-image, none);
+  background-size:
+    var(--grid-size, 16px) var(--grid-size, 16px),
+    var(--grid-size, 16px) var(--grid-size, 16px),
+    cover;
+  background-position: -1px -1px, -1px -1px, center;
+  background-repeat: repeat, repeat, no-repeat;
+  background-attachment: fixed, fixed, fixed;
 }
 
 .large-icon {
@@ -1928,7 +1963,6 @@ a:has(> svg.icons) {
   gap: var(--controls-slider-gap);
   border-bottom: 4px solid var(--grey1);
   padding: var(--controls-slider-gap);
-  background-color: var(--black);
 }
 
 .controls-slider-block {
@@ -2428,7 +2462,7 @@ body.module-order-dragging .module-maximized .module-header {
   margin: 0;
   padding: 8px;
   overflow: hidden;
-  background-color: var(--grey1);
+  background-color: var(--field-background);
   border: 1px solid var(--white);
   color: var(--white);
   font-size: var(--font-size);

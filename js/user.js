@@ -126,6 +126,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // ALPHA TOGGLE
 
     const alphaOn = localStorage.getItem("global.alpha") === "true";
+    document.documentElement.classList.toggle("alpha-enabled", alphaOn);
 
     // Read --grey1 from index.css
     let baseGrey = getComputedStyle(document.documentElement)

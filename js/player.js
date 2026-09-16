@@ -46,6 +46,7 @@ const panelTextElement = document.getElementById('player-text');
 const copyButton = document.getElementById('copy-button');
 const guidesButton = document.getElementById('guides-button');
 window.addEventListener('pekosoft:timeline-bright-change', () => redrawTimelineCanvas());
+window.addEventListener('pekosoft:alpha-change', () => redrawTimelineCanvas());
 const timelineZoomButton = document.getElementById('timeline-zoom-button');
 const timelineRulerButton = document.getElementById('timeline-ruler-button');
 const bpmRulerButton = document.getElementById('bpm-ruler-button');
@@ -94,7 +95,6 @@ const waveformOverlay = document.querySelector('#timeline-container .waveform-ov
 const cssVars = getComputedStyle(document.documentElement);
 const colorPrimary = cssVars.getPropertyValue('--color1').trim();
 const colorSecondary = cssVars.getPropertyValue('--color2').trim();
-const colorBlack = cssVars.getPropertyValue('--black').trim() || '#000';
 const colorWhite = cssVars.getPropertyValue('--white').trim();
 const colorGrey1 = cssVars.getPropertyValue('--grey1').trim();
 const colorGrey2 = cssVars.getPropertyValue('--grey2').trim();
@@ -3636,8 +3636,6 @@ function drawTimelineRuler() {
     const height = timelineRulerCanvas.height;
 
     timelineRulerCtx.clearRect(0, 0, width, height);
-    timelineRulerCtx.fillStyle = colorBlack;
-    timelineRulerCtx.fillRect(0, 0, width, height);
     timelineRulerCtx.imageSmoothingEnabled = false;
 
     if (!loadedAudioBuffer || !Number.isFinite(loadedAudioBuffer.duration) || loadedAudioBuffer.duration <= 0) {
@@ -3681,8 +3679,6 @@ function drawBpmRuler() {
     const height = bpmRulerCanvas.height;
 
     bpmRulerCtx.clearRect(0, 0, width, height);
-    bpmRulerCtx.fillStyle = colorBlack;
-    bpmRulerCtx.fillRect(0, 0, width, height);
     bpmRulerCtx.imageSmoothingEnabled = false;
 
     if (!loadedAudioBuffer || !Number.isFinite(loadedAudioBuffer.duration) || loadedAudioBuffer.duration <= 0) {

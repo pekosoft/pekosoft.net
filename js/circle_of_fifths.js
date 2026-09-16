@@ -294,6 +294,7 @@
         this.updateControls();
         this.drawTimeline();
       });
+      window.addEventListener("pekosoft:alpha-change", () => this.drawTimeline());
       this.copyButton?.addEventListener("click", () => this.copyPanelText());
       window.addEventListener("resize", () => {
         this.resizeTimeline();
@@ -965,8 +966,6 @@
       this.timelineEvents = this.timelineEvents.filter((event) => now - event.time <= this.timelineWindowMs);
       ctx.setTransform(this.timelineScaleX || 1, 0, 0, this.timelineScaleY || 1, 0, 0);
       ctx.clearRect(0, 0, width, height);
-      ctx.fillStyle = colors.black;
-      ctx.fillRect(0, 0, width, height);
 
       if (this.guidesOn) {
         ctx.strokeStyle = this.timelineBright ? colors.white : colors.grey1;

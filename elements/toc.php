@@ -91,6 +91,11 @@
           <label for="speed_of_sound" title="Speed Of Sound in meters per second" class="settings-control-label">SOS:</label>
           <div class="knob-wrap"><input type="number" id="speed_of_sound" name="speed_of_sound" value="343" min="300" max="380" step="1"><button id="speed-of-sound-knob" class="knob-control" type="button" title="Speed Of Sound in meters per second" aria-label="SOS"></button></div>
         </div>
+        <div class="setting-row background-image-row">
+          <label for="background-image" title="Background image" class="settings-control-label">Background:</label>
+          <button id="background-image-picker" class="background-image-picker" type="button" title="Choose background image">Choose bitmap</button>
+          <input type="file" id="background-image" accept="image/png,image/jpeg,image/webp,image/gif,image/bmp" aria-label="Choose background image">
+        </div>
 
       </div>
 

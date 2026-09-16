@@ -74,7 +74,7 @@
           <strong id="system-ram">Checking...</strong>
         </div>
         <div class="system-row">
-          <svg class="system-row-icon"><use href="/icons.svg#system" /></svg>
+          <svg class="system-row-icon"><use href="/icons.svg#touch" /></svg>
           <span>Touch:</span>
           <strong id="system-touch">Checking...</strong>
         </div>

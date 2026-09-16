@@ -484,6 +484,13 @@
   <rect x="144" y="304" width="160" height="32" />
 </symbol>
 
+<symbol id="touch" viewBox="0 0 512 512">
+  <path d="M0 32h512v320H0V32Zm40 40v240h432V72H40Z" />
+  <path fill-rule="evenodd" d="M256 132a60 60 0 1 1 0 120 60 60 0 0 1 0-120Zm0 24a36 36 0 1 0 0 72 36 36 0 0 0 0-72Z" />
+  <rect x="216" y="336" width="80" height="96" />
+  <rect x="112" y="416" width="288" height="64" />
+</symbol>
+
 <symbol id="viewport" viewBox="0 0 512 512">
 <path fill-rule="evenodd" d="M0 32h512v448H0V32ZM32 64v384h448V64H32Z"></path>
 <path fill-rule="evenodd" d="M 64 96 H 448 V 416 H 64 Z M 96 128 H 416 V 384 H 96 Z"></path>
@@ -928,7 +935,7 @@
 
 <symbol id="system" viewBox="0 0 512 512">
   <path d="M0 32h512v320H0V32Zm40 40v240h432V72H40Z" />
-  <path fill-rule="evenodd" d="M256 132a60 60 0 1 1 0 120 60 60 0 0 1 0-120Zm0 24a36 36 0 1 0 0 72 36 36 0 0 0 0-72Z" />
+  <rect x="80" y="112" width="352" height="160" />
   <rect x="216" y="336" width="80" height="96" />
   <rect x="112" y="416" width="288" height="64" />
 </symbol>

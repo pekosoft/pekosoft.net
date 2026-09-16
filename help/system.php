@@ -70,7 +70,7 @@
 
 <div class="feature-row border">
   <svg class="standard-image-help">
-    <use href="/icons.svg#system"></use>
+    <use href="/icons.svg#touch"></use>
   </svg>
   <div class="justify">
     <h1>Touch <span class="object">field</span></h1>

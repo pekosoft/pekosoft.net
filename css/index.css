@@ -485,6 +485,8 @@ html.modules-page body:not(.layout-two-columns) {
     flex-wrap: wrap;
     align-items: flex-start;
     justify-content: flex-start;
+    container-name: modules;
+    container-type: inline-size;
     column-gap: 16px;
     row-gap: 16px;
     width: 100%;
@@ -499,6 +501,15 @@ html.modules-page body:not(.layout-two-columns) {
     width: calc((100% - 16px) / 2);
     max-width: calc((var(--maxwidth) - 16px) / 2);
     margin: 0;
+  }
+
+  @container modules (max-width: 799.99px) {
+    html.modules-page.layout-two-columns .container,
+    html.modules-page.layout-two-columns .module-drag-placeholder {
+      flex-basis: 100%;
+      width: 100%;
+      max-width: var(--maxwidth);
+    }
   }
 
   html.modules-page.layout-two-columns body.layout-tight-footer > .footer-spacer {

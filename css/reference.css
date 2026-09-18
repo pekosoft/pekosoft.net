@@ -3,11 +3,19 @@
 
 #tool-container .standard {
   padding: 0;
-  overflow: auto;
-  display: block;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
   justify-content: flex-start;
   user-select: none;
   -webkit-user-select: none;
+}
+
+.reference-content-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
+  overflow: auto;
 }
 
 #tool-container .reference-tool-footer {

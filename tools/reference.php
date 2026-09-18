@@ -50,16 +50,18 @@
         </button>
       </div>
 
-      <table class="over scrollable-table">
-        <thead>
-          <tr id="header-row"></tr>
-        </thead>
-        <tbody id="resultTable">
-          <!-- Values will be displayed here -->
-        </tbody>
-      </table>
+      <div class="reference-content-scroll">
+        <table class="over scrollable-table">
+          <thead>
+            <tr id="header-row"></tr>
+          </thead>
+          <tbody id="resultTable">
+            <!-- Values will be displayed here -->
+          </tbody>
+        </table>
 
-      <div id="cards-view" class="reference-cards-view hidden" aria-live="polite"></div>
+        <div id="cards-view" class="reference-cards-view hidden" aria-live="polite"></div>
+      </div>
 
       <div id="reference-tool-menu-controls" class="module-panel-menu" hidden>
         <fieldset class="module-panel-menu-row reference-column-buttons">

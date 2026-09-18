@@ -66,11 +66,11 @@
         </svg>
         <span class="button-text">Haptic</span>
       </button>
-      <button id="clock-update-button" class="square" title="Update clock">
+      <button id="reset-button" class="square" title="Reset to default">
         <svg class="icons">
           <use href="/icons.svg#reset" />
         </svg>
-        <span class="button-text">Update</span>
+        <span class="button-text">Reset</span>
       </button>
     </div>
   </div>

@@ -63,7 +63,7 @@
     <use href="/icons.svg#reset"></use>
   </svg>
   <div class="justify">
-    <h1>UPDATE <span class="object">button</span></h1>
-    Refreshes the displayed time and calendar immediately.
+    <h1>RESET <span class="object">button</span></h1>
+    Restores the Clock options to their defaults.
   </div>
 </div>

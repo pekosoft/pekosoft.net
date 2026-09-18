@@ -5,7 +5,7 @@ const clockHour = document.getElementById("clock-hour");
 const clockMinute = document.getElementById("clock-minute");
 const clockSecond = document.getElementById("clock-second");
 const calendarGrid = document.getElementById("calendar-grid");
-const clockUpdateButton = document.getElementById("clock-update-button");
+const resetButton = document.getElementById("reset-button");
 const clockSoundButton = document.getElementById("clock-sound-button");
 const clockHapticButton = document.getElementById("clock-haptic-button");
 let renderedCalendarMonth = "";
@@ -157,7 +157,14 @@ function renderClock() {
 
 renderClock();
 syncFeedbackButtonState();
-clockUpdateButton?.addEventListener("click", renderClock);
+resetButton?.addEventListener("click", () => {
+  isSoundOn = false;
+  isHapticOn = false;
+  localStorage.removeItem("clock.sound_on");
+  localStorage.removeItem("clock.haptic");
+  syncFeedbackButtonState();
+  renderClock();
+});
 clockSoundButton?.addEventListener("click", () => {
   isSoundOn = !isSoundOn;
   localStorage.setItem("clock.sound_on", String(isSoundOn));

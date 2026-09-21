@@ -2,7 +2,7 @@
 
 **Free audio tools.**
 
-Pekosoft is a browser-based collection of BPM experiments and audio tools built around clarity, speed, and restraint. The project focuses on practical timing, rhythm, and reference utilities that run directly on the web, with no installation, no subscriptions, no ads, and no unnecessary clutter.
+Pekosoft is a browser-based collection of audio tools built around clarity, speed, and restraint. The project focuses on practical timing, rhythm, and reference utilities that run directly on the web, with no installation, no subscriptions, no ads, and no unnecessary clutter.
 
 Pekosoft is intentionally small, direct, and modern. It is designed to feel fast, readable, and focused on function.
 
@@ -23,9 +23,11 @@ The following tools are listed on `beta.php` as tests, experiments, and works in
 - **Visualizer**
 - **BPM Circle**
 - **BPM Curve**
+- **Clock**
 - **Circle Of Fifths**
 - **Drum Machine**
 - **Reference**
+- **System**
 - **Tuner**
 - **Notepad**
 - **Audio Calculator**
@@ -435,7 +437,7 @@ Pekosoft is free and ad-free. Donations are welcome through the bitcoin-only add
 
 ## One-sentence description
 
-**Pekosoft is a modern, browser-based, open, ad-free collection of BPM and audio experiments built around simplicity, clarity, and usefulness.**
+**Pekosoft is a modern, browser-based, open, ad-free collection of audio tools built around simplicity, clarity, and usefulness.**
 
 ## One-sentence descriptions for tools
 
@@ -451,7 +453,13 @@ Pekosoft is free and ad-free. Donations are welcome through the bitcoin-only add
 - **Player** - For playing, recording, and inspecting audio.
 - **Visualizer** - For visualizing BPM.
 - **BPM Circle** - For playing and visualizing note values.
+- **BPM Curve** - For creating tempo curves.
+- **Clock** - For viewing local time and date.
+- **Circle Of Fifths** - For exploring harmony.
+- **Drum Machine** - For making beats.
 - **Reference** - For looking up music and timing references.
+- **System** - For viewing client information.
+- **Tuner** - For tuning instruments.
 - **Notepad** - For writing and keeping session notes.
 - **Audio Calculator** - For calculating resolution and size.
 - **Piano** - For playing, recording and visualizing pitch.

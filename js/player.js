@@ -3315,6 +3315,16 @@ function drawReferenceLines() {
     staticCanvasCtx.strokeStyle = grey1;
     staticCanvasCtx.setLineDash([]);
 
+    if (window.PekoBrightGuides?.getTimelineBright()) {
+        staticCanvasCtx.beginPath();
+        staticCanvasCtx.moveTo(0.5, 0.5);
+        staticCanvasCtx.lineTo(staticCanvas.width - 0.5, 0.5);
+        staticCanvasCtx.lineTo(staticCanvas.width - 0.5, staticCanvas.height - 0.5);
+        staticCanvasCtx.lineTo(0.5, staticCanvas.height - 0.5);
+        staticCanvasCtx.closePath();
+        staticCanvasCtx.stroke();
+    }
+
     for (let channel = 0; channel < channels; channel++) {
         const top = channel * channelHeight;
         const amp = channelHeight / 2;

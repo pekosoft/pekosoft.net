@@ -689,6 +689,12 @@ function drawReferenceLines(timelineHeight) {
   guidesLayer.setAttribute('class', 'metronome-timeline-guides');
   metronomeTimelineSvg.appendChild(guidesLayer);
 
+  if (window.PekoBrightGuides?.getTimelineBright()) {
+    [[0.5, 0.5, METRONOME_TIMELINE_WIDTH - 0.5, 0.5], [METRONOME_TIMELINE_WIDTH - 0.5, 0.5, METRONOME_TIMELINE_WIDTH - 0.5, timelineHeight - 0.5], [METRONOME_TIMELINE_WIDTH - 0.5, timelineHeight - 0.5, 0.5, timelineHeight - 0.5], [0.5, timelineHeight - 0.5, 0.5, 0.5]].forEach(([x1, y1, x2, y2]) => {
+      guidesLayer.appendChild(metronomeSvgUtils.createLine({ x1, y1, x2, y2, color: guideColor }));
+    });
+  }
+
   guidesLayer.appendChild(metronomeSvgUtils.createText({
     x: 40,
     y: titleY,

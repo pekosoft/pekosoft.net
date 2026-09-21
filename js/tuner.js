@@ -345,6 +345,12 @@ function drawGuides(timelineHeight) {
   guidesLayer.setAttribute('class', 'tuner-timeline-guides');
   tunerTimelineSvg.appendChild(guidesLayer);
 
+  if (window.PekoBrightGuides?.getTimelineBright()) {
+    [[0.5, 0.5, TUNER_TIMELINE_WIDTH - 0.5, 0.5], [TUNER_TIMELINE_WIDTH - 0.5, 0.5, TUNER_TIMELINE_WIDTH - 0.5, timelineHeight - 0.5], [TUNER_TIMELINE_WIDTH - 0.5, timelineHeight - 0.5, 0.5, timelineHeight - 0.5], [0.5, timelineHeight - 0.5, 0.5, 0.5]].forEach(([x1, y1, x2, y2]) => {
+      guidesLayer.appendChild(tunerSvgUtils.createLine({ x1, y1, x2, y2, color: lineColor }));
+    });
+  }
+
   const lines = [
     { cents: -50, label: '-50' },
     { cents: -25, label: '-25' },

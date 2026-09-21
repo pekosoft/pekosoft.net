@@ -387,6 +387,12 @@ function drawReferenceLines(timelineHeight) {
   guidesLayer.setAttribute('class', 'turntable-timeline-guides');
   turntableTimelineSvg.appendChild(guidesLayer);
 
+  if (window.PekoBrightGuides?.getTimelineBright()) {
+    [[0.5, 0.5, TURNTABLE_TIMELINE_WIDTH - 0.5, 0.5], [TURNTABLE_TIMELINE_WIDTH - 0.5, 0.5, TURNTABLE_TIMELINE_WIDTH - 0.5, timelineHeight - 0.5], [TURNTABLE_TIMELINE_WIDTH - 0.5, timelineHeight - 0.5, 0.5, timelineHeight - 0.5], [0.5, timelineHeight - 0.5, 0.5, 0.5]].forEach(([x1, y1, x2, y2]) => {
+      guidesLayer.appendChild(turntableSvgUtils.createLine({ x1, y1, x2, y2, color: guideColor }));
+    });
+  }
+
   guidesLayer.appendChild(turntableSvgUtils.createText({
     x: 45,
     y: 12,

@@ -683,6 +683,15 @@ class Piano {
         this.pianoRollCtx.lineTo(width, y);
         this.pianoRollCtx.stroke();
       }
+      if (this.timelineBright) {
+        this.pianoRollCtx.beginPath();
+        this.pianoRollCtx.moveTo(0.5, 0.5);
+        this.pianoRollCtx.lineTo(width - 0.5, 0.5);
+        this.pianoRollCtx.lineTo(width - 0.5, height - 0.5);
+        this.pianoRollCtx.lineTo(0.5, height - 0.5);
+        this.pianoRollCtx.closePath();
+        this.pianoRollCtx.stroke();
+      }
     }
 
     this.pianoRollCtx.fillStyle = colorPrimary;

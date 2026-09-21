@@ -1771,6 +1771,13 @@ class BPMCurve {
     if (this.isTimelineGuidesVisible) {
       const guidesLayer = document.createElementNS('http://www.w3.org/2000/svg', 'g');
       this.timelineSvg.appendChild(guidesLayer);
+      const guideColor = this.isTimelineBright ? '#fff' : this.getCssVariable('--grey1', '#404040');
+
+      if (this.isTimelineBright) {
+        [[padding.left, padding.top, width - padding.right, padding.top], [width - padding.right, padding.top, width - padding.right, height - padding.bottom], [width - padding.right, height - padding.bottom, padding.left, height - padding.bottom], [padding.left, height - padding.bottom, padding.left, padding.top]].forEach(([x1, y1, x2, y2]) => {
+          guidesLayer.appendChild(this.svgUtils.createLine({ x1, y1, x2, y2, color: guideColor }));
+        });
+      }
 
       const verticalCount = Math.max(2, Math.round(duration));
       for (let index = 0; index <= verticalCount; index++) {
@@ -1781,7 +1788,7 @@ class BPMCurve {
           y1: padding.top,
           x2: x,
           y2: padding.top + innerHeight,
-          color: this.isTimelineBright ? '#fff' : this.getCssVariable('--grey1', '#404040')
+          color: guideColor
         }));
         guidesLayer.appendChild(this.svgUtils.createText({
           x: x - 14,

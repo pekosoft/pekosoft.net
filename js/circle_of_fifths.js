@@ -984,6 +984,15 @@
           ctx.lineTo(x, height);
           ctx.stroke();
         }
+        if (this.timelineBright) {
+          ctx.beginPath();
+          ctx.moveTo(0.5, 0.5);
+          ctx.lineTo(width - 0.5, 0.5);
+          ctx.lineTo(width - 0.5, height - 0.5);
+          ctx.lineTo(0.5, height - 0.5);
+          ctx.closePath();
+          ctx.stroke();
+        }
         ctx.fillStyle = this.timelineBright ? colors.white : colors.grey2;
         ctx.font = `${Math.max(8, Math.min(12, Math.floor(rowHeight - 2)))}px Arial`;
         ctx.textBaseline = "middle";

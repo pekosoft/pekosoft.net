@@ -212,6 +212,20 @@
     drawWaveformDbScale(ctx, width, height, height / 2, height / 2);
   }
 
+  function drawBrightGuideBoundary(ctx, width, height) {
+    if (!brightGuides) return;
+
+    const dpr = window.devicePixelRatio || 1;
+    const lineWidth = 1 / dpr;
+    ctx.save();
+    ctx.fillStyle = guideColor;
+    ctx.fillRect(0, 0, width, lineWidth);
+    ctx.fillRect(Math.max(0, width - lineWidth), 0, lineWidth, height);
+    ctx.fillRect(0, Math.max(0, height - lineWidth), width, lineWidth);
+    ctx.fillRect(0, 0, lineWidth, height);
+    ctx.restore();
+  }
+
   function drawToolGuidesForLevelMeter(ctx, width, height, channelCount) {
     const dBMarks = [-60, -40, -24, -12, -6, 0];
     const gap = channelCount > 1 ? 4 : 0;
@@ -889,6 +903,7 @@
 
     if (mode === 'oscilloscope') {
       drawToolGuidesForOscilloscope(ctx, width, height);
+      drawBrightGuideBoundary(ctx, width, height);
       return;
     }
 
@@ -906,18 +921,21 @@
           drawToolGuideLabel(ctx, label, width - 8, Math.round(height * center) - 6, 'right', { width, height });
         }
       });
+      drawBrightGuideBoundary(ctx, width, height);
       return;
     }
 
     if (mode === 'spectroscope') {
       const sampleRate = source?.sampleRate || 44100;
       drawToolGuidesForSpectrum(ctx, width, height, sampleRate);
+      drawBrightGuideBoundary(ctx, width, height);
       return;
     }
 
     if (mode === 'level') {
       const channelCount = source?.channelCount || 2;
       drawToolGuidesForLevelMeter(ctx, width, height, channelCount);
+      drawBrightGuideBoundary(ctx, width, height);
     }
   }
 
@@ -966,6 +984,11 @@
     if (!ctx) return;
 
     drawIdleMeterFrame(canvas, ctx, source);
+    if (guidesOn) {
+      const width = canvas.width / (window.devicePixelRatio || 1) || canvas.clientWidth;
+      const height = canvas.height / (window.devicePixelRatio || 1) || canvas.clientHeight;
+      drawBrightGuideBoundary(ctx, width, height);
+    }
     meterNeedsRedraw = false;
   }
 
@@ -1008,6 +1031,12 @@
             renderLevel(ctx, canvas, source);
           }
           meterNeedsRedraw = false;
+        }
+
+        if (guidesOn) {
+          const width = canvas.width / (window.devicePixelRatio || 1) || canvas.clientWidth;
+          const height = canvas.height / (window.devicePixelRatio || 1) || canvas.clientHeight;
+          drawBrightGuideBoundary(ctx, width, height);
         }
       }
     }

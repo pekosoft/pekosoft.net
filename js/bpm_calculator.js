@@ -747,6 +747,11 @@ function drawCanvas() {
     const middleY = (h / 2) + 0.5;
     const guideColor = window.PekoBrightGuides?.getTimelineGuideColor(getCssVariable('--grey1')) || getCssVariable('--grey1');
     layer.appendChild(createTimelineLine(0, middleY, w, middleY, guideColor));
+    if (window.PekoBrightGuides?.getTimelineBright()) {
+      [[0.5, 0.5, w - 0.5, 0.5], [w - 0.5, 0.5, w - 0.5, h - 0.5], [w - 0.5, h - 0.5, 0.5, h - 0.5], [0.5, h - 0.5, 0.5, 0.5]].forEach(([x1, y1, x2, y2]) => {
+        layer.appendChild(createTimelineLine(x1, y1, x2, y2, guideColor));
+      });
+    }
   }
 
   if (state.showPlayhead) {

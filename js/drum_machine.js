@@ -757,6 +757,15 @@
           context.lineTo(width, y);
           context.stroke();
         }
+        if (this.timelineBright) {
+          context.beginPath();
+          context.moveTo(0.5, 0.5);
+          context.lineTo(width - 0.5, 0.5);
+          context.lineTo(width - 0.5, height - 0.5);
+          context.lineTo(0.5, height - 0.5);
+          context.closePath();
+          context.stroke();
+        }
       }
 
       context.fillStyle = primaryColor;

@@ -858,6 +858,17 @@ function redrawTimeline() {
   }
 
   drawReferenceLines(guidesLayer, guideColor, timelineHeight);
+  if (showGuides && window.PekoBrightGuides?.getTimelineBright()) {
+    const boundary = [
+      [0.5, 0.5, TIMELINE_WIDTH - 0.5, 0.5],
+      [TIMELINE_WIDTH - 0.5, 0.5, TIMELINE_WIDTH - 0.5, timelineHeight - 0.5],
+      [TIMELINE_WIDTH - 0.5, timelineHeight - 0.5, 0.5, timelineHeight - 0.5],
+      [0.5, timelineHeight - 0.5, 0.5, 0.5]
+    ];
+    boundary.forEach(([x1, y1, x2, y2]) => {
+      guidesLayer.appendChild(createTimelineLine(x1, y1, x2, y2, guideColor));
+    });
+  }
 
   const currentPoints = [{ x: TAP_PAD_GRAPH_OFFSET + 0.5, y: timelineHeight + 0.5 }];
   const averagePoints = [{ x: TAP_PAD_GRAPH_OFFSET + 0.5, y: timelineHeight + 0.5 }];

@@ -32,6 +32,11 @@ const backgroundImageKey = "background-image";
 let backgroundImageUrl = "";
 
 document.addEventListener("DOMContentLoaded", () => {
+  const backgroundBitmap = document.createElement("div");
+  backgroundBitmap.className = "background-bitmap bitmap";
+  backgroundBitmap.setAttribute("aria-hidden", "true");
+  document.body.prepend(backgroundBitmap);
+
   const settings = {
     grid: document.getElementById("grid"),
     gridSizeKnob: document.getElementById("settings-grid-size-knob"),

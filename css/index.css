@@ -33,11 +33,6 @@
 
 html {
   background-color: var(--black);
-  background-image: var(--selected-background-image, none);
-  background-size: cover;
-  background-repeat: no-repeat;
-  background-position: center;
-  background-attachment: fixed;
   font-size: var(--font-size);
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
@@ -67,6 +62,8 @@ html.modules-page.module-view-maximized body {
 body {
   color: var(--white);
   margin: 0;
+  position: relative;
+  isolation: isolate;
   font-family: Arial, sans-serif;
   text-decoration: none;
   font-weight: normal;
@@ -1805,15 +1802,29 @@ html.invert-colors .container:fullscreen {
 html.show-grid {
   background-image:
     linear-gradient(to right, var(--grey2) 1px, transparent 1px),
-    linear-gradient(to bottom, var(--grey2) 1px, transparent 1px),
-    var(--selected-background-image, none);
+    linear-gradient(to bottom, var(--grey2) 1px, transparent 1px);
   background-size:
     var(--grid-size, 16px) var(--grid-size, 16px),
-    var(--grid-size, 16px) var(--grid-size, 16px),
-    cover;
-  background-position: -1px -1px, -1px -1px, center;
-  background-repeat: repeat, repeat, no-repeat;
-  background-attachment: fixed, fixed, fixed;
+    var(--grid-size, 16px) var(--grid-size, 16px);
+  background-position: -1px -1px, -1px -1px;
+  background-repeat: repeat;
+  background-attachment: fixed;
+}
+
+.background-bitmap {
+  position: fixed;
+  z-index: -1;
+  inset: 0;
+  background-image: var(--selected-background-image, none);
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-attachment: fixed;
+  pointer-events: none;
+}
+
+.invert-colors .bitmap {
+  filter: invert(1) hue-rotate(180deg);
 }
 
 .large-icon {

@@ -1804,8 +1804,8 @@ html.invert-colors .container:fullscreen {
 
 html.show-grid {
   background-image:
-    linear-gradient(to right, #101010 1px, transparent 1px),
-    linear-gradient(to bottom, #101010 1px, transparent 1px),
+    linear-gradient(to right, var(--grey2) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grey2) 1px, transparent 1px),
     var(--selected-background-image, none);
   background-size:
     var(--grid-size, 16px) var(--grid-size, 16px),

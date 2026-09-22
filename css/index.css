@@ -530,7 +530,7 @@ html.modules-page body:not(.layout-two-columns) {
   }
 
   html.modules-page.layout-two-columns .module-minimize-btn:disabled {
-    cursor: default;
+    cursor: pointer;
   }
 }
 

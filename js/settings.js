@@ -11,6 +11,7 @@ window.FactoryDefaults = {
   brightGuides: false,
   sound: true,
   headers: true,
+  footers: true,
   layout: true,
   haptics: false,
   toggleButtonText: false,
@@ -46,6 +47,7 @@ document.addEventListener("DOMContentLoaded", () => {
     brightGuides: document.getElementById("bright-guides"),
     sound: document.getElementById("sound"),
     headers: document.getElementById("headers"),
+    footers: document.getElementById("footers"),
     layout: document.getElementById("layout"),
     haptics: document.getElementById("haptics"),
     toggleButtonText: document.getElementById("toggle-button-text"),
@@ -211,6 +213,13 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  if (settings.footers) {
+    settings.footers.addEventListener("change", () => {
+      saveFootersSetting();
+      if (window.applySiteSettings) window.applySiteSettings();
+    });
+  }
+
   if (settings.layout) {
     settings.layout.addEventListener("change", () => {
       saveLayoutSetting();
@@ -343,6 +352,9 @@ document.addEventListener("DOMContentLoaded", () => {
     if (settings.headers) {
       settings.headers.checked = localStorage.getItem("global.headers") !== "false";
     }
+    if (settings.footers) {
+      settings.footers.checked = localStorage.getItem("global.footers") !== "false";
+    }
     if (settings.layout) {
       settings.layout.checked = localStorage.getItem("global.layout") !== "false";
     }
@@ -416,6 +428,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function saveHeadersSetting() {
     localStorage.setItem("global.headers", settings.headers.checked);
+  }
+
+  function saveFootersSetting() {
+    localStorage.setItem("global.footers", settings.footers.checked);
   }
 
   function saveLayoutSetting() {
@@ -630,6 +646,7 @@ document.addEventListener("DOMContentLoaded", () => {
       localStorage.setItem("global.haptics", defaults.haptics);
     }
     localStorage.setItem("global.headers", defaults.headers);
+    localStorage.setItem("global.footers", defaults.footers);
     localStorage.setItem("global.layout", defaults.layout);
     localStorage.setItem("global.toggle_button_text", defaults.toggleButtonText);
     localStorage.setItem("global.font_size", defaults.fontSize);

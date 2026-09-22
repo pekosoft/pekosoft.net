@@ -399,8 +399,13 @@
 </div>
 
 <div class="feature-row border">
-  <svg class="standard-image-help"><use href="/icons.svg#tool"></use></svg>
+  <svg class="standard-image-help"><use href="/icons.svg?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/icons.svg'); ?>#header"></use></svg>
   <div class="justify"><h1>Headers <span class="object">option</span></h1>Shows or hides module headers.</div>
+</div>
+
+<div class="feature-row border">
+  <svg class="standard-image-help"><use href="/icons.svg?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/icons.svg'); ?>#footer"></use></svg>
+  <div class="justify"><h1>Footers <span class="object">option</span></h1>Shows or hides module footers.</div>
 </div>
 
 <div class="feature-row border">

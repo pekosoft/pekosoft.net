@@ -627,6 +627,12 @@
 <rect x="64" y="128" width="64" height="320" transform="translate(0 -32)"></rect><rect x="64" y="128" width="64" height="320" transform="translate(0 -32) translate(320 0)"></rect>
 </symbol>
 
+<symbol id="footer" viewBox="0 0 512 512">
+<path fill-rule="evenodd" d="M 64 0 H 448 V 512 H 64 Z M 96 32 H 416 V 480 H 96 Z">
+</path>
+<path fill-rule="evenodd" d="M 64 64 H 448 V 96 H 64 Z" transform="matrix(1 0 0 1 0 320)"></path>
+</symbol>
+
 <symbol id="female" viewBox="0 0 512 512">
   <path d="M277.327,339.908c93.488-11.778,159.728-97.114,147.949-190.603C413.497,55.817,328.162-10.422,234.673,1.356,141.185,13.135,74.946,98.47,86.724,191.959c9.741,77.317,70.632,138.208,147.949,147.949v44.131h-106.634v42.654h106.634v85.307h42.654v-85.307h106.634v-42.654h-106.634v-44.131ZM128.039,170.772c0-70.671,57.290-127.961,127.961-127.961s127.961,57.290,127.961,127.961-57.290,127.961-127.961,127.961c-70.638-.078-127.883-57.322-127.961-127.961Z" />
 </symbol>
@@ -859,6 +865,11 @@
 
 <symbol id="maximize" viewBox="0 0 512 512">
   <path d="M0,0v512h512V0H0ZM480,480H32V104h448v376Z" />
+</symbol>
+
+<symbol id="header" viewBox="0 0 512 512">
+<path fill-rule="evenodd" d="M 64 0 H 448 V 512 H 64 Z M 96 32 H 416 V 480 H 96 Z">
+</path><path fill-rule="evenodd" d="M 64 64 H 448 V 96 H 64 Z" transform="translate(0 32)"></path>
 </symbol>
 
 <symbol id="header_footer" viewBox="0 0 512 512">

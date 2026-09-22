@@ -96,6 +96,11 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     document.body.classList.toggle("hide-module-headers", !showHeaders);
 
+    // MODULE FOOTERS TOGGLE
+
+    const showFooters = localStorage.getItem("global.footers") !== "false";
+    document.body.classList.toggle("hide-module-footers", !showFooters);
+
     // LAYOUT TOGGLE
 
     const twoColumnLayout = localStorage.getItem("global.layout") !== "false";

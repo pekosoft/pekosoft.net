@@ -2518,6 +2518,10 @@ body.hide-module-headers .module-icon-panel {
   display: none;
 }
 
+body.hide-module-footers .module-footer {
+  display: none;
+}
+
 /* Keep More button neutral even when actions are open */
 .module-more-btn.button-on {
   color: var(--white);

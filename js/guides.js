@@ -43,30 +43,6 @@
   };
 
   const buttonIds = new Set(["guides-button", "timeline-guides-button", "tool-guides-button"]);
-  const brightRegistryKey = "global.bright_guides.modules";
-  const brightControlKeys = [
-    "bpm_calculator:timeline-bright-button",
-    "bpm_calculator:tool-bright-button",
-    "bpm_circle:tool-bright-button",
-    "bpm_curve:timeline-bright-button",
-    "bpm_curve:tool-bright-button",
-    "circle_of_fifths:timeline-bright-button",
-    "circle_of_fifths:tool-bright-button",
-    "drum_machine:timeline-bright-button",
-    "drum_machine:tool-bright-button",
-    "metronome:timeline-bright-button",
-    "metronome:tool-bright-button",
-    "piano:timeline-bright-button",
-    "piano:tool-bright-button",
-    "player:timeline-bright-button",
-    "player:tool-bright-button",
-    "tap_pad:timeline-bright-button",
-    "tap_pad:tool-bright-button",
-    "tuner:timeline-bright-button",
-    "tuner:tool-bright-button",
-    "turntable:timeline-bright-button",
-    "turntable:tool-bright-button"
-  ];
 
   function readBoolean(value, fallback) {
     if (value === null || value === undefined) return fallback;
@@ -157,21 +133,6 @@
     }
   }
 
-  function brightButtons() {
-    return [...document.querySelectorAll("#timeline-bright-button, #tool-bright-button")];
-  }
-
-  function syncBrightSettingsFromTools() {
-    const buttons = brightButtons();
-    if (!buttons.length) return;
-    const registry = window.PekoLocalToggleRegistry;
-    const enabled = registry
-      ? registry.syncButtons(brightRegistryKey, brightControlKeys, getBrightGlobal(), buttons)
-      : buttons.some((button) => button.classList.contains("button-on"));
-    localStorage.setItem("global.bright_guides", String(enabled));
-    updateBrightSettingsButton();
-  }
-
   function syncPageRegistry() {
     const registry = getRegistry();
     if (!Object.keys(registry).length) {
@@ -230,22 +191,11 @@
     }
   }
 
-  let isSyncingBrightButtons = false;
-
   function setBrightGlobal(nextState) {
     const enabled = !!nextState;
-    window.PekoLocalToggleRegistry?.setAll(brightRegistryKey, brightControlKeys, enabled);
     localStorage.setItem("global.bright_guides", String(enabled));
     clearBrightLocalOverrides();
     syncTimelineBrightButton();
-    isSyncingBrightButtons = true;
-    try {
-      brightButtons().forEach((button) => {
-        if (button.classList.contains("button-on") !== enabled) button.click();
-      });
-    } finally {
-      isSyncingBrightButtons = false;
-    }
     updateBrightSettingsButton();
     window.dispatchEvent(new CustomEvent("pekosoft:bright-guides-global-change", {
       detail: { enabled }
@@ -279,7 +229,6 @@
     getBrightGlobal,
     setBrightGlobal,
     updateBrightSettingsButton,
-    syncBrightSettingsFromTools,
     getTimelineBright,
     getTimelineGuideColor
   };
@@ -288,7 +237,6 @@
     getGlobal: getBrightGlobal,
     setGlobal: setBrightGlobal,
     updateSettingsButton: updateBrightSettingsButton,
-    syncFromTools: syncBrightSettingsFromTools,
     getTimelineBright,
     getTimelineGuideColor
   };
@@ -296,9 +244,6 @@
   document.addEventListener("click", (event) => {
     if (event.target.closest?.("#guides-button, #timeline-guides-button, #tool-guides-button")) {
       syncPageRegistry();
-    }
-    if (!isSyncingBrightButtons && event.target.closest?.("#timeline-bright-button, #tool-bright-button")) {
-      syncBrightSettingsFromTools();
     }
   });
 

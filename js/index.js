@@ -1094,11 +1094,14 @@ function getStatusElementName(target, associatedLabel = getStatusAssociatedLabel
 
   const buttonText = target.querySelector?.('.button-text')?.textContent?.trim();
   const ariaLabel = target.getAttribute?.('aria-label')?.trim();
+  const title = target.getAttribute?.('title')?.trim();
+  const nestedAccessibleName = target.querySelector?.('[aria-label], [title]')?.getAttribute('aria-label')?.trim()
+    || target.querySelector?.('[aria-label], [title]')?.getAttribute('title')?.trim();
   const idText = target.id
     ? target.id.replace(/-(button|slider|input|field|select|knob)$/i, '').replace(/-/g, ' ').replace(/\b\w/g, (letter) => letter.toUpperCase())
     : '';
   const fallback = (target.textContent || '').trim().split(/\s+/).slice(0, 2).join(' ');
-  return String(buttonText || ariaLabel || idText || fallback || 'Help');
+  return String(buttonText || ariaLabel || title || nestedAccessibleName || idText || fallback || 'Help').replace(/:\s*$/, '');
 }
 
 function getStatusDescriptor(target) {
@@ -1139,13 +1142,14 @@ function getStatusDescriptor(target) {
     || target.getAttribute('aria-label')?.trim();
   const sentenceTooltip = tooltip && (/[.!?]$/.test(tooltip) ? tooltip : `${tooltip}.`);
   const statusLabel = target.dataset.statusLabel?.trim();
+  const matchesTooltip = name.localeCompare(tooltip || '', undefined, { sensitivity: 'accent' }) === 0;
 
   return {
     icon,
     iconHref,
     entry: name,
     kind,
-    label: statusLabel || (sentenceTooltip ? `${name}: ${sentenceTooltip}` : name),
+    label: statusLabel || (sentenceTooltip ? (matchesTooltip ? sentenceTooltip : `${name}: ${sentenceTooltip}`) : name),
   };
 }
 

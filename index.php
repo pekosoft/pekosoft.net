@@ -98,8 +98,8 @@ if (!in_array($requestPath, ['/', '/index.php'], true)) {
     <div>Produced at <a href="https://focusstudios.no">Focus Studios</a> by <a href="https://peko.net">Ole Peko Sørensen</a>.</div>
 
     <div class="index-focus">
-      <a href="https://focusstudios.no">
-        <svg viewBox="0 0 512 136.262" role="img" aria-label="Focus Studios" title="Focus Studios" class="assets">
+      <a href="https://focusstudios.no" title="Focus Studios" aria-label="Focus Studios">
+        <svg viewBox="0 0 512 136.262" role="img" aria-label="Focus Studios" class="assets">
           <use href="/assets.svg#focus-studios"></use>
         </svg>
       </a>

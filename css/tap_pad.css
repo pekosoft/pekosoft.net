@@ -21,7 +21,6 @@
   font-size: 200px;
   font-weight: bold;
   color: var(--grey1);
-  background: var(--panel-background);
 }
 
 #tool-container.module-maximized .pad-container {
@@ -33,14 +32,6 @@
 #tool-container.module-maximized .pad {
   height: 100%;
   font-size: clamp(120px, 24vh, 280px);
-}
-
-.pad:hover {
-  background: var(--panel-background);
-}
-
-.pad:active {
-  background: var(--panel-background);
 }
 
 .pad.pad-blink-active,

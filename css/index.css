@@ -347,13 +347,11 @@ table {
   border-collapse: collapse;
   border: solid var(--grey1);
   border-width: 0 1px 1px;
-  background-color: var(--black);
   max-width: var(--maxwidth);
   user-select: text;
 }
 
 thead {
-  background-color: var(--black);
   height: 40px;
   position: sticky;
   top: 0;
@@ -635,6 +633,7 @@ html.modules-page body:not(.layout-two-columns) {
   min-height: 0;
   max-width: none;
   border: none;
+  background-color: transparent;
 }
 
 .meter-canvas.active {
@@ -1272,7 +1271,6 @@ body.settings-sidebar-open #toggle-settings-panel-button .icons {
   flex-shrink: 0;
   height: 100%;
   min-height: 256px;
-  background: var(--panel-background);
 }
 
 .timeline-svg text {

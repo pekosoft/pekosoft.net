@@ -188,6 +188,20 @@
         </svg>
         <span class="button-text">Target</span>
       </button>
+
+      <button id="toggle-playhead-button" class="square" title="Toggle playhead">
+        <svg class="icons">
+          <use href="/icons.svg#playhead" />
+        </svg>
+        <span class="button-text">Playhead</span>
+      </button>
+
+      <button id="follow-button" class="square" title="Follow Timeline">
+        <svg class="icons">
+          <use href="/icons.svg#follow" />
+        </svg>
+        <span class="button-text">Follow</span>
+      </button>
     </div>
   </div>
 

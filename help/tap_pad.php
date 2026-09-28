@@ -225,6 +225,24 @@
 </div>
 
 <div class="feature-row border"><svg class="standard-image-help">
+    <use href="/icons.svg#playhead"></use>
+  </svg>
+  <div class="justify">
+    <h1>PLAYHEAD <span class="object">button</span></h1>
+    Toggles the white line marking the newest tap in Timeline. <span class="default">Default: on.</span>
+  </div>
+</div>
+
+<div class="feature-row border"><svg class="standard-image-help">
+    <use href="/icons.svg#follow"></use>
+  </svg>
+  <div class="justify">
+    <h1>FOLLOW <span class="object">button</span></h1>
+    Keeps the advancing playhead in view. Turning it on returns an already-advanced playhead to center. Manual horizontal scrolling turns Follow off. <span class="default">Default: on.</span>
+  </div>
+</div>
+
+<div class="feature-row border"><svg class="standard-image-help">
     <use href="/icons.svg#photo"></use>
   </svg>
   <div class="justify">

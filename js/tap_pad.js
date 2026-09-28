@@ -27,7 +27,9 @@ const TAP_BLINK_DURATION_MS = 90;
 const timelineSvg = document.getElementById("tap-timeline-svg");
 const svgUtils = window.PekoSvgUtils;
 const timelineUtils = window.PekoSvgTimeline;
+const timelineScroll = timelineSvg?.closest(".timeline-scroll");
 let disconnectTimelineResize = null;
+let timelineFollow = null;
 
 const tapPadText = document.getElementById("tap-pad-text");
 const copyButton = document.getElementById("copy-button");
@@ -48,6 +50,8 @@ const volumeDecreaseButton = document.getElementById("volume-decrease-button");
 const currentLineButton = document.getElementById("current-line-button");
 const averageLineButton = document.getElementById("average-line-button");
 const targetLineButton = document.getElementById("target-line-button");
+const playheadButton = document.getElementById("toggle-playhead-button");
+const followButton = document.getElementById("follow-button");
 const btnGuides = document.getElementById("guides-button");
 window.addEventListener('pekosoft:timeline-bright-change', () => redrawTimeline());
 const btnHaptic = document.getElementById("haptic-button");
@@ -73,11 +77,17 @@ let beatSound = normalizeTone(localStorage.getItem("tap_pad.beat_sound") || "cli
 let showCurrentLine = readBoolFromStorage("tap_pad.show_current_line", CURRENT_LINE_DEFAULT_ENABLED);
 let showAverageLine = readBoolFromStorage("tap_pad.show_average_line", AVERAGE_LINE_DEFAULT_ENABLED);
 let showTargetLine = readBoolFromStorage("tap_pad.show_target_line", TARGET_LINE_DEFAULT_ENABLED);
+let showTimelinePlayhead = readBoolFromStorage("tap_pad.timeline_playhead", true);
+let followTimeline = readBoolFromStorage(
+  "tap_pad.timeline_follow",
+  !window.matchMedia("(prefers-reduced-motion: reduce)").matches
+);
 const globalGuidesDefault = localStorage.getItem('global.guides') !== 'false';
 let showGuides = readBoolFromStorage("tap_pad.show_guides", globalGuidesDefault);
 
 applyTimerButtonUI();
 applyLineButtonsUI();
+applyTimelineControlButtons();
 applySoundButtonUI();
 applyBlinkButtonUI();
 applyTapPlaybackButtonUI();
@@ -126,6 +136,7 @@ if (savedPanel && !historyTrimmed) {
 }
 
 syncStatsFromHistory();
+setupTimelineFollow();
 redrawTimeline();
 initTargetKnob();
 setupTimelineResizeHandling();
@@ -165,6 +176,29 @@ if (targetLineButton) {
     redrawTimeline();
   });
   makeKeyboardActivatable(targetLineButton, () => targetLineButton.click());
+}
+
+if (playheadButton) {
+  playheadButton.addEventListener("click", () => {
+    showTimelinePlayhead = !showTimelinePlayhead;
+    localStorage.setItem("tap_pad.timeline_playhead", showTimelinePlayhead ? "1" : "0");
+    applyTimelineControlButtons();
+    redrawTimeline();
+  });
+  makeKeyboardActivatable(playheadButton, () => playheadButton.click());
+}
+
+if (followButton) {
+  followButton.addEventListener("click", () => {
+    followTimeline = !followTimeline;
+    timelineFollow?.setEnabled(followTimeline);
+    if (followTimeline) {
+      timelineFollow?.centerRatio(getTimelinePlayheadRatio());
+    }
+    localStorage.setItem("tap_pad.timeline_follow", followTimeline ? "1" : "0");
+    applyTimelineControlButtons();
+  });
+  makeKeyboardActivatable(followButton, () => followButton.click());
 }
 
 if (btnGuides) {
@@ -285,6 +319,8 @@ document.getElementById("reset-button").addEventListener("click", () => {
   localStorage.removeItem("tap_pad.show_current_line");
   localStorage.removeItem("tap_pad.show_average_line");
   localStorage.removeItem("tap_pad.show_target_line");
+  localStorage.removeItem("tap_pad.timeline_playhead");
+  localStorage.removeItem("tap_pad.timeline_follow");
   localStorage.removeItem("tap_pad.show_guides");
   localStorage.removeItem("tap_pad.haptic");
   localStorage.removeItem("tap_pad.blink");
@@ -298,6 +334,8 @@ document.getElementById("reset-button").addEventListener("click", () => {
   showCurrentLine = CURRENT_LINE_DEFAULT_ENABLED;
   showAverageLine = AVERAGE_LINE_DEFAULT_ENABLED;
   showTargetLine = TARGET_LINE_DEFAULT_ENABLED;
+  showTimelinePlayhead = true;
+  followTimeline = !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   showGuides = localStorage.getItem('global.guides') !== 'false';
   hapticMode = false;
   blinkMode = false;
@@ -316,6 +354,9 @@ document.getElementById("reset-button").addEventListener("click", () => {
 
   applyTimerButtonUI();
   applyLineButtonsUI();
+  timelineFollow?.setEnabled(followTimeline);
+  timelineFollow?.reset();
+  applyTimelineControlButtons();
   applyBlinkButtonUI();
   btnGuides.classList.remove('button-on');
   btnHaptic.classList.remove('button-on');
@@ -424,6 +465,7 @@ tapButton.addEventListener("click", () => {
   localStorage.setItem("tap_pad.panel", tapPadText.value);
 
   redrawTimeline();
+  timelineFollow?.followRatio(getTimelinePlayheadRatio());
 });
 
 function setTimerEnabled(enabled) {
@@ -450,6 +492,17 @@ function applyLineButtonsUI() {
   if (targetLineButton) {
     targetLineButton.classList.toggle("button-on", showTargetLine);
     targetLineButton.setAttribute("aria-pressed", showTargetLine ? "true" : "false");
+  }
+}
+
+function applyTimelineControlButtons() {
+  if (playheadButton) {
+    playheadButton.classList.toggle("button-on", showTimelinePlayhead);
+    playheadButton.setAttribute("aria-pressed", showTimelinePlayhead ? "true" : "false");
+  }
+  if (followButton) {
+    followButton.classList.toggle("button-on", followTimeline);
+    followButton.setAttribute("aria-pressed", followTimeline ? "true" : "false");
   }
 }
 
@@ -725,6 +778,7 @@ function resetSession({ clearPanel = false } = {}) {
 
   // redraw timeline so Guides (if enabled) remain visible
   redrawTimeline();
+  timelineFollow?.reset();
 
   if (clearPanel) {
     tapPadText.value = "";
@@ -898,6 +952,19 @@ function redrawTimeline() {
   if (showAverageLine && averagePoints.length > 1) {
     averagePathLayer.appendChild(createTimelinePath(averagePoints, averageColor));
   }
+
+  if (showTimelinePlayhead && tapHistory.length > 0) {
+    const playheadX = getTimelinePlayheadX();
+    timelineSvg.appendChild(createTimelineLine(playheadX, 0, playheadX, timelineHeight, whiteColor));
+  }
+}
+
+function getTimelinePlayheadX() {
+  return TAP_PAD_GRAPH_OFFSET + Math.round(tapHistory.length * X_STEP) + 0.5;
+}
+
+function getTimelinePlayheadRatio() {
+  return Math.max(0, Math.min(1, getTimelinePlayheadX() / TIMELINE_WIDTH));
 }
 
 function drawReferenceLines(layer, color, timelineHeight) {
@@ -968,6 +1035,21 @@ function setupTimelineResizeHandling() {
     container: document.getElementById("timeline-container"),
     onResize: redrawTimeline
   });
+}
+
+function setupTimelineFollow() {
+  if (!timelineScroll || !timelineUtils?.createFollowController) return;
+
+  timelineFollow?.destroy();
+  timelineFollow = timelineUtils.createFollowController({
+    scrollElement: timelineScroll,
+    onEnabledChange: (enabled) => {
+      followTimeline = enabled;
+      localStorage.setItem("tap_pad.timeline_follow", followTimeline ? "1" : "0");
+      applyTimelineControlButtons();
+    }
+  });
+  timelineFollow.setEnabled(followTimeline);
 }
 
 function createTimelineLine(x1, y1, x2, y2, color) {

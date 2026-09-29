@@ -23,7 +23,7 @@
       <div class="controls-buttons wrapper">
         <button id="table-bpm-button" class="square" title="Show BPM">
           <svg class="icons">
-            <use href="/icons.svg#bpm_compare" />
+            <use href="/icons.svg#bpm" />
           </svg>
           <span class="button-text">BPM</span>
         </button>

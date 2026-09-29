@@ -34,7 +34,7 @@
   </svg>
   <div class="justify">
     <h1>Instrument <span class="object">module</span></h1>
-    A full-width scrollable result view that changes by selected mode. Supports standard view and cards view. BPM lists 1 to 300 with writing, parity, half and double values. Notes lists chromatic notes from A0 to C8 with MIDI and frequency data. Scales lists common scale formulas and C examples. Chords lists common chord formulas, semitone stacks and C examples.
+    A full-width scrollable result view that changes by selected mode. Supports standard view and cards view. BPM lists 1 to 300 with writing, parity, half and double values. Notes lists chromatic notes from A0 to C8 with Helmholtz octave and register names, MIDI and frequency data. Scales lists common scale formulas and C examples. Chords lists common chord formulas, semitone stacks and C examples.
   </div>
 </div>
 

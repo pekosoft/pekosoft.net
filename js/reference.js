@@ -63,6 +63,28 @@ const STORAGE = {
 };
 
 const NOTE_NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+const OCTAVE_NAMES = [
+  'Sub-contra',
+  'Contra',
+  'Great',
+  'Small',
+  'One-line',
+  'Two-line',
+  'Three-line',
+  'Four-line',
+  'Five-line'
+];
+const REGISTER_NAMES = [
+  'Sub-bass',
+  'Bass',
+  'Baritone',
+  'Tenor',
+  'Alto',
+  'Soprano',
+  'Sopranino',
+  'Sopranissimo',
+  'Sopranissimo'
+];
 
 const state = {
   activeMode: 'bpm',
@@ -70,7 +92,7 @@ const state = {
   sort: 'asc',
   visibility: {
     bpm: [true, true, true, true, true, true, true, true, true, true],
-    notes: [true, true, true, true, true, true],
+    notes: [true, true, true, true, true, true, true, true],
     scales: [true, true, true, true, true, true],
     chords: [true, true, true, true, true, true]
   }
@@ -405,6 +427,16 @@ function midiToNoteName(midi) {
   return `${note}${octave}`;
 }
 
+function midiToOctaveName(midi) {
+  const octave = Math.floor(midi / 12) - 1;
+  return OCTAVE_NAMES[octave] || '';
+}
+
+function midiToRegisterName(midi) {
+  const octave = Math.floor(midi / 12) - 1;
+  return REGISTER_NAMES[octave] || '';
+}
+
 function getScaleWikiLink(scaleName) {
   const links = {
     'Major (Ionian)': 'https://en.wikipedia.org/wiki/Major_scale',
@@ -490,6 +522,8 @@ function makeNotesRows() {
 
     rows.push([
       { text: midiToNoteName(midi), className: 'left' },
+      { text: midiToOctaveName(midi), className: 'left' },
+      { text: midiToRegisterName(midi), className: 'left' },
       { text: String(midi), className: 'right' },
       { text: hz.toFixed(3), className: 'right' },
       { text: wavelengthCm.toFixed(3), className: 'right' },
@@ -572,8 +606,8 @@ const TABLES = {
     rows: makeBpmRows()
   },
   notes: {
-    columns: ['Note', 'MIDI', 'Hz', 'Wave cm', 'Piano key', 'Play'],
-    aligns: ['left', 'right', 'right', 'right', 'right', 'center'],
+    columns: ['Note', 'Octave', 'Register', 'MIDI', 'Hz', 'Wave cm', 'Piano key', 'Play'],
+    aligns: ['left', 'left', 'left', 'right', 'right', 'right', 'right', 'center'],
     rows: makeNotesRows()
   },
   scales: {
@@ -603,6 +637,8 @@ const REFERENCE_HEADER_TOOLTIPS = {
   },
   notes: {
     Note: 'Note name',
+    Octave: 'Helmholtz octave name',
+    Register: 'Register name',
     MIDI: 'MIDI note number',
     Hz: 'Frequency in Hertz',
     'Wave cm': 'Wavelength in centimeters',
@@ -973,7 +1009,7 @@ function appendNotesCardBody({ card, rowCells, table, visibility, copyLines }) {
     return String(rowCells[index].text ?? '').trim();
   };
 
-  ['HZ', 'WAVE CM'].forEach((columnName) => {
+  ['Octave', 'Register', 'Hz', 'Wave cm'].forEach((columnName) => {
     const value = getValue(columnName);
     if (!value) return;
 
@@ -985,7 +1021,7 @@ function appendNotesCardBody({ card, rowCells, table, visibility, copyLines }) {
     copyLines.push(value);
   });
 
-  const pianoKeyValue = getValue('PIANO KEY');
+  const pianoKeyValue = getValue('Piano key');
   if (pianoKeyValue) {
     const pianoKey = document.createElement('span');
     pianoKey.className = 'reference-card-notes-corner reference-card-notes-corner-left';

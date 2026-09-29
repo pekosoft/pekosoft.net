@@ -196,7 +196,7 @@
         <span class="button-text">Playhead</span>
       </button>
 
-      <button id="follow-button" class="square" title="Follow Timeline">
+      <button id="follow-button" class="square" title="Follow Playhead">
         <svg class="icons">
           <use href="/icons.svg#follow" />
         </svg>

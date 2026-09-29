@@ -27,6 +27,10 @@ const btnLabelL = document.getElementById('label-l-button');
 const labelSmall = document.querySelector('.label-small');
 const labelLarge = document.querySelector('.label-large');
 const btnGuides = document.getElementById("guides-button");
+const btnTimelineRPM = document.getElementById('toggle-timeline-rpm-button');
+const btnTimelineSpeed = document.getElementById('toggle-timeline-speed-button');
+const btnTimelinePlayhead = document.getElementById('toggle-playhead-button');
+const btnTimelineFollow = document.getElementById('follow-button');
 window.addEventListener('pekosoft:timeline-bright-change', () => redrawTimeline());
 const increaseButton = document.getElementById('increase-button');
 const decreaseButton = document.getElementById('decrease-button');
@@ -44,9 +48,11 @@ const hzField = document.getElementById('hz-field');
 
 const turntableTimelineSvg = document.getElementById("turntable-timeline-svg");
 const turntableTimelineContainer = document.getElementById('timeline-container');
+const turntableTimelineScroll = turntableTimelineSvg?.closest('.timeline-scroll');
 const turntableSvgUtils = window.PekoSvgUtils;
 const turntableSvgTimeline = window.PekoSvgTimeline;
 let disconnectTurntableTimelineResize = null;
+let turntableTimelineFollow = null;
 const turntableText = document.getElementById("turntable-text");
 const copyButton = document.getElementById("copy-button");
 
@@ -69,6 +75,19 @@ function ensureMasterMuteGainNode() {
     masterMuteGainNode.connect(audioContext.destination);
   }
   return masterMuteGainNode;
+}
+
+function ensureAudioContext() {
+  if (!audioContext) {
+    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    ensureMetersAnalyserNode();
+  }
+  if (audioContext.state === 'suspended') {
+    audioContext.resume().catch(() => {
+      // Resume is best-effort; the next gesture can retry.
+    });
+  }
+  return audioContext;
 }
 
 function ensureMetersAnalyserNode() {
@@ -118,25 +137,55 @@ function normalizeToneType(value) {
   return allowed.includes(value) ? value : 'sine';
 }
 
+function setToneType(value) {
+  toneType = normalizeToneType(value);
+  if (toneTypeSelect) {
+    toneTypeSelect.value = toneType;
+  }
+  if (isTonePlaying && toneVoice) {
+    stopTone();
+  }
+}
+
+function setTimelineGuides(enabled, persist = true) {
+  showGuides = !!enabled;
+  btnGuides?.classList.toggle('button-on', showGuides);
+  btnGuides?.setAttribute('aria-pressed', showGuides ? 'true' : 'false');
+  if (persist) {
+    localStorage.setItem('turntable.show_guides', String(showGuides));
+  }
+}
+
+function applySoundButtonUI() {
+  toggleSoundButton.classList.toggle('button-on', isTonePlaying);
+  toggleSoundButton.setAttribute('aria-pressed', isTonePlaying ? 'true' : 'false');
+}
+
 function rpmToReferenceHz(rpm) {
-  return rpm * (getA4Hz() / 33.333);
+  return Math.abs(rpm) * (getA4Hz() / 33.333);
 }
 
 // Defaults
 let targetSpeed = 33.333;
 let showGuides = localStorage.getItem('global.guides') !== 'false';
-let rpmHistory = [];
+let showTimelineRPM = localStorage.getItem('turntable.timeline_rpm') !== 'false';
+let showTimelineSpeed = localStorage.getItem('turntable.timeline_speed') !== 'false';
+let showTimelinePlayhead = localStorage.getItem('turntable.timeline_playhead') !== 'false';
+let followTimeline = localStorage.getItem('turntable.timeline_follow') === null
+  ? !window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  : localStorage.getItem('turntable.timeline_follow') === 'true';
+let speedHistory = [];
 let lastLogTime = 0;
+let lastTimelineSampleTime = -Infinity;
 // Horizontal offset so data plots don't overlap guide labels
 const TURNTABLE_GRAPH_OFFSET = 48;
 const TURNTABLE_TIMELINE_WIDTH = 4096;
 const TURNTABLE_TIMELINE_MIN_HEIGHT = 256;
-let lastPlot = { x: TURNTABLE_GRAPH_OFFSET, y: TURNTABLE_TIMELINE_MIN_HEIGHT };
 
 const state = {
   rpm: targetSpeed,
   spr: 60 / targetSpeed,
-  dps: targetSpeed * 6,
+  dps: 200,
 };
 
 // State
@@ -158,6 +207,23 @@ let scratchLastMoveTime = 0;
 let scratchIdleMuteTimer = null;
 let scratchPointerId = null;
 let holeMode = 'standard';
+const TORQUE_ACCELERATION_RPM_PER_SEC = 60;
+
+function getMotorTargetSpeed() {
+  return isPlaying ? direction * targetSpeed : 0;
+}
+
+function moveTowards(value, target, maxDelta) {
+  if (value < target) return Math.min(value + maxDelta, target);
+  return Math.max(value - maxDelta, target);
+}
+
+function startAnimation() {
+  if (isAnimating) return;
+  isAnimating = true;
+  lastFrameTime = 0;
+  requestAnimationFrame(animateTurntable);
+}
 
 function setupTurntableToolMenuPanel() {
   const menuControls = document.getElementById('turntable-tool-menu-controls');
@@ -186,6 +252,11 @@ const minRPM = 1;
 const maxRPM = 100;
 const minSPR = 0.6;
 const maxSPR = 60;
+const TURNTABLE_TIMELINE_SAMPLE_INTERVAL_MS = 100;
+const TURNTABLE_TIMELINE_SAMPLE_SPACING = 16;
+const TURNTABLE_TIMELINE_MAX_SAMPLES = Math.floor(
+  (TURNTABLE_TIMELINE_WIDTH - TURNTABLE_GRAPH_OFFSET) / TURNTABLE_TIMELINE_SAMPLE_SPACING
+) + 1;
 
 // UI Init
 rpmInput.setAttribute('min', minRPM);
@@ -239,7 +310,7 @@ function updateStateFromRPM(rpm) {
 }
 
 function updateActualSpeed(speed) {
-  actualSpeedField.value = speed.toFixed(3);
+  actualSpeedField.value = Math.abs(speed).toFixed(3);
   hzField.value = rpmToReferenceHz(speed).toFixed(3);
 }
 
@@ -298,6 +369,40 @@ function getSpeedButtonForRPM(rpm) {
   return speedButtons.find(btn => Math.abs(parseFloat(btn.dataset.rpm) - rpm) < 0.01) || null;
 }
 
+function getTimelineRPM() {
+  return targetSpeed;
+}
+
+function getTimelinePlayheadRatio() {
+  if (speedHistory.length === 0) return 0;
+  return getTimelineSampleX(speedHistory.length - 1) / TURNTABLE_TIMELINE_WIDTH;
+}
+
+function getTimelineSampleX(index) {
+  return TURNTABLE_GRAPH_OFFSET + (index * TURNTABLE_TIMELINE_SAMPLE_SPACING);
+}
+
+function recordTimelineSample(timestamp) {
+  if (timestamp - lastTimelineSampleTime < TURNTABLE_TIMELINE_SAMPLE_INTERVAL_MS) return;
+  lastTimelineSampleTime = timestamp;
+
+  if (speedHistory.length >= TURNTABLE_TIMELINE_MAX_SAMPLES) {
+    speedHistory = [];
+    turntableTimelineFollow?.reset();
+  }
+
+  speedHistory.push({
+    rpm: getTimelineRPM(),
+    speed: Math.abs(currentSpeed)
+  });
+  if (speedHistory.length > TURNTABLE_TIMELINE_MAX_SAMPLES) {
+    speedHistory.shift();
+  }
+
+  redrawTimeline();
+  turntableTimelineFollow?.followRatio(getTimelinePlayheadRatio());
+}
+
 function logRPM(time) {
   const now = Date.now();
   if (now - lastLogTime < 1000) return;
@@ -311,15 +416,13 @@ function logRPM(time) {
     fractionalSecondDigits: 3,
   });
 
-  const logLine = `[${timeString}] RPM: ${state.rpm.toFixed(3)} | SPR: ${state.spr.toFixed(3)} | DPS: ${state.dps.toFixed(3)}\n`;
+  const rpm = getTimelineRPM();
+  const logLine = `[${timeString}] RPM: ${rpm.toFixed(3)} | Speed: ${Math.abs(currentSpeed).toFixed(3)} RPM | SPR: ${state.spr.toFixed(3)} | DPS: ${state.dps.toFixed(3)}\n`;
   turntableText.value += logLine;
   turntableText.scrollTop = turntableText.scrollHeight;
 
-  rpmHistory.push({ rpm: state.rpm, time: now });
   localStorage.setItem("turntable.panel", turntableText.value);
-  localStorage.setItem("turntable.rpm_history", JSON.stringify(rpmHistory));
-
-  redrawTimeline();
+  localStorage.setItem("turntable.speed_history", JSON.stringify(speedHistory));
 }
 
 function getTurntableTimelineHeight() {
@@ -339,42 +442,69 @@ function redrawTimeline() {
     height: timelineHeight
   });
   turntableTimelineSvg.innerHTML = '';
-  lastPlot = { x: TURNTABLE_GRAPH_OFFSET, y: timelineHeight };
 
   drawReferenceLines(timelineHeight);
 
-  const barsLayer = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-  const lineLayer = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-  barsLayer.setAttribute('class', 'turntable-timeline-bars');
-  lineLayer.setAttribute('class', 'turntable-timeline-line');
-  turntableTimelineSvg.appendChild(barsLayer);
-  turntableTimelineSvg.appendChild(lineLayer);
+  const rpmLayer = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+  const speedLayer = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+  rpmLayer.setAttribute('class', 'turntable-timeline-rpm');
+  speedLayer.setAttribute('class', 'turntable-timeline-speed');
+  if (showTimelineSpeed) turntableTimelineSvg.appendChild(speedLayer);
+  if (showTimelineRPM) turntableTimelineSvg.appendChild(rpmLayer);
 
-  for (let i = 0; i < rpmHistory.length; i++) {
-    const rpm = Number(rpmHistory[i].rpm) || 0;
-    const x = TURNTABLE_GRAPH_OFFSET + Math.round((i + 1) * 10);
-    const y = timelineHeight - Math.min(timelineHeight, rpm * 2);
+  speedHistory.forEach((sample, index) => {
+    if (index === 0) return;
 
-    barsLayer.appendChild(turntableSvgUtils.createLine({
-      x1: x,
-      y1: y,
-      x2: x,
-      y2: timelineHeight,
-      color: getCssVariable('--color1')
-    }));
+    const previous = speedHistory[index - 1];
+    const previousX = getTimelineSampleX(index - 1);
+    const x = getTimelineSampleX(index);
+    const previousRPMY = getTimelineY(previous.rpm, timelineHeight);
+    const rpmY = getTimelineY(sample.rpm, timelineHeight);
+    const previousSpeedY = getTimelineY(previous.speed, timelineHeight);
+    const speedY = getTimelineY(sample.speed, timelineHeight);
 
-    if (i > 0) {
-      lineLayer.appendChild(turntableSvgUtils.createLine({
+    if (showTimelineRPM) {
+      rpmLayer.appendChild(turntableSvgUtils.createLine({
+        x1: previousX,
+        y1: previousRPMY,
+        x2: x,
+        y2: previousRPMY,
+        color: getCssVariable('--color1')
+      }));
+      rpmLayer.appendChild(turntableSvgUtils.createLine({
         x1: x,
-        y1: y,
-        x2: lastPlot.x,
-        y2: lastPlot.y,
+        y1: previousRPMY,
+        x2: x,
+        y2: rpmY,
         color: getCssVariable('--color1')
       }));
     }
+    if (showTimelineSpeed) {
+      speedLayer.appendChild(turntableSvgUtils.createLine({
+        x1: previousX,
+        y1: previousSpeedY,
+        x2: x,
+        y2: speedY,
+        color: getCssVariable('--color2')
+      }));
+    }
+  });
 
-    lastPlot = { x, y };
+  if (showTimelinePlayhead && speedHistory.length > 0) {
+    const playheadX = getTimelineSampleX(speedHistory.length - 1);
+    turntableTimelineSvg.appendChild(turntableSvgUtils.createLine({
+      x1: playheadX,
+      y1: 0,
+      x2: playheadX,
+      y2: timelineHeight,
+      color: getCssVariable('--white')
+    }));
   }
+}
+
+function getTimelineY(speed, timelineHeight) {
+  const boundedSpeed = Math.max(0, Math.min(maxRPM, Number(speed) || 0));
+  return timelineHeight - ((boundedSpeed / maxRPM) * timelineHeight);
 }
 
 function drawReferenceLines(timelineHeight) {
@@ -382,7 +512,7 @@ function drawReferenceLines(timelineHeight) {
   if (!turntableTimelineSvg || !turntableSvgUtils) return;
 
   const guideColor = window.PekoBrightGuides?.getTimelineGuideColor(getCssVariable('--grey1')) || getCssVariable('--grey1');
-  const refSpeeds = [8, 33, 45, 78];
+  const refSpeeds = [0, 8, 16.667, 22.5, 33, 45, 78];
   const guidesLayer = document.createElementNS('http://www.w3.org/2000/svg', 'g');
   guidesLayer.setAttribute('class', 'turntable-timeline-guides');
   turntableTimelineSvg.appendChild(guidesLayer);
@@ -411,7 +541,12 @@ function drawReferenceLines(timelineHeight) {
   }));
 
   refSpeeds.forEach(rpm => {
-    const y = timelineHeight - Math.min(timelineHeight, rpm * 2);
+    const y = getTimelineY(rpm, timelineHeight);
+    const label = Math.abs(rpm - 16.667) < 0.01
+      ? '16'
+      : rpm === 22.5
+        ? '22'
+        : String(rpm);
     guidesLayer.appendChild(turntableSvgUtils.createLine({
       x1: 0,
       y1: y,
@@ -423,7 +558,7 @@ function drawReferenceLines(timelineHeight) {
     guidesLayer.appendChild(turntableSvgUtils.createText({
       x: 40,
       y: y - 5,
-      text: String(rpm),
+      text: label,
       color: guideColor,
       size: 12,
       anchor: 'end'
@@ -441,9 +576,9 @@ function animateTurntable(timestamp) {
   if (!lastFrameTime) lastFrameTime = timestamp;
   const deltaTime = timestamp - lastFrameTime;
   lastFrameTime = timestamp;
+  const motorTargetSpeed = getMotorTargetSpeed();
 
   if (isScratching) {
-    currentSpeed = 0;
     if (toneVoice && audioContext && toneVoice.gainNode && toneVoice.gainNode.gain) {
       const idleMs = performance.now() - scratchLastMoveTime;
       const scratchAudible = idleMs <= 50;
@@ -452,14 +587,16 @@ function animateTurntable(timestamp) {
       toneVoice.gainNode.gain.setTargetAtTime(scratchAudible ? getVolumeGain() : 0, now, 0.01);
     }
   } else if (torqueMode) {
-    const diff = targetSpeed - currentSpeed;
-    currentSpeed += diff * 0.03;
-    if (Math.abs(diff) < 0.01) currentSpeed = targetSpeed;
+    currentSpeed = moveTowards(
+      currentSpeed,
+      motorTargetSpeed,
+      TORQUE_ACCELERATION_RPM_PER_SEC * (deltaTime / 1000)
+    );
   } else {
-    currentSpeed = targetSpeed;
+    currentSpeed = motorTargetSpeed;
   }
 
-  if (!isScratching && !isPlaying && Math.abs(currentSpeed) < 0.01) {
+  if (!isScratching && Math.abs(motorTargetSpeed) < 0.01 && Math.abs(currentSpeed) < 0.01) {
     currentSpeed = 0;
     updateActualSpeed(0);
 
@@ -488,14 +625,15 @@ function animateTurntable(timestamp) {
 
   if (!isScratching && currentSpeed === 0 && toneVoice) {
     stopTone();
-  } else if (currentSpeed > 0 && !toneVoice) {
+  } else if (Math.abs(currentSpeed) > 0.01 && !toneVoice) {
     startTone();
   }
 
   const degreesPerMs = rpmToDegreesPerMs(currentSpeed);
-  rotationAngle = (rotationAngle + direction * degreesPerMs * deltaTime) % 360;
+  rotationAngle = (rotationAngle + degreesPerMs * deltaTime) % 360;
   turntable.style.transform = `rotate(${rotationAngle}deg)`;
 
+  recordTimelineSample(timestamp);
   logRPM(timestamp);
   requestAnimationFrame(animateTurntable);
 }
@@ -503,19 +641,17 @@ function animateTurntable(timestamp) {
 // Button logic
 togglePlayButton.addEventListener('click', () => {
   isPlaying = !isPlaying;
-  targetSpeed = isPlaying ? state.rpm : 0;
 
   togglePlayButton.classList.toggle('button-on', isPlaying);
+  if (isPlaying) ensureAudioContext();
 
   if (!torqueMode) {
-    currentSpeed = targetSpeed;
+    currentSpeed = getMotorTargetSpeed();
     updateActualSpeed(currentSpeed);
   }
 
-  if (isPlaying && !isAnimating) {
-    isAnimating = true;
-    lastFrameTime = 0;
-    requestAnimationFrame(animateTurntable);
+  if (isPlaying || Math.abs(currentSpeed) > 0.01) {
+    startAnimation();
   }
 
   updateMetersSourceBridge();
@@ -526,7 +662,6 @@ btnStop.addEventListener('click', () => {
   isPlaying = false;
   isAnimating = false;
   currentSpeed = 0;
-  targetSpeed = 0;
   rotationAngle = 0;
   turntable.style.transform = `rotate(0deg)`;
   updateActualSpeed(0);
@@ -543,7 +678,10 @@ function setSpeed(button, rpm) {
   targetSpeed = rpm;
   updateStateFromRPM(rpm);
   updateButtonHighlight();
-  if (!torqueMode) currentSpeed = rpm;
+  if (!torqueMode) {
+    currentSpeed = getMotorTargetSpeed();
+    updateActualSpeed(currentSpeed);
+  }
   saveSettings();
 }
 
@@ -560,7 +698,10 @@ rpmInput.addEventListener('input', () => {
   targetSpeed = val;
   updateStateFromRPM(val);
   clearButtonHighlight();
-  if (!torqueMode) currentSpeed = val;
+  if (!torqueMode) {
+    currentSpeed = getMotorTargetSpeed();
+    updateActualSpeed(currentSpeed);
+  }
   saveSettings();
 });
 
@@ -572,7 +713,10 @@ sprField.addEventListener('input', () => {
   targetSpeed = newRPM;
   updateStateFromRPM(newRPM);
   clearButtonHighlight();
-  if (!torqueMode) currentSpeed = newRPM;
+  if (!torqueMode) {
+    currentSpeed = getMotorTargetSpeed();
+    updateActualSpeed(currentSpeed);
+  }
   saveSettings();
 });
 
@@ -583,13 +727,21 @@ dpsField.addEventListener('input', () => {
   targetSpeed = newRPM;
   updateStateFromRPM(newRPM);
   clearButtonHighlight();
-  if (!torqueMode) currentSpeed = newRPM;
+  if (!torqueMode) {
+    currentSpeed = getMotorTargetSpeed();
+    updateActualSpeed(currentSpeed);
+  }
   saveSettings();
 });
 
 reverseButton.addEventListener('click', () => {
   direction *= -1;
   reverseButton.classList.toggle('button-on', direction === -1);
+  if (!torqueMode && !isScratching) {
+    currentSpeed = getMotorTargetSpeed();
+    updateActualSpeed(currentSpeed);
+  }
+  if (isPlaying) startAnimation();
   saveSettings();
 });
 
@@ -600,7 +752,7 @@ torqueButton.addEventListener('click', () => {
     currentSpeed = 0;
     updateActualSpeed(0);
   } else if (!torqueMode) {
-    currentSpeed = targetSpeed;
+    currentSpeed = getMotorTargetSpeed();
     updateActualSpeed(currentSpeed);
   }
   saveSettings();
@@ -616,12 +768,15 @@ resetButton.addEventListener('click', () => {
   isPlaying = false;
   isAnimating = false;
   togglePlayButton.classList.remove('button-on');
+  isTonePlaying = false;
+  applySoundButtonUI();
   direction = 1;
   reverseButton.classList.remove('button-on');
   torqueMode = true;
   torqueButton.classList.add('button-on');
   hapticMode = false;
   hapticButton.classList.remove('button-on');
+  setToneType('sine');
   soundVolume = 20;
   if (volumeSlider) {
     volumeSlider.value = String(soundVolume);
@@ -644,14 +799,17 @@ resetButton.addEventListener('click', () => {
 
   // Reset panel and timeline
   turntableText.value = "";
-  rpmHistory = [];
-  lastPlot = { x: TURNTABLE_GRAPH_OFFSET, y: getTurntableTimelineHeight() };
+  speedHistory = [];
+  lastTimelineSampleTime = -Infinity;
+  showTimelineRPM = true;
+  showTimelineSpeed = true;
+  showTimelinePlayhead = true;
+  followTimeline = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  turntableTimelineFollow?.setEnabled(followTimeline);
+  turntableTimelineFollow?.reset();
+  setTimelineGuides(localStorage.getItem('global.guides') !== 'false', false);
+  updateTimelineControlButtons();
   redrawTimeline();
-
-  // Reset guides
-  showGuides = localStorage.getItem('global.guides') !== 'false';
-  btnGuides.classList.remove("button-on");
-  localStorage.setItem("turntable.show_guides", "false");
 
   // Clear all turntable-specific localStorage keys
   [
@@ -660,6 +818,7 @@ resetButton.addEventListener('click', () => {
     'turntable.torque',
     'turntable.haptic',
     'turntable.volume',
+    'turntable.tone_type',
     'turntable.speed_btn',
     'turntable.ring7',
     'turntable.ring10',
@@ -667,6 +826,11 @@ resetButton.addEventListener('click', () => {
     'turntable.show_guides',
     'turntable.panel',
     'turntable.rpm_history',
+    'turntable.speed_history',
+    'turntable.timeline_rpm',
+    'turntable.timeline_speed',
+    'turntable.timeline_playhead',
+    'turntable.timeline_follow',
     'turntable.hole_mode',
     'turntable.jukebox',
     'turntable.label_s',
@@ -744,11 +908,47 @@ btnLabelL.addEventListener('click', () => {
 });
 
 btnGuides.addEventListener('click', () => {
-  showGuides = !showGuides;
-  btnGuides.classList.toggle('button-on', showGuides);
-  localStorage.setItem('turntable.show_guides', showGuides);
-
+  setTimelineGuides(!showGuides);
   redrawTimeline();
+});
+
+function updateTimelineControlButtons() {
+  btnTimelineRPM?.classList.toggle('button-on', showTimelineRPM);
+  btnTimelineSpeed?.classList.toggle('button-on', showTimelineSpeed);
+  btnTimelinePlayhead?.classList.toggle('button-on', showTimelinePlayhead);
+  btnTimelineFollow?.classList.toggle('button-on', followTimeline);
+  btnTimelineFollow?.setAttribute('aria-pressed', followTimeline ? 'true' : 'false');
+}
+
+btnTimelineRPM?.addEventListener('click', () => {
+  showTimelineRPM = !showTimelineRPM;
+  updateTimelineControlButtons();
+  saveSettings();
+  redrawTimeline();
+});
+
+btnTimelineSpeed?.addEventListener('click', () => {
+  showTimelineSpeed = !showTimelineSpeed;
+  updateTimelineControlButtons();
+  saveSettings();
+  redrawTimeline();
+});
+
+btnTimelinePlayhead?.addEventListener('click', () => {
+  showTimelinePlayhead = !showTimelinePlayhead;
+  updateTimelineControlButtons();
+  saveSettings();
+  redrawTimeline();
+});
+
+btnTimelineFollow?.addEventListener('click', () => {
+  followTimeline = !followTimeline;
+  turntableTimelineFollow?.setEnabled(followTimeline);
+  if (followTimeline) {
+    turntableTimelineFollow?.centerRatio(getTimelinePlayheadRatio());
+  }
+  updateTimelineControlButtons();
+  saveSettings();
 });
 
 copyButton.addEventListener("click", () => {
@@ -763,7 +963,10 @@ rpmSlider.addEventListener('input', () => {
   targetSpeed = val;
   updateStateFromRPM(val);
   clearButtonHighlight();
-  if (!torqueMode) currentSpeed = val;
+  if (!torqueMode) {
+    currentSpeed = getMotorTargetSpeed();
+    updateActualSpeed(currentSpeed);
+  }
   saveSettings();
 });
 
@@ -774,22 +977,16 @@ function startScratch(x, y) {
   isPlaying = false;
   isScratching = true;
   isDragging = true;
+  currentSpeed = 0;
+  updateActualSpeed(0);
   scratchLastAngle = getAngleFromCenter(x, y);
   scratchLastMoveTime = performance.now();
 
   if (hapticMode && 'vibrate' in navigator) navigator.vibrate(10);
 
-  if (!toneVoice) {
-    startTone();
-  }
-
+  ensureAudioContext();
   scheduleScratchIdleMute();
-
-  if (!torqueMode) {
-    currentSpeed = 0;
-    updateActualSpeed(0);
-    isAnimating = false;
-  }
+  startAnimation();
 }
 
 function moveScratch(x, y) {
@@ -802,10 +999,10 @@ function moveScratch(x, y) {
   turntable.style.transform = `rotate(${rotationAngle}deg)`;
   const now = performance.now();
   const elapsedMs = Math.max(1, now - scratchLastMoveTime);
-  const scratchRpm = Math.min(maxRPM, (Math.abs(delta) / 360) * (60000 / elapsedMs));
-  const isMoving = scratchRpm >= 0.5;
+  const scratchSpeed = Math.sign(delta) * Math.min(maxRPM, (Math.abs(delta) / 360) * (60000 / elapsedMs));
+  const isMoving = Math.abs(scratchSpeed) >= 0.5;
 
-  if (!toneVoice) {
+  if (isMoving && !toneVoice) {
     startTone();
   }
 
@@ -818,7 +1015,7 @@ function moveScratch(x, y) {
     }
 
     if (isMoving) {
-      const scratchFrequency = rpmToReferenceHz(scratchRpm);
+      const scratchFrequency = rpmToReferenceHz(scratchSpeed);
       if (typeof window.updateSustainedToneFrequency === 'function') {
         window.updateSustainedToneFrequency(toneVoice, {
           frequency: scratchFrequency,
@@ -834,7 +1031,7 @@ function moveScratch(x, y) {
     updateMetersSourceBridge();
   }
 
-  currentSpeed = isMoving ? scratchRpm : 0;
+  currentSpeed = isMoving ? scratchSpeed : 0;
   updateActualSpeed(currentSpeed);
   scratchLastAngle = currentAngle;
   scratchLastMoveTime = now;
@@ -856,9 +1053,8 @@ function endScratch() {
     scratchIdleMuteTimer = null;
   }
   if (isPlaying) {
-    targetSpeed = state.rpm;
     if (!torqueMode) {
-      currentSpeed = targetSpeed;
+      currentSpeed = getMotorTargetSpeed();
       updateActualSpeed(currentSpeed);
     }
     if (toneVoice && toneVoice.gainNode && audioContext) {
@@ -866,27 +1062,21 @@ function endScratch() {
       toneVoice.gainNode.gain.cancelScheduledValues(now);
       toneVoice.gainNode.gain.setTargetAtTime(getVolumeGain(), now, 0.01);
     }
-    if (!isAnimating) {
-      isAnimating = true;
-      lastFrameTime = 0;
-      requestAnimationFrame(animateTurntable);
-    }
+  }
+  if (!torqueMode && !isPlaying) {
+    currentSpeed = 0;
+    updateActualSpeed(0);
+  }
+  if (isPlaying || Math.abs(currentSpeed) > 0.01) {
+    startAnimation();
   } else if (toneVoice) {
     stopTone();
   }
 }
 
 function startTone() {
-  if (!audioContext) {
-    audioContext = new (window.AudioContext || window.webkitAudioContext)();
-    ensureMetersAnalyserNode();
-  }
-  if (audioContext.state === 'suspended') {
-    audioContext.resume().catch(() => {
-      // Resume is best-effort; the next gesture can retry.
-    });
-  }
-  referenceFrequency = rpmToReferenceHz(state.rpm);
+  ensureAudioContext();
+  referenceFrequency = rpmToReferenceHz(currentSpeed);
   if (typeof window.createSustainedToneVoice === 'function') {
     toneVoice = window.createSustainedToneVoice({
       audioContext,
@@ -989,17 +1179,14 @@ turntable.addEventListener('pointercancel', endPointerScratch);
 turntable.addEventListener('lostpointercapture', endPointerScratch);
 
 toneTypeSelect.addEventListener('change', () => {
-  toneType = normalizeToneType(toneTypeSelect.value);
-  toneTypeSelect.value = toneType;
+  setToneType(toneTypeSelect.value);
   saveSettings();
-  if (isTonePlaying && toneVoice) {
-    stopTone();
-  }
 });
 
 toggleSoundButton.addEventListener('click', () => {
   isTonePlaying = !isTonePlaying;
-  toggleSoundButton.classList.toggle('button-on', isTonePlaying);
+  applySoundButtonUI();
+  ensureAudioContext();
   if (audioContext && audioContext.state === 'suspended') {
     audioContext.resume().catch(() => {
       // Resume is best-effort; the next gesture can retry.
@@ -1042,18 +1229,26 @@ function saveSettings() {
   localStorage.setItem('turntable.hole_mode', holeMode);
   localStorage.setItem('turntable.jukebox', String(holeMode === 'jukebox'));
   localStorage.setItem('turntable.show_guides', showGuides);
+  localStorage.setItem('turntable.timeline_rpm', showTimelineRPM);
+  localStorage.setItem('turntable.timeline_speed', showTimelineSpeed);
+  localStorage.setItem('turntable.timeline_playhead', showTimelinePlayhead);
+  localStorage.setItem('turntable.timeline_follow', followTimeline);
 }
 
 function loadSettings() {
   const savedRPM = parseFloat(localStorage.getItem('turntable.rpm'));
   const savedDir = parseInt(localStorage.getItem('turntable.direction'));
-  const savedTorque = localStorage.getItem('turntable.torque') === 'true';
+  const savedTorque = localStorage.getItem('turntable.torque');
   const savedHapticRaw = localStorage.getItem('turntable.haptic');
   const savedVolume = localStorage.getItem('turntable.volume');
   const savedToneType = localStorage.getItem('turntable.tone_type');
   const savedBtnId = localStorage.getItem('turntable.speed_btn');
   const savedHoleMode = localStorage.getItem('turntable.hole_mode');
   const savedJukebox = localStorage.getItem('turntable.jukebox') === 'true';
+  const savedTimelineRPM = localStorage.getItem('turntable.timeline_rpm');
+  const savedTimelineSpeed = localStorage.getItem('turntable.timeline_speed');
+  const savedTimelinePlayhead = localStorage.getItem('turntable.timeline_playhead');
+  const savedTimelineFollow = localStorage.getItem('turntable.timeline_follow');
 
   const globalRPM = parseFloat(localStorage.getItem('global.default_rpm'));
   const hasGlobalRPM = !isNaN(globalRPM);
@@ -1073,7 +1268,7 @@ function loadSettings() {
     reverseButton.classList.toggle('button-on', direction === -1);
   }
 
-  torqueMode = savedTorque;
+  torqueMode = savedTorque === null ? true : savedTorque === 'true';
   torqueButton.classList.toggle('button-on', torqueMode);
 
   hapticMode = savedHapticRaw === null
@@ -1143,11 +1338,34 @@ function loadSettings() {
   } else {
     showGuides = localStorage.getItem('global.guides') !== 'false';
   }
-  btnGuides.classList.toggle("button-on", showGuides);
+  setTimelineGuides(showGuides, false);
 
-  const savedRPMHistory = localStorage.getItem("turntable.rpm_history");
-  if (savedRPMHistory) {
-    rpmHistory = JSON.parse(savedRPMHistory);
+  showTimelineRPM = savedTimelineRPM !== 'false';
+  showTimelineSpeed = savedTimelineSpeed !== 'false';
+  showTimelinePlayhead = savedTimelinePlayhead !== 'false';
+  followTimeline = savedTimelineFollow === null
+    ? !window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    : savedTimelineFollow === 'true';
+  updateTimelineControlButtons();
+
+  const savedSpeedHistory = localStorage.getItem("turntable.speed_history");
+  if (savedSpeedHistory) {
+    try {
+      const parsedHistory = JSON.parse(savedSpeedHistory);
+      if (Array.isArray(parsedHistory)) {
+        speedHistory = parsedHistory
+          .map((sample) => {
+            return {
+              rpm: Number(sample?.rpm),
+              speed: Number(sample?.speed)
+            };
+          })
+          .filter((sample) => Number.isFinite(sample.rpm) && Number.isFinite(sample.speed))
+          .slice(-TURNTABLE_TIMELINE_MAX_SAMPLES);
+      }
+    } catch (_) {
+      speedHistory = [];
+    }
   }
 
   redrawTimeline();
@@ -1164,7 +1382,10 @@ function increaseRPM() {
   targetSpeed = newRPM;
   updateStateFromRPM(newRPM);
   clearButtonHighlight();
-  if (!torqueMode) currentSpeed = newRPM;
+  if (!torqueMode) {
+    currentSpeed = getMotorTargetSpeed();
+    updateActualSpeed(currentSpeed);
+  }
   saveSettings();
 }
 
@@ -1173,7 +1394,10 @@ function decreaseRPM() {
   targetSpeed = newRPM;
   updateStateFromRPM(newRPM);
   clearButtonHighlight();
-  if (!torqueMode) currentSpeed = newRPM;
+  if (!torqueMode) {
+    currentSpeed = getMotorTargetSpeed();
+    updateActualSpeed(currentSpeed);
+  }
   saveSettings();
 }
 
@@ -1271,20 +1495,41 @@ if (document.readyState === 'loading') {
 
 loadSettings();
 
+if (turntableTimelineScroll && turntableSvgTimeline?.createFollowController) {
+  turntableTimelineFollow = turntableSvgTimeline.createFollowController({
+    scrollElement: turntableTimelineScroll,
+    onEnabledChange: (enabled) => {
+      followTimeline = enabled;
+      updateTimelineControlButtons();
+      saveSettings();
+    }
+  });
+  turntableTimelineFollow.setEnabled(followTimeline);
+}
+updateTimelineControlButtons();
+
 window.addEventListener('pekosoft:global-defaults-change', (event) => {
   const defaults = event.detail;
   if (!defaults || !['rpm', 'a4_hz', 'all'].includes(defaults.changed)) return;
+
+  if (defaults.changed === 'all') {
+    setToneType('sine');
+  }
 
   if ((defaults.changed === 'rpm' || defaults.changed === 'all') && Number.isFinite(defaults.rpm)) {
     targetSpeed = defaults.rpm;
     updateStateFromRPM(defaults.rpm);
     currentSpeedButton = getSpeedButtonForRPM(defaults.rpm);
     updateButtonHighlight();
-    if (!torqueMode) currentSpeed = defaults.rpm;
+    if (!torqueMode) currentSpeed = getMotorTargetSpeed();
   }
 
   referenceFrequency = rpmToReferenceHz(currentSpeed);
   updateActualSpeed(currentSpeed);
+  if (defaults.changed === 'all') {
+    setTimelineGuides(localStorage.getItem('global.guides') !== 'false', false);
+    redrawTimeline();
+  }
 });
 
 if (turntableTimelineSvg && turntableSvgTimeline?.observeResize) {

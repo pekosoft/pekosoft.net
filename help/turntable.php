@@ -4,7 +4,7 @@
   </svg>
   <div class="justify">
     <h1>General</h1>
-    Pekosoft Turntable is for simulating vinyl rotation. Control playback, visualize record sizes, label sizes and RPMs. Provides details like current speed, SPR and rotation.
+    Pekosoft Turntable simulates vinyl rotation with a selected target speed and a real platter speed. Control playback, visualize record sizes and labels, and inspect RPM, SPR, DPS and calibration tone frequency.
   </div>
 </div>
 
@@ -14,7 +14,7 @@
   </svg>
   <div class="justify">
     <h1>Instrument <span class="object">module</span></h1>
-    You can scratch the platter by clicking and dragging (mouse) or touching and dragging (finger). This simulates manually rotating a vinyl record. Scratching works in all states. Touch input supports natural gestures, including full circular motion, backward motion, and quick releases.
+    You can scratch the platter by clicking and dragging (mouse) or touching and dragging (finger). This directly controls platter speed. Scratching works in all states. Touch input supports natural gestures, including full circular motion, backward motion, and quick releases.
   </div>
 </div>
 
@@ -44,7 +44,7 @@
   </svg>
   <div class="justify">
     <h1>Speed <span class="object">field</span></h1>
-    Displays actual, current turntable speed in real time.
+    Displays actual platter speed in real time.
   </div>
 </div>
 
@@ -84,7 +84,7 @@
   </svg>
   <div class="justify">
     <h1>HZ <span class="object">field</span></h1>
-    Displays reference tone frequency of 440 HZ, for the default speed of 33.333 RPM, at the current RPM. This demonstrates the shift in pitch between speeds and wind-down and wind-up times.
+    Displays the reference tone frequency derived from the magnitude of the actual platter speed. This demonstrates the shift in pitch during spin-up, braking and scratching.
   </div>
 </div>
 
@@ -111,15 +111,15 @@
   </svg>
   <div class="justify">
     <h1>SOUND <span class="object">button</span></h1>
-    Toggles audio playback of the reference tone.
+    Toggles speaker output for the reference tone. The calibration signal remains available to Meters when sound is off.
   </div>
 </div>
 
 <div class="feature-row border"><svg class="standard-image-help">
-    <use href="/icons.svg#rpm_45"></use>
+    <use href="/icons.svg#rpm_33"></use>
   </svg>
   <div class="justify">
-    <h1>TEMPO <span class="object">buttons</span></h1>
+    <h1>RPM <span class="object">buttons</span></h1>
     Sets the RPM to standard record speeds: 8, 16 2/3, 22.5, 33 1/3, 45 and 78 RPM. These correspond to historical and modern vinyl standards. 8, 16 2/3 and 22.5 RPM are rare and primarily historical. 33 1/3 is the common LP speed. 45 is common for singles. 78 was used for shellac records. <span class="default">Default: 33 1/3.</span>
   </div>
 </div>
@@ -129,7 +129,7 @@
   </svg>
   <div class="justify">
     <h1>REVERSE <span class="object">button</span></h1>
-    Backwards rotation. <span class="default">Default: off.</span>
+    Sets backwards motor rotation. With Torque on, the platter brakes through zero before accelerating in reverse. <span class="default">Default: off.</span>
   </div>
 </div>
 
@@ -138,7 +138,7 @@
   </svg>
   <div class="justify">
     <h1>TORQUE <span class="object">button</span></h1>
-    Turns acceleration and deceleration on or off. When torque is on, speed changes simulate inertia. The turntable ramps up or down instead of instantly snapping to the new speed. When torque is off, all speed changes are immediate. This affects both the play toggle and RPM changes. <span class="default">Default: on.</span>
+    Turns acceleration and deceleration on or off. When torque is on, speed changes simulate inertia, including braking through zero when reverse changes. When torque is off, motor speed changes are immediate. This affects playback, RPM changes and reverse. <span class="default">Default: on.</span>
   </div>
 </div>
 
@@ -240,7 +240,7 @@
   </svg>
   <div class="justify">
     <h1>Timeline <span class="object">module</span></h1>
-    Displays tempo. Updates once per second. Pauses when scratching.
+    Shows selected RPM and actual platter Speed over time. The blue stepped line is RPM; the magenta line is Speed. The playhead advances left to right through a fixed history span, then starts a new span. The Timeline updates ten times per second and continues while scratching.
   </div>
 </div>
 
@@ -249,7 +249,7 @@
   </svg>
   <div class="justify">
     <h1>GUIDES <span class="object">button</span></h1>
-    Toggles guides in Timeline. Horizontal RPM reference lines show labeled values (8, 33, 45 and 78). This local button overrides the Settings Guides option for Timeline only. <span class="default">Default: on.</span>
+    Toggles guides in Timeline. Horizontal RPM reference lines show labeled values (8, 16, 22, 33, 45 and 78). This local button overrides the Settings Guides option for Timeline only. <span class="default">Default: on.</span>
   </div>
 </div>
 
@@ -259,6 +259,42 @@
   <div class="justify">
     <h1>BRIGHT <span class="object">button</span></h1>
     Toggles bright guides in Timeline. This local button overrides the Settings Bright option for Timeline only. <span class="default">Default: off.</span>
+  </div>
+</div>
+
+<div class="feature-row border"><svg class="standard-image-help">
+    <use href="/icons.svg#rpm_33"></use>
+  </svg>
+  <div class="justify">
+    <h1>RPM <span class="object">button</span></h1>
+    Toggles selected RPM in Timeline. <span class="default">Default: on.</span>
+  </div>
+</div>
+
+<div class="feature-row border"><svg class="standard-image-help">
+    <use href="/icons.svg#meter"></use>
+  </svg>
+  <div class="justify">
+    <h1>SPEED <span class="object">button</span></h1>
+    Toggles actual platter Speed in Timeline. <span class="default">Default: on.</span>
+  </div>
+</div>
+
+<div class="feature-row border"><svg class="standard-image-help">
+    <use href="/icons.svg#playhead"></use>
+  </svg>
+  <div class="justify">
+    <h1>PLAYHEAD <span class="object">button</span></h1>
+    Toggles the white line marking the newest Timeline sample. <span class="default">Default: on.</span>
+  </div>
+</div>
+
+<div class="feature-row border"><svg class="standard-image-help">
+    <use href="/icons.svg#follow"></use>
+  </svg>
+  <div class="justify">
+    <h1>FOLLOW <span class="object">button</span></h1>
+    Keeps the advancing playhead in view. Turning it on returns an already-advanced playhead to center. Manual horizontal scrolling turns Follow off. <span class="default">Default: on.</span>
   </div>
 </div>
 
@@ -286,7 +322,7 @@
   </svg>
   <div class="justify">
     <h1>Panel <span class="object">module</span></h1>
-    Text-based output showing timestamp, RPM, SPR and DPS. Updates once per second. Pauses when scratching.
+    Text-based output showing timestamp, selected RPM and actual platter Speed. Updates once per second.
   </div>
 </div>
 
@@ -333,7 +369,7 @@
   </svg>
   <div class="justify">
     <h1>Meters <span class="object">module</span></h1>
-    Shows shared meter views: spectroscope, level meter, oscilloscope and wavescope. The active view updates up to 60 times per second.
+    Shows shared meter views for the reference tone: spectroscope, level meter, oscilloscope and wavescope. The active view updates up to 60 times per second, including when speaker output is muted.
   </div>
 </div>
 

@@ -97,6 +97,7 @@
       return {
         destroy() {},
         followRatio() {},
+        centerRatio() {},
         reset() {},
         setEnabled() {}
       };
@@ -197,6 +198,21 @@
         const maximumX = viewportStart + viewportWidth * (reducedMotion ? reducedMotionBoundary : 0.50);
         if (targetX <= maximumX) return;
 
+        const nextScroll = targetX - viewportWidth * 0.50;
+        scrollElement.scrollLeft = Math.max(0, Math.min(maxScroll, nextScroll));
+      },
+
+      centerRatio(value) {
+        if (!enabled) return;
+        const ratio = Math.max(0, Math.min(1, Number(value) || 0));
+        previousRatio = ratio;
+
+        const viewportWidth = scrollElement.clientWidth;
+        const contentWidth = scrollElement.scrollWidth;
+        const maxScroll = Math.max(0, contentWidth - viewportWidth);
+        if (maxScroll <= 0 || viewportWidth <= 0) return;
+
+        const targetX = ratio * contentWidth;
         const nextScroll = targetX - viewportWidth * 0.50;
         scrollElement.scrollLeft = Math.max(0, Math.min(maxScroll, nextScroll));
       },

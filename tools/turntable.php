@@ -284,7 +284,7 @@
   <div id="timeline-container" class="container">
     <div class="module-body canvas-container border">
     <div class="timeline-scroll scrollable">
-      <svg id="turntable-timeline-svg" class="timeline-svg" viewBox="0 0 4096 256" preserveAspectRatio="none" role="img" aria-label="Turntable timeline"></svg>
+      <svg id="turntable-timeline-svg" class="timeline-svg" viewBox="0 0 4096 256" preserveAspectRatio="none" role="img" aria-label="Turntable RPM and Speed timeline"></svg>
     </div>
     </div>
     <div class="module-footer wrapper colored">
@@ -300,6 +300,30 @@
         </svg>
         <span class="button-text">Bright</span>
       </button>
+      <button id="toggle-timeline-rpm-button" class="square button-on" title="Toggle RPM">
+        <svg class="icons">
+          <use href="/icons.svg#rpm" />
+        </svg>
+        <span class="button-text">RPM</span>
+      </button>
+      <button id="toggle-timeline-speed-button" class="square button-on" title="Toggle Speed">
+        <svg class="icons">
+          <use href="/icons.svg#meter" />
+        </svg>
+        <span class="button-text">Speed</span>
+      </button>
+      <button id="toggle-playhead-button" class="square button-on" title="Toggle playhead">
+        <svg class="icons">
+          <use href="/icons.svg#playhead" />
+        </svg>
+        <span class="button-text">Playhead</span>
+      </button>
+      <button id="follow-button" class="square button-on" title="Follow Playhead">
+        <svg class="icons">
+          <use href="/icons.svg#follow" />
+        </svg>
+        <span class="button-text">Follow</span>
+      </button>
     </div>
   </div>
 
@@ -307,7 +331,7 @@
 
   <div id="panel-container" class="container">
     <div class="module-body standard border">
-      <textarea id="turntable-text" placeholder="Turntable data will appear here. Each line format: {timestamp} RPM: {rpm} | SPR: {spr} | DPS: {dps}"></textarea>
+      <textarea id="turntable-text" placeholder="Turntable data will appear here. Each line format: {timestamp} RPM: {rpm} | Speed: {rpm} RPM | SPR: {seconds} | DPS: {degrees}"></textarea>
     </div>
     <div class="module-footer wrapper colored">
       <button id="copy-button" class="square" title="Copy data">
@@ -326,7 +350,7 @@
   <script src="/js/modules.js?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/js/modules.js'); ?>"></script>
   <script src="/js/drag.js?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/js/drag.js'); ?>"></script>
   <script src="/js/svg_utils.js"></script>
-  <script src="/js/svg_timeline.js"></script>
+  <script src="/js/svg_timeline.js?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/js/svg_timeline.js'); ?>"></script>
   <script src="/js/<?php echo $release; ?>.js?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/js/' . $release . '.js'); ?>"></script>
   <?php require($_SERVER['DOCUMENT_ROOT'] . "/elements/footer.php"); ?>
 </body>

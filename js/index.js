@@ -106,12 +106,12 @@ const SOUND_CONTROL_KEYS = [
   'metronome:toggle-sound-button',
   'piano:sound-master-button',
   'player:toggle-sound-button',
-  'tap_pad:toggle-sound-button',
-  'turntable:toggle-sound-button'
+  'tap_pad:toggle-sound-button'
 ];
 
 function getSoundButtons() {
-  return [...document.querySelectorAll('#toggle-sound-button, #sound-master-button, #sound-button, #beat-sound-button')];
+  return [...document.querySelectorAll('#toggle-sound-button, #sound-master-button, #sound-button, #beat-sound-button')]
+    .filter((button) => getCurrentToolControlKey(button) !== 'turntable:toggle-sound-button');
 }
 
 function getGlobalSound() {

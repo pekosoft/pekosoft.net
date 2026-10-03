@@ -443,10 +443,10 @@ document.addEventListener('click', function (event) {
   }
 });
 
-// Function to close the TOC when ESC key is pressed
+// Function to close the TOC when ESC key is pressed (phone full-page layout only; desktop sidebars stay open)
 
 document.addEventListener('keydown', function (event) {
-  if (event.key === 'Escape') {
+  if (event.key === 'Escape' && !isDesktopSidebarLayout()) {
     const toc = document.getElementById('toc');
     if (toc.classList.contains('toc-open')) {
       toc.classList.remove('toc-open');

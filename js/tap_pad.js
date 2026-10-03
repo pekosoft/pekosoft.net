@@ -18,7 +18,7 @@ const X_STEP = 10;
 const TIMELINE_WIDTH = 4096;
 const MIN_TIMELINE_HEIGHT = 256;
 
-const TAP_PAD_GRAPH_OFFSET = 48;
+const TAP_PAD_GRAPH_OFFSET = 0;
 const TAP_CLICK_DURATION_SEC = 0.05;
 const TAP_PLAYBACK_SCHEDULE_AHEAD_SEC = 0.12;
 const TAP_PLAYBACK_TIMER_MS = 25;
@@ -53,6 +53,7 @@ const targetLineButton = document.getElementById("target-line-button");
 const playheadButton = document.getElementById("toggle-playhead-button");
 const followButton = document.getElementById("follow-button");
 const btnGuides = document.getElementById("guides-button");
+const rulersButton = document.getElementById("rulers-button");
 window.addEventListener('pekosoft:timeline-bright-change', () => redrawTimeline());
 const btnHaptic = document.getElementById("haptic-button");
 
@@ -60,6 +61,16 @@ const currentBpmInput = document.getElementById("current-bpm");
 const averageBpmInput = document.getElementById("average-bpm");
 const tapsInput = document.getElementById("taps");
 const tapButton = document.getElementById("tap-button");
+const tapTimelineRulers = timelineUtils?.createRulerLayout?.({
+  container: document.getElementById("timeline-container"),
+  scrollElement: timelineScroll,
+  cornerRuler: document.getElementById("tap-timeline-ruler-corner"),
+  verticalRuler: document.getElementById("tap-timeline-vertical-ruler"),
+  horizontalRuler: document.getElementById("tap-timeline-horizontal-ruler"),
+  button: rulersButton,
+  storageKey: "tap_pad.rulers",
+  onVisibilityChange: () => redrawTimeline()
+});
 
 let timerEnabled = readBoolFromStorage("tap_pad.timer_enabled", TIMER_DEFAULT_ENABLED);
 let hapticMode = false;
@@ -321,6 +332,7 @@ document.getElementById("reset-button").addEventListener("click", () => {
   localStorage.removeItem("tap_pad.show_target_line");
   localStorage.removeItem("tap_pad.timeline_playhead");
   localStorage.removeItem("tap_pad.timeline_follow");
+  localStorage.removeItem("tap_pad.rulers");
   localStorage.removeItem("tap_pad.show_guides");
   localStorage.removeItem("tap_pad.haptic");
   localStorage.removeItem("tap_pad.blink");
@@ -356,6 +368,7 @@ document.getElementById("reset-button").addEventListener("click", () => {
   applyLineButtonsUI();
   timelineFollow?.setEnabled(followTimeline);
   timelineFollow?.reset();
+  tapTimelineRulers?.setVisible(true, false);
   applyTimelineControlButtons();
   applyBlinkButtonUI();
   btnGuides.classList.remove('button-on');
@@ -893,6 +906,29 @@ function redrawTimeline() {
   const baseGuideColor = getCssVariable("--grey1");
   const guideColor = window.PekoBrightGuides?.getTimelineGuideColor(baseGuideColor) || baseGuideColor;
 
+  tapTimelineRulers?.render({
+    width: TIMELINE_WIDTH,
+    height: timelineHeight,
+    color: guideColor,
+    bright: showGuides && Boolean(window.PekoBrightGuides?.getTimelineBright?.()),
+    drawVertical: (svg, dimensions) => {
+      timelineUtils.drawVerticalRuler(svg, {
+        ...dimensions,
+        title: "BPM",
+        titleY: getTapTimelineTitleY(timelineHeight),
+        ticks: getTapTimelineVerticalTicks(timelineHeight),
+        color: guideColor
+      });
+    },
+    drawHorizontal: (svg, dimensions) => {
+      timelineUtils.drawHorizontalRuler(svg, {
+        ...dimensions,
+        ticks: getTapTimelineHorizontalTicks(),
+        color: guideColor
+      });
+    }
+  });
+
   const guidesLayer = svgUtils.createElement("g");
   const targetLayer = svgUtils.createElement("g");
   const currentBarsLayer = svgUtils.createElement("g");
@@ -913,14 +949,19 @@ function redrawTimeline() {
 
   drawReferenceLines(guidesLayer, guideColor, timelineHeight);
   if (showGuides && window.PekoBrightGuides?.getTimelineBright()) {
-    const boundary = [
-      [0.5, 0.5, TIMELINE_WIDTH - 0.5, 0.5],
-      [TIMELINE_WIDTH - 0.5, 0.5, TIMELINE_WIDTH - 0.5, timelineHeight - 0.5],
-      [TIMELINE_WIDTH - 0.5, timelineHeight - 0.5, 0.5, timelineHeight - 0.5],
-      [0.5, timelineHeight - 0.5, 0.5, 0.5]
-    ];
+    const boundary = tapTimelineRulers?.getVisible()
+      ? [
+      [TIMELINE_WIDTH, 0, TIMELINE_WIDTH, timelineHeight],
+          [TIMELINE_WIDTH, timelineHeight, 0, timelineHeight]
+        ]
+      : [
+          [0, 0, TIMELINE_WIDTH, 0],
+          [TIMELINE_WIDTH, 0, TIMELINE_WIDTH, timelineHeight],
+          [TIMELINE_WIDTH, timelineHeight, 0, timelineHeight],
+          [0, timelineHeight, 0, 0]
+        ];
     boundary.forEach(([x1, y1, x2, y2]) => {
-      guidesLayer.appendChild(createTimelineLine(x1, y1, x2, y2, guideColor));
+      guidesLayer.appendChild(createTimelineLine(x1, y1, x2, y2, guideColor, false));
     });
   }
 
@@ -955,7 +996,7 @@ function redrawTimeline() {
 
   if (showTimelinePlayhead && tapHistory.length > 0) {
     const playheadX = getTimelinePlayheadX();
-    timelineSvg.appendChild(createTimelineLine(playheadX, 0, playheadX, timelineHeight, whiteColor));
+    timelineSvg.appendChild(createTimelineLine(playheadX, 0, playheadX, timelineHeight, whiteColor, false));
   }
 }
 
@@ -971,44 +1012,38 @@ function drawReferenceLines(layer, color, timelineHeight) {
   if (!showGuides) return;
 
   const maxGuide = Math.floor(timelineHeight / 30) * 30;
-  const titleY = Math.round(timelineHeight - (maxGuide - 30)) - 5;
-
-  const title = svgUtils.createText({
-    x: 40,
-    y: titleY,
-    text: "BPM",
-    fill: color,
-    fontSize: 12,
-    fontFamily: "Arial, sans-serif",
-    textAnchor: "end"
-  });
-  layer.appendChild(title);
-
-  layer.appendChild(createTimelineLine(
-    TAP_PAD_GRAPH_OFFSET,
-    0,
-    TAP_PAD_GRAPH_OFFSET,
-    timelineHeight,
-    color
-  ));
 
   for (let bpm = 30; bpm <= maxGuide; bpm += 30) {
     const y = Math.round(timelineHeight - bpm) + 0.5;
-    layer.appendChild(createTimelineLine(0, y, TIMELINE_WIDTH, y, color));
-
-    if (bpm >= maxGuide - 30) continue;
-
-    const label = svgUtils.createText({
-      x: 40,
-      y: y - 5,
-      text: bpm.toString(),
-      fill: color,
-      fontSize: 12,
-      fontFamily: "Arial, sans-serif",
-      textAnchor: "end"
-    });
-    layer.appendChild(label);
+    layer.appendChild(createTimelineLine(0, y, TIMELINE_WIDTH, y, color, false));
   }
+}
+
+function getTapTimelineVerticalTicks(timelineHeight) {
+  const maxGuide = Math.floor(timelineHeight / 30) * 30;
+  const ticks = [];
+  for (let bpm = 30; bpm <= maxGuide; bpm += 30) {
+    ticks.push({
+      position: timelineHeight - bpm,
+      label: bpm < maxGuide - 30 ? String(bpm) : ''
+    });
+  }
+  return ticks;
+}
+
+function getTapTimelineTitleY(timelineHeight) {
+  const maxGuide = Math.floor(timelineHeight / 30) * 30;
+  const topGuideY = Math.floor(timelineHeight - maxGuide) + 0.5;
+  return Math.min(timelineHeight - 8, topGuideY + 22);
+}
+
+function getTapTimelineHorizontalTicks() {
+  const tapsPerTick = 20;
+  const ticks = [];
+  for (let tap = 0; tap * tapsPerTick * X_STEP <= TIMELINE_WIDTH; tap++) {
+    ticks.push({ position: tap * tapsPerTick * X_STEP, label: String(tap * tapsPerTick) });
+  }
+  return ticks;
 }
 
 function drawTargetLine(layer, color, timelineHeight) {
@@ -1052,7 +1087,7 @@ function setupTimelineFollow() {
   timelineFollow.setEnabled(followTimeline);
 }
 
-function createTimelineLine(x1, y1, x2, y2, color) {
+function createTimelineLine(x1, y1, x2, y2, color, snap = true) {
   return svgUtils.createLine({
     x1,
     y1,
@@ -1060,7 +1095,8 @@ function createTimelineLine(x1, y1, x2, y2, color) {
     y2,
     stroke: color,
     strokeWidth: 1,
-    crisp: true
+    crisp: true,
+    snap
   });
 }
 

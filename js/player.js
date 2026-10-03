@@ -48,8 +48,7 @@ const guidesButton = document.getElementById('guides-button');
 window.addEventListener('pekosoft:timeline-bright-change', () => redrawTimelineCanvas());
 window.addEventListener('pekosoft:alpha-change', () => redrawTimelineCanvas());
 const timelineZoomButton = document.getElementById('timeline-zoom-button');
-const timelineRulerButton = document.getElementById('timeline-ruler-button');
-const bpmRulerButton = document.getElementById('bpm-ruler-button');
+const rulersButton = document.getElementById('rulers-button');
 const snapButton = document.getElementById('snap-button');
 const timelinePanButton = document.getElementById('timeline-pan-button');
 const waveformColorButton = document.getElementById('waveform-color-button');
@@ -91,6 +90,7 @@ const playheadCanvas = document.getElementById('playhead');
 const playheadCtx = playheadCanvas.getContext('2d');
 const timelineScroll = document.querySelector('#timeline-container .timeline-scroll');
 const playerTimeline = document.querySelector('#timeline-container .player-timeline');
+const timelineRulerGroups = document.querySelectorAll('#timeline-container .timeline-rulers');
 const waveformOverlay = document.querySelector('#timeline-container .waveform-overlay');
 const cssVars = getComputedStyle(document.documentElement);
 const colorPrimary = cssVars.getPropertyValue('--color1').trim();
@@ -127,8 +127,7 @@ const STORAGE = {
     inputMonitor: 'player.input_monitor',
     showGuides: 'player.show_guides',
     timelineZoom: 'player.timeline_zoom',
-    timelineRuler: 'player.timeline_ruler',
-    bpmRuler: 'player.bpm_ruler',
+    rulers: 'player.rulers',
     snap: 'player.snap',
     snapNote: 'player.snap_note',
     timelinePan: 'player.timeline_pan',
@@ -165,13 +164,10 @@ let showGuides = savedPlayerGuides === null
     : savedPlayerGuides === 'true';
 const savedPlayerPan = localStorage.getItem(STORAGE.timelinePan);
 let showPanLine = savedPlayerPan === 'true';
-const savedPlayerRuler = localStorage.getItem(STORAGE.timelineRuler);
-let showTimelineRuler = savedPlayerRuler === null ? true : savedPlayerRuler === 'true';
-const savedPlayerBpmRuler = localStorage.getItem(STORAGE.bpmRuler);
-let showBpmRuler = savedPlayerBpmRuler === null ? true : savedPlayerBpmRuler === 'true';
-if (savedPlayerBpmRuler === null) {
-    localStorage.setItem(STORAGE.bpmRuler, 'true');
-}
+const savedPlayerRulers = localStorage.getItem(STORAGE.rulers);
+let showRulers = savedPlayerRulers === null
+    ? (window.PekoRulers?.getGlobal?.() ?? true)
+    : savedPlayerRulers === 'true';
 const savedSnapToBeat = localStorage.getItem(STORAGE.snap);
 let snapToBeat = savedSnapToBeat === null ? true : savedSnapToBeat === 'true';
 if (savedSnapToBeat === null) {
@@ -418,9 +414,10 @@ function setBpmValue(value, persist = true) {
     drawBpmRuler();
 }
 
-function updateBpmRulerButtonState() {
-    if (!bpmRulerButton) return;
-    bpmRulerButton.classList.toggle('button-on', showBpmRuler);
+function updateRulersButtonState() {
+    if (!rulersButton) return;
+    rulersButton.classList.toggle('button-on', showRulers);
+    rulersButton.setAttribute('aria-pressed', showRulers ? 'true' : 'false');
 }
 
 function updateSnapButtonState() {
@@ -1511,14 +1508,10 @@ function updateTimelineZoomButtonState() {
     timelineZoomButton.classList.toggle('button-on', getTimelineZoomMode() === 'fit');
 }
 
-function updateTimelineRulerVisibility() {
-    if (!timelineRulerCanvas) return;
-    timelineRulerCanvas.style.display = showTimelineRuler ? 'block' : 'none';
-}
-
-function updateBpmRulerVisibility() {
-    if (!bpmRulerCanvas) return;
-    bpmRulerCanvas.style.display = showBpmRuler ? 'block' : 'none';
+function updateRulersVisibility() {
+    timelineRulerGroups.forEach((rulerGroup) => {
+        rulerGroup.hidden = !showRulers;
+    });
 }
 
 function applyTimelineZoom() {
@@ -1559,12 +1552,11 @@ function resizeCanvas(canvasElement) {
 
 function resizeAllCanvases() {
     applyTimelineZoom();
-    updateTimelineRulerVisibility();
-    updateBpmRulerVisibility();
-    if (showTimelineRuler && timelineRulerCanvas) {
+    updateRulersVisibility();
+    if (showRulers && timelineRulerCanvas) {
         resizeCanvas(timelineRulerCanvas);
     }
-    if (showBpmRuler && bpmRulerCanvas) {
+    if (showRulers && bpmRulerCanvas) {
         resizeCanvas(bpmRulerCanvas);
     }
     resizeCanvas(staticCanvas);
@@ -2332,17 +2324,13 @@ window.addEventListener('load', () => {
     if (guidesButton) {
         guidesButton.classList.toggle('button-on', showGuides);
     }
-    if (timelineRulerButton) {
-        timelineRulerButton.classList.toggle('button-on', showTimelineRuler);
-    }
-    updateBpmRulerButtonState();
+    updateRulersButtonState();
     updateSnapButtonState();
     if (timelinePanButton) {
         timelinePanButton.classList.toggle('button-on', showPanLine);
     }
     updateWaveformColorButtonState();
-    updateTimelineRulerVisibility();
-    updateBpmRulerVisibility();
+    updateRulersVisibility();
     updateTimelineZoomButtonState();
     redrawTimelineCanvas();
     updateActionButtonStates();
@@ -2553,23 +2541,20 @@ if (timelineZoomButton) {
     });
 }
 
-if (timelineRulerButton) {
-    timelineRulerButton.addEventListener('click', () => {
-        showTimelineRuler = !showTimelineRuler;
-        timelineRulerButton.classList.toggle('button-on', showTimelineRuler);
-        localStorage.setItem(STORAGE.timelineRuler, showTimelineRuler ? 'true' : 'false');
+if (rulersButton) {
+    rulersButton.addEventListener('click', () => {
+        showRulers = !showRulers;
+        updateRulersButtonState();
+        localStorage.setItem(STORAGE.rulers, showRulers ? 'true' : 'false');
         resizeAllCanvases();
     });
 }
 
-if (bpmRulerButton) {
-    bpmRulerButton.addEventListener('click', () => {
-        showBpmRuler = !showBpmRuler;
-        updateBpmRulerButtonState();
-        localStorage.setItem(STORAGE.bpmRuler, showBpmRuler ? 'true' : 'false');
+window.addEventListener('pekosoft:rulers-global-change', (event) => {
+        showRulers = Boolean(event.detail?.enabled);
+        updateRulersButtonState();
         resizeAllCanvases();
-    });
-}
+});
 
 if (snapButton) {
     snapButton.addEventListener('click', () => {
@@ -3640,7 +3625,7 @@ function getRulerTickHeight(heightPx) {
 }
 
 function drawTimelineRuler() {
-    if (!showTimelineRuler || !timelineRulerCanvas || !timelineRulerCtx) return;
+    if (!showRulers || !timelineRulerCanvas || !timelineRulerCtx) return;
 
     const width = timelineRulerCanvas.width;
     const height = timelineRulerCanvas.height;
@@ -3683,7 +3668,7 @@ function drawTimelineRuler() {
 }
 
 function drawBpmRuler() {
-    if (!showBpmRuler || !bpmRulerCanvas || !bpmRulerCtx) return;
+    if (!showRulers || !bpmRulerCanvas || !bpmRulerCtx) return;
 
     const width = bpmRulerCanvas.width;
     const height = bpmRulerCanvas.height;

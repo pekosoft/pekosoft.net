@@ -32,6 +32,7 @@ const toggleLoopButton = document.getElementById('toggle-loop-button');
 const togglePlayheadButton = document.getElementById('toggle-playhead-button');
 const guidesButton = document.getElementById('guides-button');
 const timelineBrightButton = document.getElementById('timeline-bright-button');
+const rulersButton = document.getElementById('rulers-button');
 const followButton = document.getElementById('follow-button');
 const selectNoneButton = document.getElementById('select-none-button');
 const positionField = document.getElementById('position-field');
@@ -51,6 +52,16 @@ const globalGuidesDefault = localStorage.getItem('global.guides') !== 'false';
 const reducedMotionDefault = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 let disconnectTimelineResize = null;
 let timelineFollow = null;
+const bpmTimelineRulers = timelineUtils?.createRulerLayout?.({
+  container: timelineContainer,
+  scrollElement: timelineScroll,
+  cornerRuler: document.getElementById('bpm-timeline-ruler-corner'),
+  verticalRuler: document.getElementById('bpm-timeline-vertical-ruler'),
+  horizontalRuler: document.getElementById('bpm-timeline-horizontal-ruler'),
+  button: rulersButton,
+  storageKey: 'bpm_calculator.rulers',
+  onVisibilityChange: () => drawCanvas()
+});
 
 // Column buttons
 
@@ -738,6 +749,29 @@ function drawCanvas() {
   syncTimelineViewport(h);
 
   const w = BPM_TIMELINE_WIDTH;
+  const guideColor = window.PekoBrightGuides?.getTimelineGuideColor(getCssVariable('--grey1')) || getCssVariable('--grey1');
+  const isBright = state.showGuides && Boolean(window.PekoBrightGuides?.getTimelineBright?.());
+  bpmTimelineRulers?.render({
+    width: w,
+    height: h,
+    color: guideColor,
+    bright: isBright,
+    drawVertical: (svg, dimensions) => {
+      timelineUtils.drawVerticalRuler(svg, {
+        ...dimensions,
+        title: 'BEAT',
+        ticks: [{ position: h / 2, label: 'NOTE', labelPosition: 'below' }],
+        color: guideColor
+      });
+    },
+    drawHorizontal: (svg, dimensions) => {
+      timelineUtils.drawHorizontalRuler(svg, {
+        ...dimensions,
+        ticks: getBpmTimelineHorizontalTicks(),
+        color: guideColor
+      });
+    }
+  });
   const offsetX = 16;
   const usableWidth = w - offsetX;
   const layer = svgUtils.createElement('g');
@@ -745,11 +779,13 @@ function drawCanvas() {
   timelineSvg.appendChild(layer);
   if (state.showGuides) {
     const middleY = (h / 2) + 0.5;
-    const guideColor = window.PekoBrightGuides?.getTimelineGuideColor(getCssVariable('--grey1')) || getCssVariable('--grey1');
     layer.appendChild(createTimelineLine(0, middleY, w, middleY, guideColor));
-    if (window.PekoBrightGuides?.getTimelineBright()) {
-      [[0.5, 0.5, w - 0.5, 0.5], [w - 0.5, 0.5, w - 0.5, h - 0.5], [w - 0.5, h - 0.5, 0.5, h - 0.5], [0.5, h - 0.5, 0.5, 0.5]].forEach(([x1, y1, x2, y2]) => {
-        layer.appendChild(createTimelineLine(x1, y1, x2, y2, guideColor));
+    if (isBright) {
+      const boundary = bpmTimelineRulers?.getVisible()
+        ? [[w, 0, w, h], [w, h, 0, h]]
+        : [[0, 0, w, 0], [w, 0, w, h], [w, h, 0, h], [0, h, 0, 0]];
+      boundary.forEach(([x1, y1, x2, y2]) => {
+        layer.appendChild(createTimelineLine(x1, y1, x2, y2, guideColor, false));
       });
     }
   }
@@ -884,7 +920,14 @@ function createSvgElement(name) {
   return svgUtils.createElement(name);
 }
 
-function createTimelineLine(x1, y1, x2, y2, color) {
+function getBpmTimelineHorizontalTicks() {
+  return Array.from({ length: 6 }, (_, index) => {
+    const seconds = (index + 1) * 10;
+    return { position: (seconds / 60) * BPM_TIMELINE_WIDTH, label: `${seconds}s` };
+  });
+}
+
+function createTimelineLine(x1, y1, x2, y2, color, snap = true) {
   return svgUtils.createLine({
     x1,
     y1,
@@ -892,7 +935,8 @@ function createTimelineLine(x1, y1, x2, y2, color) {
     y2,
     stroke: color.trim(),
     strokeWidth: 1,
-    crisp: true
+    crisp: true,
+    snap
   });
 }
 

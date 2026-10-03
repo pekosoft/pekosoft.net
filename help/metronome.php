@@ -225,6 +225,15 @@
 </div>
 
 <div class="feature-row border"><svg class="standard-image-help">
+    <use href="/icons.svg#ruler"></use>
+  </svg>
+  <div class="justify">
+    <h1>RULERS <span class="object">button</span></h1>
+    Toggles Timeline rulers. The vertical BPM scale stays fixed while the timeline scrolls, and the horizontal ruler marks beat count. <span class="default">Default: on.</span>
+  </div>
+</div>
+
+<div class="feature-row border"><svg class="standard-image-help">
     <use href="/icons.svg#photo"></use>
   </svg>
   <div class="justify">
@@ -239,6 +248,24 @@
   <div class="justify">
     <h1>COPY <span class="object">button</span></h1>
     Copies the Timeline canvas as a PNG image to clipboard.
+  </div>
+</div>
+
+<div class="feature-row border"><svg class="standard-image-help">
+    <use href="/icons.svg#playhead"></use>
+  </svg>
+  <div class="justify">
+    <h1>PLAYHEAD <span class="object">button</span></h1>
+    Toggles the current beat position line in Timeline. <span class="default">Default: on.</span>
+  </div>
+</div>
+
+<div class="feature-row border"><svg class="standard-image-help">
+    <use href="/icons.svg#follow"></use>
+  </svg>
+  <div class="justify">
+    <h1>FOLLOW <span class="object">button</span></h1>
+    Keeps the current beat visible in Timeline. Timeline navigation turns Follow off. <span class="default">Default: on, or off when reduced motion is preferred.</span>
   </div>
 </div>
 

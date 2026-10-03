@@ -430,6 +430,15 @@
 </div>
 
 <div class="feature-row border"><svg class="standard-image-help">
+    <use href="/icons.svg#ruler"></use>
+  </svg>
+  <div class="justify">
+    <h1>RULERS <span class="object">button</span></h1>
+    Toggles fixed beat and note rulers beside the Timeline, with elapsed seconds across the top. <span class="default">Default: on.</span>
+  </div>
+</div>
+
+<div class="feature-row border"><svg class="standard-image-help">
     <use href="/icons.svg#playhead"></use>
   </svg>
   <div class="justify">

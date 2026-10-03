@@ -263,6 +263,15 @@
 </div>
 
 <div class="feature-row border"><svg class="standard-image-help">
+    <use href="/icons.svg#ruler"></use>
+  </svg>
+  <div class="justify">
+    <h1>RULERS <span class="object">button</span></h1>
+    Toggles Timeline rulers. The vertical RPM scale stays fixed while the timeline scrolls, and the horizontal ruler marks elapsed time. <span class="default">Default: on.</span>
+  </div>
+</div>
+
+<div class="feature-row border"><svg class="standard-image-help">
     <use href="/icons.svg#rpm_33"></use>
   </svg>
   <div class="justify">

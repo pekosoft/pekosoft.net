@@ -27,6 +27,7 @@ const btnLabelL = document.getElementById('label-l-button');
 const labelSmall = document.querySelector('.label-small');
 const labelLarge = document.querySelector('.label-large');
 const btnGuides = document.getElementById("guides-button");
+const rulersButton = document.getElementById('rulers-button');
 const btnTimelineRPM = document.getElementById('toggle-timeline-rpm-button');
 const btnTimelineSpeed = document.getElementById('toggle-timeline-speed-button');
 const btnTimelinePlayhead = document.getElementById('toggle-playhead-button');
@@ -51,6 +52,16 @@ const turntableTimelineContainer = document.getElementById('timeline-container')
 const turntableTimelineScroll = turntableTimelineSvg?.closest('.timeline-scroll');
 const turntableSvgUtils = window.PekoSvgUtils;
 const turntableSvgTimeline = window.PekoSvgTimeline;
+const turntableTimelineRulers = turntableSvgTimeline?.createRulerLayout?.({
+  container: turntableTimelineContainer,
+  scrollElement: turntableTimelineScroll,
+  cornerRuler: document.getElementById('turntable-timeline-ruler-corner'),
+  verticalRuler: document.getElementById('turntable-timeline-vertical-ruler'),
+  horizontalRuler: document.getElementById('turntable-timeline-horizontal-ruler'),
+  button: rulersButton,
+  storageKey: 'turntable.rulers',
+  onVisibilityChange: () => redrawTimeline()
+});
 let disconnectTurntableTimelineResize = null;
 let turntableTimelineFollow = null;
 const turntableText = document.getElementById("turntable-text");
@@ -177,8 +188,7 @@ let followTimeline = localStorage.getItem('turntable.timeline_follow') === null
 let speedHistory = [];
 let lastLogTime = 0;
 let lastTimelineSampleTime = -Infinity;
-// Horizontal offset so data plots don't overlap guide labels
-const TURNTABLE_GRAPH_OFFSET = 48;
+const TURNTABLE_GRAPH_OFFSET = 0;
 const TURNTABLE_TIMELINE_WIDTH = 4096;
 const TURNTABLE_TIMELINE_MIN_HEIGHT = 256;
 
@@ -441,6 +451,28 @@ function redrawTimeline() {
     width: TURNTABLE_TIMELINE_WIDTH,
     height: timelineHeight
   });
+  const guideColor = window.PekoBrightGuides?.getTimelineGuideColor(getCssVariable('--grey1')) || getCssVariable('--grey1');
+  turntableTimelineRulers?.render({
+    width: TURNTABLE_TIMELINE_WIDTH,
+    height: timelineHeight,
+    color: guideColor,
+    bright: showGuides && Boolean(window.PekoBrightGuides?.getTimelineBright?.()),
+    drawVertical: (svg, dimensions) => {
+      turntableSvgTimeline.drawVerticalRuler(svg, {
+        ...dimensions,
+        title: 'RPM',
+        ticks: getTurntableTimelineVerticalTicks(timelineHeight),
+        color: guideColor
+      });
+    },
+    drawHorizontal: (svg, dimensions) => {
+      turntableSvgTimeline.drawHorizontalRuler(svg, {
+        ...dimensions,
+        ticks: getTurntableTimelineHorizontalTicks(),
+        color: guideColor
+      });
+    }
+  });
   turntableTimelineSvg.innerHTML = '';
 
   drawReferenceLines(timelineHeight);
@@ -497,7 +529,8 @@ function redrawTimeline() {
       y1: 0,
       x2: playheadX,
       y2: timelineHeight,
-      color: getCssVariable('--white')
+      color: getCssVariable('--white'),
+      snap: false
     }));
   }
 }
@@ -518,52 +551,53 @@ function drawReferenceLines(timelineHeight) {
   turntableTimelineSvg.appendChild(guidesLayer);
 
   if (window.PekoBrightGuides?.getTimelineBright()) {
-    [[0.5, 0.5, TURNTABLE_TIMELINE_WIDTH - 0.5, 0.5], [TURNTABLE_TIMELINE_WIDTH - 0.5, 0.5, TURNTABLE_TIMELINE_WIDTH - 0.5, timelineHeight - 0.5], [TURNTABLE_TIMELINE_WIDTH - 0.5, timelineHeight - 0.5, 0.5, timelineHeight - 0.5], [0.5, timelineHeight - 0.5, 0.5, 0.5]].forEach(([x1, y1, x2, y2]) => {
-      guidesLayer.appendChild(turntableSvgUtils.createLine({ x1, y1, x2, y2, color: guideColor }));
+    const boundary = turntableTimelineRulers?.getVisible()
+      ? [[TURNTABLE_TIMELINE_WIDTH, 0, TURNTABLE_TIMELINE_WIDTH, timelineHeight], [TURNTABLE_TIMELINE_WIDTH, timelineHeight, 0, timelineHeight]]
+      : [[0, 0, TURNTABLE_TIMELINE_WIDTH, 0], [TURNTABLE_TIMELINE_WIDTH, 0, TURNTABLE_TIMELINE_WIDTH, timelineHeight], [TURNTABLE_TIMELINE_WIDTH, timelineHeight, 0, timelineHeight], [0, timelineHeight, 0, 0]];
+    boundary.forEach(([x1, y1, x2, y2]) => {
+      guidesLayer.appendChild(turntableSvgUtils.createLine({ x1, y1, x2, y2, color: guideColor, snap: false }));
     });
   }
 
-  guidesLayer.appendChild(turntableSvgUtils.createText({
-    x: 45,
-    y: 12,
-    text: 'RPM',
-    color: guideColor,
-    size: 12,
-    anchor: 'end'
-  }));
-
-  guidesLayer.appendChild(turntableSvgUtils.createLine({
-    x1: TURNTABLE_GRAPH_OFFSET,
-    y1: 0,
-    x2: TURNTABLE_GRAPH_OFFSET,
-    y2: timelineHeight,
-    color: guideColor
-  }));
-
   refSpeeds.forEach(rpm => {
-    const y = getTimelineY(rpm, timelineHeight);
-    const label = Math.abs(rpm - 16.667) < 0.01
-      ? '16'
-      : rpm === 22.5
-        ? '22'
-        : String(rpm);
+    const y = Math.floor(getTimelineY(rpm, timelineHeight)) + 0.5;
     guidesLayer.appendChild(turntableSvgUtils.createLine({
       x1: 0,
       y1: y,
       x2: TURNTABLE_TIMELINE_WIDTH,
       y2: y,
-      color: guideColor
-    }));
-
-    guidesLayer.appendChild(turntableSvgUtils.createText({
-      x: 40,
-      y: y - 5,
-      text: label,
       color: guideColor,
-      size: 12,
-      anchor: 'end'
+      snap: false
     }));
   });
+}
+
+function getTurntableTimelineVerticalTicks(timelineHeight) {
+  return [0, 8, 16.667, 22.5, 33, 45, 78].map((rpm) => ({
+    position: getTimelineY(rpm, timelineHeight),
+    label: getTurntableRulerLabel(rpm)
+  }));
+}
+
+function getTurntableRulerLabel(rpm) {
+  if (Math.abs(rpm - 16.667) < 0.01) return '16';
+  if (rpm === 22.5) return '22';
+  return String(rpm);
+}
+
+function getTurntableTimelineHorizontalTicks() {
+  const secondsPerTick = 10;
+  const pixelsPerSecond = (1000 / TURNTABLE_TIMELINE_SAMPLE_INTERVAL_MS) * TURNTABLE_TIMELINE_SAMPLE_SPACING;
+  const ticks = [];
+  for (let seconds = 0; seconds * pixelsPerSecond <= TURNTABLE_TIMELINE_WIDTH; seconds += secondsPerTick) {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    ticks.push({
+      position: seconds * pixelsPerSecond,
+      label: `${minutes}:${String(remainingSeconds).padStart(2, '0')}`
+    });
+  }
+  return ticks;
 }
 
 function getCssVariable(name) {
@@ -831,11 +865,13 @@ resetButton.addEventListener('click', () => {
     'turntable.timeline_speed',
     'turntable.timeline_playhead',
     'turntable.timeline_follow',
+    'turntable.rulers',
     'turntable.hole_mode',
     'turntable.jukebox',
     'turntable.label_s',
     'turntable.label_l'
   ].forEach(key => localStorage.removeItem(key));
+  turntableTimelineRulers?.setVisible(true, false);
 
   // Reset Jukebox button and state
   if (typeof jukeboxButton !== 'undefined' && typeof centerHole !== 'undefined') {

@@ -570,6 +570,96 @@ html.modules-page body:not(.layout-two-columns) {
   overflow-y: hidden;
 }
 
+#timeline-container .timeline-ruler-layout {
+  --timeline-axis-width: 48px;
+  --timeline-ruler-height: 24px;
+  display: grid;
+  grid-template-columns: var(--timeline-axis-width) minmax(0, 1fr);
+  grid-template-rows: var(--timeline-ruler-height) minmax(0, 1fr);
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+}
+
+#timeline-container .timeline-ruler-layout,
+#timeline-container .timeline-svg {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+#timeline-container .timeline-ruler-corner {
+  grid-column: 1;
+  grid-row: 1;
+  background: var(--black);
+}
+
+#timeline-container .timeline-ruler-corner svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  margin: 0;
+  border: 0;
+}
+
+#timeline-container .timeline-horizontal-ruler {
+  position: relative;
+  grid-column: 2;
+  grid-row: 1;
+  overflow: hidden;
+  background: var(--black);
+}
+
+#timeline-container .timeline-vertical-ruler {
+  position: relative;
+  grid-column: 1;
+  grid-row: 2;
+  overflow: hidden;
+  background: var(--black);
+}
+
+#timeline-container .timeline-horizontal-ruler svg {
+  position: absolute;
+  inset: 0 auto auto 0;
+  width: 4096px;
+  height: 100%;
+  max-width: none;
+  margin: 0;
+  border: 0;
+}
+
+#timeline-container .timeline-vertical-ruler svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  margin: 0;
+  border: 0;
+}
+
+#timeline-container .timeline-ruler-layout > .timeline-scroll {
+  grid-column: 2;
+  grid-row: 2;
+  width: 100%;
+  height: 100%;
+}
+
+#timeline-container .timeline-ruler-layout.timeline-rulers-hidden {
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
+}
+
+#timeline-container .timeline-ruler-layout.timeline-rulers-hidden .timeline-ruler-corner,
+#timeline-container .timeline-ruler-layout.timeline-rulers-hidden .timeline-horizontal-ruler,
+#timeline-container .timeline-ruler-layout.timeline-rulers-hidden .timeline-vertical-ruler {
+  display: none;
+}
+
+#timeline-container .timeline-ruler-layout.timeline-rulers-hidden > .timeline-scroll {
+  grid-column: 1;
+  grid-row: 1;
+}
+
 #panel-container .standard {
   flex: 1;
   display: flex;

@@ -3,6 +3,7 @@
 
 (() => {
   const defaultGuides = true;
+  const defaultRulers = true;
   const storageKeys = [
     "tap_pad.show_guides",
     "bpm_calculator.show_guides",
@@ -34,6 +35,13 @@
     "meters.turntable.guides",
     "meters.visualizer.guides"
   ];
+  const rulerStorageKeys = [
+    "bpm_calculator.rulers",
+    "metronome.rulers",
+    "player.rulers",
+    "tap_pad.rulers",
+    "turntable.rulers"
+  ];
   const nestedStateFields = {
     "bpm_calculator.state": ["showGuides"],
     "bpm_curve.state": ["guides", "timelineGuides"],
@@ -55,6 +63,10 @@
 
   function getBrightGlobal() {
     return localStorage.getItem("global.bright_guides") === "true";
+  }
+
+  function getRulersGlobal() {
+    return readBoolean(localStorage.getItem("global.rulers"), defaultRulers);
   }
 
   function getTimelineBrightStorageKey() {
@@ -126,6 +138,17 @@
     const input = document.getElementById("bright-guides");
     const button = document.querySelector('[data-setting-toggle="bright-guides"]');
     const enabled = getBrightGlobal();
+    if (input) input.checked = enabled;
+    if (button) {
+      button.classList.toggle("button-on", enabled);
+      button.setAttribute("aria-pressed", String(enabled));
+    }
+  }
+
+  function updateRulersSettingsButton() {
+    const input = document.getElementById("rulers");
+    const button = document.querySelector('[data-setting-toggle="rulers"]');
+    const enabled = getRulersGlobal();
     if (input) input.checked = enabled;
     if (button) {
       button.classList.toggle("button-on", enabled);
@@ -205,6 +228,16 @@
     }));
   }
 
+  function setRulersGlobal(nextState) {
+    const enabled = !!nextState;
+    localStorage.setItem("global.rulers", String(enabled));
+    rulerStorageKeys.forEach((key) => localStorage.removeItem(key));
+    updateRulersSettingsButton();
+    window.dispatchEvent(new CustomEvent("pekosoft:rulers-global-change", {
+      detail: { enabled }
+    }));
+  }
+
   function syncTimelineBrightButton() {
     const button = document.querySelector("#timeline-bright-button[data-shared-timeline-bright]");
     if (!button) return;
@@ -241,6 +274,12 @@
     getTimelineGuideColor
   };
 
+  window.PekoRulers = {
+    getGlobal: getRulersGlobal,
+    setGlobal: setRulersGlobal,
+    updateSettingsButton: updateRulersSettingsButton
+  };
+
   document.addEventListener("click", (event) => {
     if (event.target.closest?.("#guides-button, #timeline-guides-button, #tool-guides-button")) {
       syncPageRegistry();
@@ -254,11 +293,15 @@
     if (event.key === "global.bright_guides" && event.newValue !== null) {
       setBrightGlobal(event.newValue === "true");
     }
+    if (event.key === "global.rulers" && event.newValue !== null) {
+      setRulersGlobal(readBoolean(event.newValue, defaultRulers));
+    }
   });
 
   document.addEventListener("DOMContentLoaded", () => {
     updateSettingsButton();
     updateBrightSettingsButton();
+    updateRulersSettingsButton();
     syncTimelineBrightButton();
     document.querySelector("#timeline-bright-button[data-shared-timeline-bright]")?.addEventListener("click", toggleTimelineBright);
   });

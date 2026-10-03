@@ -139,6 +139,7 @@ canvas {
   padding: 0;
   display: flex;
   flex-direction: column;
+  gap: 8px;
   flex: 1 1 auto;
   min-height: 0;
 }
@@ -152,9 +153,9 @@ canvas {
   min-height: 0;
 }
 
-#timeline-container #timeline-ruler,
-#timeline-container #bpm-ruler {
+#timeline-container .timeline-rulers {
   flex: 0 0 24px;
+  height: 24px;
 }
 
 #timeline-container #static-waveform,

@@ -312,12 +312,16 @@
 
       <div class="timeline-scroll scrollable">
       <div class="player-timeline">
-        <canvas id="timeline-ruler" width="4096" height="24"></canvas>
+        <div class="timeline-rulers">
+          <canvas id="timeline-ruler" width="4096" height="24"></canvas>
+        </div>
         <div class="waveform-overlay">
           <canvas id="static-waveform" width="4096" height="256"></canvas>
           <canvas id="playhead" width="4096" height="256"></canvas>
         </div>
-        <canvas id="bpm-ruler" width="4096" height="24"></canvas>
+        <div class="timeline-rulers">
+          <canvas id="bpm-ruler" width="4096" height="24"></canvas>
+        </div>
       </div>
       </div>
     </div>
@@ -343,18 +347,11 @@
         <span class="button-text">Zoom</span>
       </button>
 
-      <button id="timeline-ruler-button" class="square" title="Toggle ruler">
+      <button id="rulers-button" class="square" title="Toggle rulers">
         <svg class="icons">
           <use href="/icons.svg#ruler" />
         </svg>
-        <span class="button-text">Ruler</span>
-      </button>
-
-      <button id="bpm-ruler-button" class="square" title="Toggle beats ruler">
-        <svg class="icons">
-          <use href="/icons.svg#ruler" />
-        </svg>
-        <span class="button-text">Beats</span>
+        <span class="button-text">Rulers</span>
       </button>
 
       <button id="snap-button" class="square" title="Toggle beat snapping">

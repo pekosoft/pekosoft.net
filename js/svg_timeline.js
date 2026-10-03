@@ -34,6 +34,252 @@
     svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
   }
 
+  function createRulerLayout(options) {
+    const {
+      container,
+      scrollElement,
+      cornerRuler,
+      verticalRuler,
+      horizontalRuler,
+      button,
+      storageKey,
+      axisWidth = 48,
+      horizontalHeight = 24,
+      defaultVisible = true,
+      onVisibilityChange
+    } = options || {};
+
+    const layout = container?.querySelector('.timeline-ruler-layout');
+    if (!layout || !scrollElement || !cornerRuler || !verticalRuler || !horizontalRuler) return null;
+
+    const storedVisibility = storageKey ? localStorage.getItem(storageKey) : null;
+    let isVisible = storedVisibility === null
+      ? (window.PekoRulers?.getGlobal?.() ?? defaultVisible)
+      : storedVisibility !== 'false';
+
+    function syncHorizontalRuler() {
+      horizontalRuler.style.transform = `translateX(${-scrollElement.scrollLeft}px)`;
+    }
+
+    function updateButton() {
+      if (!button) return;
+      button.classList.toggle('button-on', isVisible);
+      button.setAttribute('aria-pressed', isVisible ? 'true' : 'false');
+    }
+
+    function setVisible(value, persist = true) {
+      isVisible = Boolean(value);
+      layout.classList.toggle('timeline-rulers-hidden', !isVisible);
+      updateButton();
+      if (persist && storageKey) {
+        localStorage.setItem(storageKey, isVisible ? 'true' : 'false');
+      }
+      if (typeof onVisibilityChange === 'function') {
+        onVisibilityChange(isVisible);
+      }
+    }
+
+    function render({ width, height, color, bright = false, drawVertical, drawHorizontal }) {
+      if (!isVisible) return;
+
+      layout.style.setProperty('--timeline-axis-width', `${axisWidth}px`);
+      layout.style.setProperty('--timeline-ruler-height', `${horizontalHeight}px`);
+      syncViewBox(cornerRuler, axisWidth, horizontalHeight);
+      syncViewBox(verticalRuler, axisWidth, height);
+      syncViewBox(horizontalRuler, width, horizontalHeight);
+      horizontalRuler.style.width = `${width}px`;
+      drawRulerCorner(cornerRuler, { width: axisWidth, height: horizontalHeight, color, bright });
+
+      if (typeof drawVertical === 'function') {
+        drawVertical(verticalRuler, { width: axisWidth, height, bright });
+      }
+      if (typeof drawHorizontal === 'function') {
+        drawHorizontal(horizontalRuler, { width, height: horizontalHeight, bright });
+      }
+      syncHorizontalRuler();
+    }
+
+    scrollElement.addEventListener('scroll', syncHorizontalRuler, { passive: true });
+    button?.addEventListener('click', () => setVisible(!isVisible));
+    window.addEventListener('pekosoft:rulers-global-change', (event) => {
+      setVisible(Boolean(event.detail?.enabled), false);
+    });
+    layout.classList.toggle('timeline-rulers-hidden', !isVisible);
+    updateButton();
+    syncHorizontalRuler();
+
+    return {
+      getVisible: () => isVisible,
+      render,
+      setVisible,
+      syncHorizontalRuler
+    };
+  }
+
+  function createRulerElement(name, attributes, text = '') {
+    const element = document.createElementNS('http://www.w3.org/2000/svg', name);
+    const lineAttributes = name === 'line'
+      ? {
+          'stroke-width': 1,
+          'shape-rendering': 'crispEdges',
+          'vector-effect': 'non-scaling-stroke',
+          'stroke-linecap': 'butt',
+          ...attributes
+        }
+      : attributes;
+    Object.entries(lineAttributes).forEach(([attribute, value]) => {
+      element.setAttribute(attribute, String(value));
+    });
+    element.textContent = text;
+    return element;
+  }
+
+  function drawVerticalRuler(svg, options) {
+    if (!svg) return;
+    const { width, height, title = '', titleY = 24, ticks = [], color, bright = false } = options || {};
+    const axisX = Math.max(0, width);
+    svg.replaceChildren();
+    if (bright) {
+      svg.appendChild(createRulerElement('line', {
+        x1: 0,
+        y1: 0,
+        x2: 0,
+        y2: height,
+        stroke: color
+      }));
+      svg.appendChild(createRulerElement('line', {
+        x1: 0,
+        y1: height,
+        x2: width,
+        y2: height,
+        stroke: color
+      }));
+    }
+    svg.appendChild(createRulerElement('line', {
+      x1: axisX,
+      y1: 0,
+      x2: axisX,
+      y2: height,
+      stroke: color
+    }));
+
+    if (title) {
+      svg.appendChild(createRulerElement('text', {
+        x: Math.max(0, width - 8),
+        y: Math.max(10, Math.min(height - 8, titleY)),
+        fill: color,
+        'font-size': 12,
+        'font-family': 'Arial, sans-serif',
+        'text-anchor': 'end'
+      }, title));
+    }
+
+    ticks.forEach(({ position, label, labelPosition = 'above' }) => {
+      const y = Math.max(0.5, Math.min(height + 0.5, Math.floor(position) + 0.5));
+      svg.appendChild(createRulerElement('line', {
+        x1: 0,
+        y1: y,
+        x2: width,
+        y2: y,
+        stroke: color
+      }));
+      if (label === undefined || label === null || label === '') return;
+      const labelY = labelPosition === 'below'
+        ? Math.min(height - 5, y + 24)
+        : Math.max(10, y - 5);
+      svg.appendChild(createRulerElement('text', {
+        x: Math.max(0, width - 8),
+        y: labelY,
+        fill: color,
+        'font-size': 12,
+        'font-family': 'Arial, sans-serif',
+        'text-anchor': 'end'
+      }, label));
+    });
+  }
+
+  function drawRulerCorner(svg, options) {
+    if (!svg) return;
+    const { width, height, color, bright = false } = options || {};
+    const axisX = Math.max(0, width);
+    const axisY = Math.max(0, height);
+    svg.replaceChildren();
+    if (bright) {
+      svg.appendChild(createRulerElement('line', {
+        x1: 0,
+        y1: 0,
+        x2: width,
+        y2: 0,
+        stroke: color
+      }));
+      svg.appendChild(createRulerElement('line', {
+        x1: 0,
+        y1: 0,
+        x2: 0,
+        y2: height,
+        stroke: color
+      }));
+    }
+    svg.appendChild(createRulerElement('line', {
+      x1: 0,
+      y1: axisY,
+      x2: width,
+      y2: axisY,
+      stroke: color
+    }));
+    svg.appendChild(createRulerElement('line', {
+      x1: axisX,
+      y1: 0,
+      x2: axisX,
+      y2: height,
+      stroke: color
+    }));
+  }
+
+  function drawHorizontalRuler(svg, options) {
+    if (!svg) return;
+    const { width, height, ticks = [], color, bright = false } = options || {};
+    const axisY = Math.max(0, height);
+    svg.replaceChildren();
+    if (bright) {
+      svg.appendChild(createRulerElement('line', {
+        x1: 0,
+        y1: 0,
+        x2: width,
+        y2: 0,
+        stroke: color
+      }));
+    }
+    svg.appendChild(createRulerElement('line', {
+      x1: 0,
+      y1: axisY,
+      x2: width,
+      y2: axisY,
+      stroke: color
+    }));
+
+    ticks.forEach(({ position, label }) => {
+      if (Number(position) <= 0) return;
+      const x = Math.max(0.5, Math.min(width - 0.5, Math.round(position) + 0.5));
+      svg.appendChild(createRulerElement('line', {
+        x1: x,
+        y1: axisY,
+        x2: x,
+        y2: Math.min(axisY, Math.floor(height * 0.45)),
+        stroke: color
+      }));
+      if (label === undefined || label === null || label === '') return;
+      svg.appendChild(createRulerElement('text', {
+        x: x + 3,
+        y: Math.max(10, height - 3),
+        fill: color,
+        'font-size': 12,
+        'font-family': 'Arial, sans-serif',
+        'text-anchor': 'start'
+      }, label));
+    });
+  }
+
   function createRafScheduler(callback) {
     let rafId = null;
     return function schedule() {
@@ -234,6 +480,10 @@
 
   window.PekoSvgTimeline = {
     createFollowController,
+    createRulerLayout,
+    drawHorizontalRuler,
+    drawRulerCorner,
+    drawVerticalRuler,
     getHeight,
     resolveHeight: getHeight,
     syncViewBox,

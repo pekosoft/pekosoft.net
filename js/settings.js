@@ -8,6 +8,7 @@ window.FactoryDefaults = {
   grid: false,
   gridSize: 16,
   guides: true,
+  rulers: true,
   brightGuides: false,
   sound: true,
   headers: true,
@@ -44,6 +45,7 @@ document.addEventListener("DOMContentLoaded", () => {
     gridSizeValue: document.getElementById("grid-size-value"),
     fontSizeKnob: document.getElementById("font-size-knob"),
     guides: document.getElementById("guides"),
+    rulers: document.getElementById("rulers"),
     brightGuides: document.getElementById("bright-guides"),
     sound: document.getElementById("sound"),
     headers: document.getElementById("headers"),
@@ -181,6 +183,17 @@ document.addEventListener("DOMContentLoaded", () => {
     settings.guides.addEventListener("change", () => {
       saveGuidesSetting();
       if (window.PekoGuides) window.PekoGuides.setGlobal(settings.guides.checked);
+      if (window.applySiteSettings) window.applySiteSettings();
+    });
+  }
+
+  if (settings.rulers) {
+    settings.rulers.addEventListener("change", () => {
+      if (window.PekoRulers) {
+        window.PekoRulers.setGlobal(settings.rulers.checked);
+      } else {
+        localStorage.setItem("global.rulers", String(settings.rulers.checked));
+      }
       if (window.applySiteSettings) window.applySiteSettings();
     });
   }
@@ -331,6 +344,11 @@ document.addEventListener("DOMContentLoaded", () => {
       settings.guides.checked = window.PekoGuides
         ? window.PekoGuides.getGlobal()
         : (localStorage.getItem("global.guides") ?? String(defaults.guides)) === "true";
+    }
+    if (settings.rulers) {
+      settings.rulers.checked = window.PekoRulers
+        ? window.PekoRulers.getGlobal()
+        : (localStorage.getItem("global.rulers") ?? String(defaults.rulers)) === "true";
     }
     if (settings.brightGuides) {
       settings.brightGuides.checked = window.PekoBrightGuides
@@ -633,6 +651,8 @@ document.addEventListener("DOMContentLoaded", () => {
     localStorage.setItem("global.grid_size", defaults.gridSize);
     localStorage.setItem("global.guides", defaults.guides);
     if (window.PekoGuides) window.PekoGuides.setGlobal(defaults.guides);
+    localStorage.setItem("global.rulers", defaults.rulers);
+    if (window.PekoRulers) window.PekoRulers.setGlobal(defaults.rulers);
     localStorage.setItem("global.bright_guides", defaults.brightGuides);
     if (window.PekoBrightGuides) window.PekoBrightGuides.setGlobal(defaults.brightGuides);
     if (window.PekoSound) {

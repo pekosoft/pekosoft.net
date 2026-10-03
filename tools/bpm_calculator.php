@@ -344,8 +344,19 @@
 
   <div id="timeline-container" class="container">
     <div class="module-body canvas-container border">
-      <div class="scrollable">
-        <svg id="bpm-timeline-svg" class="timeline-svg" viewBox="0 0 4096 256" preserveAspectRatio="none" role="img" aria-label="BPM Calculator timeline"></svg>
+      <div class="timeline-ruler-layout">
+        <div class="timeline-ruler-corner" aria-hidden="true">
+          <svg id="bpm-timeline-ruler-corner" preserveAspectRatio="none"></svg>
+        </div>
+        <div class="timeline-horizontal-ruler" aria-hidden="true">
+          <svg id="bpm-timeline-horizontal-ruler" preserveAspectRatio="none"></svg>
+        </div>
+        <div class="timeline-vertical-ruler" aria-hidden="true">
+          <svg id="bpm-timeline-vertical-ruler" preserveAspectRatio="none"></svg>
+        </div>
+        <div class="timeline-scroll scrollable">
+          <svg id="bpm-timeline-svg" class="timeline-svg" viewBox="0 0 4096 256" preserveAspectRatio="none" role="img" aria-label="BPM Calculator timeline"></svg>
+        </div>
       </div>
     </div>
     <div class="module-footer wrapper colored">
@@ -361,6 +372,13 @@
           <use href="/icons.svg#sun" />
         </svg>
         <span class="button-text">Bright</span>
+      </button>
+
+      <button id="rulers-button" class="square" title="Toggle rulers">
+        <svg class="icons">
+          <use href="/icons.svg#ruler" />
+        </svg>
+        <span class="button-text">Rulers</span>
       </button>
 
       <button id="toggle-playhead-button" class="square" title="Toggle playhead">
@@ -403,7 +421,7 @@
   <script src="/js/drag.js?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/js/drag.js'); ?>"></script>
   <script src="/js/audio.js"></script>
   <script src="/js/svg_utils.js"></script>
-  <script src="/js/svg_timeline.js"></script>
+  <script src="/js/svg_timeline.js?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/js/svg_timeline.js'); ?>"></script>
   <script src="/js/<?php echo $release; ?>.js?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/js/' . $release . '.js'); ?>"></script>
   <?php require($_SERVER['DOCUMENT_ROOT'] . "/elements/footer.php"); ?>
 </body>

@@ -26,6 +26,9 @@ const copyButton = document.getElementById("copy-button");
 const panelBeatsButton = document.getElementById("panel-beats-button");
 const panelTempiButton = document.getElementById("panel-tempi-button");
 const btnGuides = document.getElementById("guides-button");
+const rulersButton = document.getElementById("rulers-button");
+const playheadButton = document.getElementById('toggle-playhead-button');
+const followButton = document.getElementById('follow-button');
 window.addEventListener('pekosoft:timeline-bright-change', () => redrawTimeline());
 const btnHaptic = document.getElementById("haptic-button");
 const baseBpmButton = document.getElementById("base-bpm-button");
@@ -63,8 +66,11 @@ let beatInBar = -1;
 let lastTickTime = null;
 let nextTickTime = 0;
 let beatHistory = [];
-// Horizontal offset (pixels) to shift data plots right so guide labels stay visible
-const METRONOME_GRAPH_OFFSET = 48;
+let showTimelinePlayhead = localStorage.getItem('metronome.timeline_playhead') !== 'false';
+let followTimeline = localStorage.getItem('metronome.timeline_follow') === null
+  ? !window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  : localStorage.getItem('metronome.timeline_follow') === 'true';
+const METRONOME_GRAPH_OFFSET = 0;
 let lastTop = { x: METRONOME_GRAPH_OFFSET, y: 0 };
 const METRONOME_TIMELINE_WIDTH = 4096;
 const METRONOME_TIMELINE_MIN_HEIGHT = 256;
@@ -160,9 +166,21 @@ const signatureOptions = {
 
 const metronomeTimelineSvg = document.getElementById("metronome-timeline-svg");
 const metronomeTimelineContainer = document.getElementById("timeline-container");
+const metronomeTimelineScroll = metronomeTimelineSvg?.closest('.timeline-scroll');
 const metronomeSvgUtils = window.PekoSvgUtils;
 const metronomeSvgTimeline = window.PekoSvgTimeline;
+const metronomeTimelineRulers = metronomeSvgTimeline?.createRulerLayout?.({
+  container: metronomeTimelineContainer,
+  scrollElement: metronomeTimelineScroll,
+  cornerRuler: document.getElementById('metronome-timeline-ruler-corner'),
+  verticalRuler: document.getElementById('metronome-timeline-vertical-ruler'),
+  horizontalRuler: document.getElementById('metronome-timeline-horizontal-ruler'),
+  button: rulersButton,
+  storageKey: 'metronome.rulers',
+  onVisibilityChange: () => redrawTimeline()
+});
 let disconnectMetronomeTimelineResize = null;
+let metronomeTimelineFollow = null;
 
 function updateMetronomeScale() {
   if (!metronomeSpacer) return;
@@ -590,6 +608,7 @@ function clearBeatSessionData() {
   pendulum.style.transform = 'rotate(-30deg)';
   localStorage.removeItem("metronome.panel");
   localStorage.removeItem("metronome.beat_history");
+  metronomeTimelineFollow?.reset();
   redrawTimeline();
   renderPanelView();
   applyBaseInfoVisibility();
@@ -636,6 +655,29 @@ function redrawTimeline() {
     width: METRONOME_TIMELINE_WIDTH,
     height: timelineHeight
   });
+  const guideColor = window.PekoBrightGuides?.getTimelineGuideColor(getCssVariable('--grey1')) || getCssVariable('--grey1');
+  metronomeTimelineRulers?.render({
+    width: METRONOME_TIMELINE_WIDTH,
+    height: timelineHeight,
+    color: guideColor,
+    bright: show_guides && Boolean(window.PekoBrightGuides?.getTimelineBright?.()),
+    drawVertical: (svg, dimensions) => {
+      metronomeSvgTimeline.drawVerticalRuler(svg, {
+        ...dimensions,
+        title: 'BPM',
+        titleY: getMetronomeTimelineTitleY(timelineHeight),
+        ticks: getMetronomeTimelineVerticalTicks(timelineHeight),
+        color: guideColor
+      });
+    },
+    drawHorizontal: (svg, dimensions) => {
+      metronomeSvgTimeline.drawHorizontalRuler(svg, {
+        ...dimensions,
+        ticks: getMetronomeTimelineHorizontalTicks(),
+        color: guideColor
+      });
+    }
+  });
   metronomeTimelineSvg.innerHTML = '';
   lastTop = { x: METRONOME_GRAPH_OFFSET, y: timelineHeight };
 
@@ -676,6 +718,30 @@ function redrawTimeline() {
 
     lastTop = { x, y: topY };
   }
+
+  if (showTimelinePlayhead && beatHistory.length > 0) {
+    const playheadX = getMetronomeTimelinePlayheadX();
+    metronomeTimelineSvg.appendChild(metronomeSvgUtils.createLine({
+      x1: playheadX,
+      y1: 0,
+      x2: playheadX,
+      y2: timelineHeight,
+      color: getCssVariable('--white'),
+      snap: false
+    }));
+  }
+
+  if (isPlaying) {
+    metronomeTimelineFollow?.followRatio(getMetronomeTimelinePlayheadRatio());
+  }
+}
+
+function getMetronomeTimelinePlayheadX() {
+  return Math.min(METRONOME_TIMELINE_WIDTH, METRONOME_GRAPH_OFFSET + Math.round(beatHistory.length * 10) + 0.5);
+}
+
+function getMetronomeTimelinePlayheadRatio() {
+  return Math.max(0, Math.min(1, getMetronomeTimelinePlayheadX() / METRONOME_TIMELINE_WIDTH));
 }
 
 function drawReferenceLines(timelineHeight) {
@@ -684,55 +750,58 @@ function drawReferenceLines(timelineHeight) {
 
   const guideColor = window.PekoBrightGuides?.getTimelineGuideColor(getCssVariable('--grey1')) || getCssVariable('--grey1');
   const maxGuide = Math.floor(timelineHeight / 30) * 30;
-  const titleY = timelineHeight - Math.min(timelineHeight, maxGuide - 30) - 5;
   const guidesLayer = document.createElementNS('http://www.w3.org/2000/svg', 'g');
   guidesLayer.setAttribute('class', 'metronome-timeline-guides');
   metronomeTimelineSvg.appendChild(guidesLayer);
 
   if (window.PekoBrightGuides?.getTimelineBright()) {
-    [[0.5, 0.5, METRONOME_TIMELINE_WIDTH - 0.5, 0.5], [METRONOME_TIMELINE_WIDTH - 0.5, 0.5, METRONOME_TIMELINE_WIDTH - 0.5, timelineHeight - 0.5], [METRONOME_TIMELINE_WIDTH - 0.5, timelineHeight - 0.5, 0.5, timelineHeight - 0.5], [0.5, timelineHeight - 0.5, 0.5, 0.5]].forEach(([x1, y1, x2, y2]) => {
-      guidesLayer.appendChild(metronomeSvgUtils.createLine({ x1, y1, x2, y2, color: guideColor }));
+    const boundary = metronomeTimelineRulers?.getVisible()
+      ? [[METRONOME_TIMELINE_WIDTH, 0, METRONOME_TIMELINE_WIDTH, timelineHeight], [METRONOME_TIMELINE_WIDTH, timelineHeight, 0, timelineHeight]]
+      : [[0, 0, METRONOME_TIMELINE_WIDTH, 0], [METRONOME_TIMELINE_WIDTH, 0, METRONOME_TIMELINE_WIDTH, timelineHeight], [METRONOME_TIMELINE_WIDTH, timelineHeight, 0, timelineHeight], [0, timelineHeight, 0, 0]];
+    boundary.forEach(([x1, y1, x2, y2]) => {
+      guidesLayer.appendChild(metronomeSvgUtils.createLine({ x1, y1, x2, y2, color: guideColor, snap: false }));
     });
   }
 
-  guidesLayer.appendChild(metronomeSvgUtils.createText({
-    x: 40,
-    y: titleY,
-    text: 'BPM',
-    color: guideColor,
-    size: 12,
-    anchor: 'end'
-  }));
-
-  guidesLayer.appendChild(metronomeSvgUtils.createLine({
-    x1: METRONOME_GRAPH_OFFSET,
-    y1: 0,
-    x2: METRONOME_GRAPH_OFFSET,
-    y2: timelineHeight,
-    color: guideColor
-  }));
-
   for (let bpm = 30; bpm <= maxGuide; bpm += 30) {
-    const y = timelineHeight - Math.min(timelineHeight, bpm);
+    const y = Math.floor(timelineHeight - Math.min(timelineHeight, bpm)) + 0.5;
     guidesLayer.appendChild(metronomeSvgUtils.createLine({
       x1: 0,
       y1: y,
       x2: METRONOME_TIMELINE_WIDTH,
       y2: y,
-      color: guideColor
-    }));
-
-    if (bpm >= maxGuide - 30) continue;
-
-    guidesLayer.appendChild(metronomeSvgUtils.createText({
-      x: 40,
-      y: y - 5,
-      text: String(bpm),
       color: guideColor,
-      size: 12,
-      anchor: 'end'
+      snap: false
     }));
+
   }
+}
+
+function getMetronomeTimelineVerticalTicks(timelineHeight) {
+  const maxGuide = Math.floor(timelineHeight / 30) * 30;
+  const ticks = [];
+  for (let bpm = 30; bpm <= maxGuide; bpm += 30) {
+    ticks.push({
+      position: timelineHeight - Math.min(timelineHeight, bpm),
+      label: bpm < maxGuide - 30 ? String(bpm) : ''
+    });
+  }
+  return ticks;
+}
+
+function getMetronomeTimelineTitleY(timelineHeight) {
+  const maxGuide = Math.floor(timelineHeight / 30) * 30;
+  const topGuideY = Math.floor(timelineHeight - Math.min(timelineHeight, maxGuide)) + 0.5;
+  return Math.min(timelineHeight - 8, topGuideY + 22);
+}
+
+function getMetronomeTimelineHorizontalTicks() {
+  const beatsPerTick = 20;
+  const ticks = [];
+  for (let beat = 0; beat * beatsPerTick * 10 <= METRONOME_TIMELINE_WIDTH; beat++) {
+    ticks.push({ position: beat * beatsPerTick * 10, label: String(beat * beatsPerTick) });
+  }
+  return ticks;
 }
 
 function toggleBlink() {
@@ -749,6 +818,17 @@ function updateSoundButton() {
 
 function updateBlinkButton() {
   toggleBlinkButton.classList.toggle('button-on', isBlinkOn);
+}
+
+function updateTimelineControlButtons() {
+  if (playheadButton) {
+    playheadButton.classList.toggle('button-on', showTimelinePlayhead);
+    playheadButton.setAttribute('aria-pressed', String(showTimelinePlayhead));
+  }
+  if (followButton) {
+    followButton.classList.toggle('button-on', followTimeline);
+    followButton.setAttribute('aria-pressed', String(followTimeline));
+  }
 }
 
 function saveSettings() {
@@ -782,6 +862,8 @@ function loadSettings() {
   const savedAccent = localStorage.getItem('metronome.accent_on');
   const savedMutedBeats = localStorage.getItem('metronome.muted_beats');
   const savedWeight = localStorage.getItem('metronome.show_weight');
+  const savedTimelinePlayhead = localStorage.getItem('metronome.timeline_playhead');
+  const savedTimelineFollow = localStorage.getItem('metronome.timeline_follow');
   const hasSavedBaseMode = savedShowBaseBpm !== null || savedShowBaseTempi !== null || savedShowBaseSignature !== null;
 
   const globalBPM = parseFloat(localStorage.getItem('global.default_bpm'));
@@ -822,6 +904,12 @@ function loadSettings() {
   if (savedWeight !== null) {
     showMetronomeWeight = JSON.parse(savedWeight);
   }
+  if (savedTimelinePlayhead !== null) {
+    showTimelinePlayhead = savedTimelinePlayhead === 'true';
+  }
+  if (savedTimelineFollow !== null) {
+    followTimeline = savedTimelineFollow === 'true';
+  }
   if (savedSignature !== null && signatureSelect) {
     signatureSelect.value = savedSignature;
   }
@@ -850,6 +938,7 @@ function loadSettings() {
 
   updateSoundButton();
   updateBlinkButton();
+  updateTimelineControlButtons();
   if (volumeSlider) {
     volumeSlider.value = String(soundVolume);
   }
@@ -861,6 +950,21 @@ function loadSettings() {
   updateBaseSignatureCircles();
   updateMetronomeWeight();
   if (!isBlinkOn) clearBlink();
+}
+
+function setupMetronomeTimelineFollow() {
+  if (!metronomeTimelineScroll || !metronomeSvgTimeline?.createFollowController) return;
+
+  metronomeTimelineFollow?.destroy();
+  metronomeTimelineFollow = metronomeSvgTimeline.createFollowController({
+    scrollElement: metronomeTimelineScroll,
+    onEnabledChange: (enabled) => {
+      followTimeline = enabled;
+      localStorage.setItem('metronome.timeline_follow', String(followTimeline));
+      updateTimelineControlButtons();
+    }
+  });
+  metronomeTimelineFollow.setEnabled(followTimeline);
 }
 
 btnGuides.addEventListener('click', () => {
@@ -965,6 +1069,9 @@ resetButton.addEventListener('click', () => {
   localStorage.removeItem('metronome.accent_on');
   localStorage.removeItem('metronome.muted_beats');
   localStorage.removeItem('metronome.show_weight');
+  localStorage.removeItem('metronome.rulers');
+  localStorage.removeItem('metronome.timeline_playhead');
+  localStorage.removeItem('metronome.timeline_follow');
 
   isSoundOn = true;
   isBlinkOn = false;
@@ -976,6 +1083,8 @@ resetButton.addEventListener('click', () => {
   showBaseSignature = true;
   showMetronomeWeight = true;
   showPanelTempi = false;
+  showTimelinePlayhead = true;
+  followTimeline = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   mutedBeatIndexes = new Set();
   soundVolume = 100;
   beatSoundSelect.value = "click";
@@ -985,12 +1094,15 @@ resetButton.addEventListener('click', () => {
   updateMasterSoundOutput();
   updateSoundButton();
   updateBlinkButton();
+  metronomeTimelineFollow?.setEnabled(followTimeline);
+  updateTimelineControlButtons();
   if (volumeSlider) {
     volumeSlider.value = String(soundVolume);
   }
   btnGuides.classList.remove('button-on');
   btnHaptic.classList.remove('button-on');
   updateToggleButtons();
+  metronomeTimelineRulers?.setVisible(true, false);
   clearBeatSessionData();
   updateBaseText();
 });
@@ -1015,6 +1127,25 @@ toggleBlinkButton.addEventListener('click', () => {
   if (!isBlinkOn) clearBlink();
   saveSettings();
 });
+if (playheadButton) {
+  playheadButton.addEventListener('click', () => {
+    showTimelinePlayhead = !showTimelinePlayhead;
+    localStorage.setItem('metronome.timeline_playhead', String(showTimelinePlayhead));
+    updateTimelineControlButtons();
+    redrawTimeline();
+  });
+}
+if (followButton) {
+  followButton.addEventListener('click', () => {
+    followTimeline = !followTimeline;
+    metronomeTimelineFollow?.setEnabled(followTimeline);
+    if (followTimeline) {
+      metronomeTimelineFollow?.centerRatio(getMetronomeTimelinePlayheadRatio());
+    }
+    localStorage.setItem('metronome.timeline_follow', String(followTimeline));
+    updateTimelineControlButtons();
+  });
+}
 beatSoundSelect.addEventListener('change', saveSettings);
 bpmInput.addEventListener('input', () => updateBPM(parseFloat(bpmInput.value)));
 bpmSlider.addEventListener('input', () => updateBPM(bpmSlider.value));
@@ -1142,6 +1273,7 @@ function getCssVariable(name) {
 }
 
 loadSettings();
+setupMetronomeTimelineFollow();
 
 window.addEventListener('pekosoft:global-defaults-change', (event) => {
   const defaults = event.detail;

@@ -352,8 +352,10 @@ function restoreDesktopSidebarState() {
     return;
   }
 
-  const tocOpen = localStorage.getItem('global.toc_sidebar_open') === 'true';
-  const settingsOpen = localStorage.getItem('global.settings_sidebar_open') === 'true';
+  const savedTocOpen = localStorage.getItem('global.toc_sidebar_open');
+  const savedSettingsOpen = localStorage.getItem('global.settings_sidebar_open');
+  const tocOpen = savedTocOpen === null || savedTocOpen === 'true';
+  const settingsOpen = savedSettingsOpen === null || savedSettingsOpen === 'true';
 
   toc.classList.toggle('toc-open', tocOpen);
   settingsPanel.classList.toggle('settings-panel-open', settingsOpen);

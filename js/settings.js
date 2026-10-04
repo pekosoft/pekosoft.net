@@ -706,12 +706,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
     window.resetModuleLayout?.();
 
-    document.getElementById("toc")?.classList.remove("toc-open");
-    document.getElementById("settings-panel")?.classList.remove("settings-panel-open");
-    document.getElementById("toggle-settings-panel-button")?.setAttribute("aria-expanded", "false");
-    document.body.classList.remove("toc-sidebar-open", "settings-sidebar-open");
-
     localStorage.clear();
+
+    const resetSidebarsOpen = window.matchMedia("(min-width: 800px)").matches;
+    document.getElementById("toc")?.classList.toggle("toc-open", resetSidebarsOpen);
+    document.getElementById("settings-panel")?.classList.toggle("settings-panel-open", resetSidebarsOpen);
+    document.getElementById("toggle-settings-panel-button")?.setAttribute("aria-expanded", String(resetSidebarsOpen));
+    document.body.classList.toggle("toc-sidebar-open", resetSidebarsOpen);
+    document.body.classList.toggle("settings-sidebar-open", resetSidebarsOpen);
   }
 
   function normalizeGridSize(value) {

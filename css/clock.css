@@ -36,6 +36,14 @@
   overflow-wrap: anywhere;
 }
 
+.calendar-date-row {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  max-width: 100%;
+}
+
 .clock-card strong {
   margin-top: 1px;
 }
@@ -51,7 +59,7 @@
   position: relative;
   width: min(174px, 52vw);
   height: min(174px, 52vw);
-  border: 4px solid var(--white);
+  background: var(--grey1);
   border-radius: 50%;
 }
 
@@ -65,11 +73,20 @@
   background: var(--white);
 }
 
+.clock-mark,
+.clock-center {
+  background: var(--black);
+}
+
+.clock-dot {
+  background: var(--black);
+}
+
 .clock-mark {
   width: 11px;
   height: 11px;
-  background: var(--black);
-  border: 3px solid var(--white);
+  background: var(--grey1);
+  border: 3px solid var(--black);
   border-radius: 50%;
 }
 
@@ -140,7 +157,7 @@
   height: 67px;
   margin-left: -0.5px;
   margin-top: -67px;
-  background: var(--color2);
+  background: var(--color1);
 }
 
 .clock-center {
@@ -169,6 +186,19 @@
   user-select: none;
 }
 
+.calendar-corner,
+.calendar-weekday-label {
+  height: 32px;
+}
+
+.calendar-weekday-label {
+  display: grid;
+  place-items: center;
+  color: var(--grey2);
+  font-size: 14px;
+  line-height: 1;
+}
+
 .calendar-week,
 .calendar-day {
   display: grid;
@@ -181,7 +211,7 @@
 .calendar-week {
   width: 32px;
   background: var(--black);
-  color: var(--white);
+  color: var(--grey2);
   font-size: 16px;
   line-height: 1;
 }
@@ -235,7 +265,6 @@
   .clock-face {
     width: clamp(174px, 22vw, 360px);
     height: clamp(174px, 22vw, 360px);
-    border-width: 4px;
   }
 
   .clock-mark {
@@ -316,11 +345,17 @@
     aspect-ratio: 1;
   }
 
+  .calendar-corner,
+  .calendar-weekday-label {
+    height: auto;
+  }
+
   .calendar-spacer {
     height: auto;
   }
 
   .calendar-week,
+  .calendar-weekday-label,
   .calendar-daynum {
     font-size: clamp(16px, 1.3vw, 24px);
   }

@@ -5,6 +5,7 @@ const clockHour = document.getElementById("clock-hour");
 const clockMinute = document.getElementById("clock-minute");
 const clockSecond = document.getElementById("clock-second");
 const calendarGrid = document.getElementById("calendar-grid");
+const calendarMonthName = document.getElementById("calendar-month-name");
 const resetButton = document.getElementById("reset-button");
 const clockSoundButton = document.getElementById("clock-sound-button");
 const clockHapticButton = document.getElementById("clock-haptic-button");
@@ -27,7 +28,12 @@ function formatLocalDate(date) {
 }
 
 function formatHeroDate(date) {
-  return `${date.toLocaleString("en-US", { weekday: "long" })} ${formatLocalDate(date)}`;
+  const weekday = date.toLocaleString("en-US", { weekday: "long" });
+  return `${weekday} ${formatLocalDate(date)}`;
+}
+
+function formatMonthName(date) {
+  return date.toLocaleString("en-US", { month: "long" });
 }
 
 function getIsoWeek(date) {
@@ -38,6 +44,8 @@ function getIsoWeek(date) {
   return Math.ceil((((weekDate - yearStart) / 86400000) + 1) / 7);
 }
 
+const ISO_WEEKDAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+
 function renderCalendarMonth(date) {
   if (!calendarGrid) return;
 
@@ -45,16 +53,38 @@ function renderCalendarMonth(date) {
   const month = date.getMonth();
   const monthKey = `${year}-${month}`;
 
+  if (calendarMonthName) calendarMonthName.textContent = formatMonthName(date);
+
   if (renderedCalendarMonth !== monthKey) {
     const daysInMonth = new Date(year, month + 1, 0).getDate();
-    const rows = Math.ceil(daysInMonth / 7);
+    // ISO 8601 weeks start on Monday, so shift Sunday (0) to the end of the week.
+    const firstWeekdayIndex = (new Date(year, month, 1).getDay() + 6) % 7;
+    const totalCells = firstWeekdayIndex + daysInMonth;
+    const rows = Math.ceil(totalCells / 7);
     calendarGrid.textContent = "";
 
+    const cornerCell = document.createElement("div");
+    cornerCell.className = "calendar-corner";
+    calendarGrid.appendChild(cornerCell);
+
+    const headerSpacer = document.createElement("div");
+    headerSpacer.className = "calendar-spacer";
+    calendarGrid.appendChild(headerSpacer);
+
+    ISO_WEEKDAY_LABELS.forEach((label) => {
+      const headerCell = document.createElement("div");
+      headerCell.className = "calendar-weekday-label";
+      headerCell.textContent = label;
+      calendarGrid.appendChild(headerCell);
+    });
+
     for (let row = 0; row < rows; row++) {
-      const rowStartDay = (row * 7) + 1;
+      const rowFirstDay = (row * 7) - firstWeekdayIndex + 1;
+      // Date() normalizes out-of-range days, so this still resolves to the
+      // correct ISO week even when the row spans into an adjacent month.
       const weekCell = document.createElement("div");
       weekCell.className = "calendar-week";
-      weekCell.textContent = padDatePart(getIsoWeek(new Date(year, month, rowStartDay)));
+      weekCell.textContent = padDatePart(getIsoWeek(new Date(year, month, rowFirstDay)));
       calendarGrid.appendChild(weekCell);
 
       const spacerCell = document.createElement("div");
@@ -62,11 +92,12 @@ function renderCalendarMonth(date) {
       calendarGrid.appendChild(spacerCell);
 
       for (let column = 0; column < 7; column++) {
-        const day = rowStartDay + column;
+        const day = rowFirstDay + column;
         const cell = document.createElement("div");
-        cell.className = day <= daysInMonth ? "calendar-day" : "calendar-day calendar-empty";
+        const inMonth = day >= 1 && day <= daysInMonth;
+        cell.className = inMonth ? "calendar-day" : "calendar-day calendar-empty";
 
-        if (day <= daysInMonth) {
+        if (inMonth) {
           const dayNumber = document.createElement("div");
           dayNumber.className = "calendar-daynum";
           dayNumber.textContent = padDatePart(day);

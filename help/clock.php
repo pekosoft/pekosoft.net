@@ -24,7 +24,7 @@
   </svg>
   <div class="justify">
     <h1>Clock <span class="object">display</span></h1>
-    Shows local hours, minutes and seconds with an analog face and digital time.
+    Shows local hours, minutes and seconds with an analog face and digital time, plus the current weekday and date. <span class="example">Example: Sunday 04-10-2026.</span>
   </div>
 </div>
 
@@ -34,7 +34,7 @@
   </svg>
   <div class="justify">
     <h1>Calendar <span class="object">display</span></h1>
-    Shows the current month with ISO week numbers and highlights today.
+    Shows the current month name, weekday column headers and day numbers aligned to their actual weekday, and highlights today. Weeks start on Monday and are labeled with ISO 8601 week numbers. <span class="example">Example: October, with Monday as the first column.</span>
   </div>
 </div>
 

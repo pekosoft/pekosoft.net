@@ -48,7 +48,10 @@
           <div class="calendar-month" aria-label="Current month calendar">
             <div id="calendar-grid" class="calendar-grid"></div>
           </div>
-          <strong id="clock-local-date">Checking...</strong>
+          <div class="calendar-date-row">
+            <strong id="clock-local-date">Checking...</strong>
+            <strong id="calendar-month-name">Checking...</strong>
+          </div>
         </div>
       </div>
     </div>

@@ -9,6 +9,8 @@
   $releasePage = "";
   $availableModules = ["tool"];
   $clientIp = isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : 'Unavailable';
+  $isHttps = (!empty($_SERVER['HTTPS']) && strtolower((string) $_SERVER['HTTPS']) !== 'off')
+    || (isset($_SERVER['SERVER_PORT']) && (string) $_SERVER['SERVER_PORT'] === '443');
   ?>
   <meta name="keywords" content="system info, computer info, browser info, client info, os, cpu, ram, ip">
   <link rel="stylesheet" type="text/css" href="/css/<?php echo $release; ?>.css?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/css/' . $release . '.css'); ?>">
@@ -105,6 +107,24 @@
           <button class="system-row-icon square icon-only" type="button" title="Browser user agent" aria-label="Browser user agent"><svg class="icons"><use href="/icons.svg#person" /></svg></button>
           <span>User agent:</span>
           <strong id="system-user-agent">Checking...</strong>
+        </div>
+      </div>
+      </section>
+
+      <section class="system-category">
+      <h1 class="system-category-title">
+        Server
+      </h1>
+      <div class="system-grid">
+        <div class="system-row">
+          <button class="system-row-icon square icon-only" type="button" title="PHP runtime version" aria-label="PHP runtime version"><svg class="icons"><use href="/icons.svg#software" /></svg></button>
+          <span>PHP:</span>
+          <strong><?php echo htmlspecialchars(PHP_VERSION, ENT_QUOTES, 'UTF-8'); ?></strong>
+        </div>
+        <div class="system-row">
+          <button class="system-row-icon square icon-only" type="button" title="HTTPS connection status" aria-label="HTTPS connection status"><svg class="icons"><use href="/icons.svg#lock" /></svg></button>
+          <span>HTTPS:</span>
+          <strong><?php echo $isHttps ? 'Yes' : 'No'; ?></strong>
         </div>
       </div>
       </section>

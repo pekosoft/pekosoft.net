@@ -193,6 +193,36 @@
     <use href="/icons.svg#online"></use>
   </svg>
   <div class="justify">
+    <h1>Server</h1>
+    A limited view of public-facing server runtime information.
+  </div>
+</div>
+
+<div class="feature-row border">
+  <svg class="standard-image-help">
+    <use href="/icons.svg#software"></use>
+  </svg>
+  <div class="justify">
+    <h1>PHP <span class="object">field</span></h1>
+    The PHP runtime version used by the server.
+  </div>
+</div>
+
+<div class="feature-row border">
+  <svg class="standard-image-help">
+    <use href="/icons.svg#lock"></use>
+  </svg>
+  <div class="justify">
+    <h1>HTTPS <span class="object">field</span></h1>
+    Whether the current connection to the server uses HTTPS.
+  </div>
+</div>
+
+<div class="feature-row border">
+  <svg class="standard-image-help">
+    <use href="/icons.svg#online"></use>
+  </svg>
+  <div class="justify">
     <h1>Network</h1>
     Values from the browser network state and server request.
   </div>

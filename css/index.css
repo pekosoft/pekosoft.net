@@ -1885,7 +1885,11 @@ html.invert-colors .container:fullscreen {
   /* Preserve white spaces and wrap lines */
 }
 
-html.show-grid {
+html.show-grid body::before {
+  content: "";
+  position: fixed;
+  z-index: -1;
+  inset: 0;
   background-image:
     linear-gradient(to right, var(--grey2) 1px, transparent 1px),
     linear-gradient(to bottom, var(--grey2) 1px, transparent 1px);
@@ -1894,12 +1898,12 @@ html.show-grid {
     var(--grid-size, 16px) var(--grid-size, 16px);
   background-position: -1px -1px, -1px -1px;
   background-repeat: repeat;
-  background-attachment: fixed;
+  pointer-events: none;
 }
 
 .background-bitmap {
   position: fixed;
-  z-index: -1;
+  z-index: -2;
   inset: 0;
   background-image: var(--selected-background-image, none);
   background-size: cover;

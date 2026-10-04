@@ -30,7 +30,7 @@
 
 <div class="feature-row border">
   <svg class="standard-image-help">
-    <use href="/icons.svg#asterisk"></use>
+    <use href="/icons.svg#calendar"></use>
   </svg>
   <div class="justify">
     <h1>Calendar <span class="object">display</span></h1>

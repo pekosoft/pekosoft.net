@@ -249,7 +249,7 @@
   </svg>
   <div class="justify">
     <h1>Controls <span class="object">module</span></h1>
-    Buttons, fields, menus, knobs and sliders are collected in the Controls module. Hovering, focusing or long-pressing any control on the page shows its help and feedback in the status bar.
+    Buttons, fields, menus, knobs and sliders are collected in the Controls module.
   </div>
 </div>
 
@@ -380,7 +380,7 @@
 
 <div class="feature-row border">
   <svg class="standard-image-help"><use href="/icons.svg#bars"></use></svg>
-  <div class="justify"><h1>Status bar <span class="object">option</span></h1>Toggles the bottom status bar.</div>
+  <div class="justify"><h1>Status bar <span class="object">option</span></h1>Toggles the bottom status bar. While on, hovering, focusing or long-pressing any control shows its help and feedback there. Ctrl+click a control, or click its icon in the status bar, opens that control's Help entry directly.</div>
 </div>
 
 <div class="feature-row border">

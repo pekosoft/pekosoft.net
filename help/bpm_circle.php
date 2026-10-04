@@ -84,7 +84,7 @@
   </svg>
   <div class="justify">
     <h1>Controls <span class="object">module</span></h1>
-    Buttons, fields, menus, knobs and sliders are collected in the Controls module. Hovering, focusing or long-pressing any control on the page shows its help and feedback in the status bar.
+    Buttons, fields, menus, knobs and sliders are collected in the Controls module.
   </div>
 </div>
 

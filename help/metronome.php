@@ -154,7 +154,7 @@
   </svg>
   <div class="justify">
     <h1>DOUBLE <span class="object">button</span></h1>
-    Doubles the current BPM. <span class="example">Example: 60 becomes 120.</span>
+    Doubles the current BPM. <span class="example">Example: 120 becomes 240.</span>
   </div>
 </div>
 

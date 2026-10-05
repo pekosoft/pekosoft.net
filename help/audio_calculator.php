@@ -184,8 +184,27 @@
   </svg>
   <div class="justify">
     <h1>Timeline <span class="object">module</span></h1>
-    Timeline is reserved for future visual overlays.
+    Illustrates sampling and quantization using the selected Sample rate and Bit depth. White is the original sine wave, blue shows each quantized value held until the next sample, and magenta marks the quantized sample points. This is a conceptual sample-and-hold view, not a reconstructed audio output.
+    <br><br>
+    The axes stay fixed: a 1.000 ms window of a 2.000 kHz mono sine wave, with peak amplitude 0.025 full scale (-32.041 dBFS). The amplitude ruler shows a magnified range of approximately -0.031 to +0.031 full scale, making 8-bit quantization visible. Guides mark quantization levels; at higher depths only representative levels are drawn and individual steps become too fine to distinguish. The summary shows the actual full-scale level count.
+    <br><br>
+    Duration and Channels still affect the calculator results, but do not change this fixed mono illustration. No audio is played.
   </div>
+</div>
+
+<div class="feature-row border">
+  <svg class="standard-image-help"><use href="/icons.svg#guides"></use></svg>
+  <div class="justify"><h1>Guides <span class="object">button</span></h1>Shows or hides Timeline guides. Initially follows Settings Guides.</div>
+</div>
+
+<div class="feature-row border">
+  <svg class="standard-image-help"><use href="/icons.svg#sun"></use></svg>
+  <div class="justify"><h1>Bright <span class="object">button</span></h1>Switches Timeline guides and rulers between grey and white. Initially follows Settings Bright.</div>
+</div>
+
+<div class="feature-row border">
+  <svg class="standard-image-help"><use href="/icons.svg#ruler"></use></svg>
+  <div class="justify"><h1>Rulers <span class="object">button</span></h1>Shows or hides the time (ms) and amplitude (FS, full scale) rulers. Initially follows Settings Rulers.</div>
 </div>
 
 <div class="feature-row module">

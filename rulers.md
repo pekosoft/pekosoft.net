@@ -33,7 +33,7 @@ All ruler and guide lines must use the same explicit SVG contract:
 
 ## Regression Matrix
 
-Verify each ruler-enabled timeline (BPM Calculator, Metronome, Tap Pad, Turntable, Player) in these combinations:
+Verify each ruler-enabled timeline (Audio Calculator, BPM Calculator, Metronome, Tap Pad, Turntable, Player) in these combinations:
 
 | Scenario | Expected result |
 | --- | --- |

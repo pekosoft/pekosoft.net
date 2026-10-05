@@ -155,8 +155,41 @@
   <!-- TIMELINE -->
 
   <div id="timeline-container" class="container">
-    <div class="module-body canvas-container border"></div>
-    <div class="module-footer wrapper colored"></div>
+    <div class="module-body canvas-container border">
+      <div class="sampling-summary">
+        <div class="sampling-legend"><span>Signal</span><span>Quantized steps</span><span>Sample points</span></div>
+        <div id="sampling-summary"></div>
+        <div id="sampling-details"></div>
+      </div>
+      <div class="timeline-ruler-layout">
+        <div class="timeline-ruler-corner" aria-hidden="true">
+          <svg id="sampling-timeline-ruler-corner" preserveAspectRatio="none"></svg>
+        </div>
+        <div class="timeline-horizontal-ruler" aria-hidden="true">
+          <svg id="sampling-timeline-horizontal-ruler" preserveAspectRatio="none"></svg>
+        </div>
+        <div class="timeline-vertical-ruler" aria-hidden="true">
+          <svg id="sampling-timeline-vertical-ruler" preserveAspectRatio="none"></svg>
+        </div>
+        <div class="timeline-scroll scrollable">
+          <svg id="sampling-timeline" class="timeline-svg" preserveAspectRatio="none" role="img" aria-label="Sampling and quantization illustration"></svg>
+        </div>
+      </div>
+    </div>
+    <div class="module-footer wrapper colored">
+      <button id="timeline-guides-button" class="square" type="button" title="Toggle guides">
+        <svg class="icons" role="img"><use href="/icons.svg#guides" /></svg>
+        <span class="button-text">Guides</span>
+      </button>
+      <button id="timeline-bright-button" data-shared-timeline-bright class="square" type="button" title="Toggle bright guides">
+        <svg class="icons" role="img"><use href="/icons.svg#sun" /></svg>
+        <span class="button-text">Bright</span>
+      </button>
+      <button id="rulers-button" class="square" type="button" title="Toggle rulers">
+        <svg class="icons" role="img"><use href="/icons.svg#ruler" /></svg>
+        <span class="button-text">Rulers</span>
+      </button>
+    </div>
   </div>
 
   <!-- PANEL -->
@@ -187,6 +220,8 @@
 
   <script src="/js/modules.js?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/js/modules.js'); ?>"></script>
   <script src="/js/drag.js?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/js/drag.js'); ?>"></script>
+  <script src="/js/svg_utils.js?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/js/svg_utils.js'); ?>"></script>
+  <script src="/js/svg_timeline.js?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/js/svg_timeline.js'); ?>"></script>
   <script src="/js/audio_calculator.js?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/js/audio_calculator.js'); ?>"></script>
   <?php require($_SERVER['DOCUMENT_ROOT'] . "/elements/beta_footer.php"); ?>
 </body>

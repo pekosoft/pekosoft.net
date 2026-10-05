@@ -24,6 +24,11 @@ window.addEventListener('DOMContentLoaded', () => {
     copyButton: document.getElementById('copy-button'),
     resetButton: document.getElementById('reset-button'),
     valuesButton: document.getElementById('toggle-values-button'),
+    timeline: document.getElementById('sampling-timeline'),
+    samplingSummary: document.getElementById('sampling-summary'),
+    samplingDetails: document.getElementById('sampling-details'),
+    timelineScroll: document.querySelector('#timeline-container .timeline-scroll'),
+    timelineGuidesButton: document.getElementById('timeline-guides-button'),
     panelModeButtons: document.querySelectorAll('.info-display-button')
   };
 
@@ -49,6 +54,22 @@ window.addEventListener('DOMContentLoaded', () => {
   let valuesVisible = DEFAULT_STATE.valuesVisible;
   let valuesLayer = null;
   let resizeObserver = null;
+  const svgUtils = window.PekoSvgUtils;
+  const timelineUtils = window.PekoSvgTimeline;
+  let timelineGuidesVisible = localStorage.getItem('audio_calculator.timeline_guides') === null
+    ? window.PekoGuides.getGlobal()
+    : localStorage.getItem('audio_calculator.timeline_guides') === 'true';
+  const timelineRulers = timelineUtils.createRulerLayout({
+    container: document.getElementById('timeline-container'),
+    scrollElement: refs.timelineScroll,
+    cornerRuler: document.getElementById('sampling-timeline-ruler-corner'),
+    verticalRuler: document.getElementById('sampling-timeline-vertical-ruler'),
+    horizontalRuler: document.getElementById('sampling-timeline-horizontal-ruler'),
+    button: document.getElementById('rulers-button'),
+    storageKey: 'audio_calculator.rulers',
+    axisWidth: 80,
+    onVisibilityChange: renderSamplingTimeline
+  });
   const presetValueByPair = {
     '8|22050|1': '8|22050|1',
     '16|32000|2': '16|32000|2',
@@ -87,8 +108,9 @@ window.addEventListener('DOMContentLoaded', () => {
       if (!raw) return null;
 
       const parsed = JSON.parse(raw);
+      const duration = parseFloat(parsed.duration);
       return {
-        duration: Math.max(0, parseFloat(parsed.duration) || DEFAULT_STATE.duration),
+        duration: Number.isFinite(duration) ? Math.max(0, duration) : DEFAULT_STATE.duration,
         bitDepth: clampToOptions(parseInt(parsed.bitDepth, 10), config.bitDepths, DEFAULT_STATE.bitDepth),
         sampleRate: clampToOptions(parseInt(parsed.sampleRate, 10), config.sampleRates, DEFAULT_STATE.sampleRate),
         channels: Math.min(10, Math.max(1, parseInt(parsed.channels, 10) || DEFAULT_STATE.channels)),
@@ -116,7 +138,7 @@ window.addEventListener('DOMContentLoaded', () => {
   function saveState() {
     try {
       const state = {
-        duration: Math.max(0, parseFloat(refs.duration.value) || DEFAULT_STATE.duration),
+        duration: getCurrentValues().duration,
         bitDepth: parseInt(refs.bitDepth.value, 10),
         sampleRate: parseInt(refs.sampleRate.value, 10),
         channels: parseInt(refs.channels.value, 10),
@@ -131,6 +153,14 @@ window.addEventListener('DOMContentLoaded', () => {
   }
 
   function resetState() {
+    ['audio_calculator.timeline_guides', 'audio_calculator.rulers', 'audio_calculator.timeline_bright'].forEach((key) => localStorage.removeItem(key));
+    timelineGuidesVisible = window.PekoGuides.getGlobal();
+    timelineRulers.setVisible(window.PekoRulers.getGlobal(), false);
+    const brightButton = document.getElementById('timeline-bright-button');
+    const bright = window.PekoBrightGuides.getTimelineBright();
+    brightButton.classList.toggle('button-on', bright);
+    brightButton.setAttribute('aria-pressed', String(bright));
+    window.PekoGuides.syncPageRegistry();
     applyState(DEFAULT_STATE);
     updateOutputFields();
   }
@@ -183,7 +213,143 @@ window.addEventListener('DOMContentLoaded', () => {
 
     updateSelectedCell();
     updatePanel();
+    renderSamplingTimeline();
     saveState();
+  }
+
+  function getSamplingIllustration({ bitDepth, sampleRate }) {
+    const duration = 0.001;
+    const frequency = 2000;
+    const amplitude = 0.025;
+    const range = 1 / 32;
+    const step = 2 ** (1 - bitDepth);
+    const signalAt = (time) => amplitude * Math.sin(2 * Math.PI * frequency * time);
+    const samples = Array.from({ length: Math.floor(duration * sampleRate) + 1 }, (_, index) => {
+      const time = index / sampleRate;
+      const signal = signalAt(time);
+      return { time, signal, quantized: Math.round(signal / step) * step };
+    });
+    return { duration, frequency, amplitude, range, step, signalAt, samples };
+  }
+
+  function renderSamplingTimeline() {
+    const values = getCurrentValues();
+    const illustration = getSamplingIllustration(values);
+    const { duration, frequency, amplitude, range, signalAt, samples } = illustration;
+    const { amplitudeLevels } = computeMetrics(values);
+    const summary = `${values.bitDepth}-bit / ${(values.sampleRate / 1000).toFixed(3)} kHz / ${amplitudeLevels} levels`;
+    refs.samplingSummary.textContent = summary;
+    refs.samplingDetails.textContent = `Mono illustration: ${(duration * 1000).toFixed(3)} ms / ${(frequency / 1000).toFixed(3)} kHz / ${(20 * Math.log10(amplitude)).toFixed(3)} dBFS`;
+    refs.timeline.setAttribute('aria-label', `Sampling and quantization: ${summary}. ${refs.samplingDetails.textContent}. White signal, blue quantized steps, magenta sample points. Amplitude range plus or minus ${range.toFixed(3)} full scale.`);
+    const width = Math.max(1, Math.round(refs.timelineScroll.clientWidth));
+    const height = Math.max(1, Math.round(refs.timelineScroll.clientHeight));
+    timelineUtils.syncViewBox(refs.timeline, width, height);
+    refs.timeline.replaceChildren();
+    refs.timelineGuidesButton.classList.toggle('button-on', timelineGuidesVisible);
+    refs.timelineGuidesButton.setAttribute('aria-pressed', String(timelineGuidesVisible));
+    const xTickCount = Math.max(1, Math.min(4, Math.floor(width / 90)));
+    const leftPadding = 4;
+    const rightPadding = Math.min(width / 3, 72);
+    const plotWidth = Math.max(1, width - leftPadding - rightPadding);
+    const plotHeight = Math.max(1, height - 1);
+    const toX = (time) => leftPadding + time / duration * plotWidth;
+    const toY = (value) => plotHeight * (1 - value / range) / 2;
+    const xTicks = Array.from({ length: xTickCount }, (_, index) => ({
+      position: Math.round(toX(duration * (index + 1) / xTickCount)),
+      label: `${(duration * 1000 * (index + 1) / xTickCount).toFixed(3)} ms`
+    }));
+    const yTicks = Array.from({ length: 5 }, (_, index) => ({
+      position: Math.floor(toY(-range + range * index / 2)),
+      label: (-range + range * index / 2).toFixed(3)
+    }));
+    const levelGuides = Array.from({ length: 9 }, (_, index) => Math.floor(toY(-range + range * index / 4)));
+    const guideColor = window.PekoBrightGuides.getTimelineGuideColor('var(--grey1)');
+    const bright = timelineGuidesVisible && window.PekoBrightGuides.getTimelineBright();
+    const rulersVisible = timelineRulers.getVisible();
+
+    timelineRulers.render({
+      width,
+      height,
+      color: guideColor,
+      bright,
+      drawVertical: (svg, dimensions) => timelineUtils.drawVerticalRuler(svg, {
+        ...dimensions,
+        title: 'FS',
+        titleY: plotHeight * 9 / 16,
+        ticks: yTicks,
+        color: guideColor
+      }),
+      drawHorizontal: (svg, dimensions) => timelineUtils.drawHorizontalRuler(svg, {
+        ...dimensions,
+        ticks: xTicks,
+        color: guideColor
+      })
+    });
+
+    if (timelineGuidesVisible) {
+      xTicks.forEach(({ position }) => {
+        refs.timeline.appendChild(svgUtils.createLine({
+          x1: position + 0.5, y1: 0, x2: position + 0.5, y2: height,
+          color: guideColor, snap: false
+        }));
+      });
+      levelGuides.forEach((position) => {
+        if ((position === 0 && (rulersVisible || bright)) || (position === plotHeight && bright)) return;
+        refs.timeline.appendChild(svgUtils.createLine({
+          x1: 0, y1: position + 0.5, x2: width, y2: position + 0.5,
+          color: guideColor, snap: false
+        }));
+      });
+      if (bright) {
+        const edges = rulersVisible
+          ? [[width, 0, width, height], [width, height, 0, height]]
+          : [[0, 0, width, 0], [width, 0, width, height], [width, height, 0, height], [0, height, 0, 0]];
+        edges.forEach(([x1, y1, x2, y2]) => {
+          refs.timeline.appendChild(svgUtils.createLine({ x1, y1, x2, y2, color: guideColor, snap: false }));
+        });
+      }
+    }
+
+    const segmentCount = Math.max(128, Math.min(2048, Math.ceil(plotWidth)));
+    const signal = svgUtils.createPath({
+      points: Array.from({ length: segmentCount + 1 }, (_, index) => {
+        const time = duration * index / segmentCount;
+        return { x: toX(time), y: toY(signalAt(time)) };
+      }),
+      color: 'var(--white)',
+      strokeWidth: 1,
+      crisp: false,
+      title: 'Original 2.000 kHz sine wave'
+    });
+    signal.id = 'sampling-signal';
+    refs.timeline.appendChild(signal);
+    const quantizedPoints = [];
+    samples.forEach((sample, index) => {
+      if (index > 0) {
+        quantizedPoints.push({ x: toX(sample.time), y: toY(samples[index - 1].quantized) });
+      }
+      quantizedPoints.push({ x: toX(sample.time), y: toY(sample.quantized) });
+    });
+    quantizedPoints.push({ x: toX(duration), y: toY(samples[samples.length - 1].quantized) });
+    const quantized = svgUtils.createPath({
+      points: quantizedPoints,
+      color: 'var(--color1)',
+      strokeWidth: 2,
+      crisp: false,
+      title: 'Quantized sample values held until the next sample'
+    });
+    quantized.id = 'sampling-quantized';
+    refs.timeline.appendChild(quantized);
+    const markers = createSvgNode('g', { id: 'sampling-points' });
+    const radius = Math.max(0.75, Math.min(3, plotWidth / samples.length / 4));
+    samples.forEach((sample) => {
+      markers.appendChild(svgUtils.createCircle({
+        cx: toX(sample.time), cy: toY(sample.quantized), r: radius,
+        fill: 'var(--color2)',
+        title: `${(sample.time * 1000).toFixed(3)} ms / ${sample.quantized.toFixed(6)} FS`
+      }));
+    });
+    refs.timeline.appendChild(markers);
   }
 
   function syncPresetSelection(values) {
@@ -636,6 +802,17 @@ window.addEventListener('DOMContentLoaded', () => {
     saveState();
   });
 
+  refs.timelineGuidesButton.addEventListener('click', () => {
+    timelineGuidesVisible = !timelineGuidesVisible;
+    localStorage.setItem('audio_calculator.timeline_guides', String(timelineGuidesVisible));
+    renderSamplingTimeline();
+  });
+  window.addEventListener('pekosoft:guides-global-change', (event) => {
+    timelineGuidesVisible = event.detail.enabled;
+    renderSamplingTimeline();
+  });
+  window.addEventListener('pekosoft:timeline-bright-change', renderSamplingTimeline);
+
   if (refs.copyButton) {
     refs.copyButton.addEventListener('click', () => {
       const text = refs.panel.value.trim();
@@ -659,6 +836,11 @@ window.addEventListener('DOMContentLoaded', () => {
   }
 
   setupGridResizeObserver();
+  timelineUtils.observeResize({
+    svg: refs.timeline,
+    container: document.getElementById('timeline-container'),
+    onResize: renderSamplingTimeline
+  });
   initControlKnobs();
   buildGrid();
   updateOutputFields();

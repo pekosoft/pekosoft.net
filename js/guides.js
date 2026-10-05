@@ -5,6 +5,7 @@
   const defaultGuides = true;
   const defaultRulers = true;
   const storageKeys = [
+    "audio_calculator.timeline_guides",
     "tap_pad.show_guides",
     "bpm_calculator.show_guides",
     "metronome.show_guides",
@@ -36,6 +37,7 @@
     "meters.visualizer.guides"
   ];
   const rulerStorageKeys = [
+    "audio_calculator.rulers",
     "bpm_calculator.rulers",
     "metronome.rulers",
     "player.rulers",

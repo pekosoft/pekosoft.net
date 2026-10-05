@@ -23,6 +23,7 @@ window.addEventListener('DOMContentLoaded', () => {
     panel: document.getElementById('audio-calculator-panel'),
     copyButton: document.getElementById('copy-button'),
     resetButton: document.getElementById('reset-button'),
+    valuesButton: document.getElementById('toggle-values-button'),
     panelModeButtons: document.querySelectorAll('.info-display-button')
   };
 
@@ -35,10 +36,13 @@ window.addEventListener('DOMContentLoaded', () => {
     bitDepth: 24,
     sampleRate: 96000,
     channels: 2,
-    preset: 'custom'
+    preset: 'custom',
+    valuesVisible: true
   };
   let geometry = null;
   let panelView = 'selected';
+  let valuesVisible = DEFAULT_STATE.valuesVisible;
+  let valuesLayer = null;
   let resizeObserver = null;
   const presetValueByPair = {
     '8|22050|1': '8|22050|1',
@@ -83,7 +87,8 @@ window.addEventListener('DOMContentLoaded', () => {
         bitDepth: clampToOptions(parseInt(parsed.bitDepth, 10), config.bitDepths, DEFAULT_STATE.bitDepth),
         sampleRate: clampToOptions(parseInt(parsed.sampleRate, 10), config.sampleRates, DEFAULT_STATE.sampleRate),
         channels: Math.min(10, Math.max(1, parseInt(parsed.channels, 10) || DEFAULT_STATE.channels)),
-        preset: typeof parsed.preset === 'string' ? parsed.preset : DEFAULT_STATE.preset
+        preset: typeof parsed.preset === 'string' ? parsed.preset : DEFAULT_STATE.preset,
+        valuesVisible: typeof parsed.valuesVisible === 'boolean' ? parsed.valuesVisible : DEFAULT_STATE.valuesVisible
       };
     } catch {
       return null;
@@ -98,6 +103,9 @@ window.addEventListener('DOMContentLoaded', () => {
     if (refs.preset) {
       refs.preset.value = state.preset || 'custom';
     }
+    valuesVisible = state.valuesVisible !== false;
+    syncValuesButton();
+    applyValuesVisibility();
   }
 
   function saveState() {
@@ -107,7 +115,8 @@ window.addEventListener('DOMContentLoaded', () => {
         bitDepth: parseInt(refs.bitDepth.value, 10),
         sampleRate: parseInt(refs.sampleRate.value, 10),
         channels: parseInt(refs.channels.value, 10),
-        preset: refs.preset ? refs.preset.value : 'custom'
+        preset: refs.preset ? refs.preset.value : 'custom',
+        valuesVisible
       };
 
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
@@ -254,6 +263,16 @@ window.addEventListener('DOMContentLoaded', () => {
     updatePanel();
   }
 
+  function syncValuesButton() {
+    if (!refs.valuesButton) return;
+    refs.valuesButton.classList.toggle('button-on', valuesVisible);
+    refs.valuesButton.setAttribute('aria-pressed', String(valuesVisible));
+  }
+
+  function applyValuesVisibility() {
+    valuesLayer?.setAttribute('display', valuesVisible ? 'inline' : 'none');
+  }
+
   function setCellRect(rect, sampleRateIndex, bitDepthIndex) {
     if (!geometry || !rect) return;
 
@@ -340,6 +359,7 @@ window.addEventListener('DOMContentLoaded', () => {
     refs.grid.setAttribute('viewBox', `0 0 ${viewportWidth} ${viewportHeight}`);
     refs.grid.setAttribute('preserveAspectRatio', 'xMinYMin meet');
     refs.grid.innerHTML = '';
+    valuesLayer = null;
     clearHoverCell();
 
     geometry = {
@@ -375,6 +395,9 @@ window.addEventListener('DOMContentLoaded', () => {
       }));
     }
 
+    valuesLayer = createSvgNode('g', { id: 'quality-grid-values' });
+    refs.grid.appendChild(valuesLayer);
+
     config.sampleRates.forEach((rate, index) => {
       const x = marginX + (index * cellWidth) + (cellWidth / 2);
 
@@ -385,7 +408,7 @@ window.addEventListener('DOMContentLoaded', () => {
         'text-anchor': 'middle'
       });
       bottomLabel.textContent = formatSampleRate(rate);
-      refs.grid.appendChild(bottomLabel);
+      valuesLayer.appendChild(bottomLabel);
 
       const topLabel = createSvgNode('text', {
         class: 'grid-label',
@@ -394,7 +417,7 @@ window.addEventListener('DOMContentLoaded', () => {
         'text-anchor': 'middle'
       });
       topLabel.textContent = Math.round((rate / 2) / 1000);
-      refs.grid.appendChild(topLabel);
+      valuesLayer.appendChild(topLabel);
     });
 
     config.bitDepths.forEach((depth, index) => {
@@ -408,7 +431,7 @@ window.addEventListener('DOMContentLoaded', () => {
         'dominant-baseline': 'middle'
       });
       leftLabel.textContent = depth;
-      refs.grid.appendChild(leftLabel);
+      valuesLayer.appendChild(leftLabel);
 
       const dynamicRangeLabel = createSvgNode('text', {
         class: 'grid-label',
@@ -418,7 +441,7 @@ window.addEventListener('DOMContentLoaded', () => {
         'dominant-baseline': 'middle'
       });
       dynamicRangeLabel.textContent = (20 * Math.log10(Math.pow(2, depth))).toFixed(0);
-      refs.grid.appendChild(dynamicRangeLabel);
+      valuesLayer.appendChild(dynamicRangeLabel);
     });
 
     const hoverCell = createSvgNode('rect', {
@@ -431,6 +454,7 @@ window.addEventListener('DOMContentLoaded', () => {
     const selectedCell = createSvgNode('rect', { class: 'selected-cell', id: 'selected-cell' });
     refs.grid.appendChild(selectedCell);
 
+    applyValuesVisibility();
     updateSelectedCell();
   }
 
@@ -486,6 +510,13 @@ window.addEventListener('DOMContentLoaded', () => {
     button.addEventListener('click', () => {
       setPanelView(button.dataset.panelView);
     });
+  });
+
+  refs.valuesButton?.addEventListener('click', () => {
+    valuesVisible = !valuesVisible;
+    syncValuesButton();
+    applyValuesVisibility();
+    saveState();
   });
 
   if (refs.copyButton) {

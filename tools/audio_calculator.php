@@ -23,7 +23,12 @@
         <svg id="quality-grid" viewBox="0 0 800 500" aria-label="Audio quality grid"></svg>
       </div>
     </div>
-    <div class="module-footer wrapper colored"></div>
+    <div class="module-footer wrapper colored">
+      <button id="toggle-values-button" class="square button-on" type="button" title="Toggle grid values" aria-label="Values" aria-pressed="true">
+        <svg class="icons" role="img"><use href="/icons.svg#ruler" /></svg>
+        <span class="button-text">Values</span>
+      </button>
+    </div>
   </div>
 
   <!-- CONTROLS -->
@@ -154,6 +159,16 @@
 
   <div id="panel-container" class="container">
     <div class="module-body standard border">
+      <div class="controls-buttons wrapper">
+        <button id="info-display-selected-button" class="square info-display-button button-on" type="button" title="Selected value" aria-label="Selected value" aria-pressed="true" data-panel-view="selected">
+          <svg class="icons"><use href="/icons.svg#selected" /></svg>
+          <span class="button-text">Selected</span>
+        </button>
+        <button id="info-display-all-button" class="square info-display-button" type="button" title="All values" aria-label="All values" aria-pressed="false" data-panel-view="all">
+          <svg class="icons"><use href="/icons.svg#select_all" /></svg>
+          <span class="button-text">All</span>
+        </button>
+      </div>
       <textarea id="audio-calculator-panel" placeholder="Audio Calculator data will appear here."></textarea>
     </div>
     <div class="module-footer wrapper colored">
@@ -162,16 +177,6 @@
           <use href="/icons.svg#copy" />
         </svg>
         <span class="button-text">Copy</span>
-      </button>
-      <button id="info-display-selected-button" class="square info-display-button button-on" title="Selected value" aria-label="Selected value" aria-pressed="true" data-panel-view="selected">
-        <svg class="icons">
-          <use href="/icons.svg#selected" />
-        </svg>
-      </button>
-      <button id="info-display-all-button" class="square info-display-button" title="All values" aria-label="All values" aria-pressed="false" data-panel-view="all">
-        <svg class="icons">
-          <use href="/icons.svg#select_all" />
-        </svg>
       </button>
     </div>
   </div>

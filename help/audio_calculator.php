@@ -14,7 +14,17 @@
   </svg>
   <div class="justify">
     <h1>Instrument <span class="object">module</span></h1>
-    The grid maps Sample rate on horizontal axis, and Bit depth on vertical axis. Clicking a cell sets those two values.
+    The grid maps Sample rate on horizontal axis, and Bit depth on vertical axis. Clicking a cell sets those two values. The Values button toggles axis labels.
+  </div>
+</div>
+
+<div class="feature-row border">
+  <svg class="standard-image-help">
+    <use href="/icons.svg#ruler"></use>
+  </svg>
+  <div class="justify">
+    <h1>Values <span class="object">button</span></h1>
+    Shows or hides the grid labels.
   </div>
 </div>
 

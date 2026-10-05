@@ -90,11 +90,21 @@
 
 <div class="feature-row border">
   <svg class="standard-image-help">
+    <use href="/icons.svg#knob"></use>
+  </svg>
+  <div class="justify">
+    <h1>Window <span class="object">knob</span></h1>
+    Sets the mono illustration's time window from 0.100 to 4.000 ms in 0.100 ms steps. Uses the same interactions as Frequency. Double-click restores 1.000 ms. Shorter windows zoom in on individual samples; longer windows show more cycles and sampling patterns. The amplitude scale stays fixed. Window is remembered and Reset restores its default.
+  </div>
+</div>
+
+<div class="feature-row border">
+  <svg class="standard-image-help">
     <use href="/icons.svg#field"></use>
   </svg>
   <div class="justify">
     <h1>Duration <span class="object">field</span></h1>
-    Sets audio length in seconds. <span class="default">Default: 60.</span>
+    Sets audio file length in seconds, independently of the illustration's Window. <span class="default">Default: 60.</span>
   </div>
 </div>
 
@@ -125,6 +135,16 @@
   <div class="justify">
     <h1>dBFS <span class="object">field</span></h1>
     Sets the same peak amplitude in decibels relative to full scale and updates Amp. (%) and the Amplitude knob. The maximum is approximately -30.103 dBFS (3.125% FS), matching the fixed magnified Timeline range. Leave empty for zero amplitude; the placeholder shows silence because its level is negative infinity, not a finite dBFS number. Defaults to -32.041 dBFS (2.500% FS). Entered amplitude is remembered without rounding it to the knob's steps; displayed values are rounded.
+  </div>
+</div>
+
+<div class="feature-row border">
+  <svg class="standard-image-help">
+    <use href="/icons.svg#field"></use>
+  </svg>
+  <div class="justify">
+    <h1>Window (ms) <span class="object">field</span></h1>
+    Sets the Timeline Window knob value in milliseconds. Changes the time ruler, sample-point count and error statistics, but not file size, bit rate, total file samples or the amplitude scale. Accepts 0.100 to 4.000 ms in 0.100 ms steps; defaults to 1.000 ms.
   </div>
 </div>
 
@@ -237,9 +257,9 @@
     Illustrates sampling and quantization using the selected Sample rate and Bit depth. White is the original sine wave, blue shows each quantized value held until the next sample, and magenta marks the quantized sample points. This is a conceptual sample-and-hold view, not a reconstructed audio output.
     The Signal, Steps and Points footer buttons independently show or hide the corresponding parts of the illustration. Choices are remembered; all three are visible by default.
     <br><br>
-    The axes stay fixed: a 1.000 ms window and a magnified amplitude range of approximately -0.031 to +0.031 full scale, making 8-bit quantization visible. Frequency and Amplitude change the mono signal without rescaling the axes. Defaults are a 2.000 kHz sine wave with peak amplitude 0.025 full scale (-32.041 dBFS). Guides mark quantization levels; at higher depths only representative levels are drawn and individual steps become too fine to distinguish. Format and signal values are shown in Controls and Panel, not repeated over Timeline.
+    Window sets the time axis from 0.100 to 4.000 ms; the default is 1.000 ms. The magnified amplitude range stays fixed at approximately -0.031 to +0.031 full scale, making 8-bit quantization visible. Frequency and Amplitude change the mono signal without rescaling the axes. Defaults are a 2.000 kHz sine wave with peak amplitude 0.025 full scale (-32.041 dBFS). Guides mark quantization levels; at higher depths only representative levels are drawn and individual steps become too fine to distinguish. Format and signal values are shown in Controls and Panel, not repeated over Timeline.
     <br><br>
-    Duration and Channels still affect the calculator results, but do not change this fixed mono illustration. No audio is played.
+    Duration and Channels still affect the calculator results, but do not change this mono illustration. No audio is played.
   </div>
 </div>
 
@@ -314,7 +334,7 @@
   </svg>
   <div class="justify">
     <h1>Points <span class="object">button</span></h1>
-    In Panel, the third tab lists every sample in the fixed 1.000 ms mono Timeline illustration, starting at sample zero. Shows time in milliseconds, the original signal and quantized amplitudes in full scale (FS), and quantization error (quantized minus signal). Values are rounded for display; small amplitudes and errors use scientific notation. Updates with Bit depth, Sample rate, Frequency and Amplitude, regardless of which Timeline parts are visible. Copy, Download and Speech use the current Panel output.
+    In Panel, the third tab lists every sample in the mono Timeline illustration's selected Window, starting at sample zero. Shows time in milliseconds, the original signal and quantized amplitudes in full scale (FS), and quantization error (quantized minus signal). Values are rounded for display; small amplitudes and errors use scientific notation. Updates with Bit depth, Sample rate, Frequency, Amplitude and Window, regardless of which Timeline parts are visible. Copy, Download and Speech use the current Panel output.
     <br><br>
     The summary shows RMS error (the square root of the mean squared error), peak error (the largest absolute error), and SNR (20 times the base-10 logarithm of signal RMS divided by error RMS). RMS error is also shown in dBFS. These are measured from the illustrated sample points, not estimated for the entire hypothetical file. No error gives zero RMS and peak error, negative infinity error dBFS, and infinite SNR for a nonzero signal. SNR is undefined when the sampled signal is zero. Calculations use unrounded sample values, subject to JavaScript numeric precision; an RMS error below the smallest representable positive number is shown as an upper bound.
     <br><br>

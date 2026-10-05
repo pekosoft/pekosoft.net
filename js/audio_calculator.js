@@ -18,6 +18,7 @@ window.addEventListener('DOMContentLoaded', () => {
     signalFrequency: document.getElementById('signal-frequency-field'),
     signalAmplitude: document.getElementById('signal-amplitude-field'),
     signalAmplitudeDbfs: document.getElementById('signal-amplitude-dbfs-field'),
+    signalWindow: document.getElementById('signal-window-field'),
     fileSize: document.getElementById('file-size-field'),
     bitRate: document.getElementById('bit-rate-field'),
     totalSamples: document.getElementById('total-samples-field'),
@@ -37,7 +38,7 @@ window.addEventListener('DOMContentLoaded', () => {
   const FALLBACK_VIEWPORT_WIDTH = 800;
   const FALLBACK_VIEWPORT_HEIGHT = 300;
   const STORAGE_KEY = 'audio_calculator.state';
-  const SAMPLING_DURATION = 0.001;
+  const WINDOW_TICKS_PER_SECOND = 10000;
   const SAMPLING_RANGE = 1 / 32;
   refs.signalAmplitudeDbfs.min = String(20 * Math.log10(Number.MIN_VALUE));
   refs.signalAmplitudeDbfs.max = String(20 * Math.log10(Number(refs.signalAmplitude.max) / 100));
@@ -48,6 +49,7 @@ window.addEventListener('DOMContentLoaded', () => {
     channels: 2,
     signalFrequency: 2000,
     signalAmplitude: 0.025,
+    signalWindow: 0.001,
     preset: 'custom',
     valuesVisible: true,
     signalVisible: true,
@@ -65,10 +67,12 @@ window.addEventListener('DOMContentLoaded', () => {
     { id: 'sample-rate-knob', field: refs.sampleRate, label: 'Sam. rate', defaultValue: String(DEFAULT_STATE.sampleRate) },
     { id: 'channels-knob', field: refs.channels, label: 'Channels', defaultValue: String(DEFAULT_STATE.channels) },
     { id: 'frequency-knob', field: refs.signalFrequency, label: 'Frequency', stateKey: 'signalFrequency', scale: 1, decimals: 0, unit: 'Hz', defaultValue: String(DEFAULT_STATE.signalFrequency) },
-    { id: 'amplitude-knob', field: refs.signalAmplitude, label: 'Amplitude', stateKey: 'signalAmplitude', scale: 100, step: 0.025, decimals: 3, unit: '% FS', defaultValue: (DEFAULT_STATE.signalAmplitude * 100).toFixed(3) }
+    { id: 'amplitude-knob', field: refs.signalAmplitude, label: 'Amplitude', stateKey: 'signalAmplitude', scale: 100, step: 0.025, decimals: 3, unit: '% FS', defaultValue: (DEFAULT_STATE.signalAmplitude * 100).toFixed(3) },
+    { id: 'window-knob', field: refs.signalWindow, label: 'Window', stateKey: 'signalWindow', scale: 1000, decimals: 3, unit: 'ms', defaultValue: (DEFAULT_STATE.signalWindow * 1000).toFixed(3) }
   ].map((control) => ({ ...control, knob: document.getElementById(control.id) }));
   let signalFrequency = DEFAULT_STATE.signalFrequency;
   let signalAmplitude = DEFAULT_STATE.signalAmplitude;
+  let signalWindow = DEFAULT_STATE.signalWindow;
   let geometry = null;
   let panelView = 'selected';
   let valuesVisible = DEFAULT_STATE.valuesVisible;
@@ -116,7 +120,8 @@ window.addEventListener('DOMContentLoaded', () => {
       sampleRate: parseInt(refs.sampleRate.value, 10),
       channels: parseInt(refs.channels.value, 10),
       signalFrequency,
-      signalAmplitude
+      signalAmplitude,
+      signalWindow
     };
   }
 
@@ -138,6 +143,7 @@ window.addEventListener('DOMContentLoaded', () => {
         channels: Math.min(10, Math.max(1, parseInt(parsed.channels, 10) || DEFAULT_STATE.channels)),
         signalFrequency: readIllustrationSetting(parsed.signalFrequency, DEFAULT_STATE.signalFrequency, refs.signalFrequency, 1),
         signalAmplitude: readIllustrationSetting(parsed.signalAmplitude, DEFAULT_STATE.signalAmplitude, refs.signalAmplitude, 100),
+        signalWindow: readIllustrationSetting(parsed.signalWindow, DEFAULT_STATE.signalWindow, refs.signalWindow, 1000),
         preset: typeof parsed.preset === 'string' ? parsed.preset : DEFAULT_STATE.preset,
         valuesVisible: typeof parsed.valuesVisible === 'boolean' ? parsed.valuesVisible : DEFAULT_STATE.valuesVisible,
         signalVisible: typeof parsed.signalVisible === 'boolean' ? parsed.signalVisible : DEFAULT_STATE.signalVisible,
@@ -170,7 +176,9 @@ window.addEventListener('DOMContentLoaded', () => {
     refs.channels.value = String(state.channels);
     signalFrequency = state.signalFrequency;
     signalAmplitude = state.signalAmplitude;
+    signalWindow = state.signalWindow;
     refs.signalFrequency.value = String(signalFrequency);
+    refs.signalWindow.value = (signalWindow * 1000).toFixed(3);
     syncAmplitudeFields();
     if (refs.preset) {
       refs.preset.value = state.preset || 'custom';
@@ -192,6 +200,7 @@ window.addEventListener('DOMContentLoaded', () => {
         channels: parseInt(refs.channels.value, 10),
         signalFrequency,
         signalAmplitude,
+        signalWindow,
         preset: refs.preset ? refs.preset.value : 'custom',
         valuesVisible,
         ...samplingLayerVisibility
@@ -268,14 +277,16 @@ window.addEventListener('DOMContentLoaded', () => {
     saveState();
   }
 
-  function getSamplingIllustration({ bitDepth, sampleRate, signalFrequency = 2000, signalAmplitude = 0.025 }) {
-    const duration = SAMPLING_DURATION;
+  function getSamplingIllustration({ bitDepth, sampleRate, signalFrequency = 2000, signalAmplitude = 0.025, signalWindow = DEFAULT_STATE.signalWindow }) {
+    const duration = signalWindow;
     const frequency = signalFrequency;
     const amplitude = signalAmplitude;
     const range = SAMPLING_RANGE;
     const step = 2 ** (1 - bitDepth);
     const signalAt = (time) => amplitude * Math.sin(2 * Math.PI * frequency * time);
-    const samples = Array.from({ length: Math.floor(duration * sampleRate) + 1 }, (_, index) => {
+    // Count in 0.1 ms ticks so rounding cannot drop a sample at the window's endpoint.
+    const windowTicks = Math.round(duration * WINDOW_TICKS_PER_SECOND);
+    const samples = Array.from({ length: Math.floor(windowTicks * sampleRate / WINDOW_TICKS_PER_SECOND) + 1 }, (_, index) => {
       const time = index / sampleRate;
       const signal = signalAt(time);
       return { time, signal, quantized: Math.round(signal / step) * step };
@@ -415,7 +426,7 @@ window.addEventListener('DOMContentLoaded', () => {
       .join(', ');
     const values = getCurrentValues();
     const { amplitudeLevels } = computeMetrics(values);
-    refs.timeline.setAttribute('aria-label', `Sampling and quantization: ${values.bitDepth}-bit / ${(values.sampleRate / 1000).toFixed(3)} kHz / ${amplitudeLevels} levels. Mono illustration: ${(SAMPLING_DURATION * 1000).toFixed(3)} ms / ${(values.signalFrequency / 1000).toFixed(3)} kHz / ${formatSignalLevel(values.signalAmplitude)}. Visible: ${visibleLayers || 'none'}. Amplitude range plus or minus ${SAMPLING_RANGE.toFixed(3)} full scale.`);
+    refs.timeline.setAttribute('aria-label', `Sampling and quantization: ${values.bitDepth}-bit / ${(values.sampleRate / 1000).toFixed(3)} kHz / ${amplitudeLevels} levels. Mono illustration: ${(values.signalWindow * 1000).toFixed(3)} ms / ${(values.signalFrequency / 1000).toFixed(3)} kHz / ${formatSignalLevel(values.signalAmplitude)}. Visible: ${visibleLayers || 'none'}. Amplitude range plus or minus ${SAMPLING_RANGE.toFixed(3)} full scale.`);
   }
 
   function syncPresetSelection(values) {
@@ -510,7 +521,7 @@ window.addEventListener('DOMContentLoaded', () => {
         const nextIndex = Math.max(0, Math.min(getKnobMaximum(control), index));
         if (getKnobIndex(control) === nextIndex) {
           if (control.stateKey === 'signalAmplitude') syncAmplitudeFields();
-          else if (control.stateKey) field.value = getCurrentValues()[control.stateKey].toFixed(control.decimals);
+          else if (control.stateKey) field.value = (getCurrentValues()[control.stateKey] * control.scale).toFixed(control.decimals);
           return;
         }
         if (control.stateKey) {
@@ -611,6 +622,7 @@ window.addEventListener('DOMContentLoaded', () => {
       `Total samples: ${metrics.totalSamples}`,
       `Dynamic range: ${metrics.dynamicRange.toFixed(3)} dB`,
       `Frequency range: ${formatFrequency(metrics.maxFrequency)}`,
+      `Illustration window: ${(values.signalWindow * 1000).toFixed(3)} ms`,
       `Signal frequency: ${formatFrequency(values.signalFrequency)}`,
       `Signal amplitude: ${formatAmplitudePercent(values.signalAmplitude)}% FS (${formatSignalLevel(values.signalAmplitude)})`
     ].join('\n');
@@ -619,7 +631,7 @@ window.addEventListener('DOMContentLoaded', () => {
   function getAllSummary(values) {
     const lines = [];
     lines.push(`Duration: ${values.duration.toFixed(3)} s | Channels: ${values.channels}`);
-    lines.push(`Illustration: ${formatFrequency(values.signalFrequency)} | ${formatAmplitudePercent(values.signalAmplitude)}% FS (${formatSignalLevel(values.signalAmplitude)})`);
+    lines.push(`Illustration: ${(values.signalWindow * 1000).toFixed(3)} ms | ${formatFrequency(values.signalFrequency)} | ${formatAmplitudePercent(values.signalAmplitude)}% FS (${formatSignalLevel(values.signalAmplitude)})`);
     lines.push('');
 
     config.bitDepths.forEach((depth) => {
@@ -986,6 +998,7 @@ window.addEventListener('DOMContentLoaded', () => {
       }
       const value = control.field.valueAsNumber / control.scale;
       if (control.stateKey === 'signalFrequency') signalFrequency = value;
+      else if (control.stateKey === 'signalWindow') signalWindow = value;
       else {
         signalAmplitude = value;
         syncAmplitudeFields(control.field);

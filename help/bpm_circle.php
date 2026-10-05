@@ -265,7 +265,7 @@
   </svg>
   <div class="justify">
     <h1>Panel <span class="object">module</span></h1>
-    The information panel shows BPM, note value, beat number, position and duration for selected, active or all notes.
+    The information panel shows BPM, note value, beat number, position and duration for selected, active or all notes. Selected, Active and All modes are in the tabs section above the panel text.
   </div>
 </div>
 

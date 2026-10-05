@@ -424,7 +424,7 @@
   </svg>
   <div class="justify">
     <h1>Panel <span class="object">module</span></h1>
-    The Panel module shows the curve summary and the point list.
+    The Panel module shows the curve summary and the point list. Curve and Values modes are in the tabs section above the panel text.
   </div>
 </div>
 

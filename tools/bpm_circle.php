@@ -171,6 +171,26 @@
 
   <div id="panel-container" class="container">
     <div class="module-body standard border">
+      <div class="controls-buttons wrapper">
+        <button id="info-display-selected-button" class="square info-display-button button-on" title="Selected segment" aria-label="Selected segment">
+          <svg class="icons">
+            <use href="/icons.svg#field" />
+          </svg>
+          <span class="button-text">Selected</span>
+        </button>
+        <button id="info-display-active-button" class="square info-display-button" title="Active notes" aria-label="Active notes">
+          <svg class="icons">
+            <use href="/icons.svg#sound" />
+          </svg>
+          <span class="button-text">Active</span>
+        </button>
+        <button id="info-display-all-button" class="square info-display-button" title="All notes" aria-label="All notes">
+          <svg class="icons">
+            <use href="/icons.svg#timeline" />
+          </svg>
+          <span class="button-text">All</span>
+        </button>
+      </div>
       <textarea class="info-text"></textarea>
     </div>
     <div class="module-footer wrapper colored">
@@ -179,24 +199,6 @@
           <use href="/icons.svg#copy" />
         </svg>
         <span class="button-text">Copy</span>
-      </button>
-      <button id="info-display-selected-button" class="info-display-button button-on" title="Selected segment" aria-label="Selected segment">
-        <svg class="icons">
-          <use href="/icons.svg#field" />
-        </svg>
-        <span class="button-text">Selected</span>
-      </button>
-      <button id="info-display-active-button" class="info-display-button" title="Active notes" aria-label="Active notes">
-        <svg class="icons">
-          <use href="/icons.svg#sound" />
-        </svg>
-        <span class="button-text">Active</span>
-      </button>
-      <button id="info-display-all-button" class="info-display-button" title="All notes" aria-label="All notes">
-        <svg class="icons">
-          <use href="/icons.svg#timeline" />
-        </svg>
-        <span class="button-text">All</span>
       </button>
     </div>
   </div>

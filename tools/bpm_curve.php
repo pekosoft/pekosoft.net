@@ -236,17 +236,19 @@
 
   <div id="panel-container" class="container">
     <div class="module-body standard border">
+      <div class="controls-buttons wrapper">
+        <button id="panel-curve-button" class="square" title="Show curve view">
+          <svg class="icons" role="img"><use href="/icons.svg#wavelength" /></svg>
+          <span class="button-text">Curve</span>
+        </button>
+        <button id="panel-values-button" class="square" title="Show values view">
+          <svg class="icons" role="img"><use href="/icons.svg#value" /></svg>
+          <span class="button-text">Values</span>
+        </button>
+      </div>
       <textarea class="info-text"></textarea>
     </div>
     <div class="module-footer wrapper colored">
-      <button id="panel-curve-button" class="square" title="Show curve view">
-        <svg class="icons" role="img"><use href="/icons.svg#wavelength" /></svg>
-        <span class="button-text">Curve</span>
-      </button>
-      <button id="panel-values-button" class="square" title="Show values view">
-        <svg class="icons" role="img"><use href="/icons.svg#value" /></svg>
-        <span class="button-text">Values</span>
-      </button>
       <button id="copy-button" class="square" title="Copy curve data">
         <svg class="icons" role="img"><use href="/icons.svg#copy" /></svg>
         <span class="button-text">Copy</span>

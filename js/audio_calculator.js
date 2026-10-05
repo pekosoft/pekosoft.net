@@ -39,6 +39,11 @@ window.addEventListener('DOMContentLoaded', () => {
     preset: 'custom',
     valuesVisible: true
   };
+  const controlKnobs = [
+    { id: 'bit-depth-knob', field: refs.bitDepth, label: 'Bit depth', defaultValue: String(DEFAULT_STATE.bitDepth) },
+    { id: 'sample-rate-knob', field: refs.sampleRate, label: 'Sam. rate', defaultValue: String(DEFAULT_STATE.sampleRate) },
+    { id: 'channels-knob', field: refs.channels, label: 'Channels', defaultValue: String(DEFAULT_STATE.channels) }
+  ].map((control) => ({ ...control, knob: document.getElementById(control.id) }));
   let geometry = null;
   let panelView = 'selected';
   let valuesVisible = DEFAULT_STATE.valuesVisible;
@@ -174,6 +179,7 @@ window.addEventListener('DOMContentLoaded', () => {
       : metrics.maxFrequency.toFixed(3);
 
     syncPresetSelection(values);
+    syncControlKnobs();
 
     updateSelectedCell();
     updatePanel();
@@ -196,6 +202,101 @@ window.addEventListener('DOMContentLoaded', () => {
     refs.sampleRate.value = sampleRate;
     refs.channels.value = channels;
     updateOutputFields();
+  }
+
+  function syncControlKnobs() {
+    controlKnobs.forEach(({ knob, field, label }) => {
+      const index = field.selectedIndex;
+      const angle = -135 + (index / Math.max(1, field.options.length - 1)) * 270;
+      const value = field.options[index].textContent;
+      knob.style.setProperty('--knob-angle', `${angle}deg`);
+      knob.title = `${label}: ${value}`;
+      knob.dataset.statusLabel = `${label}: ${value}.`;
+    });
+  }
+
+  function initControlKnobs() {
+    controlKnobs.forEach(({ knob, field, defaultValue }) => {
+      let drag = null;
+      let suppressClick = false;
+      let clickTimer = null;
+
+      const setIndex = (index) => {
+        const nextIndex = Math.max(0, Math.min(field.options.length - 1, index));
+        if (field.selectedIndex === nextIndex) return;
+        field.selectedIndex = nextIndex;
+        field.dispatchEvent(new Event('change', { bubbles: true }));
+        syncControlKnobs();
+        saveState();
+      };
+
+      knob.addEventListener('click', () => {
+        if (suppressClick) {
+          suppressClick = false;
+          return;
+        }
+        clearTimeout(clickTimer);
+        clickTimer = setTimeout(() => {
+          setIndex(field.selectedIndex + 1);
+          clickTimer = null;
+        }, 320);
+      });
+
+      knob.addEventListener('wheel', (event) => {
+        event.preventDefault();
+        if (event.deltaY !== 0) setIndex(field.selectedIndex + (event.deltaY > 0 ? -1 : 1));
+      }, { passive: false });
+
+      knob.addEventListener('keydown', (event) => {
+        const indices = {
+          ArrowUp: field.selectedIndex + 1,
+          ArrowRight: field.selectedIndex + 1,
+          ArrowDown: field.selectedIndex - 1,
+          ArrowLeft: field.selectedIndex - 1,
+          Home: 0,
+          End: field.options.length - 1
+        };
+        if (!(event.key in indices)) return;
+        event.preventDefault();
+        setIndex(indices[event.key]);
+      });
+
+      knob.addEventListener('dblclick', (event) => {
+        event.preventDefault();
+        clearTimeout(clickTimer);
+        clickTimer = null;
+        setIndex(Array.from(field.options).findIndex((option) => option.value === defaultValue));
+      });
+
+      knob.addEventListener('pointerdown', (event) => {
+        if (!event.isPrimary || event.button !== 0) return;
+        event.preventDefault();
+        knob.focus({ preventScroll: true });
+        clearTimeout(clickTimer);
+        clickTimer = null;
+        suppressClick = false;
+        drag = { pointerId: event.pointerId, y: event.clientY, index: field.selectedIndex, moved: false };
+        knob.setPointerCapture(event.pointerId);
+      });
+
+      knob.addEventListener('pointermove', (event) => {
+        if (!drag || event.pointerId !== drag.pointerId) return;
+        event.preventDefault();
+        const deltaY = drag.y - event.clientY;
+        if (Math.abs(deltaY) >= 6) drag.moved = true;
+        setIndex(drag.index + Math.round(deltaY / 14));
+      });
+
+      const endDrag = (event) => {
+        if (!drag || event.pointerId !== drag.pointerId) return;
+        suppressClick = drag.moved;
+        drag = null;
+        if (knob.hasPointerCapture(event.pointerId)) knob.releasePointerCapture(event.pointerId);
+      };
+      knob.addEventListener('pointerup', endDrag);
+      knob.addEventListener('pointercancel', endDrag);
+      knob.addEventListener('lostpointercapture', endDrag);
+    });
   }
 
   function getSelectedSummary(values, metrics) {
@@ -453,6 +554,13 @@ window.addEventListener('DOMContentLoaded', () => {
 
     const selectedCell = createSvgNode('rect', { class: 'selected-cell', id: 'selected-cell' });
     refs.grid.appendChild(selectedCell);
+    const selectedCellLabel = createSvgNode('text', {
+      class: 'selected-cell-label',
+      id: 'selected-cell-label',
+      'text-anchor': 'middle',
+      'dominant-baseline': 'central'
+    });
+    refs.grid.appendChild(selectedCellLabel);
 
     applyValuesVisibility();
     updateSelectedCell();
@@ -473,6 +581,11 @@ window.addEventListener('DOMContentLoaded', () => {
     if (!cell) return;
 
     setCellRect(cell, sampleRateIndex, bitDepthIndex);
+    const label = document.getElementById('selected-cell-label');
+    label.setAttribute('x', String(geometry.marginX + (sampleRateIndex + 0.5) * geometry.cellWidth));
+    label.setAttribute('y', String(geometry.marginY + (config.bitDepths.length - bitDepthIndex - 0.5) * geometry.cellHeight));
+    label.style.setProperty('--selected-cell-font-size', `${Math.min(geometry.cellWidth * 0.65, geometry.cellHeight * 0.6)}px`);
+    label.textContent = refs.channels.value;
   }
 
   function selectFromGridPoint(clientX, clientY) {
@@ -502,7 +615,11 @@ window.addEventListener('DOMContentLoaded', () => {
   refs.bitDepth.addEventListener('change', updateOutputFields);
   refs.sampleRate.addEventListener('change', updateOutputFields);
   if (refs.preset) {
-    refs.preset.addEventListener('change', applyPreset);
+    refs.preset.addEventListener('change', () => {
+      applyPreset();
+      syncControlKnobs();
+      saveState();
+    });
   }
   refs.channels.addEventListener('change', updateOutputFields);
 
@@ -542,6 +659,7 @@ window.addEventListener('DOMContentLoaded', () => {
   }
 
   setupGridResizeObserver();
+  initControlKnobs();
   buildGrid();
   updateOutputFields();
 });

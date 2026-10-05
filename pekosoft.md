@@ -217,6 +217,12 @@ Rules:
 - Panel textareas must be editable by default.
 - Do not set panel textareas to `readonly` unless there is a tool-specific, explicitly approved exception.
 
+## Controls section order
+
+Controls use separate sections in this order: buttons, fields and menus, sliders, then knobs. Omit sections that a tool does not need.
+
+Knobs belong in their own `controls-knobs wrapper` section below the other controls, not above or mixed into the fields and menus. Use the shared section styles.
+
 ## Controls sizing rule
 
 Label, field, and menu sizing inside controls pairs is strict and must stay uniform.

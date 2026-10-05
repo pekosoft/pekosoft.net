@@ -40,12 +40,18 @@
 }
 
 .hover-cell {
-  fill: var(--grey2);
+  fill: var(--grey1);
   pointer-events: none;
 }
 
 .selected-cell {
   fill: var(--color1);
+  pointer-events: none;
+}
+
+.selected-cell-label {
+  fill: var(--black);
+  font-size: min(var(--font-size), var(--selected-cell-font-size));
   pointer-events: none;
 }
 

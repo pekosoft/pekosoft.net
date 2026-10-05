@@ -14,7 +14,7 @@
   </svg>
   <div class="justify">
     <h1>Instrument <span class="object">module</span></h1>
-    The grid maps Sample rate on horizontal axis, and Bit depth on vertical axis. Clicking a cell sets those two values. The Values button toggles axis labels.
+    The grid maps Sample rate on horizontal axis, and Bit depth on vertical axis. Clicking a cell sets those two values. The blue selected cell displays the channel count from 1 to 10. The Values button toggles axis labels without hiding the channel count.
   </div>
 </div>
 
@@ -34,7 +34,37 @@
   </svg>
   <div class="justify">
     <h1>Controls <span class="object">module</span></h1>
-    Buttons, fields, menus, knobs and sliders are collected in the Controls module. Reset restores the default calculator values.
+    Buttons, fields, menus, knobs and sliders are collected in the Controls module. Knobs sit in their own section below the fields and menus and stay synchronized with the grid. Reset in the footer restores the default calculator values.
+  </div>
+</div>
+
+<div class="feature-row border">
+  <svg class="standard-image-help">
+    <use href="/icons.svg#knob"></use>
+  </svg>
+  <div class="justify">
+    <h1>Bit depth <span class="object">knob</span></h1>
+    Steps through the supported bit depths. Click, scroll or drag vertically to adjust; arrow keys step, Home and End select the limits. Double-click restores 24-bit.
+  </div>
+</div>
+
+<div class="feature-row border">
+  <svg class="standard-image-help">
+    <use href="/icons.svg#knob"></use>
+  </svg>
+  <div class="justify">
+    <h1>Sam. rate <span class="object">knob</span></h1>
+    Steps through the supported sample rates. Double-click restores 96 kHz.
+  </div>
+</div>
+
+<div class="feature-row border">
+  <svg class="standard-image-help">
+    <use href="/icons.svg#knob"></use>
+  </svg>
+  <div class="justify">
+    <h1>Channels <span class="object">knob</span></h1>
+    Steps through channel counts from 1 to 10. Double-click restores 2 channels.
   </div>
 </div>
 

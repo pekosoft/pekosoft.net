@@ -35,15 +35,6 @@
 
   <div id="controls-container" class="container">
     <div class="module-body controls border">
-      <div class="controls-buttons wrapper">
-        <button id="reset-button" class="square" title="Reset to default">
-          <svg class="icons" role="img">
-            <use href="/icons.svg#reset" />
-          </svg>
-          <span class="button-text">Reset</span>
-        </button>
-      </div>
-
       <div class="controls-values wrapper">
         <div class="pair">
           <label for="duration-field" title="Song duration in seconds">Duration:</label>
@@ -144,8 +135,21 @@
           </select>
         </div>
       </div>
+
+      <div class="controls-knobs wrapper">
+        <div class="controls-knob"><button id="bit-depth-knob" class="knob-control" type="button" title="Bit depth" aria-label="Bit depth"></button><span>Bit depth</span></div>
+        <div class="controls-knob"><button id="sample-rate-knob" class="knob-control" type="button" title="Sample rate" aria-label="Sam. rate"></button><span>Sam. rate</span></div>
+        <div class="controls-knob"><button id="channels-knob" class="knob-control" type="button" title="Channels" aria-label="Channels"></button><span>Channels</span></div>
+      </div>
     </div>
-    <div class="module-footer wrapper colored"></div>
+    <div class="module-footer wrapper colored">
+      <button id="reset-button" class="square" title="Reset to default">
+        <svg class="icons" role="img">
+          <use href="/icons.svg#reset" />
+        </svg>
+        <span class="button-text">Reset</span>
+      </button>
+    </div>
   </div>
 
   <!-- TIMELINE -->
@@ -183,7 +187,7 @@
 
   <script src="/js/modules.js?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/js/modules.js'); ?>"></script>
   <script src="/js/drag.js?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/js/drag.js'); ?>"></script>
-  <script src="/js/audio_calculator.js"></script>
+  <script src="/js/audio_calculator.js?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/js/audio_calculator.js'); ?>"></script>
   <?php require($_SERVER['DOCUMENT_ROOT'] . "/elements/beta_footer.php"); ?>
 </body>
 

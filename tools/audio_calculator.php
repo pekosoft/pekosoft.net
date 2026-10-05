@@ -136,10 +136,23 @@
         </div>
       </div>
 
+      <div class="controls-values wrapper">
+        <div class="pair">
+          <label for="signal-frequency-field" title="Illustration frequency in Hz">Freq. (Hz):</label>
+          <input type="number" id="signal-frequency-field" min="0" max="20000" step="100" value="2000" required>
+        </div>
+        <div class="pair">
+          <label for="signal-amplitude-field" title="Illustration peak amplitude in percent of full scale">Amp. (%):</label>
+          <input type="number" id="signal-amplitude-field" min="0" max="3.125" step="0.025" value="2.500" required>
+        </div>
+      </div>
+
       <div class="controls-knobs wrapper">
         <div class="controls-knob"><button id="bit-depth-knob" class="knob-control" type="button" title="Bit depth" aria-label="Bit depth"></button><span>Bit depth</span></div>
         <div class="controls-knob"><button id="sample-rate-knob" class="knob-control" type="button" title="Sample rate" aria-label="Sam. rate"></button><span>Sam. rate</span></div>
         <div class="controls-knob"><button id="channels-knob" class="knob-control" type="button" title="Channels" aria-label="Channels"></button><span>Channels</span></div>
+        <div class="controls-knob"><button id="frequency-knob" class="knob-control" type="button" title="Frequency" aria-label="Frequency"></button><span>Frequency</span></div>
+        <div class="controls-knob"><button id="amplitude-knob" class="knob-control" type="button" title="Amplitude" aria-label="Amplitude"></button><span>Amplitude</span></div>
       </div>
     </div>
     <div class="module-footer wrapper colored">
@@ -188,6 +201,18 @@
       <button id="rulers-button" class="square" type="button" title="Toggle rulers">
         <svg class="icons" role="img"><use href="/icons.svg#ruler" /></svg>
         <span class="button-text">Rulers</span>
+      </button>
+      <button id="toggle-signal-button" class="square button-on" type="button" title="Toggle Signal" aria-label="Signal" aria-pressed="true" aria-controls="sampling-signal">
+        <svg class="icons" aria-hidden="true"><use href="/icons.svg#wavelength" /></svg>
+        <span class="button-text">Signal</span>
+      </button>
+      <button id="toggle-quantized-steps-button" class="square button-on" type="button" title="Toggle Quantized steps" aria-label="Steps" aria-pressed="true" aria-controls="sampling-quantized">
+        <svg class="icons" aria-hidden="true"><use href="/icons.svg#quantized_steps" /></svg>
+        <span class="button-text">Steps</span>
+      </button>
+      <button id="toggle-sample-points-button" class="square button-on" type="button" title="Toggle Sample points" aria-label="Points" aria-pressed="true" aria-controls="sampling-points">
+        <svg class="icons" aria-hidden="true"><use href="/icons.svg#circle" /></svg>
+        <span class="button-text">Points</span>
       </button>
     </div>
   </div>

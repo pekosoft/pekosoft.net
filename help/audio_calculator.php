@@ -34,7 +34,7 @@
   </svg>
   <div class="justify">
     <h1>Controls <span class="object">module</span></h1>
-    Buttons, fields, menus, knobs and sliders are collected in the Controls module. Knobs sit in their own section below the fields and menus and stay synchronized with the grid. Reset in the footer restores the default calculator values.
+    Buttons, fields, menus, knobs and sliders are collected in the Controls module. Knobs sit in their own section below the fields and menus. Bit depth, Sam. rate and Channels stay synchronized with the grid; Frequency and Amplitude control the Timeline illustration. Reset in the footer restores the default calculator and illustration values.
   </div>
 </div>
 
@@ -70,11 +70,51 @@
 
 <div class="feature-row border">
   <svg class="standard-image-help">
+    <use href="/icons.svg#knob"></use>
+  </svg>
+  <div class="justify">
+    <h1>Frequency <span class="object">knob</span></h1>
+    Sets the illustrated sine wave frequency from 0 to 20000 Hz in 100 Hz steps. Click, scroll, drag vertically or use arrow keys; Home and End select the limits. Double-click restores 2000 Hz. Frequencies at or above half the selected Sample rate demonstrate sampling ambiguity; a staircase is not a reconstructed audio waveform. At 0 Hz the signal is flat.
+  </div>
+</div>
+
+<div class="feature-row border">
+  <svg class="standard-image-help">
+    <use href="/icons.svg#knob"></use>
+  </svg>
+  <div class="justify">
+    <h1>Amplitude <span class="object">knob</span></h1>
+    Sets peak amplitude from 0.000% to 3.125% of full scale in 0.025 percentage-point steps, within the fixed magnified Timeline range. Uses the same interactions as Frequency. Double-click restores 2.500% FS (-32.041 dBFS). Zero amplitude is silence; quiet signals may round entirely to zero at low bit depths.
+  </div>
+</div>
+
+<div class="feature-row border">
+  <svg class="standard-image-help">
     <use href="/icons.svg#field"></use>
   </svg>
   <div class="justify">
     <h1>Duration <span class="object">field</span></h1>
     Sets audio length in seconds. <span class="default">Default: 60.</span>
+  </div>
+</div>
+
+<div class="feature-row border">
+  <svg class="standard-image-help">
+    <use href="/icons.svg#field"></use>
+  </svg>
+  <div class="justify">
+    <h1>Freq. (Hz) <span class="object">field</span></h1>
+    Sets the Timeline Frequency knob value in Hz. Does not affect file size, bit rate or sample count.
+  </div>
+</div>
+
+<div class="feature-row border">
+  <svg class="standard-image-help">
+    <use href="/icons.svg#field"></use>
+  </svg>
+  <div class="justify">
+    <h1>Amp. (%) <span class="object">field</span></h1>
+    Sets the Timeline Amplitude knob value in percent of full scale. Does not affect the calculator's format metrics.
   </div>
 </div>
 
@@ -124,7 +164,7 @@
   </svg>
   <div class="justify">
     <h1>Reset <span class="object">button</span></h1>
-    Restores the calculator to its default values: 24-bit, 96 kHz, 2 channels.
+    Restores the calculator to its default values: 24-bit, 96 kHz, 2 channels, and the illustration to 2000 Hz and 2.500% FS with Signal, Steps and Points visible.
   </div>
 </div>
 
@@ -185,11 +225,27 @@
   <div class="justify">
     <h1>Timeline <span class="object">module</span></h1>
     Illustrates sampling and quantization using the selected Sample rate and Bit depth. White is the original sine wave, blue shows each quantized value held until the next sample, and magenta marks the quantized sample points. This is a conceptual sample-and-hold view, not a reconstructed audio output.
+    The Signal, Steps and Points footer buttons independently show or hide the corresponding parts of the illustration. Choices are remembered; all three are visible by default.
     <br><br>
-    The axes stay fixed: a 1.000 ms window of a 2.000 kHz mono sine wave, with peak amplitude 0.025 full scale (-32.041 dBFS). The amplitude ruler shows a magnified range of approximately -0.031 to +0.031 full scale, making 8-bit quantization visible. Guides mark quantization levels; at higher depths only representative levels are drawn and individual steps become too fine to distinguish. The summary shows the actual full-scale level count.
+    The axes stay fixed: a 1.000 ms window and a magnified amplitude range of approximately -0.031 to +0.031 full scale, making 8-bit quantization visible. Frequency and Amplitude change the mono signal without rescaling the axes. Defaults are a 2.000 kHz sine wave with peak amplitude 0.025 full scale (-32.041 dBFS). Guides mark quantization levels; at higher depths only representative levels are drawn and individual steps become too fine to distinguish. The summary shows the actual full-scale level count and configured signal level; zero amplitude is shown as silence.
     <br><br>
     Duration and Channels still affect the calculator results, but do not change this fixed mono illustration. No audio is played.
   </div>
+</div>
+
+<div class="feature-row border">
+  <svg class="standard-image-help"><use href="/icons.svg#wavelength"></use></svg>
+  <div class="justify"><h1>Signal <span class="object">button</span></h1>Shows or hides the white original sine wave without changing the signal or Timeline axes.</div>
+</div>
+
+<div class="feature-row border">
+  <svg class="standard-image-help"><use href="/icons.svg#quantized_steps"></use></svg>
+  <div class="justify"><h1>Steps <span class="object">button</span></h1>Shows or hides the blue quantized values held until the next sample. Independent of Signal and Points.</div>
+</div>
+
+<div class="feature-row border">
+  <svg class="standard-image-help"><use href="/icons.svg#circle"></use></svg>
+  <div class="justify"><h1>Points <span class="object">button</span></h1>Shows or hides the magenta quantized sample markers. Independent of Signal and Steps.</div>
 </div>
 
 <div class="feature-row border">

@@ -15,6 +15,8 @@ window.addEventListener('DOMContentLoaded', () => {
     sampleRate: document.getElementById('sample-rate-field'),
     preset: document.getElementById('preset-field'),
     channels: document.getElementById('channels-field'),
+    signalFrequency: document.getElementById('signal-frequency-field'),
+    signalAmplitude: document.getElementById('signal-amplitude-field'),
     fileSize: document.getElementById('file-size-field'),
     bitRate: document.getElementById('bit-rate-field'),
     totalSamples: document.getElementById('total-samples-field'),
@@ -41,14 +43,29 @@ window.addEventListener('DOMContentLoaded', () => {
     bitDepth: 24,
     sampleRate: 96000,
     channels: 2,
+    signalFrequency: 2000,
+    signalAmplitude: 0.025,
     preset: 'custom',
-    valuesVisible: true
+    valuesVisible: true,
+    signalVisible: true,
+    quantizedVisible: true,
+    samplePointsVisible: true
   };
+  const samplingLayers = [
+    { key: 'signalVisible', id: 'sampling-signal', description: 'white signal', button: document.getElementById('toggle-signal-button') },
+    { key: 'quantizedVisible', id: 'sampling-quantized', description: 'blue quantized steps', button: document.getElementById('toggle-quantized-steps-button') },
+    { key: 'samplePointsVisible', id: 'sampling-points', description: 'magenta sample points', button: document.getElementById('toggle-sample-points-button') }
+  ];
+  const samplingLayerVisibility = Object.fromEntries(samplingLayers.map(({ key }) => [key, DEFAULT_STATE[key]]));
   const controlKnobs = [
     { id: 'bit-depth-knob', field: refs.bitDepth, label: 'Bit depth', defaultValue: String(DEFAULT_STATE.bitDepth) },
     { id: 'sample-rate-knob', field: refs.sampleRate, label: 'Sam. rate', defaultValue: String(DEFAULT_STATE.sampleRate) },
-    { id: 'channels-knob', field: refs.channels, label: 'Channels', defaultValue: String(DEFAULT_STATE.channels) }
+    { id: 'channels-knob', field: refs.channels, label: 'Channels', defaultValue: String(DEFAULT_STATE.channels) },
+    { id: 'frequency-knob', field: refs.signalFrequency, label: 'Frequency', stateKey: 'signalFrequency', scale: 1, decimals: 0, unit: 'Hz', defaultValue: String(DEFAULT_STATE.signalFrequency) },
+    { id: 'amplitude-knob', field: refs.signalAmplitude, label: 'Amplitude', stateKey: 'signalAmplitude', scale: 100, decimals: 3, unit: '% FS', defaultValue: (DEFAULT_STATE.signalAmplitude * 100).toFixed(3) }
   ].map((control) => ({ ...control, knob: document.getElementById(control.id) }));
+  let signalFrequency = DEFAULT_STATE.signalFrequency;
+  let signalAmplitude = DEFAULT_STATE.signalAmplitude;
   let geometry = null;
   let panelView = 'selected';
   let valuesVisible = DEFAULT_STATE.valuesVisible;
@@ -94,7 +111,9 @@ window.addEventListener('DOMContentLoaded', () => {
       duration: Math.max(0, parseFloat(refs.duration.value) || 0),
       bitDepth: parseInt(refs.bitDepth.value, 10),
       sampleRate: parseInt(refs.sampleRate.value, 10),
-      channels: parseInt(refs.channels.value, 10)
+      channels: parseInt(refs.channels.value, 10),
+      signalFrequency,
+      signalAmplitude
     };
   }
 
@@ -114,12 +133,30 @@ window.addEventListener('DOMContentLoaded', () => {
         bitDepth: clampToOptions(parseInt(parsed.bitDepth, 10), config.bitDepths, DEFAULT_STATE.bitDepth),
         sampleRate: clampToOptions(parseInt(parsed.sampleRate, 10), config.sampleRates, DEFAULT_STATE.sampleRate),
         channels: Math.min(10, Math.max(1, parseInt(parsed.channels, 10) || DEFAULT_STATE.channels)),
+        signalFrequency: readIllustrationSetting(parsed.signalFrequency, DEFAULT_STATE.signalFrequency, refs.signalFrequency, 1),
+        signalAmplitude: readIllustrationSetting(parsed.signalAmplitude, DEFAULT_STATE.signalAmplitude, refs.signalAmplitude, 100),
         preset: typeof parsed.preset === 'string' ? parsed.preset : DEFAULT_STATE.preset,
-        valuesVisible: typeof parsed.valuesVisible === 'boolean' ? parsed.valuesVisible : DEFAULT_STATE.valuesVisible
+        valuesVisible: typeof parsed.valuesVisible === 'boolean' ? parsed.valuesVisible : DEFAULT_STATE.valuesVisible,
+        signalVisible: typeof parsed.signalVisible === 'boolean' ? parsed.signalVisible : DEFAULT_STATE.signalVisible,
+        quantizedVisible: typeof parsed.quantizedVisible === 'boolean' ? parsed.quantizedVisible : DEFAULT_STATE.quantizedVisible,
+        samplePointsVisible: typeof parsed.samplePointsVisible === 'boolean' ? parsed.samplePointsVisible : DEFAULT_STATE.samplePointsVisible
       };
     } catch {
       return null;
     }
+  }
+
+  function readIllustrationSetting(value, fallback, field, scale) {
+    if (value === undefined) return fallback;
+    const inputValue = value * scale;
+    const min = Number(field.min);
+    const max = Number(field.max);
+    const step = Number(field.step);
+    if (!Number.isFinite(value) || inputValue < min || inputValue > max) {
+      console.warn(`Invalid saved illustration value for ${field.id}; restoring its default.`);
+      return fallback;
+    }
+    return (min + Math.round((inputValue - min) / step) * step) / scale;
   }
 
   function applyState(state) {
@@ -127,10 +164,17 @@ window.addEventListener('DOMContentLoaded', () => {
     refs.bitDepth.value = String(state.bitDepth);
     refs.sampleRate.value = String(state.sampleRate);
     refs.channels.value = String(state.channels);
+    signalFrequency = state.signalFrequency;
+    signalAmplitude = state.signalAmplitude;
+    refs.signalFrequency.value = String(signalFrequency);
+    refs.signalAmplitude.value = (signalAmplitude * 100).toFixed(3);
     if (refs.preset) {
       refs.preset.value = state.preset || 'custom';
     }
     valuesVisible = state.valuesVisible !== false;
+    samplingLayers.forEach(({ key }) => {
+      samplingLayerVisibility[key] = state[key] !== false;
+    });
     syncValuesButton();
     applyValuesVisibility();
   }
@@ -142,8 +186,11 @@ window.addEventListener('DOMContentLoaded', () => {
         bitDepth: parseInt(refs.bitDepth.value, 10),
         sampleRate: parseInt(refs.sampleRate.value, 10),
         channels: parseInt(refs.channels.value, 10),
+        signalFrequency,
+        signalAmplitude,
         preset: refs.preset ? refs.preset.value : 'custom',
-        valuesVisible
+        valuesVisible,
+        ...samplingLayerVisibility
       };
 
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
@@ -217,10 +264,10 @@ window.addEventListener('DOMContentLoaded', () => {
     saveState();
   }
 
-  function getSamplingIllustration({ bitDepth, sampleRate }) {
+  function getSamplingIllustration({ bitDepth, sampleRate, signalFrequency = 2000, signalAmplitude = 0.025 }) {
     const duration = 0.001;
-    const frequency = 2000;
-    const amplitude = 0.025;
+    const frequency = signalFrequency;
+    const amplitude = signalAmplitude;
     const range = 1 / 32;
     const step = 2 ** (1 - bitDepth);
     const signalAt = (time) => amplitude * Math.sin(2 * Math.PI * frequency * time);
@@ -239,8 +286,8 @@ window.addEventListener('DOMContentLoaded', () => {
     const { amplitudeLevels } = computeMetrics(values);
     const summary = `${values.bitDepth}-bit / ${(values.sampleRate / 1000).toFixed(3)} kHz / ${amplitudeLevels} levels`;
     refs.samplingSummary.textContent = summary;
-    refs.samplingDetails.textContent = `Mono illustration: ${(duration * 1000).toFixed(3)} ms / ${(frequency / 1000).toFixed(3)} kHz / ${(20 * Math.log10(amplitude)).toFixed(3)} dBFS`;
-    refs.timeline.setAttribute('aria-label', `Sampling and quantization: ${summary}. ${refs.samplingDetails.textContent}. White signal, blue quantized steps, magenta sample points. Amplitude range plus or minus ${range.toFixed(3)} full scale.`);
+    const level = formatSignalLevel(amplitude);
+    refs.samplingDetails.textContent = `Mono illustration: ${(duration * 1000).toFixed(3)} ms / ${(frequency / 1000).toFixed(3)} kHz / ${level}`;
     const width = Math.max(1, Math.round(refs.timelineScroll.clientWidth));
     const height = Math.max(1, Math.round(refs.timelineScroll.clientHeight));
     timelineUtils.syncViewBox(refs.timeline, width, height);
@@ -252,15 +299,17 @@ window.addEventListener('DOMContentLoaded', () => {
     const rightPadding = Math.min(width / 3, 72);
     const plotWidth = Math.max(1, width - leftPadding - rightPadding);
     const plotHeight = Math.max(1, height - 1);
+    const verticalPadding = Math.min(4, plotHeight / 4);
     const toX = (time) => leftPadding + time / duration * plotWidth;
-    const toY = (value) => plotHeight * (1 - value / range) / 2;
+    const toY = (value) => verticalPadding + (plotHeight - 2 * verticalPadding) * (1 - value / range) / 2;
     const xTicks = Array.from({ length: xTickCount }, (_, index) => ({
       position: Math.round(toX(duration * (index + 1) / xTickCount)),
       label: `${(duration * 1000 * (index + 1) / xTickCount).toFixed(3)} ms`
     }));
     const yTicks = Array.from({ length: 5 }, (_, index) => ({
       position: Math.floor(toY(-range + range * index / 2)),
-      label: (-range + range * index / 2).toFixed(3)
+      label: (-range + range * index / 2).toFixed(3),
+      labelPosition: index === 4 ? 'below' : 'above'
     }));
     const levelGuides = Array.from({ length: 9 }, (_, index) => Math.floor(toY(-range + range * index / 4)));
     const guideColor = window.PekoBrightGuides.getTimelineGuideColor('var(--grey1)');
@@ -310,16 +359,17 @@ window.addEventListener('DOMContentLoaded', () => {
       }
     }
 
-    const segmentCount = Math.max(128, Math.min(2048, Math.ceil(plotWidth)));
+    const segmentCount = Math.max(128, Math.min(2048, Math.ceil(plotWidth)), Math.ceil(frequency * duration * 64));
+    const signalTimes = [...new Set([
+      ...Array.from({ length: segmentCount + 1 }, (_, index) => duration * index / segmentCount),
+      ...samples.map((sample) => sample.time)
+    ])].sort((a, b) => a - b);
     const signal = svgUtils.createPath({
-      points: Array.from({ length: segmentCount + 1 }, (_, index) => {
-        const time = duration * index / segmentCount;
-        return { x: toX(time), y: toY(signalAt(time)) };
-      }),
+      points: signalTimes.map((time) => ({ x: toX(time), y: toY(signalAt(time)) })),
       color: 'var(--white)',
       strokeWidth: 1,
       crisp: false,
-      title: 'Original 2.000 kHz sine wave'
+      title: `Original ${(frequency / 1000).toFixed(3)} kHz sine wave`
     });
     signal.id = 'sampling-signal';
     refs.timeline.appendChild(signal);
@@ -350,6 +400,21 @@ window.addEventListener('DOMContentLoaded', () => {
       }));
     });
     refs.timeline.appendChild(markers);
+    syncSamplingLayers();
+  }
+
+  function syncSamplingLayers() {
+    samplingLayers.forEach(({ key, id, button }) => {
+      const visible = samplingLayerVisibility[key];
+      button.classList.toggle('button-on', visible);
+      button.setAttribute('aria-pressed', String(visible));
+      refs.timeline.querySelector(`#${id}`)?.setAttribute('display', visible ? 'inline' : 'none');
+    });
+    const visibleLayers = samplingLayers
+      .filter(({ key }) => samplingLayerVisibility[key])
+      .map(({ description }) => description)
+      .join(', ');
+    refs.timeline.setAttribute('aria-label', `Sampling and quantization: ${refs.samplingSummary.textContent}. ${refs.samplingDetails.textContent}. Visible: ${visibleLayers || 'none'}. Amplitude range plus or minus ${(1 / 32).toFixed(3)} full scale.`);
   }
 
   function syncPresetSelection(values) {
@@ -370,27 +435,57 @@ window.addEventListener('DOMContentLoaded', () => {
     updateOutputFields();
   }
 
+  function formatSignalLevel(amplitude) {
+    return amplitude === 0 ? 'silence' : `${(20 * Math.log10(amplitude)).toFixed(3)} dBFS`;
+  }
+
+  function getKnobIndex(control) {
+    if (!control.stateKey) return control.field.selectedIndex;
+    return Math.round((getCurrentValues()[control.stateKey] * control.scale - Number(control.field.min)) / Number(control.field.step));
+  }
+
+  function getKnobMaximum(control) {
+    if (!control.stateKey) return control.field.options.length - 1;
+    return Math.round((Number(control.field.max) - Number(control.field.min)) / Number(control.field.step));
+  }
+
   function syncControlKnobs() {
-    controlKnobs.forEach(({ knob, field, label }) => {
-      const index = field.selectedIndex;
-      const angle = -135 + (index / Math.max(1, field.options.length - 1)) * 270;
-      const value = field.options[index].textContent;
+    controlKnobs.forEach((control) => {
+      const { knob, field, label } = control;
+      const index = getKnobIndex(control);
+      const angle = -135 + (index / Math.max(1, getKnobMaximum(control))) * 270;
+      const value = control.stateKey
+        ? `${(getCurrentValues()[control.stateKey] * control.scale).toFixed(control.decimals)} ${control.unit}`
+        : field.options[index].textContent;
       knob.style.setProperty('--knob-angle', `${angle}deg`);
       knob.title = `${label}: ${value}`;
       knob.dataset.statusLabel = `${label}: ${value}.`;
+      if (control.stateKey) {
+        knob.setAttribute('role', 'slider');
+        knob.setAttribute('aria-orientation', 'vertical');
+        knob.setAttribute('aria-valuemin', field.min);
+        knob.setAttribute('aria-valuemax', field.max);
+        knob.setAttribute('aria-valuenow', String(getCurrentValues()[control.stateKey] * control.scale));
+        knob.setAttribute('aria-valuetext', value);
+      }
     });
   }
 
   function initControlKnobs() {
-    controlKnobs.forEach(({ knob, field, defaultValue }) => {
+    controlKnobs.forEach((control) => {
+      const { knob, field, defaultValue } = control;
       let drag = null;
       let suppressClick = false;
       let clickTimer = null;
 
       const setIndex = (index) => {
-        const nextIndex = Math.max(0, Math.min(field.options.length - 1, index));
-        if (field.selectedIndex === nextIndex) return;
-        field.selectedIndex = nextIndex;
+        const nextIndex = Math.max(0, Math.min(getKnobMaximum(control), index));
+        if (getKnobIndex(control) === nextIndex) return;
+        if (control.stateKey) {
+          field.value = (Number(field.min) + nextIndex * Number(field.step)).toFixed(control.decimals);
+        } else {
+          field.selectedIndex = nextIndex;
+        }
         field.dispatchEvent(new Event('change', { bubbles: true }));
         syncControlKnobs();
         saveState();
@@ -403,24 +498,24 @@ window.addEventListener('DOMContentLoaded', () => {
         }
         clearTimeout(clickTimer);
         clickTimer = setTimeout(() => {
-          setIndex(field.selectedIndex + 1);
+          setIndex(getKnobIndex(control) + 1);
           clickTimer = null;
         }, 320);
       });
 
       knob.addEventListener('wheel', (event) => {
         event.preventDefault();
-        if (event.deltaY !== 0) setIndex(field.selectedIndex + (event.deltaY > 0 ? -1 : 1));
+        if (event.deltaY !== 0) setIndex(getKnobIndex(control) + (event.deltaY > 0 ? -1 : 1));
       }, { passive: false });
 
       knob.addEventListener('keydown', (event) => {
         const indices = {
-          ArrowUp: field.selectedIndex + 1,
-          ArrowRight: field.selectedIndex + 1,
-          ArrowDown: field.selectedIndex - 1,
-          ArrowLeft: field.selectedIndex - 1,
+          ArrowUp: getKnobIndex(control) + 1,
+          ArrowRight: getKnobIndex(control) + 1,
+          ArrowDown: getKnobIndex(control) - 1,
+          ArrowLeft: getKnobIndex(control) - 1,
           Home: 0,
-          End: field.options.length - 1
+          End: getKnobMaximum(control)
         };
         if (!(event.key in indices)) return;
         event.preventDefault();
@@ -431,7 +526,9 @@ window.addEventListener('DOMContentLoaded', () => {
         event.preventDefault();
         clearTimeout(clickTimer);
         clickTimer = null;
-        setIndex(Array.from(field.options).findIndex((option) => option.value === defaultValue));
+        setIndex(control.stateKey
+          ? Math.round((Number(defaultValue) - Number(field.min)) / Number(field.step))
+          : Array.from(field.options).findIndex((option) => option.value === defaultValue));
       });
 
       knob.addEventListener('pointerdown', (event) => {
@@ -441,7 +538,7 @@ window.addEventListener('DOMContentLoaded', () => {
         clearTimeout(clickTimer);
         clickTimer = null;
         suppressClick = false;
-        drag = { pointerId: event.pointerId, y: event.clientY, index: field.selectedIndex, moved: false };
+        drag = { pointerId: event.pointerId, y: event.clientY, index: getKnobIndex(control), moved: false };
         knob.setPointerCapture(event.pointerId);
       });
 
@@ -449,8 +546,10 @@ window.addEventListener('DOMContentLoaded', () => {
         if (!drag || event.pointerId !== drag.pointerId) return;
         event.preventDefault();
         const deltaY = drag.y - event.clientY;
-        if (Math.abs(deltaY) >= 6) drag.moved = true;
-        setIndex(drag.index + Math.round(deltaY / 14));
+        const pixelsPerStep = control.stateKey ? 160 / getKnobMaximum(control) : 14;
+        const deltaSteps = Math.round(deltaY / pixelsPerStep);
+        if (Math.abs(deltaY) >= 6 || (control.stateKey && deltaSteps !== 0)) drag.moved = true;
+        setIndex(drag.index + deltaSteps);
       });
 
       const endDrag = (event) => {
@@ -476,13 +575,16 @@ window.addEventListener('DOMContentLoaded', () => {
       `Bit rate: ${Math.round(metrics.bitRate)} kb/s`,
       `Total samples: ${metrics.totalSamples}`,
       `Dynamic range: ${metrics.dynamicRange.toFixed(3)} dB`,
-      `Frequency range: ${formatFrequency(metrics.maxFrequency)}`
+      `Frequency range: ${formatFrequency(metrics.maxFrequency)}`,
+      `Signal frequency: ${formatFrequency(values.signalFrequency)}`,
+      `Signal amplitude: ${(values.signalAmplitude * 100).toFixed(3)}% FS (${formatSignalLevel(values.signalAmplitude)})`
     ].join('\n');
   }
 
   function getAllSummary(values) {
     const lines = [];
     lines.push(`Duration: ${values.duration.toFixed(3)} s | Channels: ${values.channels}`);
+    lines.push(`Illustration: ${formatFrequency(values.signalFrequency)} | ${(values.signalAmplitude * 100).toFixed(3)}% FS (${formatSignalLevel(values.signalAmplitude)})`);
     lines.push('');
 
     config.bitDepths.forEach((depth) => {
@@ -788,6 +890,28 @@ window.addEventListener('DOMContentLoaded', () => {
     });
   }
   refs.channels.addEventListener('change', updateOutputFields);
+  controlKnobs.filter((control) => control.stateKey).forEach((control) => {
+    const updateIllustration = () => {
+      if (!control.field.checkValidity()) {
+        control.field.reportValidity();
+        return;
+      }
+      const value = control.field.valueAsNumber / control.scale;
+      if (control.stateKey === 'signalFrequency') signalFrequency = value;
+      else signalAmplitude = value;
+      syncControlKnobs();
+      updatePanel();
+      renderSamplingTimeline();
+      saveState();
+    };
+    control.field.addEventListener('input', updateIllustration);
+    control.field.addEventListener('change', () => {
+      updateIllustration();
+      if (control.field.checkValidity()) {
+        control.field.value = control.field.valueAsNumber.toFixed(control.decimals);
+      }
+    });
+  });
 
   refs.panelModeButtons.forEach((button) => {
     button.addEventListener('click', () => {
@@ -806,6 +930,13 @@ window.addEventListener('DOMContentLoaded', () => {
     timelineGuidesVisible = !timelineGuidesVisible;
     localStorage.setItem('audio_calculator.timeline_guides', String(timelineGuidesVisible));
     renderSamplingTimeline();
+  });
+  samplingLayers.forEach(({ key, button }) => {
+    button.addEventListener('click', () => {
+      samplingLayerVisibility[key] = !samplingLayerVisibility[key];
+      syncSamplingLayers();
+      saveState();
+    });
   });
   window.addEventListener('pekosoft:guides-global-change', (event) => {
     timelineGuidesVisible = event.detail.enabled;

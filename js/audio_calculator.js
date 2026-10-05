@@ -17,6 +17,7 @@ window.addEventListener('DOMContentLoaded', () => {
     channels: document.getElementById('channels-field'),
     signalFrequency: document.getElementById('signal-frequency-field'),
     signalAmplitude: document.getElementById('signal-amplitude-field'),
+    signalAmplitudeDbfs: document.getElementById('signal-amplitude-dbfs-field'),
     fileSize: document.getElementById('file-size-field'),
     bitRate: document.getElementById('bit-rate-field'),
     totalSamples: document.getElementById('total-samples-field'),
@@ -27,8 +28,6 @@ window.addEventListener('DOMContentLoaded', () => {
     resetButton: document.getElementById('reset-button'),
     valuesButton: document.getElementById('toggle-values-button'),
     timeline: document.getElementById('sampling-timeline'),
-    samplingSummary: document.getElementById('sampling-summary'),
-    samplingDetails: document.getElementById('sampling-details'),
     timelineScroll: document.querySelector('#timeline-container .timeline-scroll'),
     timelineGuidesButton: document.getElementById('timeline-guides-button'),
     panelModeButtons: document.querySelectorAll('.info-display-button')
@@ -38,6 +37,10 @@ window.addEventListener('DOMContentLoaded', () => {
   const FALLBACK_VIEWPORT_WIDTH = 800;
   const FALLBACK_VIEWPORT_HEIGHT = 300;
   const STORAGE_KEY = 'audio_calculator.state';
+  const SAMPLING_DURATION = 0.001;
+  const SAMPLING_RANGE = 1 / 32;
+  refs.signalAmplitudeDbfs.min = String(20 * Math.log10(Number.MIN_VALUE));
+  refs.signalAmplitudeDbfs.max = String(20 * Math.log10(Number(refs.signalAmplitude.max) / 100));
   const DEFAULT_STATE = {
     duration: 60,
     bitDepth: 24,
@@ -62,7 +65,7 @@ window.addEventListener('DOMContentLoaded', () => {
     { id: 'sample-rate-knob', field: refs.sampleRate, label: 'Sam. rate', defaultValue: String(DEFAULT_STATE.sampleRate) },
     { id: 'channels-knob', field: refs.channels, label: 'Channels', defaultValue: String(DEFAULT_STATE.channels) },
     { id: 'frequency-knob', field: refs.signalFrequency, label: 'Frequency', stateKey: 'signalFrequency', scale: 1, decimals: 0, unit: 'Hz', defaultValue: String(DEFAULT_STATE.signalFrequency) },
-    { id: 'amplitude-knob', field: refs.signalAmplitude, label: 'Amplitude', stateKey: 'signalAmplitude', scale: 100, decimals: 3, unit: '% FS', defaultValue: (DEFAULT_STATE.signalAmplitude * 100).toFixed(3) }
+    { id: 'amplitude-knob', field: refs.signalAmplitude, label: 'Amplitude', stateKey: 'signalAmplitude', scale: 100, step: 0.025, decimals: 3, unit: '% FS', defaultValue: (DEFAULT_STATE.signalAmplitude * 100).toFixed(3) }
   ].map((control) => ({ ...control, knob: document.getElementById(control.id) }));
   let signalFrequency = DEFAULT_STATE.signalFrequency;
   let signalAmplitude = DEFAULT_STATE.signalAmplitude;
@@ -156,6 +159,7 @@ window.addEventListener('DOMContentLoaded', () => {
       console.warn(`Invalid saved illustration value for ${field.id}; restoring its default.`);
       return fallback;
     }
+    if (field.step === 'any') return value;
     return (min + Math.round((inputValue - min) / step) * step) / scale;
   }
 
@@ -167,7 +171,7 @@ window.addEventListener('DOMContentLoaded', () => {
     signalFrequency = state.signalFrequency;
     signalAmplitude = state.signalAmplitude;
     refs.signalFrequency.value = String(signalFrequency);
-    refs.signalAmplitude.value = (signalAmplitude * 100).toFixed(3);
+    syncAmplitudeFields();
     if (refs.preset) {
       refs.preset.value = state.preset || 'custom';
     }
@@ -265,10 +269,10 @@ window.addEventListener('DOMContentLoaded', () => {
   }
 
   function getSamplingIllustration({ bitDepth, sampleRate, signalFrequency = 2000, signalAmplitude = 0.025 }) {
-    const duration = 0.001;
+    const duration = SAMPLING_DURATION;
     const frequency = signalFrequency;
     const amplitude = signalAmplitude;
-    const range = 1 / 32;
+    const range = SAMPLING_RANGE;
     const step = 2 ** (1 - bitDepth);
     const signalAt = (time) => amplitude * Math.sin(2 * Math.PI * frequency * time);
     const samples = Array.from({ length: Math.floor(duration * sampleRate) + 1 }, (_, index) => {
@@ -282,12 +286,7 @@ window.addEventListener('DOMContentLoaded', () => {
   function renderSamplingTimeline() {
     const values = getCurrentValues();
     const illustration = getSamplingIllustration(values);
-    const { duration, frequency, amplitude, range, signalAt, samples } = illustration;
-    const { amplitudeLevels } = computeMetrics(values);
-    const summary = `${values.bitDepth}-bit / ${(values.sampleRate / 1000).toFixed(3)} kHz / ${amplitudeLevels} levels`;
-    refs.samplingSummary.textContent = summary;
-    const level = formatSignalLevel(amplitude);
-    refs.samplingDetails.textContent = `Mono illustration: ${(duration * 1000).toFixed(3)} ms / ${(frequency / 1000).toFixed(3)} kHz / ${level}`;
+    const { duration, frequency, range, signalAt, samples } = illustration;
     const width = Math.max(1, Math.round(refs.timelineScroll.clientWidth));
     const height = Math.max(1, Math.round(refs.timelineScroll.clientHeight));
     timelineUtils.syncViewBox(refs.timeline, width, height);
@@ -414,7 +413,9 @@ window.addEventListener('DOMContentLoaded', () => {
       .filter(({ key }) => samplingLayerVisibility[key])
       .map(({ description }) => description)
       .join(', ');
-    refs.timeline.setAttribute('aria-label', `Sampling and quantization: ${refs.samplingSummary.textContent}. ${refs.samplingDetails.textContent}. Visible: ${visibleLayers || 'none'}. Amplitude range plus or minus ${(1 / 32).toFixed(3)} full scale.`);
+    const values = getCurrentValues();
+    const { amplitudeLevels } = computeMetrics(values);
+    refs.timeline.setAttribute('aria-label', `Sampling and quantization: ${values.bitDepth}-bit / ${(values.sampleRate / 1000).toFixed(3)} kHz / ${amplitudeLevels} levels. Mono illustration: ${(SAMPLING_DURATION * 1000).toFixed(3)} ms / ${(values.signalFrequency / 1000).toFixed(3)} kHz / ${formatSignalLevel(values.signalAmplitude)}. Visible: ${visibleLayers || 'none'}. Amplitude range plus or minus ${SAMPLING_RANGE.toFixed(3)} full scale.`);
   }
 
   function syncPresetSelection(values) {
@@ -439,14 +440,41 @@ window.addEventListener('DOMContentLoaded', () => {
     return amplitude === 0 ? 'silence' : `${(20 * Math.log10(amplitude)).toFixed(3)} dBFS`;
   }
 
+  function formatAmplitudePercent(amplitude) {
+    const percent = amplitude * 100;
+    return percent > 0 && percent < 0.001
+      ? percent.toExponential(6)
+      : percent.toFixed(6).replace(/(\.\d{3})0+$/, '$1');
+  }
+
+  function syncAmplitudeFields(source) {
+    if (source !== refs.signalAmplitude) {
+      refs.signalAmplitude.value = formatAmplitudePercent(signalAmplitude);
+    }
+    if (source !== refs.signalAmplitudeDbfs) {
+      refs.signalAmplitudeDbfs.value = signalAmplitude === 0 ? '' : (20 * Math.log10(signalAmplitude)).toFixed(3);
+    }
+  }
+
+  function refreshIllustration() {
+    syncControlKnobs();
+    updatePanel();
+    renderSamplingTimeline();
+    saveState();
+  }
+
+  function getKnobStep(control) {
+    return control.step !== undefined ? control.step : Number(control.field.step);
+  }
+
   function getKnobIndex(control) {
     if (!control.stateKey) return control.field.selectedIndex;
-    return Math.round((getCurrentValues()[control.stateKey] * control.scale - Number(control.field.min)) / Number(control.field.step));
+    return (getCurrentValues()[control.stateKey] * control.scale - Number(control.field.min)) / getKnobStep(control);
   }
 
   function getKnobMaximum(control) {
     if (!control.stateKey) return control.field.options.length - 1;
-    return Math.round((Number(control.field.max) - Number(control.field.min)) / Number(control.field.step));
+    return Math.round((Number(control.field.max) - Number(control.field.min)) / getKnobStep(control));
   }
 
   function syncControlKnobs() {
@@ -455,7 +483,7 @@ window.addEventListener('DOMContentLoaded', () => {
       const index = getKnobIndex(control);
       const angle = -135 + (index / Math.max(1, getKnobMaximum(control))) * 270;
       const value = control.stateKey
-        ? `${(getCurrentValues()[control.stateKey] * control.scale).toFixed(control.decimals)} ${control.unit}`
+        ? `${control.stateKey === 'signalAmplitude' ? formatAmplitudePercent(signalAmplitude) : (getCurrentValues()[control.stateKey] * control.scale).toFixed(control.decimals)} ${control.unit}`
         : field.options[index].textContent;
       knob.style.setProperty('--knob-angle', `${angle}deg`);
       knob.title = `${label}: ${value}`;
@@ -480,9 +508,16 @@ window.addEventListener('DOMContentLoaded', () => {
 
       const setIndex = (index) => {
         const nextIndex = Math.max(0, Math.min(getKnobMaximum(control), index));
-        if (getKnobIndex(control) === nextIndex) return;
+        if (getKnobIndex(control) === nextIndex) {
+          if (control.stateKey === 'signalAmplitude') syncAmplitudeFields();
+          else if (control.stateKey) field.value = getCurrentValues()[control.stateKey].toFixed(control.decimals);
+          return;
+        }
         if (control.stateKey) {
-          field.value = (Number(field.min) + nextIndex * Number(field.step)).toFixed(control.decimals);
+          const value = Number(field.min) + nextIndex * getKnobStep(control);
+          field.value = control.stateKey === 'signalAmplitude'
+            ? formatAmplitudePercent(value / control.scale)
+            : value.toFixed(control.decimals);
         } else {
           field.selectedIndex = nextIndex;
         }
@@ -527,7 +562,7 @@ window.addEventListener('DOMContentLoaded', () => {
         clearTimeout(clickTimer);
         clickTimer = null;
         setIndex(control.stateKey
-          ? Math.round((Number(defaultValue) - Number(field.min)) / Number(field.step))
+          ? (Number(defaultValue) - Number(field.min)) / getKnobStep(control)
           : Array.from(field.options).findIndex((option) => option.value === defaultValue));
       });
 
@@ -577,14 +612,14 @@ window.addEventListener('DOMContentLoaded', () => {
       `Dynamic range: ${metrics.dynamicRange.toFixed(3)} dB`,
       `Frequency range: ${formatFrequency(metrics.maxFrequency)}`,
       `Signal frequency: ${formatFrequency(values.signalFrequency)}`,
-      `Signal amplitude: ${(values.signalAmplitude * 100).toFixed(3)}% FS (${formatSignalLevel(values.signalAmplitude)})`
+      `Signal amplitude: ${formatAmplitudePercent(values.signalAmplitude)}% FS (${formatSignalLevel(values.signalAmplitude)})`
     ].join('\n');
   }
 
   function getAllSummary(values) {
     const lines = [];
     lines.push(`Duration: ${values.duration.toFixed(3)} s | Channels: ${values.channels}`);
-    lines.push(`Illustration: ${formatFrequency(values.signalFrequency)} | ${(values.signalAmplitude * 100).toFixed(3)}% FS (${formatSignalLevel(values.signalAmplitude)})`);
+    lines.push(`Illustration: ${formatFrequency(values.signalFrequency)} | ${formatAmplitudePercent(values.signalAmplitude)}% FS (${formatSignalLevel(values.signalAmplitude)})`);
     lines.push('');
 
     config.bitDepths.forEach((depth) => {
@@ -605,12 +640,65 @@ window.addEventListener('DOMContentLoaded', () => {
     return lines.join('\n');
   }
 
+  function getSamplingErrorMetrics(samples) {
+    const getRmsStats = (values) => {
+      const peak = Math.max(...values.map((value) => Math.abs(value)));
+      if (peak === 0) return { peak: 0, rms: 0, dbfs: -Infinity };
+      const normalizedRms = Math.hypot(...values.map((value) => value / peak)) / Math.sqrt(values.length);
+      return {
+        peak,
+        rms: peak * normalizedRms,
+        dbfs: 20 * (Math.log10(peak) + Math.log10(normalizedRms))
+      };
+    };
+    const signal = getRmsStats(samples.map((sample) => sample.signal));
+    const error = getRmsStats(samples.map((sample) => sample.quantized - sample.signal));
+    return {
+      rmsError: error.rms,
+      errorDbfs: error.dbfs,
+      peakError: error.peak,
+      snr: signal.peak === 0 ? null : error.peak === 0 ? Infinity : signal.dbfs - error.dbfs
+    };
+  }
+
+  function getSamplePointsSummary(values) {
+    const { duration, samples } = getSamplingIllustration(values);
+    const { rmsError, errorDbfs, peakError, snr } = getSamplingErrorMetrics(samples);
+    const rmsText = rmsError === 0 && peakError > 0 ? `<${Number.MIN_VALUE.toPrecision(9)}` : rmsError.toPrecision(9);
+    const snrText = snr === null ? 'undefined (zero signal)' : snr === Infinity ? 'Infinity dB (zero error)' : `${snr.toFixed(3)} dB`;
+    const formatRow = (columns) => columns.map((column, index) => String(column).padStart([4, 12, 16, 16, 16][index])).join(' | ');
+    return [
+      `Bit depth: ${values.bitDepth} bit | Sample rate: ${formatSampleRate(values.sampleRate)} kHz`,
+      `Mono illustration: ${(duration * 1000).toFixed(3)} ms | ${samples.length} sample points`,
+      `Signal frequency: ${formatFrequency(values.signalFrequency)}`,
+      `Signal amplitude: ${formatAmplitudePercent(values.signalAmplitude)}% FS (${formatSignalLevel(values.signalAmplitude)})`,
+      `RMS error: ${rmsText} FS (${errorDbfs.toFixed(3)} dBFS)`,
+      `Peak error: ${peakError.toPrecision(9)} FS`,
+      `SNR: ${snrText}`,
+      'Error = quantized - signal. Amplitudes are in full scale (FS).',
+      '',
+      formatRow(['#', 'Time (ms)', 'Signal (FS)', 'Quantized (FS)', 'Error (FS)']),
+      ...samples.map(({ time, signal, quantized }, index) => formatRow([
+        index,
+        (time * 1000).toFixed(6),
+        signal.toPrecision(9),
+        quantized.toPrecision(9),
+        (quantized - signal).toPrecision(9)
+      ]))
+    ].join('\n');
+  }
+
   function updatePanel() {
     const values = getCurrentValues();
     const metrics = computeMetrics(values);
 
     if (panelView === 'all') {
       refs.panel.value = getAllSummary(values);
+      return;
+    }
+
+    if (panelView === 'points') {
+      refs.panel.value = getSamplePointsSummary(values);
       return;
     }
 
@@ -626,7 +714,7 @@ window.addEventListener('DOMContentLoaded', () => {
   }
 
   function setPanelView(view) {
-    if (view !== 'selected' && view !== 'all') return;
+    if (view !== 'selected' && view !== 'all' && view !== 'points') return;
     panelView = view;
     syncPanelModeButtons();
     updatePanel();
@@ -898,19 +986,37 @@ window.addEventListener('DOMContentLoaded', () => {
       }
       const value = control.field.valueAsNumber / control.scale;
       if (control.stateKey === 'signalFrequency') signalFrequency = value;
-      else signalAmplitude = value;
-      syncControlKnobs();
-      updatePanel();
-      renderSamplingTimeline();
-      saveState();
+      else {
+        signalAmplitude = value;
+        syncAmplitudeFields(control.field);
+      }
+      refreshIllustration();
     };
     control.field.addEventListener('input', updateIllustration);
     control.field.addEventListener('change', () => {
       updateIllustration();
       if (control.field.checkValidity()) {
-        control.field.value = control.field.valueAsNumber.toFixed(control.decimals);
+        control.field.value = control.stateKey === 'signalAmplitude'
+          ? formatAmplitudePercent(signalAmplitude)
+          : control.field.valueAsNumber.toFixed(control.decimals);
       }
     });
+  });
+  const updateAmplitudeDbfs = () => {
+    if (!refs.signalAmplitudeDbfs.checkValidity()) {
+      refs.signalAmplitudeDbfs.reportValidity();
+      return;
+    }
+    signalAmplitude = refs.signalAmplitudeDbfs.value === ''
+      ? 0
+      : 10 ** (refs.signalAmplitudeDbfs.valueAsNumber / 20);
+    syncAmplitudeFields(refs.signalAmplitudeDbfs);
+    refreshIllustration();
+  };
+  refs.signalAmplitudeDbfs.addEventListener('input', updateAmplitudeDbfs);
+  refs.signalAmplitudeDbfs.addEventListener('change', () => {
+    updateAmplitudeDbfs();
+    if (refs.signalAmplitudeDbfs.checkValidity()) syncAmplitudeFields();
   });
 
   refs.panelModeButtons.forEach((button) => {

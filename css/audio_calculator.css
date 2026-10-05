@@ -66,27 +66,6 @@
   border: 0;
 }
 
-.sampling-summary {
-  flex: 0 0 auto;
-  padding: 6px 8px;
-  font: 12px/1.5 Arial, sans-serif;
-  color: var(--white);
-}
-
-.sampling-legend {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
-}
-
-.sampling-legend span:nth-child(2) {
-  color: var(--color1);
-}
-
-.sampling-legend span:nth-child(3) {
-  color: var(--color2);
-}
-
 #panel-container #audio-calculator-panel {
   min-height: 180px;
 }

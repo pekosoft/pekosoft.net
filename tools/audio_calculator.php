@@ -143,7 +143,11 @@
         </div>
         <div class="pair">
           <label for="signal-amplitude-field" title="Illustration peak amplitude in percent of full scale">Amp. (%):</label>
-          <input type="number" id="signal-amplitude-field" min="0" max="3.125" step="0.025" value="2.500" required>
+          <input type="number" id="signal-amplitude-field" min="0" max="3.125" step="any" value="2.500" required>
+        </div>
+        <div class="pair">
+          <label for="signal-amplitude-dbfs-field" title="Illustration peak amplitude in dBFS; leave empty for silence">dBFS:</label>
+          <input type="number" id="signal-amplitude-dbfs-field" max="-30.103" step="any" value="-32.041" placeholder="silence">
         </div>
       </div>
 
@@ -169,11 +173,6 @@
 
   <div id="timeline-container" class="container">
     <div class="module-body canvas-container border">
-      <div class="sampling-summary">
-        <div class="sampling-legend"><span>Signal</span><span>Quantized steps</span><span>Sample points</span></div>
-        <div id="sampling-summary"></div>
-        <div id="sampling-details"></div>
-      </div>
       <div class="timeline-ruler-layout">
         <div class="timeline-ruler-corner" aria-hidden="true">
           <svg id="sampling-timeline-ruler-corner" preserveAspectRatio="none"></svg>
@@ -229,6 +228,10 @@
         <button id="info-display-all-button" class="square info-display-button" type="button" title="All values" aria-label="All values" aria-pressed="false" data-panel-view="all">
           <svg class="icons"><use href="/icons.svg#select_all" /></svg>
           <span class="button-text">All</span>
+        </button>
+        <button id="info-display-points-button" class="square info-display-button" type="button" title="Sample points" aria-label="Sample points" aria-pressed="false" data-panel-view="points">
+          <svg class="icons"><use href="/icons.svg#circle" /></svg>
+          <span class="button-text">Points</span>
         </button>
       </div>
       <textarea id="audio-calculator-panel" placeholder="Audio Calculator data will appear here."></textarea>

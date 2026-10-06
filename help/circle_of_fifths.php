@@ -23,7 +23,7 @@
     <use href="/icons.svg#rotate"></use>
   </svg>
   <div class="justify">
-    <h1>ROTATE <span class="object">button</span></h1>
+    <h1>Rotate <span class="object">button</span></h1>
     Toggles automatic wheel rotation. When enabled, the selected key is kept at the top of the wheel.
   </div>
 </div>
@@ -33,7 +33,7 @@
     <use href="/icons.svg#radio_button"></use>
   </svg>
   <div class="justify">
-    <h1>DIM <span class="object">button</span></h1>
+    <h1>Dim <span class="object">button</span></h1>
     Toggles the diminished ring.
   </div>
 </div>
@@ -43,7 +43,7 @@
     <use href="/icons.svg#field"></use>
   </svg>
   <div class="justify">
-    <h1>SIGN <span class="object">button</span></h1>
+    <h1>Sign <span class="object">button</span></h1>
     Toggles key signature hints.
   </div>
 </div>
@@ -63,7 +63,7 @@
     <use href="/icons.svg#play"></use>
   </svg>
   <div class="justify">
-    <h1>SCALE <span class="object">button</span></h1>
+    <h1>Scale <span class="object">button</span></h1>
     Plays the selected major scale from degree 1 to degree 7.
   </div>
 </div>
@@ -73,7 +73,7 @@
     <use href="/icons.svg#piano"></use>
   </svg>
   <div class="justify">
-    <h1>TRIAD <span class="object">button</span></h1>
+    <h1>Triad <span class="object">button</span></h1>
     Plays triad for the selected key and current major/minor focus.
   </div>
 </div>
@@ -93,7 +93,7 @@
     <use href="/icons.svg#sound"></use>
   </svg>
   <div class="justify">
-    <h1>SOUND <span class="object">button</span></h1>
+    <h1>Sound <span class="object">button</span></h1>
     Toggles master output mute. Signal still reaches meters path while output volume can be muted.
   </div>
 </div>
@@ -103,7 +103,7 @@
     <use href="/icons.svg#stop"></use>
   </svg>
   <div class="justify">
-    <h1>STOP <span class="object">button</span></h1>
+    <h1>Stop <span class="object">button</span></h1>
     Stops all playback.
   </div>
 </div>
@@ -113,8 +113,8 @@
     <use href="/icons.svg#reset"></use>
   </svg>
   <div class="justify">
-    <h1>RESET <span class="object">button</span></h1>
-    Resets session and all settings.
+    <h1>Reset <span class="object">button</span></h1>
+    Resets session data and tool-specific settings.
   </div>
 </div>
 
@@ -143,7 +143,7 @@
     <use href="/icons.svg#piano"></use>
   </svg>
   <div class="justify">
-    <h1>Two octave piano <span class="object">keys</span></h1>
+    <h1>Two-octave piano <span class="object">keys</span></h1>
     Plays two-octave notes directly for quick key checks while preserving the same tone and volume settings.
   </div>
 </div>
@@ -163,7 +163,7 @@
     <use href="/icons.svg#guides"></use>
   </svg>
   <div class="justify">
-    <h1>GUIDES <span class="object">button</span></h1>
+    <h1>Guides <span class="object">button</span></h1>
     Toggles meter guides. This local button overrides the Settings Guides option for Meters only. <span class="default">Default: on.</span>
   </div>
 </div>
@@ -173,7 +173,7 @@
     <use href="/icons.svg#eq"></use>
   </svg>
   <div class="justify">
-    <h1>SPECTROSCOPE <span class="object">button</span></h1>
+    <h1>Spectroscope <span class="object">button</span></h1>
     Shows 32 logarithmic frequency bands from 20 Hz to the analyser's Nyquist frequency, including frequencies through 20 kHz. New peaks respond immediately and decay briefly between transient sounds.
   </div>
 </div>
@@ -183,7 +183,7 @@
     <use href="/icons.svg#meter"></use>
   </svg>
   <div class="justify">
-    <h1>LEVEL <span class="object">button</span></h1>
+    <h1>Level <span class="object">button</span></h1>
     Shows output level with immediate peak response and a short release between transient sounds.
   </div>
 </div>
@@ -193,7 +193,7 @@
     <use href="/icons.svg#wavelength"></use>
   </svg>
   <div class="justify">
-    <h1>OSCILLOSCOPE <span class="object">button</span></h1>
+    <h1>Oscilloscope <span class="object">button</span></h1>
     Shows the waveform and holds the latest triggered frame between transient sounds.
   </div>
 </div>
@@ -203,7 +203,7 @@
     <use href="/icons.svg#pulse"></use>
   </svg>
   <div class="justify">
-    <h1>WAVESCOPE <span class="object">button</span></h1>
+    <h1>Wavescope <span class="object">button</span></h1>
     Shows the wavescope view.
   </div>
 </div>
@@ -214,7 +214,7 @@
   </svg>
   <div class="justify">
     <h1>Timeline <span class="object">module</span></h1>
-    Displays recent events for played notes, triads and progressions on two-octave MIDI lanes with optional guides.
+    Displays recent events for played notes, triads and progressions on two-octave MIDI (Musical Instrument Digital Interface) note lanes with optional guides.
   </div>
 </div>
 
@@ -223,7 +223,7 @@
     <use href="/icons.svg#guides"></use>
   </svg>
   <div class="justify">
-    <h1>GUIDES <span class="object">button</span></h1>
+    <h1>Guides <span class="object">button</span></h1>
     Toggles timeline guides. This local button overrides the Settings Guides option for Timeline only. <span class="default">Default: on.</span>
   </div>
 </div>
@@ -233,7 +233,7 @@
     <use href="/icons.svg#copy"></use>
   </svg>
   <div class="justify">
-    <h1>COPY <span class="object">button</span></h1>
+    <h1>Copy <span class="object">button</span></h1>
     Copies the Timeline canvas as a PNG image to clipboard.
   </div>
 </div>
@@ -250,20 +250,20 @@
 
 <div class="feature-row border">
   <svg class="standard-image-help"><use href="/icons.svg#speech"></use></svg>
-  <div class="justify"><h1>SPEECH <span class="object">button</span></h1>Speaks current Panel text. Press again to stop.</div>
+  <div class="justify"><h1>Speech <span class="object">button</span></h1>Speaks current Panel text. Press again to stop.</div>
 </div>
 
 <div class="feature-row border">
   <svg class="standard-image-help"><use href="/icons.svg#download"></use></svg>
-  <div class="justify"><h1>DOWNLOAD <span class="object">button</span></h1>Downloads current Panel text as a text file.</div>
+  <div class="justify"><h1>Download <span class="object">button</span></h1>Downloads current Panel text as a text file.</div>
 </div>
 
 <div class="feature-row border"><svg class="standard-image-help">
     <use href="/icons.svg#wrap_text"></use>
   </svg>
   <div class="justify">
-    <h1>WRAP <span class="object">button</span></h1>
-    Toggles text wrap in the panel so long lines wrap instead of scrolling sideways. <span class="default">Default: off.</span>
+    <h1>Wrap <span class="object">button</span></h1>
+    Toggles text wrap in Panel so long lines wrap instead of scrolling sideways. <span class="default">Default: off.</span>
   </div>
 </div>
 
@@ -271,8 +271,8 @@
     <use href="/icons.svg#alpha"></use>
   </svg>
   <div class="justify">
-    <h1>COLOR <span class="object">button</span></h1>
-    Toggles syntax color in the panel text preview. <span class="default">Default: on.</span>
+    <h1>Color <span class="object">button</span></h1>
+    Toggles syntax color in the Panel text preview. <span class="default">Default: on.</span>
   </div>
 </div>
 
@@ -281,7 +281,7 @@
     <use href="/icons.svg#copy"></use>
   </svg>
   <div class="justify">
-    <h1>COPY <span class="object">button</span></h1>
-    Copies panel text to clipboard.
+    <h1>Copy <span class="object">button</span></h1>
+    Copies Panel text to clipboard.
   </div>
 </div>

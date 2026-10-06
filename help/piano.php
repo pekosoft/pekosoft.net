@@ -23,8 +23,8 @@
     <use href="/icons.svg#two"></use>
   </svg>
   <div class="justify">
-    <h1>ONE / TWO <span class="object">buttons</span></h1>
-    Selects one visible key row with two octaves or two visible key rows with four octaves. <span class="default">Default: TWO.</span>
+    <h1>Show one key row / Show two key rows <span class="object">buttons</span></h1>
+    Selects one visible key row with two octaves or two visible key rows with four octaves. <span class="default">Default: two key rows.</span>
   </div>
 </div>
 
@@ -33,7 +33,7 @@
     <use href="/icons.svg#increase"></use>
   </svg>
   <div class="justify">
-    <h1>Left / Right <span class="object">buttons</span></h1>
+    <h1>Previous octave / Next octave <span class="object">buttons</span></h1>
     Moves the visible keyboard by octave.
   </div>
 </div>
@@ -43,7 +43,7 @@
     <use href="/icons.svg#drag"></use>
   </svg>
   <div class="justify">
-    <h1>GLIDE <span class="object">button</span></h1>
+    <h1>Toggle glide mode <span class="object">button</span></h1>
     Toggles glissando playback when dragging across keys. <span class="default">Default: on.</span>
   </div>
 </div>
@@ -53,7 +53,7 @@
     <use href="/icons.svg#1_8"></use>
   </svg>
   <div class="justify">
-    <h1>OCTAVES <span class="object">button</span></h1>
+    <h1>Octaves <span class="object">button</span></h1>
     Toggles octave numbers on the piano keys. <span class="default">Default: off.</span>
   </div>
 </div>
@@ -63,7 +63,7 @@
     <use href="/icons.svg#letter_c"></use>
   </svg>
   <div class="justify">
-    <h1>NOTES <span class="object">button</span></h1>
+    <h1>Notes <span class="object">button</span></h1>
     Toggles note labels on the piano keys. <span class="default">Default: off.</span>
   </div>
 </div>
@@ -83,7 +83,7 @@
     <use href="/icons.svg#guides"></use>
   </svg>
   <div class="justify">
-    <h1>GUIDES <span class="object">button</span></h1>
+    <h1>Guides <span class="object">button</span></h1>
     Toggles meter guides. This local button overrides the Settings Guides option for Meters only. <span class="default">Default: on.</span>
   </div>
 </div>
@@ -93,7 +93,7 @@
     <use href="/icons.svg#eq"></use>
   </svg>
   <div class="justify">
-    <h1>SPECTROSCOPE <span class="object">button</span></h1>
+    <h1>Spectroscope <span class="object">button</span></h1>
     Shows 32 logarithmic frequency bands from 20 Hz to the analyser's Nyquist frequency, including frequencies through 20 kHz. New peaks respond immediately and decay briefly between transient sounds.
   </div>
 </div>
@@ -103,7 +103,7 @@
     <use href="/icons.svg#meter"></use>
   </svg>
   <div class="justify">
-    <h1>LEVEL <span class="object">button</span></h1>
+    <h1>Level <span class="object">button</span></h1>
     Shows output level with immediate peak response and a short release between transient sounds.
   </div>
 </div>
@@ -113,7 +113,7 @@
     <use href="/icons.svg#wavelength"></use>
   </svg>
   <div class="justify">
-    <h1>OSCILLOSCOPE <span class="object">button</span></h1>
+    <h1>Oscilloscope <span class="object">button</span></h1>
     Shows the waveform and holds the latest triggered frame between transient sounds.
   </div>
 </div>
@@ -123,7 +123,7 @@
     <use href="/icons.svg#pulse"></use>
   </svg>
   <div class="justify">
-    <h1>WAVESCOPE <span class="object">button</span></h1>
+    <h1>Wavescope <span class="object">button</span></h1>
     Shows the wavescope view.
   </div>
 </div>
@@ -143,7 +143,7 @@
     <use href="/icons.svg#play"></use>
   </svg>
   <div class="justify">
-    <h1>PLAY <span class="object">button</span></h1>
+    <h1>Play <span class="object">button</span></h1>
     Starts playback of the current recording and toggles playback off when pressed again. <span class="default">Default: off.</span>
   </div>
 </div>
@@ -153,8 +153,8 @@
     <use href="/icons.svg#record"></use>
   </svg>
   <div class="justify">
-    <h1>RECORD <span class="object">button</span></h1>
-    Starts or stops recording note on and note off events to the panel text area. While recording, the button is highlighted in the record color. <span class="default">Default: off.</span>
+    <h1>Record <span class="object">button</span></h1>
+    Starts or stops recording note on and note off events to the Panel text area. The button is highlighted while recording. <span class="default">Default: off.</span>
   </div>
 </div>
 
@@ -163,7 +163,7 @@
     <use href="/icons.svg#loop"></use>
   </svg>
   <div class="justify">
-    <h1>LOOP <span class="object">button</span></h1>
+    <h1>Loop <span class="object">button</span></h1>
     Repeats playback continuously until switched off. <span class="default">Default: off.</span>
   </div>
 </div>
@@ -173,7 +173,7 @@
     <use href="/icons.svg#haptic"></use>
   </svg>
   <div class="justify">
-    <h1>HAPTIC <span class="object">button</span></h1>
+    <h1>Haptic <span class="object">button</span></h1>
     Toggles vibration feedback on supported devices. <span class="default">Default: off.</span>
   </div>
 </div>
@@ -183,7 +183,7 @@
     <use href="/icons.svg#sound"></use>
   </svg>
   <div class="justify">
-    <h1>SOUND <span class="object">button</span></h1>
+    <h1>Sound <span class="object">button</span></h1>
     Toggles master audio output. When off, playback and visuals continue but output is muted. <span class="default">Default: on.</span>
   </div>
 </div>
@@ -193,7 +193,7 @@
     <use href="/icons.svg#download"></use>
   </svg>
   <div class="justify">
-    <h1>SAVE <span class="object">button</span></h1>
+    <h1>Save <span class="object">button</span></h1>
     Exports the current recording as a WAV audio file.
   </div>
 </div>
@@ -203,7 +203,7 @@
     <use href="/icons.svg#reset"></use>
   </svg>
   <div class="justify">
-    <h1>RESET <span class="object">button</span></h1>
+    <h1>Reset <span class="object">button</span></h1>
     Clears recording data and restores Piano settings to defaults.
   </div>
 </div>
@@ -244,7 +244,7 @@
   </svg>
   <div class="justify">
     <h1>MIDI <span class="object">field</span></h1>
-    Shows the MIDI note number for the last played note.
+    Shows the MIDI (Musical Instrument Digital Interface) note number for the last played note.
   </div>
 </div>
 
@@ -273,7 +273,7 @@
     <use href="/icons.svg#guides"></use>
   </svg>
   <div class="justify">
-    <h1>GUIDES <span class="object">button</span></h1>
+    <h1>Guides <span class="object">button</span></h1>
     Toggles guides in Timeline. Horizontal piano roll grid lines show key rows. This local button overrides the Settings Guides option for Timeline only. <span class="default">Default: on.</span>
   </div>
 </div>
@@ -283,7 +283,7 @@
     <use href="/icons.svg#copy"></use>
   </svg>
   <div class="justify">
-    <h1>COPY <span class="object">button</span></h1>
+    <h1>Copy <span class="object">button</span></h1>
     Copies the Timeline canvas as a PNG image to clipboard.
   </div>
 </div>
@@ -300,12 +300,12 @@
 
 <div class="feature-row border">
   <svg class="standard-image-help"><use href="/icons.svg#speech"></use></svg>
-  <div class="justify"><h1>SPEECH <span class="object">button</span></h1>Speaks current Panel text. Press again to stop.</div>
+  <div class="justify"><h1>Speech <span class="object">button</span></h1>Speaks current Panel text. Press again to stop.</div>
 </div>
 
 <div class="feature-row border">
   <svg class="standard-image-help"><use href="/icons.svg#download"></use></svg>
-  <div class="justify"><h1>DOWNLOAD <span class="object">button</span></h1>Downloads current Panel text as a text file.</div>
+  <div class="justify"><h1>Download <span class="object">button</span></h1>Downloads current Panel text as a text file.</div>
 </div>
 
 <div class="feature-row border">
@@ -313,8 +313,8 @@
     <use href="/icons.svg#open"></use>
   </svg>
   <div class="justify">
-    <h1>OPEN <span class="object">button</span></h1>
-    Loads recording data from a text file into the panel.
+    <h1>Open <span class="object">button</span></h1>
+    Loads recording data from a text file into Panel.
   </div>
 </div>
 
@@ -323,7 +323,7 @@
     <use href="/icons.svg#download"></use>
   </svg>
   <div class="justify">
-    <h1>SAVE <span class="object">button</span></h1>
+    <h1>Save <span class="object">button</span></h1>
     Saves the current recording as a text file.
   </div>
 </div>
@@ -332,8 +332,8 @@
     <use href="/icons.svg#wrap_text"></use>
   </svg>
   <div class="justify">
-    <h1>WRAP <span class="object">button</span></h1>
-    Toggles text wrap in the panel so long lines wrap instead of scrolling sideways. <span class="default">Default: off.</span>
+    <h1>Wrap <span class="object">button</span></h1>
+    Toggles text wrap in Panel so long lines wrap instead of scrolling sideways. <span class="default">Default: off.</span>
   </div>
 </div>
 
@@ -341,8 +341,8 @@
     <use href="/icons.svg#alpha"></use>
   </svg>
   <div class="justify">
-    <h1>COLOR <span class="object">button</span></h1>
-    Toggles syntax color in the panel text preview. <span class="default">Default: on.</span>
+    <h1>Color <span class="object">button</span></h1>
+    Toggles syntax color in the Panel text preview. <span class="default">Default: on.</span>
   </div>
 </div>
 
@@ -351,7 +351,7 @@
     <use href="/icons.svg#copy"></use>
   </svg>
   <div class="justify">
-    <h1>COPY <span class="object">button</span></h1>
-    Copies the panel text to clipboard.
+    <h1>Copy <span class="object">button</span></h1>
+    Copies the Panel text to clipboard.
   </div>
 </div>

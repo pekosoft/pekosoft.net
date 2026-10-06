@@ -33,7 +33,7 @@
     <use href="/icons.svg#guides"></use>
   </svg>
   <div class="justify">
-    <h1>GUIDES <span class="object">button</span></h1>
+    <h1>Guides <span class="object">button</span></h1>
     Toggles meter guides. This local button overrides the Settings Guides option for Meters only. <span class="default">Default: on.</span>
   </div>
 </div>
@@ -43,7 +43,7 @@
     <use href="/icons.svg#eq"></use>
   </svg>
   <div class="justify">
-    <h1>SPECTROSCOPE <span class="object">button</span></h1>
+    <h1>Spectroscope <span class="object">button</span></h1>
     Shows 32 logarithmic frequency bands from 20 Hz to the analyser's Nyquist frequency, including frequencies through 20 kHz. New peaks respond immediately and decay briefly between transient sounds.
   </div>
 </div>
@@ -53,7 +53,7 @@
     <use href="/icons.svg#meter"></use>
   </svg>
   <div class="justify">
-    <h1>LEVEL <span class="object">button</span></h1>
+    <h1>Level <span class="object">button</span></h1>
     Shows output level with immediate peak response and a short release between transient sounds.
   </div>
 </div>
@@ -63,7 +63,7 @@
     <use href="/icons.svg#wavelength"></use>
   </svg>
   <div class="justify">
-    <h1>OSCILLOSCOPE <span class="object">button</span></h1>
+    <h1>Oscilloscope <span class="object">button</span></h1>
     Shows the waveform and holds the latest triggered frame between transient sounds.
   </div>
 </div>
@@ -73,7 +73,7 @@
     <use href="/icons.svg#pulse"></use>
   </svg>
   <div class="justify">
-    <h1>WAVESCOPE <span class="object">button</span></h1>
+    <h1>Wavescope <span class="object">button</span></h1>
     Shows the wavescope view.
   </div>
 </div>
@@ -122,8 +122,8 @@
     <use href="/icons.svg#play"></use>
   </svg>
   <div class="justify">
-    <h1>PLAY <span class="object">button</span></h1>
-    Starts playback of the circle and timeline. Press again to pause while retaining position, then press again to resume. Button text changes to PAUSE while playing. <span class="default">Default: off.</span>
+    <h1>Play <span class="object">button</span></h1>
+    Starts playback of the circle and Timeline. Press again to pause while retaining position, then press again to resume. Button text changes to Pause while playing. <span class="default">Default: off.</span>
   </div>
 </div>
 
@@ -131,7 +131,7 @@
     <use href="/icons.svg#stop"></use>
   </svg>
   <div class="justify">
-    <h1>STOP <span class="object">button</span></h1>
+    <h1>Stop <span class="object">button</span></h1>
     Stops playback and resets playback position to start.
   </div>
 </div>
@@ -140,8 +140,8 @@
     <use href="/icons.svg#playhead"></use>
   </svg>
   <div class="justify">
-    <h1>PLAYHEAD <span class="object">button</span></h1>
-    Toggles the rotating beat line in the circle and the playhead line in the timeline. <span class="default">Default: on.</span>
+    <h1>Playhead <span class="object">button</span></h1>
+    Toggles the rotating beat line in the circle and the playhead line in Timeline. <span class="default">Default: on.</span>
   </div>
 </div>
 
@@ -149,7 +149,7 @@
     <use href="/icons.svg#pause"></use>
   </svg>
   <div class="justify">
-    <h1>HOLD <span class="object">button</span></h1>
+    <h1>Hold <span class="object">button</span></h1>
     Keeps last active segments lit until replaced by newer active segments. <span class="default">Default: off.</span>
   </div>
 </div>
@@ -158,7 +158,7 @@
     <use href="/icons.svg#loop"></use>
   </svg>
   <div class="justify">
-    <h1>LOOP <span class="object">button</span></h1>
+    <h1>Loop <span class="object">button</span></h1>
     Toggles repeating playback. When off, playback stops after one full 128-step cycle. <span class="default">Default: on.</span>
   </div>
 </div>
@@ -167,7 +167,7 @@
     <use href="/icons.svg#sound"></use>
   </svg>
   <div class="justify">
-    <h1>SOUND <span class="object">button</span></h1>
+    <h1>Sound <span class="object">button</span></h1>
     Master audio toggle for all enabled note divisions. <span class="default">Default: on.</span>
   </div>
 </div>
@@ -176,7 +176,7 @@
     <use href="/icons.svg#radio_button"></use>
   </svg>
   <div class="justify">
-    <h1>ALL <span class="object">button</span></h1>
+    <h1>All <span class="object">button</span></h1>
     Enables all note-division sound buttons (1/1 to 1/128).
   </div>
 </div>
@@ -185,7 +185,7 @@
     <use href="/icons.svg#radio_button_unchecked"></use>
   </svg>
   <div class="justify">
-    <h1>NONE <span class="object">button</span></h1>
+    <h1>None <span class="object">button</span></h1>
     Disables all note-division sound buttons (1/1 to 1/128).
   </div>
 </div>
@@ -194,7 +194,7 @@
     <use href="/icons.svg#decrease"></use>
   </svg>
   <div class="justify">
-    <h1>PREV <span class="object">button</span></h1>
+    <h1>Prev <span class="object">button</span></h1>
     Selects the previous segment in navigation order. Supports hold on mouse or touch.
   </div>
 </div>
@@ -203,7 +203,7 @@
     <use href="/icons.svg#increase"></use>
   </svg>
   <div class="justify">
-    <h1>NEXT <span class="object">button</span></h1>
+    <h1>Next <span class="object">button</span></h1>
     Selects the next segment in navigation order. Supports hold on mouse or touch.
   </div>
 </div>
@@ -234,8 +234,8 @@
     <use href="/icons.svg#reset"></use>
   </svg>
   <div class="justify">
-    <h1>RESET <span class="object">button</span></h1>
-    Resets session and all settings.
+    <h1>Reset <span class="object">button</span></h1>
+    Resets session data and tool-specific settings.
   </div>
 </div>
 
@@ -254,7 +254,7 @@
     <use href="/icons.svg#copy"></use>
   </svg>
   <div class="justify">
-    <h1>COPY <span class="object">button</span></h1>
+    <h1>Copy <span class="object">button</span></h1>
     Copies the Timeline canvas as a PNG image to clipboard.
   </div>
 </div>
@@ -265,18 +265,18 @@
   </svg>
   <div class="justify">
     <h1>Panel <span class="object">module</span></h1>
-    The information panel shows BPM, note value, beat number, position and duration for selected, active or all notes. Selected, Active and All modes are in the tabs section above the panel text.
+    Panel shows BPM, note value, beat number, position and duration for selected, active or all notes. Selected, Active and All modes are in the tabs section above the Panel text.
   </div>
 </div>
 
 <div class="feature-row border">
   <svg class="standard-image-help"><use href="/icons.svg#speech"></use></svg>
-  <div class="justify"><h1>SPEECH <span class="object">button</span></h1>Speaks current Panel text. Press again to stop.</div>
+  <div class="justify"><h1>Speech <span class="object">button</span></h1>Speaks current Panel text. Press again to stop.</div>
 </div>
 
 <div class="feature-row border">
   <svg class="standard-image-help"><use href="/icons.svg#download"></use></svg>
-  <div class="justify"><h1>DOWNLOAD <span class="object">button</span></h1>Downloads current Panel text as a text file.</div>
+  <div class="justify"><h1>Download <span class="object">button</span></h1>Downloads current Panel text as a text file.</div>
 </div>
 
 <div class="feature-row border">
@@ -284,8 +284,8 @@
     <use href="/icons.svg#copy"></use>
   </svg>
   <div class="justify">
-    <h1>COPY <span class="object">button</span></h1>
-    Copies panel text data to clipboard.
+    <h1>Copy <span class="object">button</span></h1>
+    Copies Panel text data to clipboard.
   </div>
 </div>
 
@@ -294,7 +294,7 @@
     <use href="/icons.svg#field"></use>
   </svg>
   <div class="justify">
-    <h1>SELECTED <span class="object">button</span></h1>
+    <h1>Selected <span class="object">button</span></h1>
     Shows information for the selected segment. <span class="default">Default: on.</span>
   </div>
 </div>
@@ -304,7 +304,7 @@
     <use href="/icons.svg#sound"></use>
   </svg>
   <div class="justify">
-    <h1>ACTIVE <span class="object">button</span></h1>
+    <h1>Active <span class="object">button</span></h1>
     Shows information for active notes.
   </div>
 </div>
@@ -314,7 +314,7 @@
     <use href="/icons.svg#timeline"></use>
   </svg>
   <div class="justify">
-    <h1>ALL <span class="object">button</span></h1>
+    <h1>All <span class="object">button</span></h1>
     Shows information for all notes.
   </div>
 </div>

@@ -4,7 +4,7 @@
   </svg>
   <div class="justify">
     <h1>General</h1>
-    Pekosoft BPM Curve is a tempo-curve editor for drawing and previewing BPM changes over a duration.
+    Pekosoft BPM Curve is a tempo-curve editor for drawing and previewing BPM (beats per minute) changes over a duration.
   </div>
 </div>
 
@@ -23,7 +23,7 @@
     <use href="/icons.svg#guides"></use>
   </svg>
   <div class="justify">
-    <h1>GUIDES <span class="object">button</span></h1>
+    <h1>Guides <span class="object">button</span></h1>
     Toggles graph guides. This local button overrides the Settings Guides option for the Instrument module only. <span class="default">Default: on.</span>
   </div>
 </div>
@@ -33,7 +33,7 @@
     <use href="/icons.svg#beat"></use>
   </svg>
   <div class="justify">
-    <h1>BEATS <span class="object">button</span></h1>
+    <h1>Beats <span class="object">button</span></h1>
     Toggles beat markers on the curve.
   </div>
 </div>
@@ -43,7 +43,7 @@
     <use href="/icons.svg#value"></use>
   </svg>
   <div class="justify">
-    <h1>VALUES <span class="object">button</span></h1>
+    <h1>Values <span class="object">button</span></h1>
     Toggles point values on the curve.
   </div>
 </div>
@@ -53,7 +53,7 @@
     <use href="/icons.svg#photo"></use>
   </svg>
   <div class="justify">
-    <h1>SAVE <span class="object">button</span></h1>
+    <h1>Save <span class="object">button</span></h1>
     Saves the curve as a PNG file.
   </div>
 </div>
@@ -63,7 +63,7 @@
     <use href="/icons.svg#copy"></use>
   </svg>
   <div class="justify">
-    <h1>COPY <span class="object">button</span></h1>
+    <h1>Copy <span class="object">button</span></h1>
     Copies the curve as a PNG image to clipboard.
   </div>
 </div>
@@ -83,7 +83,7 @@
     <use href="/icons.svg#guides"></use>
   </svg>
   <div class="justify">
-    <h1>GUIDES <span class="object">button</span></h1>
+    <h1>Guides <span class="object">button</span></h1>
     Toggles meter guides. This local button overrides the Settings Guides option for Meters only. <span class="default">Default: on.</span>
   </div>
 </div>
@@ -93,7 +93,7 @@
     <use href="/icons.svg#eq"></use>
   </svg>
   <div class="justify">
-    <h1>SPECTROSCOPE <span class="object">button</span></h1>
+    <h1>Spectroscope <span class="object">button</span></h1>
     Shows 32 logarithmic frequency bands from 20 Hz to the analyser's Nyquist frequency, including frequencies through 20 kHz. New peaks respond immediately and decay briefly between transient sounds.
   </div>
 </div>
@@ -103,7 +103,7 @@
     <use href="/icons.svg#meter"></use>
   </svg>
   <div class="justify">
-    <h1>LEVEL <span class="object">button</span></h1>
+    <h1>Level <span class="object">button</span></h1>
     Shows output level with immediate peak response and a short release between transient sounds.
   </div>
 </div>
@@ -113,7 +113,7 @@
     <use href="/icons.svg#wavelength"></use>
   </svg>
   <div class="justify">
-    <h1>OSCILLOSCOPE <span class="object">button</span></h1>
+    <h1>Oscilloscope <span class="object">button</span></h1>
     Shows the waveform and holds the latest triggered frame between transient sounds.
   </div>
 </div>
@@ -123,7 +123,7 @@
     <use href="/icons.svg#pulse"></use>
   </svg>
   <div class="justify">
-    <h1>WAVESCOPE <span class="object">button</span></h1>
+    <h1>Wavescope <span class="object">button</span></h1>
     Shows the wavescope view.
   </div>
 </div>
@@ -143,7 +143,7 @@
     <use href="/icons.svg#play"></use>
   </svg>
   <div class="justify">
-    <h1>PLAY <span class="object">button</span></h1>
+    <h1>Play <span class="object">button</span></h1>
     Starts or pauses preview playback across the curve.
   </div>
 </div>
@@ -153,7 +153,7 @@
     <use href="/icons.svg#stop"></use>
   </svg>
   <div class="justify">
-    <h1>STOP <span class="object">button</span></h1>
+    <h1>Stop <span class="object">button</span></h1>
     Stops preview playback and resets playback position to start.
   </div>
 </div>
@@ -163,7 +163,7 @@
     <use href="/icons.svg#loop"></use>
   </svg>
   <div class="justify">
-    <h1>LOOP <span class="object">button</span></h1>
+    <h1>Loop <span class="object">button</span></h1>
     Repeats preview playback when the playhead reaches the end.
   </div>
 </div>
@@ -173,7 +173,7 @@
     <use href="/icons.svg#sound"></use>
   </svg>
   <div class="justify">
-    <h1>SOUND <span class="object">button</span></h1>
+    <h1>Sound <span class="object">button</span></h1>
     Mutes or unmutes preview audio while keeping the curve animation active.
   </div>
 </div>
@@ -183,7 +183,7 @@
     <use href="/icons.svg#beat"></use>
   </svg>
   <div class="justify">
-    <h1>BEAT <span class="object">button</span></h1>
+    <h1>Beat <span class="object">button</span></h1>
     Toggles beat tick audio during playback.
   </div>
 </div>
@@ -193,7 +193,7 @@
     <use href="/icons.svg#wavelength"></use>
   </svg>
   <div class="justify">
-    <h1>TONE <span class="object">button</span></h1>
+    <h1>Tone <span class="object">button</span></h1>
     Toggles continuous tone audio during playback.
   </div>
 </div>
@@ -203,7 +203,7 @@
     <use href="/icons.svg#skip_prev"></use>
   </svg>
   <div class="justify">
-    <h1>PREV <span class="object">button</span></h1>
+    <h1>Prev <span class="object">button</span></h1>
     Selects the previous curve point.
   </div>
 </div>
@@ -213,7 +213,7 @@
     <use href="/icons.svg#skip_next"></use>
   </svg>
   <div class="justify">
-    <h1>NEXT <span class="object">button</span></h1>
+    <h1>Next <span class="object">button</span></h1>
     Selects the next curve point.
   </div>
 </div>
@@ -223,7 +223,7 @@
     <use href="/icons.svg#undo"></use>
   </svg>
   <div class="justify">
-    <h1>UNDO <span class="object">button</span></h1>
+    <h1>Undo <span class="object">button</span></h1>
     Restores the previous curve edit.
   </div>
 </div>
@@ -233,7 +233,7 @@
     <use href="/icons.svg#redo"></use>
   </svg>
   <div class="justify">
-    <h1>REDO <span class="object">button</span></h1>
+    <h1>Redo <span class="object">button</span></h1>
     Reapplies an undone curve edit.
   </div>
 </div>
@@ -243,7 +243,7 @@
     <use href="/icons.svg#select_all"></use>
   </svg>
   <div class="justify">
-    <h1>ALL <span class="object">button</span></h1>
+    <h1>All <span class="object">button</span></h1>
     Selects all curve points.
   </div>
 </div>
@@ -253,7 +253,7 @@
     <use href="/icons.svg#select_none"></use>
   </svg>
   <div class="justify">
-    <h1>NONE <span class="object">button</span></h1>
+    <h1>None <span class="object">button</span></h1>
     Clears the point selection.
   </div>
 </div>
@@ -263,7 +263,7 @@
     <use href="/icons.svg#arrow_up"></use>
   </svg>
   <div class="justify">
-    <h1>UP <span class="object">button</span></h1>
+    <h1>Up <span class="object">button</span></h1>
     Moves selected points up.
   </div>
 </div>
@@ -273,7 +273,7 @@
     <use href="/icons.svg#arrow_down"></use>
   </svg>
   <div class="justify">
-    <h1>DOWN <span class="object">button</span></h1>
+    <h1>Down <span class="object">button</span></h1>
     Moves selected points down.
   </div>
 </div>
@@ -283,7 +283,7 @@
     <use href="/icons.svg#arrow_left"></use>
   </svg>
   <div class="justify">
-    <h1>LEFT <span class="object">button</span></h1>
+    <h1>Left <span class="object">button</span></h1>
     Moves selected points left.
   </div>
 </div>
@@ -293,7 +293,7 @@
     <use href="/icons.svg#arrow_right"></use>
   </svg>
   <div class="justify">
-    <h1>RIGHT <span class="object">button</span></h1>
+    <h1>Right <span class="object">button</span></h1>
     Moves selected points right.
   </div>
 </div>
@@ -303,7 +303,7 @@
     <use href="/icons.svg#increase"></use>
   </svg>
   <div class="justify">
-    <h1>ADD <span class="object">button</span></h1>
+    <h1>Add <span class="object">button</span></h1>
     Inserts a new point at the current playhead position.
   </div>
 </div>
@@ -313,7 +313,7 @@
     <use href="/icons.svg#decrease"></use>
   </svg>
   <div class="justify">
-    <h1>REMOVE <span class="object">button</span></h1>
+    <h1>Remove <span class="object">button</span></h1>
     Removes the selected point, or the point closest to the playhead.
   </div>
 </div>
@@ -323,8 +323,8 @@
     <use href="/icons.svg#reset"></use>
   </svg>
   <div class="justify">
-    <h1>RESET <span class="object">button</span></h1>
-    Restores the opening curve and clears the saved session state.
+    <h1>Reset <span class="object">button</span></h1>
+    Restores the opening curve and tool-specific settings.
   </div>
 </div>
 
@@ -374,7 +374,7 @@
   </svg>
   <div class="justify">
     <h1>Duration <span class="object">field</span></h1>
-    Sets the total curve length in milliseconds.
+    Sets the total curve length in seconds.
   </div>
 </div>
 
@@ -393,8 +393,18 @@
     <use href="/icons.svg#menu"></use>
   </svg>
   <div class="justify">
+    <h1>Beat <span class="object">menu</span></h1>
+    Chooses the beat sound: Click, Kick, Hi-hat, Sine, Square, Sawtooth, Triangle or Piano. <span class="default">Default: Click.</span>
+  </div>
+</div>
+
+<div class="feature-row border">
+  <svg class="standard-image-help">
+    <use href="/icons.svg#menu"></use>
+  </svg>
+  <div class="justify">
     <h1>Tone <span class="object">menu</span></h1>
-    Chooses the preview tone: Click, Kick, Hi-hat, Sine, Square, Sawtooth, Triangle or Piano. <span class="default">Default: Sine.</span>
+    Chooses the continuous preview tone: Sine, Square, Sawtooth, Triangle or Piano. <span class="default">Default: Sine.</span>
   </div>
 </div>
 
@@ -408,34 +418,24 @@
   </div>
 </div>
 
-<div class="feature-row border">
-  <svg class="standard-image-help">
-    <use href="/icons.svg#menu"></use>
-  </svg>
-  <div class="justify">
-    <h1>Show <span class="object">menu</span></h1>
-    Chooses what status line format to show for the current curve summary.
-  </div>
-</div>
-
 <div class="feature-row module">
   <svg class="standard-image-help">
     <use href="/icons.svg#panel"></use>
   </svg>
   <div class="justify">
     <h1>Panel <span class="object">module</span></h1>
-    The Panel module shows the curve summary and the point list. Curve and Values modes are in the tabs section above the panel text.
+    The Panel module shows the curve summary and the point list. Curve and Values modes are in the tabs section above the Panel text.
   </div>
 </div>
 
 <div class="feature-row border">
   <svg class="standard-image-help"><use href="/icons.svg#speech"></use></svg>
-  <div class="justify"><h1>SPEECH <span class="object">button</span></h1>Speaks current Panel text. Press again to stop.</div>
+  <div class="justify"><h1>Speech <span class="object">button</span></h1>Speaks current Panel text. Press again to stop.</div>
 </div>
 
 <div class="feature-row border">
   <svg class="standard-image-help"><use href="/icons.svg#download"></use></svg>
-  <div class="justify"><h1>DOWNLOAD <span class="object">button</span></h1>Downloads current Panel text as a text file.</div>
+  <div class="justify"><h1>Download <span class="object">button</span></h1>Downloads current Panel text as a text file.</div>
 </div>
 
 <div class="feature-row border">
@@ -443,7 +443,7 @@
     <use href="/icons.svg#timeline"></use>
   </svg>
   <div class="justify">
-    <h1>CURVE <span class="object">button</span></h1>
+    <h1>Curve <span class="object">button</span></h1>
     Shows curve summary output in Panel.
   </div>
 </div>
@@ -453,7 +453,7 @@
     <use href="/icons.svg#value"></use>
   </svg>
   <div class="justify">
-    <h1>VALUES <span class="object">button</span></h1>
+    <h1>Values <span class="object">button</span></h1>
     Shows point value output in Panel.
   </div>
 </div>
@@ -462,8 +462,8 @@
     <use href="/icons.svg#wrap_text"></use>
   </svg>
   <div class="justify">
-    <h1>WRAP <span class="object">button</span></h1>
-    Toggles text wrap in the panel so long lines wrap instead of scrolling sideways. <span class="default">Default: off.</span>
+    <h1>Wrap <span class="object">button</span></h1>
+    Toggles text wrap in Panel so long lines wrap instead of scrolling sideways. <span class="default">Default: off.</span>
   </div>
 </div>
 
@@ -471,8 +471,8 @@
     <use href="/icons.svg#alpha"></use>
   </svg>
   <div class="justify">
-    <h1>COLOR <span class="object">button</span></h1>
-    Toggles syntax color in the panel text preview. <span class="default">Default: on.</span>
+    <h1>Color <span class="object">button</span></h1>
+    Toggles syntax color in the Panel text preview. <span class="default">Default: on.</span>
   </div>
 </div>
 
@@ -481,7 +481,7 @@
     <use href="/icons.svg#copy"></use>
   </svg>
   <div class="justify">
-    <h1>COPY <span class="object">button</span></h1>
+    <h1>Copy <span class="object">button</span></h1>
     Copies the current curve summary to the clipboard.
   </div>
 </div>

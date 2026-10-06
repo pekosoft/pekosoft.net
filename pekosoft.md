@@ -196,6 +196,43 @@ Tooltip placement rule:
 - Do not put `title` attributes on `input`, `select`, or `textarea` fields.
 - Do not duplicate the same tooltip on both label and field/menu.
 
+## Help writing conventions
+
+- Describe deterministic calculations as "calculates" or "calculated", not "estimates". State actual limitations explicitly, such as excluding file headers and metadata.
+- Expand technical abbreviations in parentheses on first introduction, for example `PCM (pulse-code modulation)`.
+- Browser persistence is a sitewide convention. Explain it in General Help only, not in individual tool Help files or feature entries.
+- Document defaults in the relevant feature entry using `<span class="default">Default: ...</span>`. Do not repeat a startup configuration in the tool introduction or duplicate default lists in module descriptions.
+- Describe features by their names and behavior, not their current colors. Use "selected cell", "Signal", "Steps" and "Points", not "blue selected cell" or color-based identification.
+- Keep actual calculations distinct from illustrative examples. Explain which settings are shared and which affect only the example.
+
+### Capitalization in Help prose
+
+- Use normal sentence case. Technical concepts are lowercase: sample rate, bit depth, frequency, amplitude, channels and duration.
+- When explicitly referring to a named control, use its label's casing and wording: "the Sam. rate menu", "the Bit depth knob" or "the Values button". Do not capitalize a concept merely because a control exists for it.
+- Keep named modules capitalized: Instrument, Controls, Timeline and Panel. Generic references such as "the module", "the grid" and "the ruler" stay lowercase.
+- Preserve proper names, acronyms and standard unit casing: Pekosoft, PCM, BPM, FS, dBFS, Hz, kHz, ms, MB and kb/s.
+- Use sentence case for descriptive feature headings, not title case: "Bit depth", not "Bit Depth". Named control headings follow the control label.
+- Example: "Calculates values from sample rate and bit depth. The Sam. rate menu changes the sample rate used by Timeline."
+- Apply this distinction contextually. Do not normalize the whole site with blind capitalization replacements.
+
+### Canonical control names
+
+- Use the authored associated label for fields and menus, or the authored `.button-text` for buttons, as the control name. Remove a trailing colon, but retain meaningful abbreviations and units.
+- CSS uppercase rendering is presentation, not the spelling to use in Help prose. A button authored as `Reset` remains "the Reset button" even when displayed as `RESET`.
+- For icon-only controls without a visible label, use the accessible name (`aria-label`); use the tooltip name only when no visible or accessible name exists.
+- A tooltip describes an action and may be longer than the name. For example, `Reset to default` is a tooltip instruction, not a replacement for the name `Reset`.
+- Use uppercase words only for displayed text-button labels and in-grid labels such as `BEAT` and `NOTE`, apart from standard acronyms. References quoting those grid labels retain their spelling.
+- Keep the surfaces distinct: button text `RESET`, tooltip `Reset to default`, Help heading `Reset button`, and statusbar message `Reset: Reset to default`.
+- Help headings and references must identify the same control. Preserve contextual Help links: names and feature kinds must continue to match the existing Help lookup; use supported heading aliases when needed rather than silently breaking navigation.
+- If names conflict in the interface, record the discrepancy for a separately scoped UI pass. Do not invent a new Help-only name or change runtime behavior during an editorial pass.
+
+## Maintaining project conventions
+
+- Before changing UI or Help, read the relevant project guidance: this file and any applicable specialist document, such as [Timeline Rulers](rulers.md).
+- When user feedback establishes or changes a reusable convention, update the existing guidance as part of the same change. Fixing one occurrence without recording the rule is incomplete.
+- Preserve agreed conventions during later changes; do not make the user repeatedly correct the same wording or layout decisions.
+- Apply rules throughout the feature being edited. Keep broader sitewide migrations separately scoped rather than silently changing unrelated tools.
+
 ## Reset scope policy
 
 RESET buttons inside tools must clear that tool completely:
@@ -222,6 +259,10 @@ Rules:
 Controls use separate sections in this order: buttons, fields and menus, sliders, then knobs. Omit sections that a tool does not need.
 
 Knobs belong in their own `controls-knobs wrapper` section below the other controls, not above or mixed into the fields and menus. Use the shared section styles.
+
+For tools with illustrative examples, keep example settings separate from the main calculation settings. Put the example's time span before its other parameters, consistently in fields, knobs and Panel output.
+
+Panel summaries must separate main calculation data, illustration settings and illustration error statistics with blank lines. Example measurements must not appear to describe the entire hypothetical file.
 
 ## Controls sizing rule
 

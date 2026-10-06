@@ -17,7 +17,7 @@
   </svg>
   <div class="justify">
     <h1>Free</h1>
-    No money involved. Feel free to buy us coffee through the bitcoin QR.
+    No money involved. Feel free to buy us coffee through the bitcoin QR (quick response) code.
   </div>
 </div>
 
@@ -26,7 +26,7 @@
     <use href="/icons.svg#notepad"></use>
   </svg>
   <div class="justify">
-    <h1>Open Source</h1>
+    <h1>Open source</h1>
     Pekosoft is available on <a href="https://github.com/pekosoft">GitHub</a> for transparency, documentation, review and discussion. Copyright &copy; Pekosoft. All rights reserved.
   </div>
 </div>
@@ -36,7 +36,7 @@
     <use href="/icons.svg#ad_free"></use>
   </svg>
   <div class="justify">
-    <h1>Ad-Free</h1>
+    <h1>Ad-free</h1>
     Nothing to disturb you. Nothing to block. Pekosoft does not promote products or allow third-party advertising. No call
     to action. We are simply here.
   </div>
@@ -58,7 +58,7 @@
   </svg>
   <div class="justify">
     <h1>Simple</h1>
-    Fast and responsive. No animations, gradients, rounded corners or bloat. Only essential features make the final cut.
+    Fast and responsive. No gradients, rounded corners or bloat. Only essential features make the final cut.
     Pekosoft uses two colors (blue and magenta) and two fonts (Arial and Consolas).
   </div>
 </div>
@@ -120,7 +120,7 @@
     <use href="/icons.svg#loop"></use>
   </svg>
   <div class="justify">
-    <h1>Automatically Updated</h1>
+    <h1>Automatically updated</h1>
     No manual updates required. Changes are deployed centrally.
   </div>
 </div>
@@ -131,7 +131,7 @@
   </svg>
   <div class="justify">
     <h1>Lightweight</h1>
-    Pekosoft is approximately half a megabyte. Visuals are SVG. No bitmap images or audio files are used on pekosoft.net.
+    Tool graphics use SVG (Scalable Vector Graphics), and many tools generate sound directly in the browser.
   </div>
 </div>
 
@@ -141,7 +141,7 @@
   </svg>
   <div class="justify">
     <h1>Accessible</h1>
-    Tabbing, alt text, ARIA labels and high-contrast UI are treated as first-class requirements.
+    Tabbing, alt text, ARIA (Accessible Rich Internet Applications) labels and high-contrast interfaces are treated as first-class requirements.
   </div>
 </div>
 
@@ -151,7 +151,7 @@
   </svg>
   <div class="justify">
     <h1>Customizable</h1>
-    Features are added with toggles. Settings can be controlled per tool or globally and are saved automatically.
+    Features are added with toggles. Settings preferences, module layout and supported tool-specific choices and data are saved locally in this browser using localStorage. What is saved depends on the tool; not every active mode or transient readout is retained. Saved state is not synchronized between browsers or devices, and clearing site storage removes it.
   </div>
 </div>
 
@@ -209,7 +209,7 @@
   </svg>
   <div class="justify">
     <h1>CSS <span class="object">pages</span></h1>
-    Cascading Style Sheets is the styling.
+    CSS (Cascading Style Sheets) controls styling.
   </div>
 </div>
 
@@ -219,7 +219,7 @@
   </svg>
   <div class="justify">
     <h1>Modules</h1>
-    Each tool is made up of two or more modules. Depending on the tool, these are Instrument, Controls, Timeline, Playlist, History, Panel and Meters. Modules can be toggled from Menu. Double click or double tap a module header to minimize or restore it when the two-module Layout is off.
+    Each tool is organized into modules. Depending on the tool, these are Instrument, Controls, Timeline, Playlist, History, Panel and Meters. Modules can be toggled from Menu. Double click or double tap a module header to minimize or restore it when the two-module Layout is off.
   </div>
 </div>
 
@@ -228,7 +228,7 @@
     <use href="/icons.svg#more"></use>
   </svg>
   <div class="justify">
-    <h1>MORE <span class="object">button</span></h1>
+    <h1>Module options <span class="object">button</span></h1>
     Opens module-specific options. Unavailable while the module is minimized.
   </div>
 </div>
@@ -269,18 +269,18 @@
   </svg>
   <div class="justify">
     <h1>Panel <span class="object">module</span></h1>
-    Text output showing session data. Some Panel modules are also input.
+    Panel textareas are editable by default and show session data. Generated output may refresh as the tool updates. Whether edited text changes tool state depends on the tool; see its Help for details.
   </div>
 </div>
 
 <div class="feature-row border">
   <svg class="standard-image-help"><use href="/icons.svg#speech"></use></svg>
-  <div class="justify"><h1>SPEECH <span class="object">button</span></h1>Speaks current Panel text. Press again to stop.</div>
+  <div class="justify"><h1>Speech <span class="object">button</span></h1>Speaks current Panel text. Press again to stop.</div>
 </div>
 
 <div class="feature-row border">
   <svg class="standard-image-help"><use href="/icons.svg#download"></use></svg>
-  <div class="justify"><h1>DOWNLOAD <span class="object">button</span></h1>Downloads current Panel text as a text file.</div>
+  <div class="justify"><h1>Download <span class="object">button</span></h1>Downloads current Panel text as a text file.</div>
 </div>
 
 <div class="feature-row module">
@@ -390,12 +390,12 @@
 
 <div class="feature-row border">
   <svg class="standard-image-help"><use href="/icons.svg#guides"></use></svg>
-  <div class="justify"><h1>Guides <span class="object">option</span></h1>Toggles guides across supported tools and modules. A module-local Guides button overrides this setting for its own module only. The Settings button remains blue while at least one guide is on. <span class="default">Default: on.</span></div>
+  <div class="justify"><h1>Guides <span class="object">option</span></h1>Toggles guides across supported tools and modules. A module-local Guides button overrides this setting for its own module only. The Settings Guides button remains active while at least one guide is on. <span class="default">Default: on.</span></div>
 </div>
 
 <div class="feature-row border">
   <svg class="standard-image-help"><use href="/icons.svg#sun"></use></svg>
-  <div class="justify"><h1>Bright <span class="object">option</span></h1>Makes guides white across supported Timelines and Meters. A module-local Bright button overrides this setting for its own module only. <span class="default">Default: off.</span></div>
+  <div class="justify"><h1>Bright <span class="object">option</span></h1>Increases guide contrast across supported Timeline and Meters modules. A module-local Bright button overrides this setting for its own module only. <span class="default">Default: off.</span></div>
 </div>
 
 <div class="feature-row border">
@@ -415,7 +415,7 @@
 
 <div class="feature-row border">
   <svg class="standard-image-help"><use href="/icons.svg#haptic"></use></svg>
-  <div class="justify"><h1>Haptics <span class="object">option</span></h1>Enables haptic feedback where supported.</div>
+  <div class="justify"><h1>Haptic <span class="object">option</span></h1>Enables haptic feedback where supported.</div>
 </div>
 
 <div class="feature-row border">
@@ -460,7 +460,7 @@
 
 <div class="feature-row border">
   <svg class="standard-image-help"><use href="/icons.svg#field"></use></svg>
-  <div class="justify"><h1>RPM <span class="object">field</span></h1>Sets the default rounds per minute and updates supported open tools.</div>
+  <div class="justify"><h1>RPM <span class="object">field</span></h1>Shows the default RPM (revolutions per minute), adjusted with the RPM knob, and updates supported open tools.</div>
 </div>
 
 <div class="feature-row border">
@@ -470,12 +470,12 @@
 
 <div class="feature-row border">
   <svg class="standard-image-help"><use href="/icons.svg#field"></use></svg>
-  <div class="justify"><h1>SOS <span class="object">field</span></h1>Sets the default speed of sound and updates supported open tools.</div>
+  <div class="justify"><h1>SOS <span class="object">field</span></h1>Sets SOS (speed of sound) in meters per second and updates supported open tools.</div>
 </div>
 
 <div class="feature-row border">
   <svg class="standard-image-help"><use href="/icons.svg#reset"></use></svg>
-  <div class="justify"><h1>Reset <span class="object">button</span></h1>Restores all global customization to factory defaults.</div>
+  <div class="justify"><h1>Reset <span class="object">button</span></h1>Restores global customization to factory defaults and clears the site's locally stored tool settings and data.</div>
 </div>
 
 <div class="feature-row module">

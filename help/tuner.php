@@ -14,7 +14,7 @@
   </svg>
   <div class="justify">
     <h1>Instrument <span class="object">module</span></h1>
-    Main tuning display. Shows detected note, frequency in HZ, cents offset from current target, a meter with center at 0 cents, and target note buttons that toggle their own reference tone.
+    Main tuning display. Shows detected note, frequency in Hz, cents offset from current target, a meter with center at 0 cents, and target note buttons that toggle their own reference tone.
   </div>
 </div>
 
@@ -23,7 +23,7 @@
     <use href="/icons.svg#mic"></use>
   </svg>
   <div class="justify">
-    <h1>LISTEN <span class="object">button</span></h1>
+    <h1>Listen <span class="object">button</span></h1>
     Toggles microphone input for live pitch detection. Browser may request microphone permission on first use. <span class="default">Default: off.</span>
   </div>
 </div>
@@ -33,7 +33,7 @@
     <use href="/icons.svg#stop"></use>
   </svg>
   <div class="justify">
-    <h1>HOLD <span class="object">button</span></h1>
+    <h1>Hold <span class="object">button</span></h1>
     Freezes readout updates. Useful for briefly locking the current measurement. <span class="default">Default: off.</span>
   </div>
 </div>
@@ -53,7 +53,7 @@
     <use href="/icons.svg#guides"></use>
   </svg>
   <div class="justify">
-    <h1>GUIDES <span class="object">button</span></h1>
+    <h1>Guides <span class="object">button</span></h1>
     Toggles meter guides. This local button overrides the Settings Guides option for Meters only. <span class="default">Default: on.</span>
   </div>
 </div>
@@ -63,7 +63,7 @@
     <use href="/icons.svg#eq"></use>
   </svg>
   <div class="justify">
-    <h1>SPECTROSCOPE <span class="object">button</span></h1>
+    <h1>Spectroscope <span class="object">button</span></h1>
     Shows 32 logarithmic frequency bands from 20 Hz to the analyser's Nyquist frequency, including frequencies through 20 kHz. New peaks respond immediately and decay briefly between transient sounds.
   </div>
 </div>
@@ -73,7 +73,7 @@
     <use href="/icons.svg#meter"></use>
   </svg>
   <div class="justify">
-    <h1>LEVEL <span class="object">button</span></h1>
+    <h1>Level <span class="object">button</span></h1>
     Shows output level with immediate peak response and a short release between transient sounds.
   </div>
 </div>
@@ -83,7 +83,7 @@
     <use href="/icons.svg#wavelength"></use>
   </svg>
   <div class="justify">
-    <h1>OSCILLOSCOPE <span class="object">button</span></h1>
+    <h1>Oscilloscope <span class="object">button</span></h1>
     Shows the waveform and holds the latest triggered frame between transient sounds.
   </div>
 </div>
@@ -93,7 +93,7 @@
     <use href="/icons.svg#pulse"></use>
   </svg>
   <div class="justify">
-    <h1>WAVESCOPE <span class="object">button</span></h1>
+    <h1>Wavescope <span class="object">button</span></h1>
     Shows the wavescope view.
   </div>
 </div>
@@ -123,7 +123,7 @@
     <use href="/icons.svg#asterisk"></use>
   </svg>
   <div class="justify">
-    <h1>FOLLOW <span class="object">button</span></h1>
+    <h1>Follow <span class="object">button</span></h1>
     Auto-selects nearest target note from active profile during live detection. Turning this off lets you lock a target manually by pressing one of the target note buttons. <span class="default">Default: on.</span>
   </div>
 </div>
@@ -133,7 +133,7 @@
     <use href="/icons.svg#sound"></use>
   </svg>
   <div class="justify">
-    <h1>SOUND <span class="object">button</span></h1>
+    <h1>Sound <span class="object">button</span></h1>
     Toggles output from target note buttons. <span class="default">Default: on.</span>
   </div>
 </div>
@@ -154,7 +154,7 @@
   </svg>
   <div class="justify">
     <h1>Octave <span class="object">field</span></h1>
-    Sets octave for chromatic profile target buttons. Enabled only while CHROM profile is selected. Range: 0 to 8. <span class="default">Default: 4.</span>
+    Sets octave for chromatic profile target buttons. Enabled only while the Chromatic profile is selected. Range: 0 to 8. <span class="default">Default: 4.</span>
   </div>
 </div>
 
@@ -183,8 +183,8 @@
     <use href="/icons.svg#close"></use>
   </svg>
   <div class="justify">
-    <h1>CLEAR <span class="object">button</span></h1>
-    Clears panel output text.
+    <h1>Clear <span class="object">button</span></h1>
+    Clears Panel output text.
   </div>
 </div>
 
@@ -193,8 +193,8 @@
     <use href="/icons.svg#reset"></use>
   </svg>
   <div class="justify">
-    <h1>RESET <span class="object">button</span></h1>
-    Resets session and all settings.
+    <h1>Reset <span class="object">button</span></h1>
+    Resets session data and tool-specific settings.
   </div>
 </div>
 
@@ -213,7 +213,7 @@
     <use href="/icons.svg#guides"></use>
   </svg>
   <div class="justify">
-    <h1>GUIDES <span class="object">button</span></h1>
+    <h1>Guides <span class="object">button</span></h1>
     Toggles timeline reference lines at cents values (-50, -25, 0, +25, +50). This local button overrides the Settings Guides option for Timeline only. <span class="default">Default: on.</span>
   </div>
 </div>
@@ -224,18 +224,18 @@
   </svg>
   <div class="justify">
     <h1>Panel <span class="object">module</span></h1>
-    Text output with timestamp, detected note, detected HZ, target note, and cents offset.
+    Text output with timestamp, detected note, detected frequency in Hz, target note, and cents offset.
   </div>
 </div>
 
 <div class="feature-row border">
   <svg class="standard-image-help"><use href="/icons.svg#speech"></use></svg>
-  <div class="justify"><h1>SPEECH <span class="object">button</span></h1>Speaks current Panel text. Press again to stop.</div>
+  <div class="justify"><h1>Speech <span class="object">button</span></h1>Speaks current Panel text. Press again to stop.</div>
 </div>
 
 <div class="feature-row border">
   <svg class="standard-image-help"><use href="/icons.svg#download"></use></svg>
-  <div class="justify"><h1>DOWNLOAD <span class="object">button</span></h1>Downloads current Panel text as a text file.</div>
+  <div class="justify"><h1>Download <span class="object">button</span></h1>Downloads current Panel text as a text file.</div>
 </div>
 
 <div class="feature-row border">
@@ -243,8 +243,8 @@
     <use href="/icons.svg#close"></use>
   </svg>
   <div class="justify">
-    <h1>CLEAR <span class="object">button</span></h1>
-    Clears panel output text.
+    <h1>Clear <span class="object">button</span></h1>
+    Clears Panel output text.
   </div>
 </div>
 
@@ -252,8 +252,8 @@
     <use href="/icons.svg#wrap_text"></use>
   </svg>
   <div class="justify">
-    <h1>WRAP <span class="object">button</span></h1>
-    Toggles text wrap in the panel so long lines wrap instead of scrolling sideways. <span class="default">Default: off.</span>
+    <h1>Wrap <span class="object">button</span></h1>
+    Toggles text wrap in Panel so long lines wrap instead of scrolling sideways. <span class="default">Default: off.</span>
   </div>
 </div>
 
@@ -261,8 +261,8 @@
     <use href="/icons.svg#alpha"></use>
   </svg>
   <div class="justify">
-    <h1>COLOR <span class="object">button</span></h1>
-    Toggles syntax color in the panel text preview. <span class="default">Default: on.</span>
+    <h1>Color <span class="object">button</span></h1>
+    Toggles syntax color in the Panel text preview. <span class="default">Default: on.</span>
   </div>
 </div>
 
@@ -271,7 +271,7 @@
     <use href="/icons.svg#copy"></use>
   </svg>
   <div class="justify">
-    <h1>COPY <span class="object">button</span></h1>
-    Copies the panel output to clipboard.
+    <h1>Copy <span class="object">button</span></h1>
+    Copies the Panel output to clipboard.
   </div>
 </div>

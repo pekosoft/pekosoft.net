@@ -19,9 +19,14 @@ All ruler and guide lines must use the same explicit SVG contract:
 
 ## Label Placement
 
-- Axis titles must occupy a guide gap, never a guide coordinate.
+- Axis titles must occupy a dedicated corner cell or a guide gap, never a guide coordinate.
+- Corner titles use the same text baseline as the horizontal ruler labels. Use the shared `cornerTitle` option rather than positioning text independently.
+- Use the shared 48 px Y-ruler width unless a specific requirement justifies an exception. Confirm that signed labels fit without clipping.
 - BPM titles in Tap Pad and Metronome are placed between the highest two 30-BPM guides. This remains valid for every timeline height.
 - Tick labels default above their guide; a tick may request `labelPosition: 'below'` when it describes the lower region, such as BPM Calculator's `NOTE` label.
+- Every horizontal gridline must have an aligned ruler tick. Numbers may be omitted at endpoints or at intermediate ticks when space is tight; retain the gridlines and ticks.
+- Audio Calculator uses FS in the corner, omits the -0.031 and 0.031 endpoint numbers, and reduces intermediate label density on short timelines. Its signed amplitude scale stays in FS, not dBFS.
+- Preserve the existing shared guide and ruler colors and contrast, including Bright behavior. Do not introduce separate label contrast without explicit approval.
 - Ruler text and SVGs are non-selectable.
 
 ## State Model
@@ -41,7 +46,7 @@ Verify each ruler-enabled timeline (Audio Calculator, BPM Calculator, Metronome,
 | Guides on, Bright on | Complete outer frame and exactly one internal seam per ruler/plot join |
 | Rulers off, Bright on | Plot owns the complete Bright frame |
 | Rulers on, horizontal scroll | Vertical ruler remains fixed; horizontal ruler and labels track plot scroll |
-| Timeline resized or maximized | Titles remain between guides; no label strike-through |
+| Timeline resized or maximized | Titles remain in their corner cell or guide gap; no label strike-through or crowded labels |
 | 100%, high-DPI, and browser zoom | Lines retain a single-pixel visual weight |
 | Playhead on/off | Full-height playhead appears only when enabled |
 | Follow on, manual scroll | Manual horizontal navigation disables Follow |
@@ -51,3 +56,5 @@ Verify each ruler-enabled timeline (Audio Calculator, BPM Calculator, Metronome,
 ## Validation Notes
 
 Coordinate equality alone is insufficient across clipped SVG roots. Validate both the DOM line ownership and a rendered browser capture at the target device scale.
+
+Check the complete visible composition at the user's current viewport and zoom: title baselines, endpoint labels, clipping, tick alignment and spacing. Geometry checks support this review but do not replace looking at the rendered result.

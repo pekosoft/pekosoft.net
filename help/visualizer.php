@@ -4,7 +4,7 @@
   </svg>
   <div class="justify">
     <h1>General</h1>
-    Pekosoft Visualizer is a collection of BPM visualizers. The same beat stream drives multiple visual styles in parallel.
+    Pekosoft Visualizer is a collection of BPM (beats per minute) visualizers. The same beat stream drives multiple visual styles in parallel.
   </div>
 </div>
 
@@ -113,7 +113,7 @@
     <use href="/icons.svg#select_all"></use>
   </svg>
   <div class="justify">
-    <h1>ALL <span class="object">button</span></h1>
+    <h1>All <span class="object">button</span></h1>
     Shows all enabled visualizers in Instrument module. <span class="default">Default: on.</span>
   </div>
 </div>
@@ -123,7 +123,7 @@
     <use href="/icons.svg#radio_button"></use>
   </svg>
   <div class="justify">
-    <h1>ONE <span class="object">button</span></h1>
+    <h1>One <span class="object">button</span></h1>
     Shows one enabled visualizer at a time in Instrument module.
   </div>
 </div>
@@ -133,8 +133,8 @@
     <use href="/icons.svg#skip_left"></use>
   </svg>
   <div class="justify">
-    <h1>LEFT <span class="object">button</span></h1>
-    Shows previous enabled visualizer when ONE mode is active.
+    <h1>Left <span class="object">button</span></h1>
+    Shows the previous enabled visualizer when One is active.
   </div>
 </div>
 
@@ -143,8 +143,8 @@
     <use href="/icons.svg#skip_right"></use>
   </svg>
   <div class="justify">
-    <h1>RIGHT <span class="object">button</span></h1>
-    Shows next enabled visualizer when ONE mode is active.
+    <h1>Right <span class="object">button</span></h1>
+    Shows the next enabled visualizer when One is active.
   </div>
 </div>
 
@@ -173,7 +173,7 @@
     <use href="/icons.svg#play"></use>
   </svg>
   <div class="justify">
-    <h1>PLAY <span class="object">button</span></h1>
+    <h1>Play <span class="object">button</span></h1>
     Toggles play. <span class="default">Default: off.</span>
   </div>
 </div>
@@ -183,7 +183,7 @@
     <use href="/icons.svg#crosshair"></use>
   </svg>
   <div class="justify">
-    <h1>CROSS <span class="object">button</span></h1>
+    <h1>Cross <span class="object">button</span></h1>
     Toggles the crosshair overlay. <span class="default">Default: on.</span>
   </div>
 </div>
@@ -193,7 +193,7 @@
     <use href="/icons.svg#mask"></use>
   </svg>
   <div class="justify">
-    <h1>MASK <span class="object">button</span></h1>
+    <h1>Mask <span class="object">button</span></h1>
     Toggles the circular mask overlay. <span class="default">Default: on.</span>
   </div>
 </div>
@@ -203,7 +203,7 @@
     <use href="/icons.svg#text"></use>
   </svg>
   <div class="justify">
-    <h1>TITLE <span class="object">button</span></h1>
+    <h1>Title <span class="object">button</span></h1>
     Toggles meter titles in Instrument module. <span class="default">Default: on.</span>
   </div>
 </div>
@@ -213,8 +213,8 @@
     <use href="/icons.svg#reset"></use>
   </svg>
   <div class="justify">
-    <h1>RESET <span class="object">button</span></h1>
-    Resets session and all settings.
+    <h1>Reset <span class="object">button</span></h1>
+    Resets session data and tool-specific settings.
   </div>
 </div>
 
@@ -223,7 +223,7 @@
     <use href="/icons.svg#clock"></use>
   </svg>
   <div class="justify">
-    <h1>CLOCK <span class="object">button</span></h1>
+    <h1>Clock <span class="object">button</span></h1>
     Toggles the clock visualizer. <span class="default">Default: on.</span>
   </div>
 </div>
@@ -233,7 +233,7 @@
     <use href="/icons.svg#cake_diagram"></use>
   </svg>
   <div class="justify">
-    <h1>CAKE <span class="object">button</span></h1>
+    <h1>Cake <span class="object">button</span></h1>
     Toggles the cake visualizer. <span class="default">Default: on.</span>
   </div>
 </div>
@@ -243,7 +243,7 @@
     <use href="/icons.svg#meter"></use>
   </svg>
   <div class="justify">
-    <h1>SPEEDOMETER <span class="object">button</span></h1>
+    <h1>Speedometer <span class="object">button</span></h1>
     Toggles the speedometer visualizer. <span class="default">Default: on.</span>
   </div>
 </div>
@@ -253,7 +253,7 @@
     <use href="/icons.svg#metronome"></use>
   </svg>
   <div class="justify">
-    <h1>METRONOME <span class="object">button</span></h1>
+    <h1>Metronome <span class="object">button</span></h1>
     Toggles the metronome visualizer. <span class="default">Default: on.</span>
   </div>
 </div>
@@ -263,7 +263,7 @@
     <use href="/icons.svg#ticker"></use>
   </svg>
   <div class="justify">
-    <h1>TICKER <span class="object">button</span></h1>
+    <h1>Ticker <span class="object">button</span></h1>
     Toggles the ticker visualizer. <span class="default">Default: on.</span>
   </div>
 </div>
@@ -273,7 +273,7 @@
     <use href="/icons.svg#timeline"></use>
   </svg>
   <div class="justify">
-    <h1>LINES <span class="object">button</span></h1>
+    <h1>Lines <span class="object">button</span></h1>
     Toggles the lines visualizer. <span class="default">Default: on.</span>
   </div>
 </div>
@@ -283,7 +283,7 @@
     <use href="/icons.svg#star"></use>
   </svg>
   <div class="justify">
-    <h1>STARS <span class="object">button</span></h1>
+    <h1>Stars <span class="object">button</span></h1>
     Toggles the stars visualizer. <span class="default">Default: on.</span>
   </div>
 </div>
@@ -293,7 +293,7 @@
     <use href="/icons.svg#pulse"></use>
   </svg>
   <div class="justify">
-    <h1>PULSE <span class="object">button</span></h1>
+    <h1>Pulse <span class="object">button</span></h1>
     Toggles the pulse visualizer. <span class="default">Default: on.</span>
   </div>
 </div>
@@ -303,8 +303,7 @@
     <use href="/icons.svg#blink"></use>
   </svg>
   <div class="justify">
-    <h1>BLINK <span class="object">button</span></h1>
+    <h1>Blink <span class="object">button</span></h1>
     Toggles the blink visualizer. <span class="default">Default: on.</span>
   </div>
 </div>
-

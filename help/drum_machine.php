@@ -40,28 +40,10 @@
 
 <div class="feature-row border">
   <svg class="standard-image-help">
-    <use href="/icons.svg#chevron_left"></use>
-  </svg>
-  <div class="justify">
-    <h1>LEFT <span class="object">button</span></h1>Shifts every voice one step left within the selected pattern length.
-  </div>
-</div>
-
-<div class="feature-row border">
-  <svg class="standard-image-help">
-    <use href="/icons.svg#chevron_right"></use>
-  </svg>
-  <div class="justify">
-    <h1>RIGHT <span class="object">button</span></h1>Shifts every voice one step right within the selected pattern length.
-  </div>
-</div>
-
-<div class="feature-row border">
-  <svg class="standard-image-help">
     <use href="/icons.svg#random"></use>
   </svg>
   <div class="justify">
-    <h1>RANDOM <span class="object">button</span></h1>Creates a new weighted rhythm and preserves strong kick and snare anchors.
+    <h1>Random <span class="object">button</span></h1>Creates a new weighted rhythm and preserves strong kick and snare anchors.
   </div>
 </div>
 
@@ -70,7 +52,7 @@
     <use href="/icons.svg#close"></use>
   </svg>
   <div class="justify">
-    <h1>CLEAR <span class="object">button</span></h1>Switches off all steps. The change can be undone.
+    <h1>Clear <span class="object">button</span></h1>Switches off all steps. The change can be undone.
   </div>
 </div>
 
@@ -89,7 +71,7 @@
     <use href="/icons.svg#play"></use>
   </svg>
   <div class="justify">
-    <h1>PLAY <span class="object">button</span></h1>Starts or pauses sequencer playback. Space provides the same shortcut when no field or button has focus. <span class="default">Default: off.</span>
+    <h1>Play <span class="object">button</span></h1>Starts or pauses sequencer playback. Space provides the same shortcut when no field or button has focus. <span class="default">Default: off.</span>
   </div>
 </div>
 
@@ -98,7 +80,7 @@
     <use href="/icons.svg#record"></use>
   </svg>
   <div class="justify">
-    <h1>RECORD <span class="object">button</span></h1>Starts or stops performance recording. Captures audible sequencer hits and manually auditioned voices with their timing, velocity and voice settings. A completed take is added to Playlist automatically. <span class="default">Default: off.</span>
+    <h1>Record <span class="object">button</span></h1>Starts or stops performance recording. Captures audible sequencer hits and manually auditioned voices with their timing, velocity and voice settings. A completed take is added to Playlist automatically. <span class="default">Default: off.</span>
   </div>
 </div>
 
@@ -107,7 +89,7 @@
     <use href="/icons.svg#play"></use>
   </svg>
   <div class="justify">
-    <h1>PLAYBACK <span class="object">button</span></h1>Starts or stops the selected Playlist recording. If RECORD contains hits, PLAYBACK first completes the take and then plays it. Recording playback does not change the current pattern. <span class="default">Default: off.</span>
+    <h1>Playback <span class="object">button</span></h1>Starts or stops the selected Playlist recording. If the active recording contains hits, Playback first completes the take and then plays it. Recording playback does not change the current pattern. <span class="default">Default: off.</span>
   </div>
 </div>
 
@@ -116,7 +98,7 @@
     <use href="/icons.svg#stop"></use>
   </svg>
   <div class="justify">
-    <h1>STOP <span class="object">button</span></h1>Stops sequencer and recording playback, completes an active recording, and returns the playhead to the beginning.
+    <h1>Stop <span class="object">button</span></h1>Stops sequencer and recording playback, completes an active recording, and returns the playhead to the beginning.
   </div>
 </div>
 
@@ -125,7 +107,7 @@
     <use href="/icons.svg#tap_pad"></use>
   </svg>
   <div class="justify">
-    <h1>TAP <span class="object">button</span></h1>Sets BPM from the average timing of recent taps.
+    <h1>Tap <span class="object">button</span></h1>Sets BPM from the average timing of recent taps.
   </div>
 </div>
 
@@ -134,7 +116,7 @@
     <use href="/icons.svg#sound"></use>
   </svg>
   <div class="justify">
-    <h1>SOUND <span class="object">button</span></h1>Toggles master audio output. Sequencing and meters continue while output is muted. <span class="default">Default: on.</span>
+    <h1>Sound <span class="object">button</span></h1>Toggles master audio output. Sequencing and Meters continue while output is muted. <span class="default">Default: on.</span>
   </div>
 </div>
 
@@ -143,7 +125,7 @@
     <use href="/icons.svg#haptic"></use>
   </svg>
   <div class="justify">
-    <h1>HAPTIC <span class="object">button</span></h1>Toggles short vibration feedback for auditioned voices and sequenced kick hits on supported devices.
+    <h1>Haptic <span class="object">button</span></h1>Toggles short vibration feedback for auditioned voices and sequenced kick hits on supported devices.
   </div>
 </div>
 
@@ -152,7 +134,7 @@
     <use href="/icons.svg#reset"></use>
   </svg>
   <div class="justify">
-    <h1>RESET <span class="object">button</span></h1>Stops playback, completes an active recording, and restores Drum Machine settings, voices, pattern and table column widths to defaults. Playlist recordings remain available.
+    <h1>Reset <span class="object">button</span></h1>Stops playback, completes an active recording, clears pattern-edit history and Timeline events, and restores Drum Machine settings, voices, pattern and table column widths to defaults. Playlist recordings remain available; use Clear in Playlist to remove them.
   </div>
 </div>
 
@@ -260,7 +242,7 @@
     <use href="/icons.svg#slider"></use>
   </svg>
   <div class="justify">
-    <h1>TEMPO <span class="object">slider</span></h1>Adjusts BPM. Decrease and Increase buttons support press and hold.
+    <h1>Tempo <span class="object">slider</span></h1>Adjusts BPM. Decrease and Increase buttons support press and hold.
   </div>
 </div>
 
@@ -269,7 +251,7 @@
     <use href="/icons.svg#slider"></use>
   </svg>
   <div class="justify">
-    <h1>SWING <span class="object">slider</span></h1>Adjusts swing. Decrease and Increase buttons support press and hold.
+    <h1>Swing <span class="object">slider</span></h1>Adjusts swing. Decrease and Increase buttons support press and hold.
   </div>
 </div>
 
@@ -278,7 +260,7 @@
     <use href="/icons.svg#slider"></use>
   </svg>
   <div class="justify">
-    <h1>VOLUME <span class="object">slider</span></h1>Adjusts master output volume. Decrease and Increase buttons support press and hold.
+    <h1>Volume <span class="object">slider</span></h1>Adjusts master output volume. Decrease and Increase buttons support press and hold.
   </div>
 </div>
 
@@ -296,7 +278,7 @@
     <use href="/icons.svg#guides"></use>
   </svg>
   <div class="justify">
-    <h1>GUIDES <span class="object">button</span></h1>Toggles horizontal drum-lane guides. The initial state follows the global Guides setting. This local button overrides the Settings Guides option for Timeline only. <span class="default">Default: on.</span>
+    <h1>Guides <span class="object">button</span></h1>Toggles horizontal drum-lane guides. This local button overrides the Settings Guides option for Timeline only. <span class="default">Default: follows Settings Guides.</span>
   </div>
 </div>
 
@@ -305,7 +287,7 @@
     <use href="/icons.svg#photo"></use>
   </svg>
   <div class="justify">
-    <h1>SAVE <span class="object">button</span></h1>Saves the Timeline canvas as a PNG image.
+    <h1>Save <span class="object">button</span></h1>Saves the Timeline canvas as a PNG image.
   </div>
 </div>
 
@@ -314,7 +296,7 @@
     <use href="/icons.svg#copy"></use>
   </svg>
   <div class="justify">
-    <h1>COPY <span class="object">button</span></h1>Copies the Timeline canvas as a PNG image to clipboard.
+    <h1>Copy <span class="object">button</span></h1>Copies the Timeline canvas as a PNG image to clipboard.
   </div>
 </div>
 
@@ -323,7 +305,7 @@
     <use href="/icons.svg#view_list"></use>
   </svg>
   <div class="justify">
-    <h1>Playlist <span class="object">module</span></h1>Stores completed recordings in order. Each row shows the recording name, four-lane preview, duration, hit count, recorded BPM, added time, and separate Play and Remove columns. Drag a column header edge to resize that column. On touchscreens, drag the right side of the header. Double-click or double-tap the edge to restore its default width. Recordings persist between visits.
+    <h1>Playlist <span class="object">module</span></h1>Stores completed recordings in order. Each row shows the recording name, four-lane preview, duration, hit count, recorded BPM, added time, and separate Play and Remove columns. Drag a column header edge to resize that column. On touchscreens, drag the right side of the header. Double-click or double-tap the edge to restore its default width.
   </div>
 </div>
 
@@ -332,7 +314,7 @@
     <use href="/icons.svg#view_list"></use>
   </svg>
   <div class="justify">
-    <h1>Recording <span class="object">rows</span></h1>Click a row to select its recording. Double click a row to start playback. The selected row uses the primary color.
+    <h1>Recording <span class="object">rows</span></h1>Click a row to select its recording. Double click a row to start playback. The selected row is highlighted.
   </div>
 </div>
 
@@ -341,7 +323,7 @@
     <use href="/icons.svg#play"></use>
   </svg>
   <div class="justify">
-    <h1>PLAY <span class="object">row button</span></h1>Starts or stops playback of that recording and selects its row.
+    <h1>Play <span class="object">row button</span></h1>Starts or stops playback of that recording and selects its row.
   </div>
 </div>
 
@@ -350,7 +332,7 @@
     <use href="/icons.svg#delete"></use>
   </svg>
   <div class="justify">
-    <h1>REMOVE <span class="object">row button</span></h1>Removes that recording from Playlist.
+    <h1>Remove <span class="object">row button</span></h1>Removes that recording from Playlist.
   </div>
 </div>
 
@@ -359,7 +341,7 @@
     <use href="/icons.svg#skip_left"></use>
   </svg>
   <div class="justify">
-    <h1>PREVIOUS <span class="object">button</span></h1>Selects and plays the previous recording, wrapping from the first recording to the last.
+    <h1>Previous <span class="object">button</span></h1>Selects and plays the previous recording, wrapping from the first recording to the last.
   </div>
 </div>
 
@@ -368,7 +350,7 @@
     <use href="/icons.svg#skip_right"></use>
   </svg>
   <div class="justify">
-    <h1>NEXT <span class="object">button</span></h1>Selects and plays the next recording, wrapping from the last recording to the first.
+    <h1>Next <span class="object">button</span></h1>Selects and plays the next recording, wrapping from the last recording to the first.
   </div>
 </div>
 
@@ -377,7 +359,7 @@
     <use href="/icons.svg#delete"></use>
   </svg>
   <div class="justify">
-    <h1>CLEAR <span class="object">button</span></h1>Removes all Playlist recordings after confirmation.
+    <h1>Clear <span class="object">button</span></h1>Removes all Playlist recordings after confirmation.
   </div>
 </div>
 
@@ -386,7 +368,7 @@
     <use href="/icons.svg#open"></use>
   </svg>
   <div class="justify">
-    <h1>OPEN <span class="object">button</span></h1>Replaces Playlist with valid recordings imported from a Drum Machine recordings JSON file.
+    <h1>Open <span class="object">button</span></h1>Replaces Playlist with valid recordings imported from a Drum Machine recordings JSON (JavaScript Object Notation) file.
   </div>
 </div>
 
@@ -395,7 +377,7 @@
     <use href="/icons.svg#download"></use>
   </svg>
   <div class="justify">
-    <h1>SAVE <span class="object">button</span></h1>Exports all Playlist recordings as a JSON file.
+    <h1>Save <span class="object">button</span></h1>Exports all Playlist recordings as a JSON file.
   </div>
 </div>
 
@@ -422,7 +404,7 @@
     <use href="/icons.svg#arrow_up_down"></use>
   </svg>
   <div class="justify">
-    <h1>SORT <span class="object">button</span></h1>Changes History display order between descending and ascending. Undo chronology does not change. <span class="default">Default: descending.</span>
+    <h1>Sort <span class="object">button</span></h1>Changes History display order between descending and ascending. Undo chronology does not change. <span class="default">Default: descending.</span>
   </div>
 </div>
 
@@ -431,7 +413,7 @@
     <use href="/icons.svg#js"></use>
   </svg>
   <div class="justify">
-    <h1>VIEW <span class="object">button</span></h1>Changes History between the action list, JSON and JavaScript views. The selected view persists between visits. <span class="default">Default: List.</span>
+    <h1>View <span class="object">button</span></h1>Changes History between the action list, JSON and JavaScript views. <span class="default">Default: List.</span>
   </div>
 </div>
 
@@ -440,7 +422,7 @@
     <use href="/icons.svg#undo"></use>
   </svg>
   <div class="justify">
-    <h1>UNDO <span class="object">button</span></h1>Restores the previous pattern edit.
+    <h1>Undo <span class="object">button</span></h1>Restores the previous pattern edit.
   </div>
 </div>
 
@@ -449,7 +431,7 @@
     <use href="/icons.svg#redo"></use>
   </svg>
   <div class="justify">
-    <h1>REDO <span class="object">button</span></h1>Restores the next pattern edit after Undo.
+    <h1>Redo <span class="object">button</span></h1>Restores the next pattern edit after Undo.
   </div>
 </div>
 
@@ -464,12 +446,12 @@
 
 <div class="feature-row border">
   <svg class="standard-image-help"><use href="/icons.svg#speech"></use></svg>
-  <div class="justify"><h1>SPEECH <span class="object">button</span></h1>Speaks current Panel text. Press again to stop.</div>
+  <div class="justify"><h1>Speech <span class="object">button</span></h1>Speaks current Panel text. Press again to stop.</div>
 </div>
 
 <div class="feature-row border">
   <svg class="standard-image-help"><use href="/icons.svg#download"></use></svg>
-  <div class="justify"><h1>DOWNLOAD <span class="object">button</span></h1>Downloads current Panel text as a text file.</div>
+  <div class="justify"><h1>Download <span class="object">button</span></h1>Downloads current Panel text as a text file.</div>
 </div>
 
 <div class="feature-row border">
@@ -477,7 +459,7 @@
     <use href="/icons.svg#open"></use>
   </svg>
   <div class="justify">
-    <h1>OPEN <span class="object">button</span></h1>Opens Drum Machine JSON or text pattern data and applies valid content.
+    <h1>Open <span class="object">button</span></h1>Opens Drum Machine JSON or text pattern data and applies valid content.
   </div>
 </div>
 
@@ -486,7 +468,7 @@
     <use href="/icons.svg#download"></use>
   </svg>
   <div class="justify">
-    <h1>SAVE <span class="object">button</span></h1>Saves the current Panel JSON as a pattern file.
+    <h1>Save <span class="object">button</span></h1>Saves the current Panel JSON as a pattern file.
   </div>
 </div>
 
@@ -495,7 +477,7 @@
     <use href="/icons.svg#check"></use>
   </svg>
   <div class="justify">
-    <h1>APPLY <span class="object">button</span></h1>Validates and applies JSON edited in Panel. Invalid JSON is marked without changing the current pattern.
+    <h1>Apply <span class="object">button</span></h1>Validates and applies JSON edited in Panel. Invalid JSON is marked without changing the current pattern.
   </div>
 </div>
 
@@ -504,7 +486,7 @@
     <use href="/icons.svg#copy"></use>
   </svg>
   <div class="justify">
-    <h1>COPY <span class="object">button</span></h1>Copies the current pattern JSON.
+    <h1>Copy <span class="object">button</span></h1>Copies the current pattern JSON.
   </div>
 </div>
 
@@ -513,7 +495,7 @@
     <use href="/icons.svg#meter"></use>
   </svg>
   <div class="justify">
-    <h1>Meters <span class="object">module</span></h1>Shows shared meter views for the generated drum signal, including while SOUND is muted. The active view updates up to 60 times per second.
+    <h1>Meters <span class="object">module</span></h1>Shows shared meter views for the generated drum signal, including while Sound is muted. The active view updates up to 60 times per second.
   </div>
 </div>
 
@@ -522,7 +504,7 @@
     <use href="/icons.svg#guides"></use>
   </svg>
   <div class="justify">
-    <h1>GUIDES <span class="object">button</span></h1>Toggles meter guides. This local button overrides the Settings Guides option for Meters only. <span class="default">Default: on.</span>
+    <h1>Guides <span class="object">button</span></h1>Toggles meter guides. This local button overrides the Settings Guides option for Meters only. <span class="default">Default: on.</span>
   </div>
 </div>
 
@@ -531,7 +513,7 @@
     <use href="/icons.svg#eq"></use>
   </svg>
   <div class="justify">
-    <h1>SPECTROSCOPE <span class="object">button</span></h1>Shows 32 logarithmic frequency bands from 20 Hz to the analyser's Nyquist frequency, including frequencies through 20 kHz. New peaks respond immediately and decay briefly between transient sounds.
+    <h1>Spectroscope <span class="object">button</span></h1>Shows 32 logarithmic frequency bands from 20 Hz to the analyser's Nyquist frequency, including frequencies through 20 kHz. New peaks respond immediately and decay briefly between transient sounds.
   </div>
 </div>
 
@@ -540,7 +522,7 @@
     <use href="/icons.svg#meter"></use>
   </svg>
   <div class="justify">
-    <h1>LEVEL <span class="object">button</span></h1>Shows output level with immediate peak response and a short release between transient sounds.
+    <h1>Level <span class="object">button</span></h1>Shows output level with immediate peak response and a short release between transient sounds.
   </div>
 </div>
 
@@ -549,7 +531,7 @@
     <use href="/icons.svg#wavelength"></use>
   </svg>
   <div class="justify">
-    <h1>OSCILLOSCOPE <span class="object">button</span></h1>Shows the waveform and holds the latest triggered frame between transient sounds.
+    <h1>Oscilloscope <span class="object">button</span></h1>Shows the waveform and holds the latest triggered frame between transient sounds.
   </div>
 </div>
 
@@ -558,6 +540,6 @@
     <use href="/icons.svg#pulse"></use>
   </svg>
   <div class="justify">
-    <h1>WAVESCOPE <span class="object">button</span></h1>Shows the wavescope meter view.
+    <h1>Wavescope <span class="object">button</span></h1>Shows the wavescope meter view.
   </div>
 </div>

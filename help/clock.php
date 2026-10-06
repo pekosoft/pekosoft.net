@@ -43,7 +43,7 @@
     <use href="/icons.svg#sound"></use>
   </svg>
   <div class="justify">
-    <h1>SOUND <span class="object">button</span></h1>
+    <h1>Sound <span class="object">button</span></h1>
     Toggles Click sound on each second. <span class="default">Default: off.</span>
   </div>
 </div>
@@ -53,7 +53,7 @@
     <use href="/icons.svg#haptic"></use>
   </svg>
   <div class="justify">
-    <h1>HAPTIC <span class="object">button</span></h1>
+    <h1>Haptic <span class="object">button</span></h1>
     Toggles a short vibration on each second on supported devices. <span class="default">Default: off.</span>
   </div>
 </div>
@@ -63,7 +63,7 @@
     <use href="/icons.svg#reset"></use>
   </svg>
   <div class="justify">
-    <h1>RESET <span class="object">button</span></h1>
+    <h1>Reset <span class="object">button</span></h1>
     Restores the Clock options to their defaults.
   </div>
 </div>

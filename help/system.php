@@ -24,7 +24,7 @@
   </svg>
   <div class="justify">
     <h1>Info <span class="object">fields</span></h1>
-    Lists available values such as CPU detail, cores, RAM estimate, OS, browser, IP, screen, viewport and language.
+    Lists available hardware, display, software, server and network values. Browser privacy limits can restrict the information available.
   </div>
 </div>
 
@@ -44,7 +44,7 @@
   </svg>
   <div class="justify">
     <h1>CPU <span class="object">field</span></h1>
-    CPU vendor, model and architecture details available to the browser.
+    CPU (central processing unit) vendor, model and architecture details available to the browser.
   </div>
 </div>
 
@@ -64,7 +64,7 @@
   </svg>
   <div class="justify">
     <h1>RAM <span class="object">field</span></h1>
-    Approximate device memory reported by the browser.
+    Approximate RAM (random-access memory) reported by the browser.
   </div>
 </div>
 
@@ -94,7 +94,7 @@
   </svg>
   <div class="justify">
     <h1>Screen <span class="object">field</span></h1>
-    Physical screen size in pixels.
+    Screen dimensions reported by the browser in CSS pixels, not physical size.
   </div>
 </div>
 
@@ -144,7 +144,7 @@
   </svg>
   <div class="justify">
     <h1>OS <span class="object">field</span></h1>
-    Operating system inferred from the user agent.
+    OS (operating system) inferred from the user agent.
   </div>
 </div>
 
@@ -234,7 +234,7 @@
   </svg>
   <div class="justify">
     <h1>IP <span class="object">field</span></h1>
-    Client address from the server request.
+    IP (Internet Protocol) address from the server request.
   </div>
 </div>
 

@@ -134,7 +134,7 @@
     <use href="/icons.svg#reset"></use>
   </svg>
   <div class="justify">
-    <h1>Reset <span class="object">button</span></h1>Stops playback, completes an active recording, clears pattern-edit history and Timeline events, and restores Drum Machine settings, voices, pattern and table column widths to defaults. Playlist recordings remain available; use Clear in Playlist to remove them.
+    <h1>Reset <span class="object">button</span></h1>Stops playback and recording, clears Playlist recordings, pattern-edit history and Timeline events, and restores Drum Machine settings, voices, pattern and table column widths to defaults. Sitewide settings are unchanged.
   </div>
 </div>
 

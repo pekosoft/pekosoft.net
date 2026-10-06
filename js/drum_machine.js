@@ -1552,6 +1552,10 @@
     reset() {
       this.stopAll(true);
       localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(PLAYLIST_STORAGE_KEY);
+      this.recordings = [];
+      this.selectedRecordingIndex = -1;
+      this.renderRecordingPlaylist();
       this.state = createDefaultState();
       this.history.clear();
       this.tapTimes = [];

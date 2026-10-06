@@ -66,9 +66,9 @@ window.addEventListener('DOMContentLoaded', () => {
     { id: 'bit-depth-knob', field: refs.bitDepth, label: 'Bit depth', defaultValue: String(DEFAULT_STATE.bitDepth) },
     { id: 'sample-rate-knob', field: refs.sampleRate, label: 'Sam. rate', defaultValue: String(DEFAULT_STATE.sampleRate) },
     { id: 'channels-knob', field: refs.channels, label: 'Channels', defaultValue: String(DEFAULT_STATE.channels) },
+    { id: 'window-knob', field: refs.signalWindow, label: 'Window', stateKey: 'signalWindow', scale: 1000, decimals: 3, unit: 'ms', defaultValue: (DEFAULT_STATE.signalWindow * 1000).toFixed(3) },
     { id: 'frequency-knob', field: refs.signalFrequency, label: 'Frequency', stateKey: 'signalFrequency', scale: 1, decimals: 0, unit: 'Hz', defaultValue: String(DEFAULT_STATE.signalFrequency) },
-    { id: 'amplitude-knob', field: refs.signalAmplitude, label: 'Amplitude', stateKey: 'signalAmplitude', scale: 100, step: 0.025, decimals: 3, unit: '% FS', defaultValue: (DEFAULT_STATE.signalAmplitude * 100).toFixed(3) },
-    { id: 'window-knob', field: refs.signalWindow, label: 'Window', stateKey: 'signalWindow', scale: 1000, decimals: 3, unit: 'ms', defaultValue: (DEFAULT_STATE.signalWindow * 1000).toFixed(3) }
+    { id: 'amplitude-knob', field: refs.signalAmplitude, label: 'Amplitude', stateKey: 'signalAmplitude', scale: 100, step: 0.025, decimals: 3, unit: '% FS', defaultValue: (DEFAULT_STATE.signalAmplitude * 100).toFixed(3) }
   ].map((control) => ({ ...control, knob: document.getElementById(control.id) }));
   let signalFrequency = DEFAULT_STATE.signalFrequency;
   let signalAmplitude = DEFAULT_STATE.signalAmplitude;
@@ -91,7 +91,6 @@ window.addEventListener('DOMContentLoaded', () => {
     horizontalRuler: document.getElementById('sampling-timeline-horizontal-ruler'),
     button: document.getElementById('rulers-button'),
     storageKey: 'audio_calculator.rulers',
-    axisWidth: 80,
     onVisibilityChange: renderSamplingTimeline
   });
   const presetValueByPair = {
@@ -316,12 +315,16 @@ window.addEventListener('DOMContentLoaded', () => {
       position: Math.round(toX(duration * (index + 1) / xTickCount)),
       label: `${(duration * 1000 * (index + 1) / xTickCount).toFixed(3)} ms`
     }));
-    const yTicks = Array.from({ length: 5 }, (_, index) => ({
-      position: Math.floor(toY(-range + range * index / 2)),
-      label: (-range + range * index / 2).toFixed(3),
-      labelPosition: index === 4 ? 'below' : 'above'
+    const tickSpacing = (plotHeight - 2 * verticalPadding) / 8;
+    const labelStep = [1, 2, 4].find((step) => tickSpacing * step >= 44);
+    const yTicks = Array.from({ length: 9 }, (_, index) => ({
+      position: Math.floor(toY(-range + range * index / 4)),
+      label: index > 0 && index < 8 && (labelStep === undefined ? index === 4 : index % labelStep === 0)
+        ? (-range + range * index / 4).toFixed(3)
+        : '',
+      labelPosition: 'above'
     }));
-    const levelGuides = Array.from({ length: 9 }, (_, index) => Math.floor(toY(-range + range * index / 4)));
+    const levelGuides = yTicks.map(({ position }) => position);
     const guideColor = window.PekoBrightGuides.getTimelineGuideColor('var(--grey1)');
     const bright = timelineGuidesVisible && window.PekoBrightGuides.getTimelineBright();
     const rulersVisible = timelineRulers.getVisible();
@@ -331,10 +334,9 @@ window.addEventListener('DOMContentLoaded', () => {
       height,
       color: guideColor,
       bright,
+      cornerTitle: 'FS',
       drawVertical: (svg, dimensions) => timelineUtils.drawVerticalRuler(svg, {
         ...dimensions,
-        title: 'FS',
-        titleY: plotHeight * 9 / 16,
         ticks: yTicks,
         color: guideColor
       }),
@@ -622,6 +624,7 @@ window.addEventListener('DOMContentLoaded', () => {
       `Total samples: ${metrics.totalSamples}`,
       `Dynamic range: ${metrics.dynamicRange.toFixed(3)} dB`,
       `Frequency range: ${formatFrequency(metrics.maxFrequency)}`,
+      '',
       `Illustration window: ${(values.signalWindow * 1000).toFixed(3)} ms`,
       `Signal frequency: ${formatFrequency(values.signalFrequency)}`,
       `Signal amplitude: ${formatAmplitudePercent(values.signalAmplitude)}% FS (${formatSignalLevel(values.signalAmplitude)})`
@@ -631,7 +634,6 @@ window.addEventListener('DOMContentLoaded', () => {
   function getAllSummary(values) {
     const lines = [];
     lines.push(`Duration: ${values.duration.toFixed(3)} s | Channels: ${values.channels}`);
-    lines.push(`Illustration: ${(values.signalWindow * 1000).toFixed(3)} ms | ${formatFrequency(values.signalFrequency)} | ${formatAmplitudePercent(values.signalAmplitude)}% FS (${formatSignalLevel(values.signalAmplitude)})`);
     lines.push('');
 
     config.bitDepths.forEach((depth) => {
@@ -649,6 +651,8 @@ window.addEventListener('DOMContentLoaded', () => {
       });
     });
 
+    lines.push('');
+    lines.push(`Illustration: ${(values.signalWindow * 1000).toFixed(3)} ms | ${formatFrequency(values.signalFrequency)} | ${formatAmplitudePercent(values.signalAmplitude)}% FS (${formatSignalLevel(values.signalAmplitude)})`);
     return lines.join('\n');
   }
 
@@ -681,9 +685,11 @@ window.addEventListener('DOMContentLoaded', () => {
     const formatRow = (columns) => columns.map((column, index) => String(column).padStart([4, 12, 16, 16, 16][index])).join(' | ');
     return [
       `Bit depth: ${values.bitDepth} bit | Sample rate: ${formatSampleRate(values.sampleRate)} kHz`,
+      '',
       `Mono illustration: ${(duration * 1000).toFixed(3)} ms | ${samples.length} sample points`,
       `Signal frequency: ${formatFrequency(values.signalFrequency)}`,
       `Signal amplitude: ${formatAmplitudePercent(values.signalAmplitude)}% FS (${formatSignalLevel(values.signalAmplitude)})`,
+      '',
       `RMS error: ${rmsText} FS (${errorDbfs.toFixed(3)} dBFS)`,
       `Peak error: ${peakError.toPrecision(9)} FS`,
       `SNR: ${snrText}`,

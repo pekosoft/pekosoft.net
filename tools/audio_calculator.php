@@ -138,6 +138,10 @@
 
       <div class="controls-values wrapper">
         <div class="pair">
+          <label for="signal-window-field" title="Illustration time window in milliseconds; independent of file Duration">Window (ms):</label>
+          <input type="number" id="signal-window-field" min="0.100" max="4.000" step="0.100" value="1.000" required>
+        </div>
+        <div class="pair">
           <label for="signal-frequency-field" title="Illustration frequency in Hz">Freq. (Hz):</label>
           <input type="number" id="signal-frequency-field" min="0" max="20000" step="100" value="2000" required>
         </div>
@@ -149,19 +153,15 @@
           <label for="signal-amplitude-dbfs-field" title="Illustration peak amplitude in dBFS; leave empty for silence">dBFS:</label>
           <input type="number" id="signal-amplitude-dbfs-field" max="-30.103" step="any" value="-32.041" placeholder="silence">
         </div>
-        <div class="pair">
-          <label for="signal-window-field" title="Illustration time window in milliseconds; independent of file Duration">Window (ms):</label>
-          <input type="number" id="signal-window-field" min="0.100" max="4.000" step="0.100" value="1.000" required>
-        </div>
       </div>
 
       <div class="controls-knobs wrapper">
         <div class="controls-knob"><button id="bit-depth-knob" class="knob-control" type="button" title="Bit depth" aria-label="Bit depth"></button><span>Bit depth</span></div>
         <div class="controls-knob"><button id="sample-rate-knob" class="knob-control" type="button" title="Sample rate" aria-label="Sam. rate"></button><span>Sam. rate</span></div>
         <div class="controls-knob"><button id="channels-knob" class="knob-control" type="button" title="Channels" aria-label="Channels"></button><span>Channels</span></div>
+        <div class="controls-knob"><button id="window-knob" class="knob-control" type="button" title="Window" aria-label="Window"></button><span>Window</span></div>
         <div class="controls-knob"><button id="frequency-knob" class="knob-control" type="button" title="Frequency" aria-label="Frequency"></button><span>Frequency</span></div>
         <div class="controls-knob"><button id="amplitude-knob" class="knob-control" type="button" title="Amplitude" aria-label="Amplitude"></button><span>Amplitude</span></div>
-        <div class="controls-knob"><button id="window-knob" class="knob-control" type="button" title="Window" aria-label="Window"></button><span>Window</span></div>
       </div>
     </div>
     <div class="module-footer wrapper colored">

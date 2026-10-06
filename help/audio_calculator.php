@@ -73,6 +73,16 @@
     <use href="/icons.svg#knob"></use>
   </svg>
   <div class="justify">
+    <h1>Window <span class="object">knob</span></h1>
+    Sets the mono illustration's time window from 0.100 to 4.000 ms in 0.100 ms steps. Uses the same interactions as Frequency. Double-click restores 1.000 ms. Shorter windows zoom in on individual samples; longer windows show more cycles and sampling patterns. The amplitude scale stays fixed. Window is remembered and Reset restores its default.
+  </div>
+</div>
+
+<div class="feature-row border">
+  <svg class="standard-image-help">
+    <use href="/icons.svg#knob"></use>
+  </svg>
+  <div class="justify">
     <h1>Frequency <span class="object">knob</span></h1>
     Sets the illustrated sine wave frequency from 0 to 20000 Hz in 100 Hz steps. Click, scroll, drag vertically or use arrow keys; Home and End select the limits. Double-click restores 2000 Hz. Frequencies at or above half the selected Sample rate demonstrate sampling ambiguity; a staircase is not a reconstructed audio waveform. At 0 Hz the signal is flat.
   </div>
@@ -90,11 +100,11 @@
 
 <div class="feature-row border">
   <svg class="standard-image-help">
-    <use href="/icons.svg#knob"></use>
+    <use href="/icons.svg#field"></use>
   </svg>
   <div class="justify">
-    <h1>Window <span class="object">knob</span></h1>
-    Sets the mono illustration's time window from 0.100 to 4.000 ms in 0.100 ms steps. Uses the same interactions as Frequency. Double-click restores 1.000 ms. Shorter windows zoom in on individual samples; longer windows show more cycles and sampling patterns. The amplitude scale stays fixed. Window is remembered and Reset restores its default.
+    <h1>Duration <span class="object">field</span></h1>
+    Sets audio file length in seconds, independently of the illustration's Window. <span class="default">Default: 60.</span>
   </div>
 </div>
 
@@ -103,8 +113,8 @@
     <use href="/icons.svg#field"></use>
   </svg>
   <div class="justify">
-    <h1>Duration <span class="object">field</span></h1>
-    Sets audio file length in seconds, independently of the illustration's Window. <span class="default">Default: 60.</span>
+    <h1>Window (ms) <span class="object">field</span></h1>
+    Sets the Timeline Window knob value in milliseconds. Changes the time ruler, sample-point count and error statistics, but not file size, bit rate, total file samples or the amplitude scale. Accepts 0.100 to 4.000 ms in 0.100 ms steps; defaults to 1.000 ms.
   </div>
 </div>
 
@@ -135,16 +145,6 @@
   <div class="justify">
     <h1>dBFS <span class="object">field</span></h1>
     Sets the same peak amplitude in decibels relative to full scale and updates Amp. (%) and the Amplitude knob. The maximum is approximately -30.103 dBFS (3.125% FS), matching the fixed magnified Timeline range. Leave empty for zero amplitude; the placeholder shows silence because its level is negative infinity, not a finite dBFS number. Defaults to -32.041 dBFS (2.500% FS). Entered amplitude is remembered without rounding it to the knob's steps; displayed values are rounded.
-  </div>
-</div>
-
-<div class="feature-row border">
-  <svg class="standard-image-help">
-    <use href="/icons.svg#field"></use>
-  </svg>
-  <div class="justify">
-    <h1>Window (ms) <span class="object">field</span></h1>
-    Sets the Timeline Window knob value in milliseconds. Changes the time ruler, sample-point count and error statistics, but not file size, bit rate, total file samples or the amplitude scale. Accepts 0.100 to 4.000 ms in 0.100 ms steps; defaults to 1.000 ms.
   </div>
 </div>
 
@@ -257,7 +257,7 @@
     Illustrates sampling and quantization using the selected Sample rate and Bit depth. White is the original sine wave, blue shows each quantized value held until the next sample, and magenta marks the quantized sample points. This is a conceptual sample-and-hold view, not a reconstructed audio output.
     The Signal, Steps and Points footer buttons independently show or hide the corresponding parts of the illustration. Choices are remembered; all three are visible by default.
     <br><br>
-    Window sets the time axis from 0.100 to 4.000 ms; the default is 1.000 ms. The magnified amplitude range stays fixed at approximately -0.031 to +0.031 full scale, making 8-bit quantization visible. Frequency and Amplitude change the mono signal without rescaling the axes. Defaults are a 2.000 kHz sine wave with peak amplitude 0.025 full scale (-32.041 dBFS). Guides mark quantization levels; at higher depths only representative levels are drawn and individual steps become too fine to distinguish. Format and signal values are shown in Controls and Panel, not repeated over Timeline.
+    Window sets the time axis from 0.100 to 4.000 ms; the default is 1.000 ms. The magnified amplitude range stays fixed at approximately -0.031 to +0.031 full scale, making 8-bit quantization visible. The narrow vertical ruler shows signed amplitude in FS, with the unit aligned with the time labels in the top-left corner and a tick for every horizontal gridline. Endpoint numbers are omitted; intermediate numbers are also omitted when space is tight to keep labels apart. Frequency and Amplitude change the mono signal without rescaling the axes. Defaults are a 2.000 kHz sine wave with peak amplitude 0.025 full scale (-32.041 dBFS). Guides mark quantization levels; at higher depths only representative levels are drawn and individual steps become too fine to distinguish. Format and signal values are shown in Controls and Panel, not repeated over Timeline.
     <br><br>
     Duration and Channels still affect the calculator results, but do not change this mono illustration. No audio is played.
   </div>
@@ -314,7 +314,7 @@
   </svg>
   <div class="justify">
     <h1>Selected value <span class="object">button</span></h1>
-    Shows a concise summary for the current inputs.
+    Shows a concise summary for the current inputs. File calculations and Timeline illustration settings are separated by a blank line.
   </div>
 </div>
 
@@ -324,7 +324,7 @@
   </svg>
   <div class="justify">
     <h1>All values <span class="object">button</span></h1>
-    Shows expanded output for all supported Bit Depth and Sample Rate combinations.
+    Shows expanded output for all supported Bit Depth and Sample Rate combinations. Timeline illustration settings follow the file calculations, separated by a blank line.
   </div>
 </div>
 

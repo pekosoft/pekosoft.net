@@ -79,7 +79,7 @@
       }
     }
 
-    function render({ width, height, color, bright = false, drawVertical, drawHorizontal }) {
+    function render({ width, height, color, bright = false, cornerTitle = '', drawVertical, drawHorizontal }) {
       if (!isVisible) return;
 
       layout.style.setProperty('--timeline-axis-width', `${axisWidth}px`);
@@ -88,7 +88,7 @@
       syncViewBox(verticalRuler, axisWidth, height);
       syncViewBox(horizontalRuler, width, horizontalHeight);
       horizontalRuler.style.width = `${width}px`;
-      drawRulerCorner(cornerRuler, { width: axisWidth, height: horizontalHeight, color, bright });
+      drawRulerCorner(cornerRuler, { width: axisWidth, height: horizontalHeight, color, bright, title: cornerTitle });
 
       if (typeof drawVertical === 'function') {
         drawVertical(verticalRuler, { width: axisWidth, height, bright });
@@ -200,7 +200,7 @@
 
   function drawRulerCorner(svg, options) {
     if (!svg) return;
-    const { width, height, color, bright = false } = options || {};
+    const { width, height, color, bright = false, title = '' } = options || {};
     const axisX = Math.max(0, width);
     const axisY = Math.max(0, height);
     svg.replaceChildren();
@@ -234,6 +234,16 @@
       y2: height,
       stroke: color
     }));
+    if (title) {
+      svg.appendChild(createRulerElement('text', {
+        x: Math.max(0, width - 8),
+        y: Math.max(10, height - 3),
+        fill: color,
+        'font-size': 12,
+        'font-family': 'Arial, sans-serif',
+        'text-anchor': 'end'
+      }, title));
+    }
   }
 
   function drawHorizontalRuler(svg, options) {

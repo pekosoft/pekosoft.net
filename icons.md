@@ -11,9 +11,9 @@ Pekosoft uses a single SVG sprite file (`icons.svg`) for all interface icons. Ea
 - Build icon shapes as plain geometry so color is controlled only by CSS on `.icons` or the host SVG.
 - Prefer fill-based geometry over stroke-based drawing for consistent rendering with site icon styles.
 - Snap icon geometry to the 512 grid using PO2-friendly steps, preferably 16/32 multiples, when practical.
-- For connected icon parts, overlap geometry slightly; avoid hairline gaps between parts.
+- For connected icon parts, overlap geometry slightly to avoid hairline gaps between parts.
 - For desktop computer icons, the vertical monitor stand must overlap the monitor and base so sub-pixel gaps cannot appear.
-- For imported Pekosoft icons, scale the actual path to fill the usable 512 canvas; avoid leaving source-icon padding that makes icons look small.
+- For imported Pekosoft icons, scale the actual path to fill the usable 512 canvas. Avoid leaving source-icon padding that makes icons look small.
 
 ## Workflow Rules
 

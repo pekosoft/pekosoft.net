@@ -175,7 +175,7 @@
   </svg>
   <div class="justify">
     <h1>Timeline <span class="object">module</span></h1>
-    Displays tempo. The horizontal axis spaces taps uniformly; the vertical axis shows tempo. Target BPM is shown as a horizontal line when Target is on.
+    Displays tempo. The horizontal axis spaces taps uniformly. The vertical axis shows tempo. Target BPM is shown as a horizontal line when Target is on.
   </div>
 </div>
 

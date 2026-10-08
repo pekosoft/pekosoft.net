@@ -138,7 +138,7 @@
 
       <div class="controls-values wrapper">
         <div class="pair">
-          <label for="signal-window-field" title="Illustration time window in milliseconds; independent of file Duration">Window (ms):</label>
+          <label for="signal-window-field" title="Illustration time window in milliseconds. Independent of file Duration">Window (ms):</label>
           <input type="number" id="signal-window-field" min="0.100" max="4.000" step="0.100" value="1.000" required>
         </div>
         <div class="pair">
@@ -150,7 +150,7 @@
           <input type="number" id="signal-amplitude-field" min="0" max="3.125" step="any" value="2.500" required>
         </div>
         <div class="pair">
-          <label for="signal-amplitude-dbfs-field" title="Illustration peak amplitude in dBFS; leave empty for silence">dBFS:</label>
+          <label for="signal-amplitude-dbfs-field" title="Illustration peak amplitude in dBFS. Leave empty for silence">dBFS:</label>
           <input type="number" id="signal-amplitude-dbfs-field" max="-30.103" step="any" value="-32.041" placeholder="silence">
         </div>
       </div>

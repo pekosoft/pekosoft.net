@@ -151,7 +151,7 @@
   </svg>
   <div class="justify">
     <h1>Customizable</h1>
-    Features are added with toggles. Settings preferences, module layout and supported tool-specific choices and data are saved locally in this browser using localStorage. What is saved depends on the tool; not every active mode or transient readout is retained. Saved state is not synchronized between browsers or devices, and clearing site storage removes it.
+    Features are added with toggles. Settings preferences, module layout and supported tool-specific choices and data are saved locally in this browser using localStorage. What is saved depends on the tool. Not every active mode or transient readout is retained. Saved state is not synchronized between browsers or devices, and clearing site storage removes it.
   </div>
 </div>
 
@@ -269,7 +269,7 @@
   </svg>
   <div class="justify">
     <h1>Panel <span class="object">module</span></h1>
-    Panel textareas are editable by default and show session data. Generated output may refresh as the tool updates. Whether edited text changes tool state depends on the tool; see its Help for details.
+    Panel textareas are editable by default and show session data. Generated output may refresh as the tool updates. Whether edited text changes tool state depends on the tool. See its Help for details.
   </div>
 </div>
 

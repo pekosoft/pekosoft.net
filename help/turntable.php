@@ -240,7 +240,7 @@
   </svg>
   <div class="justify">
     <h1>Timeline <span class="object">module</span></h1>
-    Shows selected RPM and actual platter speed over time. RPM is shown as a stepped line; Speed shows actual platter speed. The playhead advances left to right through a fixed history span, then starts a new span. The Timeline updates ten times per second and continues while scratching.
+    Shows selected RPM and actual platter speed over time. RPM is shown as a stepped line. Speed shows actual platter speed. The playhead advances left to right through a fixed history span, then starts a new span. The Timeline updates ten times per second and continues while scratching.
   </div>
 </div>
 

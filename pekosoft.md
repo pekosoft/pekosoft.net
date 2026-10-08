@@ -162,7 +162,7 @@ Pekosoft uses one consistent SOUND button rule across tools:
 
 - SOUND is the master output control (mute/unmute).
 - SOUND should not cancel timing state or playback state.
-- In BPM Calculator, table row PLAY buttons keep running when SOUND is toggled; only audible output is muted/unmuted.
+- In BPM Calculator, table row PLAY buttons keep running when SOUND is toggled. Only audible output is muted/unmuted.
 - For very short transients (for example tick/kick), mid-note gain ramping is not required.
 - Voice-level mute buttons in sequencer tools should behave like SOUND buttons: they toggle sound on/off for that voice and use the same blue active state as other Pekosoft toggle buttons.
 
@@ -196,6 +196,10 @@ Tooltip placement rule:
 - Do not put `title` attributes on `input`, `select`, or `textarea` fields.
 - Do not duplicate the same tooltip on both label and field/menu.
 
+## Prose writing convention
+
+- Do not use semicolons in Help, tooltips, documentation or other prose, including assistant responses. Use short sentences or simple conjunctions instead. Preserve semicolons required by code syntax or HTML entities.
+
 ## Help writing conventions
 
 - Describe deterministic calculations as "calculates" or "calculated", not "estimates". State actual limitations explicitly, such as excluding file headers and metadata.
@@ -219,18 +223,18 @@ Tooltip placement rule:
 
 - Use the authored associated label for fields and menus, or the authored `.button-text` for buttons, as the control name. Remove a trailing colon, but retain meaningful abbreviations and units.
 - CSS uppercase rendering is presentation, not the spelling to use in Help prose. A button authored as `Reset` remains "the Reset button" even when displayed as `RESET`.
-- For icon-only controls without a visible label, use the accessible name (`aria-label`); use the tooltip name only when no visible or accessible name exists.
+- For icon-only controls without a visible label, use the accessible name (`aria-label`). Use the tooltip name only when no visible or accessible name exists.
 - A tooltip describes an action and may be longer than the name. For example, `Reset to default` is a tooltip instruction, not a replacement for the name `Reset`.
 - Use uppercase words only for displayed text-button labels and in-grid labels such as `BEAT` and `NOTE`, apart from standard acronyms. References quoting those grid labels retain their spelling.
 - Keep the surfaces distinct: button text `RESET`, tooltip `Reset to default`, Help heading `Reset button`, and statusbar message `Reset: Reset to default`.
-- Help headings and references must identify the same control. Preserve contextual Help links: names and feature kinds must continue to match the existing Help lookup; use supported heading aliases when needed rather than silently breaking navigation.
+- Help headings and references must identify the same control. Preserve contextual Help links: names and feature kinds must continue to match the existing Help lookup. Use supported heading aliases when needed rather than silently breaking navigation.
 - If names conflict in the interface, record the discrepancy for a separately scoped UI pass. Do not invent a new Help-only name or change runtime behavior during an editorial pass.
 
 ## Maintaining project conventions
 
 - Before changing UI or Help, read the relevant project guidance: this file and any applicable specialist document, such as [Timeline Rulers](rulers.md).
 - When user feedback establishes or changes a reusable convention, update the existing guidance as part of the same change. Fixing one occurrence without recording the rule is incomplete.
-- Preserve agreed conventions during later changes; do not make the user repeatedly correct the same wording or layout decisions.
+- Preserve agreed conventions during later changes. Do not make the user repeatedly correct the same wording or layout decisions.
 - Apply rules throughout the feature being edited. Keep broader sitewide migrations separately scoped rather than silently changing unrelated tools.
 
 ## Reset scope policy

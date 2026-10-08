@@ -34,7 +34,7 @@
   </svg>
   <div class="justify">
     <h1>Controls <span class="object">module</span></h1>
-    Buttons, fields, menus, knobs and sliders are collected in the Controls module. Knobs sit in their own section below the fields and menus. Bit depth, Sam. rate and Channels stay synchronized with the grid; Window, Frequency and Amplitude control the Timeline illustration. Reset in the footer restores the default calculator and illustration values.
+    Buttons, fields, menus, knobs and sliders are collected in the Controls module. Knobs sit in their own section below the fields and menus. Bit depth, Sam. rate and Channels stay synchronized with the grid. Window, Frequency and Amplitude control the Timeline illustration. Reset in the footer restores the default calculator and illustration values.
   </div>
 </div>
 
@@ -44,7 +44,7 @@
   </svg>
   <div class="justify">
     <h1>Bit depth <span class="object">knob</span></h1>
-    Steps through the supported bit depths. Click, scroll or drag vertically to adjust; arrow keys step, Home and End select the limits. Double-click restores the default. <span class="default">Default: 24-bit.</span>
+    Steps through the supported bit depths. Click, scroll or drag vertically to adjust. Arrow keys step, and Home and End select the limits. Double-click restores the default. <span class="default">Default: 24-bit.</span>
   </div>
 </div>
 
@@ -74,7 +74,7 @@
   </svg>
   <div class="justify">
     <h1>Window <span class="object">knob</span></h1>
-    Sets the mono illustration's time window from 0.100 to 4.000 ms in 0.100 ms steps. Uses the same interactions as the Frequency knob. Double-click restores the default. Shorter windows zoom in on individual samples; longer windows show more cycles and sampling patterns. The amplitude scale stays fixed. <span class="default">Default: 1.000 ms.</span>
+    Sets the mono illustration's time window from 0.100 to 4.000 ms in 0.100 ms steps. Uses the same interactions as the Frequency knob. Double-click restores the default. Shorter windows zoom in on individual samples. Longer windows show more cycles and sampling patterns. The amplitude scale stays fixed. <span class="default">Default: 1.000 ms.</span>
   </div>
 </div>
 
@@ -84,7 +84,7 @@
   </svg>
   <div class="justify">
     <h1>Frequency <span class="object">knob</span></h1>
-    Sets the illustrated sine wave frequency from 0 to 20000 Hz in 100 Hz steps. Click, scroll, drag vertically or use arrow keys; Home and End select the limits. Double-click restores the default. Frequencies at or above half the selected sample rate demonstrate sampling ambiguity; a staircase is not a reconstructed audio waveform. At 0 Hz the signal is flat. <span class="default">Default: 2000 Hz.</span>
+    Sets the illustrated sine wave frequency from 0 to 20000 Hz in 100 Hz steps. Click, scroll, drag vertically or use arrow keys. Home and End select the limits. Double-click restores the default. Frequencies at or above half the selected sample rate demonstrate sampling ambiguity. A staircase is not a reconstructed audio waveform. At 0 Hz the signal is flat. <span class="default">Default: 2000 Hz.</span>
   </div>
 </div>
 
@@ -94,7 +94,7 @@
   </svg>
   <div class="justify">
     <h1>Amplitude <span class="object">knob</span></h1>
-    Sets peak amplitude from 0.000% to 3.125% of full scale (FS) in 0.025 percentage-point steps, within the fixed magnified Timeline range. Uses the same interactions as the Frequency knob. Double-click restores the default. Levels in dBFS (decibels relative to full scale) describe the same amplitude. Zero amplitude is silence; quiet signals may round entirely to zero at low bit depths. <span class="default">Default: 2.500% FS (-32.041 dBFS).</span>
+    Sets peak amplitude from 0.000% to 3.125% of full scale (FS) in 0.025 percentage-point steps, within the fixed magnified Timeline range. Uses the same interactions as the Frequency knob. Double-click restores the default. Levels in dBFS (decibels relative to full scale) describe the same amplitude. Zero amplitude is silence. Quiet signals may round entirely to zero at low bit depths. <span class="default">Default: 2.500% FS (-32.041 dBFS).</span>
   </div>
 </div>
 
@@ -144,7 +144,7 @@
   </svg>
   <div class="justify">
     <h1>dBFS <span class="object">field</span></h1>
-    Sets the same peak amplitude in decibels relative to full scale and updates Amp. (%) and the Amplitude knob. The maximum is approximately -30.103 dBFS (3.125% FS), matching the fixed magnified Timeline range. Leave empty for zero amplitude; the placeholder shows silence because its level is negative infinity, not a finite dBFS number. Entered amplitude is used without rounding it to the knob's steps; displayed values are rounded. <span class="default">Default: -32.041 dBFS (2.500% FS).</span>
+    Sets the same peak amplitude in decibels relative to full scale and updates Amp. (%) and the Amplitude knob. The maximum is approximately -30.103 dBFS (3.125% FS), matching the fixed magnified Timeline range. Leave empty for zero amplitude. The placeholder shows silence because its level is negative infinity, not a finite dBFS number. Entered amplitude is used without rounding it to the knob's steps. Displayed values are rounded. <span class="default">Default: -32.041 dBFS (2.500% FS).</span>
   </div>
 </div>
 
@@ -257,7 +257,7 @@
     Illustrates sampling and quantization using the selected sample rate and bit depth. Signal shows the original sine wave, Steps shows each quantized value held until the next sample, and Points marks the quantized sample points. This is a conceptual sample-and-hold view, not a reconstructed audio output.
     The Signal, Steps and Points footer buttons independently show or hide the corresponding parts of the illustration.
     <br><br>
-    Window sets the time axis from 0.100 to 4.000 ms. The magnified amplitude range stays fixed at approximately -0.031 to +0.031 full scale, making 8-bit quantization visible. The narrow vertical ruler shows signed amplitude in FS, with the unit aligned with the time labels in the top-left corner and a tick for every horizontal gridline. Endpoint numbers are omitted; intermediate numbers are also omitted when space is tight to keep labels apart. Frequency and Amplitude change the mono signal without rescaling the axes. Guides mark quantization levels; at higher depths only representative levels are drawn and individual steps become too fine to distinguish. Format and signal values are shown in Controls and Panel, not repeated over Timeline.
+    Window sets the time axis from 0.100 to 4.000 ms. The magnified amplitude range stays fixed at approximately -0.031 to +0.031 full scale, making 8-bit quantization visible. The narrow vertical ruler shows signed amplitude in FS, with the unit aligned with the time labels in the top-left corner and a tick for every horizontal gridline. Endpoint numbers are omitted. Intermediate numbers are also omitted when space is tight to keep labels apart. Frequency and Amplitude change the mono signal without rescaling the axes. Guides mark quantization levels. At higher depths only representative levels are drawn and individual steps become too fine to distinguish. Format and signal values are shown in Controls and Panel, not repeated over Timeline.
     <br><br>
     Duration and Channels still affect the calculator results, but do not change this mono illustration. No audio is played.
   </div>
@@ -334,9 +334,9 @@
   </svg>
   <div class="justify">
     <h1>Points <span class="object">button</span></h1>
-    In Panel, the third tab lists every sample in the mono Timeline illustration's selected time window, starting at sample zero. Shows time in milliseconds, the original signal and quantized amplitudes in full scale (FS), and quantization error (quantized minus signal). Values are rounded for display; small amplitudes and errors use scientific notation. Updates with the Bit depth, Sam. rate, Frequency, Amplitude and Window controls, regardless of which Timeline parts are visible. Copy, Download and Speech use the current Panel output.
+    In Panel, the third tab lists every sample in the mono Timeline illustration's selected time window, starting at sample zero. Shows time in milliseconds, the original signal and quantized amplitudes in full scale (FS), and quantization error (quantized minus signal). Values are rounded for display. Small amplitudes and errors use scientific notation. Updates with the Bit depth, Sam. rate, Frequency, Amplitude and Window controls, regardless of which Timeline parts are visible. Copy, Download and Speech use the current Panel output.
     <br><br>
-    The summary shows RMS (root mean square) error, peak error (the largest absolute error), and SNR (signal-to-noise ratio, calculated as 20 times the base-10 logarithm of signal RMS divided by error RMS). RMS error is also shown in dBFS. These are calculated from the illustrated sample points, not from the entire hypothetical file. No error gives zero RMS and peak error, negative infinity error dBFS, and infinite SNR for a nonzero signal. SNR is undefined when the sampled signal is zero. Calculations use unrounded sample values, subject to JavaScript numeric precision; an RMS error below the smallest representable positive number is shown as an upper bound.
+    The summary shows RMS (root mean square) error, peak error (the largest absolute error), and SNR (signal-to-noise ratio, calculated as 20 times the base-10 logarithm of signal RMS divided by error RMS). RMS error is also shown in dBFS. These are calculated from the illustrated sample points, not from the entire hypothetical file. No error gives zero RMS and peak error, negative infinity error dBFS, and infinite SNR for a nonzero signal. SNR is undefined when the sampled signal is zero. Calculations use unrounded sample values, subject to JavaScript numeric precision. An RMS error below the smallest representable positive number is shown as an upper bound.
     <br><br>
     In Timeline, the Points footer button shows or hides the quantized sample markers, independently of Signal and Steps. <span class="default">Default: visible.</span>
   </div>

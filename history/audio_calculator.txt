@@ -1,4 +1,4 @@
 <h1>1.0
 XX-XX-2026
 </h1>
-Introducing: Pekosoft Audio Calculator. An interactive grid displaying bit-depth and sample rate, with corresponding frequency range and dynamic range. Other values include duration, channels, file size, bit rate and total number of samples. Initial release.
+Introducing: Pekosoft Audio Calculator. An interactive grid displaying bit-depth and sample rate, with corresponding frequency range and dynamic range. Other values include duration, channels, file size, bit rate and total number of samples. Includes a separate mono Timeline example illustrating sampling and quantization, with adjustable Window, Frequency and Amplitude controls. Panel lists the example's sample points and quantization error measurements. Initial release.

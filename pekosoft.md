@@ -205,6 +205,7 @@ Tooltip placement rule:
 - Describe deterministic calculations as "calculates" or "calculated", not "estimates". State actual limitations explicitly, such as excluding file headers and metadata.
 - Expand technical abbreviations in parentheses on first introduction, for example `PCM (pulse-code modulation)`.
 - Browser persistence is a sitewide convention. Explain it in General Help only, not in individual tool Help files or feature entries.
+- Centralize shared behavior in the relevant General Help entry instead of repeating it in individual tool Help files. Document double-click reset only in the general Knob entry. Keep tool-specific behavior and default values in individual feature entries.
 - Document defaults in the relevant feature entry using `<span class="default">Default: ...</span>`. Do not repeat a startup configuration in the tool introduction or duplicate default lists in module descriptions.
 - Describe features by their names and behavior, not their current colors. Use "selected cell", "Signal", "Steps" and "Points", not "blue selected cell" or color-based identification.
 - Keep actual calculations distinct from illustrative examples. Explain which settings are shared and which affect only the example.

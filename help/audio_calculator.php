@@ -44,7 +44,7 @@
   </svg>
   <div class="justify">
     <h1>Bit depth <span class="object">knob</span></h1>
-    Steps through the supported bit depths. Click, scroll or drag vertically to adjust. Arrow keys step, and Home and End select the limits. Double-click restores the default. <span class="default">Default: 24-bit.</span>
+    Steps through the supported bit depths. Click, scroll or drag vertically to adjust. Arrow keys step, and Home and End select the limits. <span class="default">Default: 24-bit.</span>
   </div>
 </div>
 
@@ -54,7 +54,7 @@
   </svg>
   <div class="justify">
     <h1>Sam. rate <span class="object">knob</span></h1>
-    Steps through the supported sample rates. Double-click restores the default. <span class="default">Default: 96 kHz.</span>
+    Steps through the supported sample rates. <span class="default">Default: 96 kHz.</span>
   </div>
 </div>
 
@@ -64,7 +64,7 @@
   </svg>
   <div class="justify">
     <h1>Channels <span class="object">knob</span></h1>
-    Steps through channel counts from 1 to 10. Double-click restores the default. <span class="default">Default: 2 channels.</span>
+    Steps through channel counts from 1 to 10. <span class="default">Default: 2 channels.</span>
   </div>
 </div>
 
@@ -74,7 +74,7 @@
   </svg>
   <div class="justify">
     <h1>Window <span class="object">knob</span></h1>
-    Sets the mono illustration's time window from 0.100 to 4.000 ms in 0.100 ms steps. Uses the same interactions as the Frequency knob. Double-click restores the default. Shorter windows zoom in on individual samples. Longer windows show more cycles and sampling patterns. The amplitude scale stays fixed. <span class="default">Default: 1.000 ms.</span>
+    Sets the mono illustration's time window from 0.100 to 4.000 ms in 0.100 ms steps. Uses the same interactions as the Frequency knob. Shorter windows zoom in on individual samples. Longer windows show more cycles and sampling patterns. The amplitude scale stays fixed. <span class="default">Default: 1.000 ms.</span>
   </div>
 </div>
 
@@ -84,7 +84,7 @@
   </svg>
   <div class="justify">
     <h1>Frequency <span class="object">knob</span></h1>
-    Sets the illustrated sine wave frequency from 0 to 20000 Hz in 100 Hz steps. Click, scroll, drag vertically or use arrow keys. Home and End select the limits. Double-click restores the default. Frequencies at or above half the selected sample rate demonstrate sampling ambiguity. A staircase is not a reconstructed audio waveform. At 0 Hz the signal is flat. <span class="default">Default: 2000 Hz.</span>
+    Sets the illustrated sine wave frequency from 0 to 20000 Hz in 100 Hz steps. Click, scroll, drag vertically or use arrow keys. Home and End select the limits. Frequencies at or above half the selected sample rate demonstrate sampling ambiguity. A staircase is not a reconstructed audio waveform. At 0 Hz the signal is flat. <span class="default">Default: 2000 Hz.</span>
   </div>
 </div>
 
@@ -94,7 +94,7 @@
   </svg>
   <div class="justify">
     <h1>Amplitude <span class="object">knob</span></h1>
-    Sets peak amplitude from 0.000% to 3.125% of full scale (FS) in 0.025 percentage-point steps, within the fixed magnified Timeline range. Uses the same interactions as the Frequency knob. Double-click restores the default. Levels in dBFS (decibels relative to full scale) describe the same amplitude. Zero amplitude is silence. Quiet signals may round entirely to zero at low bit depths. <span class="default">Default: 2.500% FS (-32.041 dBFS).</span>
+    Sets peak amplitude from 0.000% to 3.125% of full scale (FS) in 0.025 percentage-point steps, within the fixed magnified Timeline range. Uses the same interactions as the Frequency knob. Levels in dBFS (decibels relative to full scale) describe the same amplitude. Zero amplitude is silence. Quiet signals may round entirely to zero at low bit depths. <span class="default">Default: 2.500% FS (-32.041 dBFS).</span>
   </div>
 </div>
 

@@ -60,7 +60,7 @@
   </svg>
   <div class="justify">
     <h1>Target <span class="object">knob</span></h1>
-    Adjusts target BPM. Drag vertically, use mouse wheel, or double click to reset to default.
+    Adjusts target BPM. Drag vertically or use the mouse wheel.
   </div>
 </div>
 

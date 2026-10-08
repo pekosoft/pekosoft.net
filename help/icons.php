@@ -110,7 +110,7 @@
   </svg>
   <div class="justify">
     <h1>Grid size <span class="object">knob</span></h1>
-    Sets preview grid size. Double-click returns to default.
+    Sets preview grid size.
   </div>
 </div>
 
@@ -119,7 +119,7 @@
   </svg>
   <div class="justify">
     <h1>Playback speed <span class="object">knob</span></h1>
-    Sets autoplay speed as a percentage. Double-click returns to default.
+    Sets autoplay speed as a percentage.
   </div>
 </div>
 

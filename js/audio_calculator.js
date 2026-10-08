@@ -304,14 +304,13 @@ window.addEventListener('DOMContentLoaded', () => {
     refs.timelineGuidesButton.classList.toggle('button-on', timelineGuidesVisible);
     refs.timelineGuidesButton.setAttribute('aria-pressed', String(timelineGuidesVisible));
     const xTickCount = Math.max(1, Math.min(4, Math.floor(width / 90)));
-    const leftPadding = 4;
-    const rightPadding = Math.min(width / 3, 72);
-    const plotWidth = Math.max(1, width - leftPadding - rightPadding);
+    const leftPadding = Math.min(4, width - 1);
+    const plotWidth = width - leftPadding;
     const plotHeight = Math.max(1, height - 1);
     const verticalPadding = Math.min(4, plotHeight / 4);
     const toX = (time) => leftPadding + time / duration * plotWidth;
     const toY = (value) => verticalPadding + (plotHeight - 2 * verticalPadding) * (1 - value / range) / 2;
-    const xTicks = Array.from({ length: xTickCount }, (_, index) => ({
+    const xTicks = Array.from({ length: xTickCount - 1 }, (_, index) => ({
       position: Math.round(toX(duration * (index + 1) / xTickCount)),
       label: `${(duration * 1000 * (index + 1) / xTickCount).toFixed(3)} ms`
     }));

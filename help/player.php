@@ -270,6 +270,16 @@
 
 <div class="feature-row border">
   <svg class="standard-image-help">
+    <use href="/icons.svg#sun"></use>
+  </svg>
+  <div class="justify">
+    <h1>Bright <span class="object">button</span></h1>
+    Switches Timeline guides and rulers between normal and bright contrast. <span class="default">Default: off.</span>
+  </div>
+</div>
+
+<div class="feature-row border">
+  <svg class="standard-image-help">
     <use href="/icons.svg#zoom_in"></use>
   </svg>
   <div class="justify">

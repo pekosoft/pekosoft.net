@@ -333,7 +333,7 @@
         <span class="button-text">Guides</span>
       </button>
 
-      <button id="timeline-bright-button" data-shared-timeline-bright class="square" title="Toggle bright guides">
+      <button id="timeline-bright-button" data-shared-timeline-bright class="square" title="Toggle bright guides and rulers">
         <svg class="icons">
           <use href="/icons.svg#sun" />
         </svg>

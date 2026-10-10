@@ -3632,6 +3632,7 @@ function drawTimelineRuler() {
 
     timelineRulerCtx.clearRect(0, 0, width, height);
     timelineRulerCtx.imageSmoothingEnabled = false;
+    timelineRulerCanvas.style.borderBottomColor = window.PekoBrightGuides.getTimelineGuideColor('var(--grey1)');
 
     if (!loadedAudioBuffer || !Number.isFinite(loadedAudioBuffer.duration) || loadedAudioBuffer.duration <= 0) {
         return;
@@ -3645,8 +3646,9 @@ function drawTimelineRuler() {
     const minLabelSpacingPx = 96;
     const labelEveryMajors = Math.max(1, Math.ceil(minLabelSpacingPx / Math.max(1, majorPixels)));
 
-    timelineRulerCtx.strokeStyle = colorGrey2;
-    timelineRulerCtx.fillStyle = colorGrey2;
+    const rulerColor = window.PekoBrightGuides.getTimelineGuideColor(colorGrey1);
+    timelineRulerCtx.strokeStyle = rulerColor;
+    timelineRulerCtx.fillStyle = rulerColor;
     timelineRulerCtx.font = '10px Arial';
     timelineRulerCtx.textAlign = 'left';
     timelineRulerCtx.textBaseline = 'bottom';
@@ -3675,6 +3677,7 @@ function drawBpmRuler() {
 
     bpmRulerCtx.clearRect(0, 0, width, height);
     bpmRulerCtx.imageSmoothingEnabled = false;
+    bpmRulerCanvas.style.borderTopColor = window.PekoBrightGuides.getTimelineGuideColor('var(--grey1)');
 
     if (!loadedAudioBuffer || !Number.isFinite(loadedAudioBuffer.duration) || loadedAudioBuffer.duration <= 0) {
         return;
@@ -3691,8 +3694,9 @@ function drawBpmRuler() {
         bpmRulerCtx.fillRect(selectionBounds.x1, 0, selectionBounds.width, height);
     }
 
-    bpmRulerCtx.strokeStyle = colorGrey2;
-    bpmRulerCtx.fillStyle = colorGrey2;
+    const rulerColor = window.PekoBrightGuides.getTimelineGuideColor(colorGrey1);
+    bpmRulerCtx.strokeStyle = rulerColor;
+    bpmRulerCtx.fillStyle = rulerColor;
     bpmRulerCtx.font = '10px Arial';
     bpmRulerCtx.textAlign = 'left';
     bpmRulerCtx.textBaseline = 'top';

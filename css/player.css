@@ -133,13 +133,45 @@ canvas {
   flex-direction: column;
 }
 
+#timeline-container .player-ruler-layout {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr);
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+}
+
+#timeline-container .player-db-rulers {
+  display: grid;
+  grid-template-rows: 24px minmax(0, 1fr) 24px;
+  min-height: 0;
+}
+
+#timeline-container .player-db-rulers svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  margin: 0;
+  border: 0;
+  overflow: visible;
+}
+
+#timeline-container .player-ruler-layout.rulers-hidden {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+#timeline-container .player-ruler-layout.rulers-hidden .player-db-rulers {
+  display: none;
+}
+
 #timeline-container .player-timeline {
   width: 4096px;
   min-width: 1024px;
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 0;
   flex: 1 1 auto;
   min-height: 0;
 }
@@ -185,7 +217,8 @@ canvas {
   border-left: none;
   border-right: none;
   border-top: none;
-  border-bottom: 1px solid var(--grey1);
+  border-bottom: none;
+  overflow: visible;
   touch-action: none;
 }
 
@@ -197,7 +230,8 @@ canvas {
   margin: 0;
   border-left: none;
   border-right: none;
-  border-top: 1px solid var(--grey1);
+  border-top: none;
+  overflow: visible;
   border-bottom: none;
   touch-action: none;
 }

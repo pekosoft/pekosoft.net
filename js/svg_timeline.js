@@ -136,24 +136,27 @@
 
   function drawVerticalRuler(svg, options) {
     if (!svg) return;
-    const { width, height, title = '', titleY = 24, ticks = [], color, bright = false } = options || {};
-    const axisX = Math.max(0, width);
+    const { width, height, title = '', titleY = 24, ticks = [], color, bright = false, sideBorders = false, bottomBorder = true } = options || {};
+    const inset = sideBorders ? 0.5 : 0;
+    const axisX = Math.max(0, width - inset);
     svg.replaceChildren();
     if (bright) {
       svg.appendChild(createRulerElement('line', {
-        x1: 0,
+        x1: inset,
         y1: 0,
-        x2: 0,
+        x2: inset,
         y2: height,
         stroke: color
       }));
-      svg.appendChild(createRulerElement('line', {
-        x1: 0,
-        y1: height,
-        x2: width,
-        y2: height,
-        stroke: color
-      }));
+      if (bottomBorder) {
+        svg.appendChild(createRulerElement('line', {
+          x1: 0,
+          y1: height - inset,
+          x2: width,
+          y2: height - inset,
+          stroke: color
+        }));
+      }
     }
     svg.appendChild(createRulerElement('line', {
       x1: axisX,
@@ -200,22 +203,24 @@
 
   function drawRulerCorner(svg, options) {
     if (!svg) return;
-    const { width, height, color, bright = false, title = '' } = options || {};
-    const axisX = Math.max(0, width);
-    const axisY = Math.max(0, height);
+    const { width, height, color, bright = false, title = '', sideBorders = false, axisPosition = 'bottom' } = options || {};
+    const inset = sideBorders ? 0.5 : 0;
+    const axisAtTop = axisPosition === 'top';
+    const axisX = Math.max(0, width - inset);
+    const axisY = axisAtTop ? inset : Math.max(0, height - inset);
     svg.replaceChildren();
     if (bright) {
       svg.appendChild(createRulerElement('line', {
         x1: 0,
-        y1: 0,
+        y1: axisAtTop ? height - inset : inset,
         x2: width,
-        y2: 0,
+        y2: axisAtTop ? height - inset : inset,
         stroke: color
       }));
       svg.appendChild(createRulerElement('line', {
-        x1: 0,
+        x1: inset,
         y1: 0,
-        x2: 0,
+        x2: inset,
         y2: height,
         stroke: color
       }));
@@ -248,15 +253,22 @@
 
   function drawHorizontalRuler(svg, options) {
     if (!svg) return;
-    const { width, height, ticks = [], color, bright = false } = options || {};
-    const axisY = Math.max(0, height);
+    const { width, height, ticks = [], color, bright = false, axisPosition = 'bottom', sideBorders = false, leftBorder = true } = options || {};
+    const inset = sideBorders ? 0.5 : 0;
+    const axisAtTop = axisPosition === 'top';
+    const axisY = axisAtTop ? inset : Math.max(0, height - inset);
     svg.replaceChildren();
     if (bright) {
+      if (sideBorders) {
+        (leftBorder ? [0.5, width - 0.5] : [width - 0.5]).forEach((x) => svg.appendChild(createRulerElement('line', {
+          x1: x, y1: 0, x2: x, y2: height, stroke: color
+        })));
+      }
       svg.appendChild(createRulerElement('line', {
         x1: 0,
-        y1: 0,
+        y1: axisAtTop ? height - inset : inset,
         x2: width,
-        y2: 0,
+        y2: axisAtTop ? height - inset : inset,
         stroke: color
       }));
     }
@@ -275,13 +287,13 @@
         x1: x,
         y1: axisY,
         x2: x,
-        y2: Math.min(axisY, Math.floor(height * 0.45)),
+        y2: axisAtTop ? Math.ceil(height * 0.55) : Math.min(axisY, Math.floor(height * 0.45)),
         stroke: color
       }));
       if (label === undefined || label === null || label === '') return;
       svg.appendChild(createRulerElement('text', {
         x: x + 3,
-        y: Math.max(10, height - 3),
+        y: axisAtTop ? 12 : Math.max(10, height - 3),
         fill: color,
         'font-size': 12,
         'font-family': 'Arial, sans-serif',

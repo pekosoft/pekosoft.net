@@ -254,7 +254,7 @@
   </svg>
   <div class="justify">
     <h1>Timeline <span class="object">module</span></h1>
-    Shows waveform, selection and playhead. Includes destructive waveform edit tools.
+    Shows waveform, selection and playhead. Includes destructive waveform edit tools. When no file is loaded, the rulers show a one-minute scale.
   </div>
 </div>
 
@@ -294,7 +294,7 @@
   </svg>
   <div class="justify">
     <h1>Rulers <span class="object">button</span></h1>
-    Toggles the time and beats rulers in Timeline. <span class="default">Default: on.</span>
+    Toggles the SVG time, beats and dB rulers in Timeline. Click the time or beats ruler to seek. The beats ruler snaps to beats and lets you drag an active selection. <span class="default">Default: on.</span>
   </div>
 </div>
 

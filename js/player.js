@@ -70,10 +70,13 @@ const selectNoneButton = document.getElementById('select-none-button');
 const undoButton = document.getElementById('undo-button');
 const redoButton = document.getElementById('redo-button');
 
-const timelineRulerCanvas = document.getElementById('timeline-ruler');
-const timelineRulerCtx = timelineRulerCanvas ? timelineRulerCanvas.getContext('2d') : null;
-const bpmRulerCanvas = document.getElementById('bpm-ruler');
-const bpmRulerCtx = bpmRulerCanvas ? bpmRulerCanvas.getContext('2d') : null;
+const timelineRuler = document.getElementById('timeline-ruler');
+const bpmRuler = document.getElementById('bpm-ruler');
+const timelineUtils = window.PekoSvgTimeline;
+const dbRuler = document.getElementById('player-db-ruler');
+const rulerCorner = document.getElementById('player-ruler-corner');
+const rulerBottomCorner = document.getElementById('player-ruler-bottom-corner');
+const playerRulerLayout = document.querySelector('#timeline-container .player-ruler-layout');
 
 const bassKnob = document.getElementById('bass-knob');
 const trebleKnob = document.getElementById('treble-knob');
@@ -99,6 +102,7 @@ const colorWhite = cssVars.getPropertyValue('--white').trim();
 const colorGrey1 = cssVars.getPropertyValue('--grey1').trim();
 const colorGrey2 = cssVars.getPropertyValue('--grey2').trim();
 const PLAYER_TIMELINE_DETAIL_WIDTH = 4096;
+const PLAYER_TIMELINE_EMPTY_DURATION = 60;
 
 function updateMetersSourceBridge() {
     window.__pekosoftMetersSource = {
@@ -718,26 +722,26 @@ function updateWaveformSelectionCursor(event) {
 }
 
 function updateBpmRulerSelectionCursor(event) {
-    if (!bpmRulerCanvas) return;
+    if (!bpmRuler) return;
 
     if (isBpmRulerSelectionDragging) {
-        bpmRulerCanvas.style.cursor = 'move';
+        bpmRuler.style.cursor = 'move';
         return;
     }
 
-    const pointerX = event ? getCanvasPointerX(event, bpmRulerCanvas) : null;
+    const pointerX = event ? getCanvasPointerX(event, bpmRuler) : null;
     if (!Number.isFinite(pointerX)) {
-        bpmRulerCanvas.style.cursor = '';
+        bpmRuler.style.cursor = '';
         return;
     }
 
-    const bounds = getSelectionPixelBoundsForWidth(bpmRulerCanvas.width);
+    const bounds = getSelectionPixelBoundsForWidth(bpmRuler.viewBox.baseVal.width);
     if (!bounds) {
-        bpmRulerCanvas.style.cursor = '';
+        bpmRuler.style.cursor = '';
         return;
     }
 
-    bpmRulerCanvas.style.cursor = pointerX >= bounds.x1 && pointerX <= bounds.x2 ? 'move' : '';
+    bpmRuler.style.cursor = pointerX >= bounds.x1 && pointerX <= bounds.x2 ? 'move' : '';
 }
 
 function writeStringToDataView(view, offset, text) {
@@ -1479,7 +1483,7 @@ function getTimelineZoomMode() {
 
 function getTimelineWidth() {
     if (getTimelineZoomMode() === 'fit') {
-        return Math.max(1, Math.floor(timelineScroll?.clientWidth || 0));
+        return Math.max(1, timelineScroll.getBoundingClientRect().width);
     }
 
     return PLAYER_TIMELINE_DETAIL_WIDTH;
@@ -1509,6 +1513,7 @@ function updateTimelineZoomButtonState() {
 }
 
 function updateRulersVisibility() {
+    playerRulerLayout.classList.toggle('rulers-hidden', !showRulers);
     timelineRulerGroups.forEach((rulerGroup) => {
         rulerGroup.hidden = !showRulers;
     });
@@ -1528,12 +1533,14 @@ function applyTimelineZoom() {
         waveformOverlay.style.width = widthPx;
     }
 
-    if (timelineRulerCanvas) {
-        timelineRulerCanvas.style.width = widthPx;
+    if (timelineRuler) {
+        timelineRuler.style.width = widthPx;
+        timelineUtils.syncViewBox(timelineRuler, timelineWidth, 24);
     }
 
-    if (bpmRulerCanvas) {
-        bpmRulerCanvas.style.width = widthPx;
+    if (bpmRuler) {
+        bpmRuler.style.width = widthPx;
+        timelineUtils.syncViewBox(bpmRuler, timelineWidth, 24);
     }
 
     staticCanvas.style.width = widthPx;
@@ -1551,14 +1558,8 @@ function resizeCanvas(canvasElement) {
 }
 
 function resizeAllCanvases() {
-    applyTimelineZoom();
     updateRulersVisibility();
-    if (showRulers && timelineRulerCanvas) {
-        resizeCanvas(timelineRulerCanvas);
-    }
-    if (showRulers && bpmRulerCanvas) {
-        resizeCanvas(bpmRulerCanvas);
-    }
+    applyTimelineZoom();
     resizeCanvas(staticCanvas);
     resizePlayheadCanvas();
     // Only resize the visible meter canvas (hidden canvases return 0 from getBoundingClientRect)
@@ -1595,6 +1596,11 @@ function scheduleTimelineResize() {
 function observeTimelineContainerState() {
     const timelineContainer = document.getElementById('timeline-container');
     if (!timelineContainer) return;
+
+    if (typeof ResizeObserver === 'function') {
+        const resizeObserver = new ResizeObserver(scheduleTimelineResize);
+        resizeObserver.observe(timelineScroll);
+    }
 
     const observer = new MutationObserver((mutations) => {
         for (const mutation of mutations) {
@@ -2610,22 +2616,22 @@ if (snapNoteSelect) {
     });
 }
 
-if (timelineRulerCanvas) {
-    timelineRulerCanvas.addEventListener('pointerdown', (event) => {
-        handleRulerSeek(event, timelineRulerCanvas, false);
+if (timelineRuler) {
+    timelineRuler.addEventListener('pointerdown', (event) => {
+        handleRulerSeek(event, timelineRuler, false);
     });
 }
 
-if (bpmRulerCanvas) {
-    bpmRulerCanvas.addEventListener('pointerdown', (event) => {
+if (bpmRuler) {
+    bpmRuler.addEventListener('pointerdown', (event) => {
         if (event.button !== 0) return;
 
-        const pointerX = getCanvasPointerX(event, bpmRulerCanvas);
-        const pointerTime = getCanvasPointerTime(event, bpmRulerCanvas, true);
-        const bounds = getSelectionPixelBoundsForWidth(bpmRulerCanvas.width);
+        const pointerX = getCanvasPointerX(event, bpmRuler);
+        const pointerTime = getCanvasPointerTime(event, bpmRuler, true);
+        const bounds = getSelectionPixelBoundsForWidth(bpmRuler.viewBox.baseVal.width);
 
         if (!Number.isFinite(pointerX) || !Number.isFinite(pointerTime) || !bounds || pointerX < bounds.x1 || pointerX > bounds.x2) {
-            handleRulerSeek(event, bpmRulerCanvas, true);
+            handleRulerSeek(event, bpmRuler, true);
             return;
         }
 
@@ -2636,22 +2642,22 @@ if (bpmRulerCanvas) {
         bpmRulerSelectionOffsetSeconds = pointerTime - selectionStart;
         updateBpmRulerSelectionCursor(event);
 
-        if (typeof bpmRulerCanvas.setPointerCapture === 'function') {
+        if (typeof bpmRuler.setPointerCapture === 'function') {
             try {
-                bpmRulerCanvas.setPointerCapture(event.pointerId);
+                bpmRuler.setPointerCapture(event.pointerId);
             } catch (error) {
                 console.warn('Could not capture BPM ruler pointer:', error);
             }
         }
     });
 
-    bpmRulerCanvas.addEventListener('pointermove', (event) => {
+    bpmRuler.addEventListener('pointermove', (event) => {
         if (!isBpmRulerSelectionDragging) {
             updateBpmRulerSelectionCursor(event);
             return;
         }
 
-        const pointerTime = getCanvasPointerTime(event, bpmRulerCanvas, true);
+        const pointerTime = getCanvasPointerTime(event, bpmRuler, true);
         if (!Number.isFinite(pointerTime) || !hasActiveSelection() || !loadedAudioBuffer) return;
 
         const duration = loadedAudioBuffer.duration;
@@ -2664,14 +2670,14 @@ if (bpmRulerCanvas) {
         setWaveformSelection(nextStart, nextStart + span);
     });
 
-    bpmRulerCanvas.addEventListener('pointerup', (event) => {
+    bpmRuler.addEventListener('pointerup', (event) => {
         if (!isBpmRulerSelectionDragging) return;
 
         isBpmRulerSelectionDragging = false;
         bpmRulerSelectionOffsetSeconds = 0;
-        if (typeof bpmRulerCanvas.releasePointerCapture === 'function') {
+        if (typeof bpmRuler.releasePointerCapture === 'function') {
             try {
-                bpmRulerCanvas.releasePointerCapture(event.pointerId);
+                bpmRuler.releasePointerCapture(event.pointerId);
             } catch (error) {
                 console.warn('Could not release BPM ruler pointer:', error);
             }
@@ -2680,13 +2686,13 @@ if (bpmRulerCanvas) {
         updateBpmRulerSelectionCursor(event);
     });
 
-    bpmRulerCanvas.addEventListener('pointercancel', (event) => {
+    bpmRuler.addEventListener('pointercancel', (event) => {
         isBpmRulerSelectionDragging = false;
         bpmRulerSelectionOffsetSeconds = 0;
         updateBpmRulerSelectionCursor(event);
     });
 
-    bpmRulerCanvas.addEventListener('pointerleave', () => {
+    bpmRuler.addEventListener('pointerleave', () => {
         if (!isBpmRulerSelectionDragging) {
             updateBpmRulerSelectionCursor();
         }
@@ -3293,8 +3299,6 @@ function drawReferenceLines() {
     const DB3_AMP = Math.pow(10, -3 / 20);
 
     staticCanvasCtx.save();
-    staticCanvasCtx.font = '11px Arial';
-    staticCanvasCtx.textAlign = 'right';
     staticCanvasCtx.lineWidth = 1;
 
     staticCanvasCtx.strokeStyle = grey1;
@@ -3302,11 +3306,12 @@ function drawReferenceLines() {
 
     if (window.PekoBrightGuides?.getTimelineBright()) {
         staticCanvasCtx.beginPath();
-        staticCanvasCtx.moveTo(0.5, 0.5);
-        staticCanvasCtx.lineTo(staticCanvas.width - 0.5, 0.5);
-        staticCanvasCtx.lineTo(staticCanvas.width - 0.5, staticCanvas.height - 0.5);
-        staticCanvasCtx.lineTo(0.5, staticCanvas.height - 0.5);
-        staticCanvasCtx.closePath();
+        if (showRulers) {
+            staticCanvasCtx.moveTo(staticCanvas.width - 0.5, 0);
+            staticCanvasCtx.lineTo(staticCanvas.width - 0.5, staticCanvas.height);
+        } else {
+            staticCanvasCtx.rect(0.5, 0.5, staticCanvas.width - 1, staticCanvas.height - 1);
+        }
         staticCanvasCtx.stroke();
     }
 
@@ -3344,12 +3349,6 @@ function drawReferenceLines() {
         staticCanvasCtx.lineTo(staticCanvas.width, db3BotY);
         staticCanvasCtx.stroke();
 
-        // Labels
-        staticCanvasCtx.setLineDash([]);
-        staticCanvasCtx.fillStyle = grey1;
-        staticCanvasCtx.fillText('0', 38, centerY - 3);
-        staticCanvasCtx.fillText('-3', 38, db3TopY - 3);
-        staticCanvasCtx.fillText('-3', 38, db3BotY - 3);
     }
 
     staticCanvasCtx.restore();
@@ -3590,6 +3589,37 @@ function redrawTimelineCanvas() {
     drawPanLine();
     drawTimelineRuler();
     drawBpmRuler();
+    drawDbRuler();
+}
+
+function drawDbRuler() {
+    if (!showRulers) return;
+
+    const width = 48;
+    const height = staticCanvas.height;
+    const channels = loadedAudioBuffer ? loadedAudioBuffer.numberOfChannels : 1;
+    const channelHeight = height / channels;
+    const ticks = [];
+    const color = window.PekoBrightGuides.getTimelineGuideColor(colorGrey1);
+    const bright = window.PekoBrightGuides.getTimelineBright();
+    for (let channel = 0; channel < channels; channel++) {
+        const top = channel * channelHeight;
+        const amp = channelHeight / 2;
+        const centerY = Math.round(top + amp) + 0.5;
+        const offset = amp * Math.pow(10, -3 / 20);
+        if (channel > 0) ticks.push({ position: Math.round(top), label: '' });
+        ticks.push(
+            { position: Math.round(centerY - offset), label: '-3' },
+            { position: Math.floor(centerY), label: '0' },
+            { position: Math.round(centerY + offset), label: '-3' }
+        );
+    }
+    timelineUtils.syncViewBox(dbRuler, width, height);
+    timelineUtils.drawVerticalRuler(dbRuler, { width, height, ticks, color, bright, sideBorders: true, bottomBorder: false });
+    timelineUtils.syncViewBox(rulerCorner, width, 24);
+    timelineUtils.drawRulerCorner(rulerCorner, { width, height: 24, color, bright, title: 'dB', sideBorders: true });
+    timelineUtils.syncViewBox(rulerBottomCorner, width, 24);
+    timelineUtils.drawRulerCorner(rulerBottomCorner, { width, height: 24, color, bright, sideBorders: true, axisPosition: 'top' });
 }
 
 function formatRulerTime(seconds, stepSeconds) {
@@ -3620,107 +3650,62 @@ function getRulerMajorStep(durationSeconds, widthPx) {
     return steps[steps.length - 1];
 }
 
-function getRulerTickHeight(heightPx) {
-    return Math.max(1, Math.floor(heightPx * 0.55));
-}
-
 function drawTimelineRuler() {
-    if (!showRulers || !timelineRulerCanvas || !timelineRulerCtx) return;
+    if (!showRulers || !timelineRuler) return;
 
-    const width = timelineRulerCanvas.width;
-    const height = timelineRulerCanvas.height;
-
-    timelineRulerCtx.clearRect(0, 0, width, height);
-    timelineRulerCtx.imageSmoothingEnabled = false;
-    timelineRulerCanvas.style.borderBottomColor = window.PekoBrightGuides.getTimelineGuideColor('var(--grey1)');
-
-    if (!loadedAudioBuffer || !Number.isFinite(loadedAudioBuffer.duration) || loadedAudioBuffer.duration <= 0) {
-        return;
-    }
-
-    const duration = loadedAudioBuffer.duration;
-    const majorStep = getRulerMajorStep(duration, width);
-    const minorStep = Math.max(majorStep / 4, 0.01);
-    const majorCount = Math.ceil(duration / majorStep);
-    const majorPixels = (majorStep / duration) * width;
-    const minLabelSpacingPx = 96;
-    const labelEveryMajors = Math.max(1, Math.ceil(minLabelSpacingPx / Math.max(1, majorPixels)));
-
-    const rulerColor = window.PekoBrightGuides.getTimelineGuideColor(colorGrey1);
-    timelineRulerCtx.strokeStyle = rulerColor;
-    timelineRulerCtx.fillStyle = rulerColor;
-    timelineRulerCtx.font = '10px Arial';
-    timelineRulerCtx.textAlign = 'left';
-    timelineRulerCtx.textBaseline = 'bottom';
-
-    for (let i = 0; i <= majorCount; i++) {
-        if (i % labelEveryMajors !== 0) {
-            continue;
+    const { width, height } = timelineRuler.viewBox.baseVal;
+    const duration = loadedAudioBuffer?.duration ?? PLAYER_TIMELINE_EMPTY_DURATION;
+    const ticks = [];
+    if (Number.isFinite(duration) && duration > 0) {
+        const majorStep = getRulerMajorStep(duration, width);
+        const majorPixels = (majorStep / duration) * width;
+        const labelEveryMajors = Math.max(1, Math.ceil(96 / Math.max(1, majorPixels)));
+        for (let i = labelEveryMajors; i * majorStep < duration; i += labelEveryMajors) {
+            const time = i * majorStep;
+            ticks.push({ position: time / duration * width, label: formatRulerTime(time, majorStep) });
         }
-
-        const t = i * majorStep;
-        const clampedT = Math.min(t, duration);
-        const x = Math.round((clampedT / duration) * width);
-        const tickHeight = getRulerTickHeight(height);
-        const tickTop = height - tickHeight;
-
-        timelineRulerCtx.fillRect(x, tickTop, 1, tickHeight);
-        timelineRulerCtx.fillText(formatRulerTime(clampedT, majorStep), x + 3, height - 2);
     }
+    timelineUtils.drawHorizontalRuler(timelineRuler, {
+        width, height, ticks,
+        color: window.PekoBrightGuides.getTimelineGuideColor(colorGrey1),
+        bright: window.PekoBrightGuides.getTimelineBright(),
+        sideBorders: true,
+        leftBorder: false
+    });
 }
 
 function drawBpmRuler() {
-    if (!showRulers || !bpmRulerCanvas || !bpmRulerCtx) return;
+    if (!showRulers || !bpmRuler) return;
 
-    const width = bpmRulerCanvas.width;
-    const height = bpmRulerCanvas.height;
-
-    bpmRulerCtx.clearRect(0, 0, width, height);
-    bpmRulerCtx.imageSmoothingEnabled = false;
-    bpmRulerCanvas.style.borderTopColor = window.PekoBrightGuides.getTimelineGuideColor('var(--grey1)');
-
-    if (!loadedAudioBuffer || !Number.isFinite(loadedAudioBuffer.duration) || loadedAudioBuffer.duration <= 0) {
-        return;
+    const { width, height } = bpmRuler.viewBox.baseVal;
+    const duration = loadedAudioBuffer?.duration ?? PLAYER_TIMELINE_EMPTY_DURATION;
+    const ticks = [];
+    if (Number.isFinite(duration) && duration > 0) {
+        const beatsPerBar = 4;
+        const barSeconds = 60 / Math.max(1, bpmValue) * beatsPerBar;
+        const pixelsPerBar = barSeconds / duration * width;
+        const labelEveryBars = Math.max(1, Math.ceil(56 / Math.max(1, pixelsPerBar)));
+        for (let bar = labelEveryBars; bar * barSeconds < duration; bar += labelEveryBars) {
+            ticks.push({ position: bar * barSeconds / duration * width, label: String(bar * beatsPerBar + 1) });
+        }
     }
-
-    const duration = loadedAudioBuffer.duration;
-    const bpm = Math.max(1, bpmValue);
-    const beatSeconds = 60 / bpm;
-    const totalBeats = Math.floor(duration / beatSeconds);
-
+    timelineUtils.drawHorizontalRuler(bpmRuler, {
+        width, height, ticks,
+        color: window.PekoBrightGuides.getTimelineGuideColor(colorGrey1),
+        bright: window.PekoBrightGuides.getTimelineBright(),
+        sideBorders: true,
+        leftBorder: false,
+        axisPosition: 'top'
+    });
     const selectionBounds = getSelectionPixelBoundsForWidth(width);
     if (selectionBounds) {
-        bpmRulerCtx.fillStyle = colorGrey2;
-        bpmRulerCtx.fillRect(selectionBounds.x1, 0, selectionBounds.width, height);
-    }
-
-    const rulerColor = window.PekoBrightGuides.getTimelineGuideColor(colorGrey1);
-    bpmRulerCtx.strokeStyle = rulerColor;
-    bpmRulerCtx.fillStyle = rulerColor;
-    bpmRulerCtx.font = '10px Arial';
-    bpmRulerCtx.textAlign = 'left';
-    bpmRulerCtx.textBaseline = 'top';
-
-    const beatsPerBar = 4;
-    const barSeconds = beatSeconds * beatsPerBar;
-    const totalBars = Math.floor(duration / barSeconds);
-    const pixelsPerBar = (barSeconds / duration) * width;
-    const minLabelSpacingPx = 56;
-    const labelEveryBars = Math.max(1, Math.ceil(minLabelSpacingPx / Math.max(1, pixelsPerBar)));
-
-    // Draw only bar ticks to keep BPM ruler readable.
-    for (let bar = 0; bar <= totalBars; bar++) {
-        if (bar % labelEveryBars !== 0) {
-            continue;
-        }
-
-        const t = bar * barSeconds;
-        const x = Math.round((Math.min(t, duration) / duration) * width);
-        const tickTop = 0;
-        const tickHeight = getRulerTickHeight(height);
-
-        bpmRulerCtx.fillRect(x, tickTop, 1, tickHeight);
-        bpmRulerCtx.fillText(String((bar * beatsPerBar) + 1), x + 3, 2);
+        const selection = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        selection.setAttribute('x', selectionBounds.x1);
+        selection.setAttribute('y', 0);
+        selection.setAttribute('width', selectionBounds.width);
+        selection.setAttribute('height', height);
+        selection.setAttribute('fill', colorGrey2);
+        bpmRuler.prepend(selection);
     }
 }
 

@@ -310,19 +310,26 @@
         </button>
       </div>
 
+      <div class="player-ruler-layout">
+        <div class="player-db-rulers">
+          <svg id="player-ruler-corner" viewBox="0 0 48 24" aria-label="Decibel unit"></svg>
+          <svg id="player-db-ruler" viewBox="0 0 48 256" aria-label="Decibel ruler"></svg>
+          <svg id="player-ruler-bottom-corner" viewBox="0 0 48 24" aria-hidden="true"></svg>
+        </div>
       <div class="timeline-scroll scrollable">
       <div class="player-timeline">
         <div class="timeline-rulers">
-          <canvas id="timeline-ruler" width="4096" height="24"></canvas>
+          <svg id="timeline-ruler" viewBox="0 0 4096 24" aria-label="Time ruler"></svg>
         </div>
         <div class="waveform-overlay">
           <canvas id="static-waveform" width="4096" height="256"></canvas>
           <canvas id="playhead" width="4096" height="256"></canvas>
         </div>
         <div class="timeline-rulers">
-          <canvas id="bpm-ruler" width="4096" height="24"></canvas>
+          <svg id="bpm-ruler" viewBox="0 0 4096 24" aria-label="Beats ruler"></svg>
         </div>
       </div>
+        </div>
       </div>
     </div>
     <div class="module-footer wrapper colored">
@@ -508,6 +515,7 @@
 
   <script src="/js/modules.js?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/js/modules.js'); ?>"></script>
   <script src="/js/drag.js?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/js/drag.js'); ?>"></script>
+  <script src="/js/svg_timeline.js?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/js/svg_timeline.js'); ?>"></script>
   <script src="/js/<?php echo $release; ?>.js?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/js/' . $release . '.js'); ?>"></script>
   <?php require($_SERVER['DOCUMENT_ROOT'] . "/elements/beta_footer.php"); ?>
 </body>

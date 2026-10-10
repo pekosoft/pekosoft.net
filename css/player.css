@@ -223,6 +223,7 @@ canvas {
 #playhead {
   position: absolute;
   inset: 0;
+  background-color: transparent;
   pointer-events: none;
   z-index: 1;
 }

@@ -1562,10 +1562,6 @@ function resizeAllCanvases() {
     applyTimelineZoom();
     resizeCanvas(staticCanvas);
     resizePlayheadCanvas();
-    // Only resize the visible meter canvas (hidden canvases return 0 from getBoundingClientRect)
-    const activeMeter = document.querySelector('.meter-canvas.active');
-
-    if (activeMeter) resizeCanvas(activeMeter);
 
     waveformCacheDirty = true;
 
@@ -2711,14 +2707,14 @@ resetButton.addEventListener('click', () => {
     // Clear all current-tool keys (settings + session data) without touching sitewide state.
     for (let i = localStorage.length - 1; i >= 0; i--) {
         const key = localStorage.key(i);
-        if (key && key.startsWith('player.')) {
+        if (key && (key.startsWith('player.') || key.startsWith('meters.player.'))) {
             localStorage.removeItem(key);
         }
     }
 
     for (let i = sessionStorage.length - 1; i >= 0; i--) {
         const key = sessionStorage.key(i);
-        if (key && key.startsWith('player.')) {
+        if (key && (key.startsWith('player.') || key.startsWith('meters.player.'))) {
             sessionStorage.removeItem(key);
         }
     }

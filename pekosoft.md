@@ -252,10 +252,13 @@ RESET buttons inside tools must clear that tool completely:
 - clear tool-specific settings
 - clear tool-specific session data
 - clear tool-specific stored state (for example history, playlist, panel data)
+- include shared-module state stored under the current tool's namespace, such as `meters.player.*` for Player
 
 RESET buttons inside tools must not clear sitewide settings.
 
 Sitewide reset is only allowed from the Settings page.
+
+Clearing local Guides, Bright, Rulers and Multicolor overrides restores their global defaults. Bright returns to off when the global Bright setting is off.
 
 ## Panel editability rule
 

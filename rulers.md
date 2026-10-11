@@ -29,6 +29,12 @@ All ruler and guide lines must use the same explicit SVG contract:
 - Preserve the existing shared guide and ruler colors and contrast, including Bright behavior. Do not introduce separate label contrast without explicit approval.
 - Follow the shared [guides text selection convention](pekosoft.md#guides-text-selection-convention). It applies to Meters and Player's separate ruler layout as well as the standard Timeline layout.
 
+## Meters Canvas Ownership
+
+- Shared Meters owns its canvas backing dimensions and drawing transforms. Tool-specific Timeline resize routines must not resize meter canvases.
+- Meter backing dimensions scale with `devicePixelRatio`. Replacing them with CSS dimensions clears the signal and transform, causing flashing with live signals and shrunken guides with idle signals.
+- SVG rulers use the plot's CSS dimensions and must remain aligned with its full-size canvas guides after clicks, mode changes and Timeline resizing.
+
 ## State Model
 
 - Settings `Rulers` is the global default (`global.rulers`). Changing it clears per-tool ruler overrides and broadcasts `pekosoft:rulers-global-change`.
@@ -49,10 +55,13 @@ Verify each ruler-enabled timeline (Audio Calculator, BPM Calculator, Metronome,
 | Timeline resized or maximized | Titles remain in their corner cell or guide gap with no label strike-through or crowded labels |
 | Selecting or dragging across labels | Text associated with guides and rulers stays unselected in every Meters mode and Timeline layout. Seeking, dragging and scrolling still work |
 | 100%, high-DPI, and browser zoom | Lines retain a single-pixel visual weight |
+| Clicking meter plots or reselecting a meter mode | Live, paused and idle meters retain their full-size signals and guides without clearing the canvas |
+| Player Timeline resized or Rulers toggled at high DPI | Meters retains its DPI-scaled backing dimensions and drawing transform |
 | Playhead on/off | Full-height playhead appears only when enabled |
 | Follow on, manual scroll | Manual horizontal navigation disables Follow |
 | Global Rulers setting | Updates every open tool and clears local ruler overrides |
 | Tool reset | Restores the documented local defaults without changing global defaults |
+| Player reset with local Meters overrides | Clears `meters.player.*` in local and session storage. Meters follows global Guides, Bright, Rulers and Multicolor defaults |
 
 ## Validation Notes
 

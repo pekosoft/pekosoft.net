@@ -20,3 +20,9 @@ Pekosoft uses a single SVG sprite file (`icons.svg`) for all interface icons. Ea
 - Follow literal geometric instructions. Do not reinterpret simple shape requests such as circle, half circle, square, or line.
 - Verify icon changes in the real Icons tool or another real Pekosoft page after refresh.
 - Prefer minimal single-parameter tweaks when iterating: size, position, or thickness one at a time.
+
+## Icons Tool Panel
+
+- Current and All use the existing tab-like `.controls-buttons.wrapper` row with `.square` icon buttons above the editable SVG Panel, matching Player's Panel view selectors.
+- Reuse the shared button styling and `button-on` selected state. Do not introduce a separate tab design or force text labels to stay visible.
+- Preserve the saved `icons.panel_mode` and existing switching behavior. Copy and the shared Panel actions remain in the footer.

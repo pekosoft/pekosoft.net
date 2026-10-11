@@ -407,7 +407,7 @@
 </div>
 
 <div class="feature-row border"><svg class="standard-image-help">
-    <use href="/icons.svg#field"></use>
+    <use href="/icons.svg#selected"></use>
   </svg>
   <div class="justify">
     <h1>Current <span class="object">button</span></h1>
@@ -416,7 +416,7 @@
 </div>
 
 <div class="feature-row border"><svg class="standard-image-help">
-    <use href="/icons.svg#timeline"></use>
+    <use href="/icons.svg#select_all"></use>
   </svg>
   <div class="justify">
     <h1>All <span class="object">button</span></h1>

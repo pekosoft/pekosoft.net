@@ -350,22 +350,24 @@
 
   <div id="panel-container" class="container">
     <div class="module-body standard border">
+      <div class="controls-buttons wrapper">
+        <button id="panel-current-button" class="square" title="Show current icon">
+          <svg class="icons">
+            <use href="/icons.svg#selected" />
+          </svg>
+          <span class="button-text">Current</span>
+        </button>
+
+        <button id="panel-all-button" class="square" title="Show all icons">
+          <svg class="icons">
+            <use href="/icons.svg#select_all" />
+          </svg>
+          <span class="button-text">All</span>
+        </button>
+      </div>
       <textarea id="icons-text" placeholder="Icons SVG code will appear here."></textarea>
     </div>
     <div class="module-footer wrapper colored">
-      <button id="panel-current-button" class="square" title="Show current icon">
-        <svg class="icons">
-          <use href="/icons.svg#field" />
-        </svg>
-        <span class="button-text">Current</span>
-      </button>
-
-      <button id="panel-all-button" class="square" title="Show all icons">
-        <svg class="icons">
-          <use href="/icons.svg#timeline" />
-        </svg>
-        <span class="button-text">All</span>
-      </button>
 
       <button id="copy-button" class="square" title="Copy symbol code">
         <svg class="icons">

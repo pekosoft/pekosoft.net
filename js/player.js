@@ -198,6 +198,14 @@ let inputStream = null;
 let inputSource = null;
 let recordingStream = null;
 let recordingSource = null;
+const SYSTEM_AUDIO_INPUT = 'system-audio';
+let systemCapture = null;
+let systemAudioStream = null;
+let systemCaptureRequest = null;
+let inputRequestId = 0;
+let recordingRequestId = 0;
+let recordingPending = false;
+let pendingInputRequests = 0;
 let responseAnimationFrameId = null;
 let responseAnimationToken = 0;
 
@@ -1715,12 +1723,14 @@ function applySavedToolGuides() {
 
 function connectSourceToMeters(sourceNode) {
     if (!sourceNode) return;
+    if (sourceNode === recordingSource && recordingStream === systemAudioStream && inputSource) return;
     sourceNode.connect(mainAnalyser);
     if (channelSplitter) sourceNode.connect(channelSplitter);
 }
 
 function connectSourceToChannelSplitter(sourceNode) {
     if (!sourceNode || !channelSplitter) return;
+    if (sourceNode === recordingSource && recordingStream === systemAudioStream && inputSource) return;
     sourceNode.connect(channelSplitter);
 }
 
@@ -1763,13 +1773,83 @@ function syncVisualFreeze() {
     freezeVisuals = !(isPlaying || isRecording || hasLiveInput);
 }
 
+function releaseInputStream(stream) {
+    if (!stream) return;
+    if (stream !== systemAudioStream) {
+        stream.getTracks().forEach(track => track.stop());
+    } else if (inputStream !== stream && recordingStream !== stream && pendingInputRequests === 0) {
+        const capture = systemCapture;
+        systemCapture = null;
+        systemAudioStream = null;
+        capture?.getTracks().forEach(track => track.stop());
+    }
+}
+
+async function requestSelectedInput() {
+    if (selectedDeviceId !== SYSTEM_AUDIO_INPUT) {
+        return navigator.mediaDevices.getUserMedia({
+            audio: {
+                deviceId: selectedDeviceId ? { exact: selectedDeviceId } : undefined,
+                channelCount: { ideal: 2 }
+            }
+        });
+    }
+    if (systemAudioStream?.active) return systemAudioStream;
+    if (systemCaptureRequest) return systemCaptureRequest;
+    if (!navigator.mediaDevices.getDisplayMedia) {
+        throw new Error('System Audio capture is not supported in this browser. Use Chrome or Edge on Windows.');
+    }
+    systemCaptureRequest = (async () => {
+        const capture = await navigator.mediaDevices.getDisplayMedia({
+            video: true,
+            audio: { channelCount: { ideal: 2 } },
+            systemAudio: 'include'
+        });
+        const tracks = capture.getAudioTracks().filter(track => track.readyState === 'live');
+        if (!tracks.length) {
+            capture.getTracks().forEach(track => track.stop());
+            throw new Error('No audio was shared. Select a source with audio and enable the sharing dialog audio option.');
+        }
+        systemCapture = capture;
+        systemAudioStream = new MediaStream(tracks);
+        // The video track keeps the sharing session alive, but is never processed or recorded.
+        capture.getTracks().forEach(track => track.addEventListener('ended', () => {
+            if (systemCapture !== capture) return;
+            setInputMonitoringEnabled(false);
+            recordingRequestId++;
+            if (mediaRecorder?.state === 'recording') mediaRecorder.stop();
+            releaseInputStream(systemAudioStream);
+            updateAudioInfo();
+            console.info('System Audio capture stopped.');
+        }, { once: true }));
+        return systemAudioStream;
+    })();
+    try {
+        return await systemCaptureRequest;
+    } finally {
+        systemCaptureRequest = null;
+    }
+}
+
+function reportInputError(error) {
+    console.error('Error capturing audio input:', error);
+    const message = error.name === 'NotAllowedError'
+        ? 'Audio capture was cancelled or permission was denied.'
+        : error.message || 'Audio capture could not be started.';
+    alert(message);
+}
+
 async function setInputMonitoringEnabled(enabled) {
+    const requestId = ++inputRequestId;
     if (!enabled) {
         if (inputSource) {
             disconnectSourceFromMeters(inputSource);
             inputSource = null;
         }
-        if (inputStream) { inputStream.getTracks().forEach(track => track.stop()); inputStream = null; }
+        const stream = inputStream;
+        inputStream = null;
+        releaseInputStream(stream);
+        if (recordingSource && recordingStream === systemAudioStream) connectSourceToMeters(recordingSource);
         toggleInput.classList.remove('button-on');
         localStorage.setItem(STORAGE.inputMonitor, 'false');
         restoreMeterChannelCount();
@@ -1782,16 +1862,19 @@ async function setInputMonitoringEnabled(enabled) {
         return;
     }
 
+    let stream;
+    pendingInputRequests++;
     try {
+        stream = await requestSelectedInput();
         if (mainAudioContext.state === 'suspended') {
             await mainAudioContext.resume();
         }
-        inputStream = await navigator.mediaDevices.getUserMedia({
-            audio: {
-                deviceId: selectedDeviceId ? { exact: selectedDeviceId } : undefined,
-                channelCount: { ideal: 2 }
-            }
-        });
+        if (requestId !== inputRequestId) {
+            releaseInputStream(stream);
+            return;
+        }
+        inputStream = stream;
+        if (recordingSource && recordingStream === systemAudioStream) disconnectSourceFromMeters(recordingSource);
         inputSource = mainAudioContext.createMediaStreamSource(inputStream);
         connectSourceToMeters(inputSource);
         loadedChannelCount = Math.max(1, inputSource.channelCount || 1);
@@ -1799,11 +1882,18 @@ async function setInputMonitoringEnabled(enabled) {
         toggleInput.classList.add('button-on');
         localStorage.setItem(STORAGE.inputMonitor, 'true');
         syncVisualFreeze();
+        updateAudioInfo();
     } catch (err) {
-        toggleInput.classList.remove('button-on');
-        localStorage.setItem(STORAGE.inputMonitor, 'false');
-        syncVisualFreeze();
-        console.error('Error enabling input monitoring:', err);
+        if (requestId !== inputRequestId) {
+            releaseInputStream(stream);
+            return;
+        }
+        await setInputMonitoringEnabled(false);
+        releaseInputStream(stream);
+        reportInputError(err);
+    } finally {
+        pendingInputRequests--;
+        if (stream !== inputStream && stream !== recordingStream) releaseInputStream(stream);
     }
 }
 
@@ -2354,19 +2444,28 @@ navigator.mediaDevices.enumerateDevices()
             option.text = device.label || `Input ${audioInput.length + 1}`;
             audioInput.appendChild(option);
         });
+        const systemOption = document.createElement('option');
+        systemOption.value = SYSTEM_AUDIO_INPUT;
+        systemOption.text = 'System Audio';
+        audioInput.appendChild(systemOption);
         const savedInput = localStorage.getItem(STORAGE.input);
         selectedDeviceId = savedInput || audioInput.value;
         if (savedInput) audioInput.value = savedInput;
 
-        if (localStorage.getItem(STORAGE.inputMonitor) === 'true') {
+        if (localStorage.getItem(STORAGE.inputMonitor) === 'true' && selectedDeviceId !== SYSTEM_AUDIO_INPUT) {
             setInputMonitoringEnabled(true);
         }
     })
     .catch(error => console.error('Error enumerating devices:', error));
 
 audioInput.addEventListener('change', () => {
+    const wasMonitoring = toggleInput.classList.contains('button-on');
+    recordingRequestId++;
+    setInputMonitoringEnabled(false);
+    if (mediaRecorder?.state === 'recording') mediaRecorder.stop();
     selectedDeviceId = audioInput.value;
     localStorage.setItem(STORAGE.input, selectedDeviceId);
+    if (wasMonitoring || selectedDeviceId === SYSTEM_AUDIO_INPUT) setInputMonitoringEnabled(true);
     updateAudioInfo();
 });
 
@@ -2724,69 +2823,94 @@ resetButton.addEventListener('click', () => {
 
 // Recording
 recordButton.addEventListener('click', async () => {
+    if (recordingPending || (mediaRecorder?.state === 'inactive' && recordingStream)) return;
     if (!mediaRecorder || mediaRecorder.state === 'inactive') {
-        revokeGeneratedAudioUrl();
-        audioPlayer.src = '';
-        clearMetaInfo();
-        clearStaticWaveform();
-        resetAnalyser();
-
-        const stream = await navigator.mediaDevices.getUserMedia({
-            audio: {
-                deviceId: selectedDeviceId ? { exact: selectedDeviceId } : undefined,
-                channelCount: { ideal: 2 } // native sample rate
+        recordingPending = true;
+        pendingInputRequests++;
+        const requestId = ++recordingRequestId;
+        let stream;
+        try {
+            stream = await requestSelectedInput();
+            if (mainAudioContext.state === 'suspended') await mainAudioContext.resume();
+            if (requestId !== recordingRequestId) {
+                releaseInputStream(stream);
+                return;
             }
-        });
-
-        recordingStream = stream;
-        recordingSource = mainAudioContext.createMediaStreamSource(stream);
-        connectSourceToMeters(recordingSource);
-        loadedChannelCount = Math.max(1, recordingSource.channelCount || 1);
-        recreateChannelSplitter(loadedChannelCount);
-
-        mediaRecorder = new MediaRecorder(stream);
-        audioChunks = [];
-        recordButton.classList.add('button-on');
-        startTimer();
-        mediaRecorder.start();
-        updateActionButtonStates();
-
-        syncVisualFreeze();
-
-        mediaRecorder.addEventListener('dataavailable', event => audioChunks.push(event.data));
-
-        mediaRecorder.addEventListener('stop', () => {
-            const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
-            const audioUrl = URL.createObjectURL(audioBlob);
             revokeGeneratedAudioUrl();
-            audioPlayer.src = audioUrl;
-            downloadButton.dataset.audioUrl = audioUrl;
-            recordButton.classList.remove('button-on');
-            stopTimer();
+            audioPlayer.src = '';
+            clearMetaInfo();
+            clearStaticWaveform();
+            resetAnalyser();
 
+            recordingStream = stream;
+            recordingSource = mainAudioContext.createMediaStreamSource(stream);
+            connectSourceToMeters(recordingSource);
+            loadedChannelCount = Math.max(1, recordingSource.channelCount || 1);
+            recreateChannelSplitter(loadedChannelCount);
+
+            mediaRecorder = new MediaRecorder(stream);
+            audioChunks = [];
+            recordButton.classList.add('button-on');
+            startTimer();
+            mediaRecorder.start();
+            updateActionButtonStates();
+            syncVisualFreeze();
+
+            mediaRecorder.addEventListener('dataavailable', event => audioChunks.push(event.data));
+            mediaRecorder.addEventListener('stop', () => {
+                const audioBlob = new Blob(audioChunks, { type: mediaRecorder.mimeType });
+                const audioUrl = URL.createObjectURL(audioBlob);
+                revokeGeneratedAudioUrl();
+                audioPlayer.src = audioUrl;
+                downloadButton.dataset.audioUrl = audioUrl;
+                recordButton.classList.remove('button-on');
+                stopTimer();
+                if (recordingSource) {
+                    disconnectSourceFromMeters(recordingSource);
+                    recordingSource = null;
+                }
+                if (recordingStream) {
+                    const stream = recordingStream;
+                    recordingStream = null;
+                    releaseInputStream(stream);
+                }
+                restoreMeterChannelCount();
+                syncVisualFreeze();
+                if (selectedDeviceId === SYSTEM_AUDIO_INPUT) updateAudioInfo();
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    mainAudioContext.decodeAudioData(e.target.result).then(buffer => {
+                        drawStaticWaveform(buffer);
+                        displayRecordingInfo(audioBlob, buffer);
+                        updateActionButtonStates();
+                    }).catch(error => {
+                        console.error('Error decoding recording:', error);
+                        alert('The recording was captured, but this browser could not decode it for editing.');
+                        updateActionButtonStates();
+                    });
+                };
+                reader.readAsArrayBuffer(audioBlob);
+                updateActionButtonStates();
+            });
+            updateAudioInfo();
+        } catch (error) {
             if (recordingSource) {
                 disconnectSourceFromMeters(recordingSource);
                 recordingSource = null;
             }
-            if (recordingStream) {
-                recordingStream.getTracks().forEach(track => track.stop());
-                recordingStream = null;
-            }
-
+            recordingStream = null;
+            releaseInputStream(stream);
+            recordButton.classList.remove('button-on');
+            stopTimer();
             restoreMeterChannelCount();
             syncVisualFreeze();
-
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                mainAudioContext.decodeAudioData(e.target.result).then(buffer => {
-                    drawStaticWaveform(buffer);
-                    displayRecordingInfo(audioBlob, buffer);
-                    updateActionButtonStates();
-                });
-            };
-            reader.readAsArrayBuffer(audioBlob);
+            if (requestId === recordingRequestId) reportInputError(error);
+        } finally {
+            recordingPending = false;
+            pendingInputRequests--;
+            if (stream !== inputStream && stream !== recordingStream) releaseInputStream(stream);
             updateActionButtonStates();
-        });
+        }
     } else {
         mediaRecorder.stop();
         updateActionButtonStates();
@@ -3732,8 +3856,23 @@ audioPlayer.addEventListener('ended', () => {
 // Audio input details
 
 function updateAudioInfo() {
+    if (selectedDeviceId === SYSTEM_AUDIO_INPUT) {
+        const track = systemAudioStream?.getAudioTracks()[0];
+        const settings = track?.getSettings();
+        panelState.input.sampleRate = track ? `${settings.sampleRate || mainAudioContext.sampleRate} Hz` : '-';
+        panelState.input.channels = track ? settings.channelCount || 2 : '-';
+        panelState.input.latency = track ? `${mainAudioContext.baseLatency.toFixed(4)} s` : '-';
+        panelState.input.device = track ? 'System Audio' : 'System Audio (not capturing)';
+        renderPanel();
+        return;
+    }
+    const deviceId = selectedDeviceId;
     navigator.mediaDevices.getUserMedia({ audio: true })
         .then(stream => {
+            if (selectedDeviceId !== deviceId) {
+                stream.getTracks().forEach(track => track.stop());
+                return;
+            }
             const audioContext = new AudioContext();
             const source = audioContext.createMediaStreamSource(stream);
             const deviceLabel = audioInput.selectedOptions[0]?.text || 'Unknown Device';
@@ -3746,6 +3885,7 @@ function updateAudioInfo() {
             audioContext.close();
         })
         .catch(error => {
+            if (selectedDeviceId !== deviceId) return;
             panelState.input.sampleRate = '-';
             panelState.input.channels = '-';
             panelState.input.latency = '-';

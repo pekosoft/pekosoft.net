@@ -117,7 +117,7 @@
       <div class="controls-values wrapper">
         <div class="pair">
           <label for="audio-input" title="Audio input source">Input:</label>
-          <select id="audio-input"></select>
+          <select id="audio-input"><option value="system-audio">System Audio</option></select>
         </div>
 
         <div class="pair controls-curve-pair">

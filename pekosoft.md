@@ -254,6 +254,8 @@ Tooltip placement rule:
 
 ## Reset scope policy
 
+Player System Audio uses `getDisplayMedia` through the existing Input menu. Monitoring and recording share one audio-only stream and do not route it twice into Meters. The browser's video track is retained only for sharing-session lifetime and is never processed or recorded. Do not reopen display capture automatically on reload. Windows system audio requires a supported browser and an audio-enabled sharing source.
+
 RESET buttons inside tools must clear that tool completely:
 
 - clear tool-specific settings

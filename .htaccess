@@ -17,12 +17,15 @@ RewriteRule ^index\.php$ / [R=301,L]
 RewriteCond %{THE_REQUEST} \s/+(beta|bitcoin)\.php[\s?] [NC]
 RewriteRule ^(beta|bitcoin)\.php$ /$1 [R=301,L]
 
+RewriteCond %{THE_REQUEST} \s/+contact\.php[\s?] [NC]
+RewriteRule ^contact\.php$ /contact [R=308,L]
+
 RewriteCond %{THE_REQUEST} \s/+tools/([A-Za-z0-9_]+)\.php[\s?] [NC]
 RewriteRule ^tools/([A-Za-z0-9_]+)\.php$ /$1 [R=301,L]
 
 # Root page routes
 RewriteCond %{DOCUMENT_ROOT}/$1.php -f
-RewriteRule ^(beta|bitcoin|updates)/?$ /$1.php [L]
+RewriteRule ^(beta|bitcoin|contact|updates)/?$ /$1.php [L]
 
 # Tool routes
 RewriteCond %{DOCUMENT_ROOT}/tools/$1.php -f

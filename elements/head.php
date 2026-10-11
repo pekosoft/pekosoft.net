@@ -57,6 +57,8 @@ $releaseTitleMap = [
 	'bitcoin.php' => 'Buy Us Coffee',
 	'updates' => 'Updates',
 	'updates.php' => 'Updates',
+	'contact' => 'Contact',
+	'contact.php' => 'Contact',
 ];
 
 if ($releaseName === '') {

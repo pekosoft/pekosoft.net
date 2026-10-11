@@ -207,6 +207,12 @@ Tooltip placement rule:
 
 - Do not use semicolons in Help, tooltips, documentation or other prose, including assistant responses. Use short sentences or simple conjunctions instead. Preserve semicolons required by code syntax or HTML entities.
 
+## Commit title convention
+
+- Use short, past-tense titles focused on user-facing changes.
+- Do not mention development Markdown, internal guidance updates or routine documentation maintenance in titles.
+- Cover all substantive user-facing changes without listing every implementation detail.
+
 ## Help writing conventions
 
 - Describe deterministic calculations as "calculates" or "calculated", not "estimates". State actual limitations explicitly, such as excluding file headers and metadata.
@@ -373,8 +379,14 @@ Examples of root-level tool and site files include:
 
 Special page note:
 
+- Shared TOC links use this order: Buy Us Coffee, Contact, Share, Updates. Preserve this order in both official and Beta navigation.
 - `bitcoin.php` is a standalone donation page linked from the main TOC as **BUY US COFFEE**.
 - On `bitcoin.php`, the tool menu (Tool, Help, History, About) is intentionally hidden.
+- `contact.php` is a standalone Contact page at `/contact`, linked from both the official and Beta TOCs and included in their Play sequences. It uses General, Bug report and Feature request categories and sends to `ole@peko.net`. Its implementation URL redirects with HTTP 308 to preserve form POSTs.
+- Contact uses PHP `mail()`. Production hosting must provide a working mail transport and authorize the sender `contact@pekosoft.net`. Visitor email addresses are used only in Reply-To, never as From.
+- Contact submissions use server-side validation, session tokens, a honeypot and a one-minute session send limit. Mail failures are logged and shown explicitly, with the submitted text preserved.
+- Contact hides the tool-specific Tool, Help, History and About navigation and has no separate Help file. The form has no introductory text or visible Message label. Keep the Message field accessible through its `aria-label`.
+- Contact Reset clears all form fields and submission feedback and restores General. It does not clear sitewide settings or bypass the session send limit.
 
 ### Icons
 

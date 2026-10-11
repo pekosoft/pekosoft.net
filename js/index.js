@@ -1370,6 +1370,7 @@ const OFFICIAL_SITE_PLAY_SEQUENCE = [
   '/about.php?t=metronome',
   '/about.php?t=turntable',
   '/bitcoin.php',
+  '/contact',
   '/updates'
 ];
 
@@ -1434,6 +1435,7 @@ const BETA_SITE_PLAY_SEQUENCE = [
   '/about.php?t=audio_calculator',
   '/about.php?t=piano',
   '/about.php?t=icons',
+  '/contact',
   '/updates'
 ];
 

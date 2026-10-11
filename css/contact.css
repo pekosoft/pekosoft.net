@@ -1,0 +1,36 @@
+/* Pekosoft Contact */
+
+#contact {
+  text-align: left;
+}
+
+.contact-fields {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+#contact-message {
+  margin: 8px 0;
+  border: 1px solid var(--grey1);
+  background-color: var(--field-background);
+}
+
+.contact-notice {
+  padding: 8px;
+  margin: 0 0 16px;
+  border: 1px solid var(--grey1);
+}
+
+.contact-notice p,
+.contact-notice ul {
+  margin: 0;
+}
+
+.contact-notice ul {
+  padding-left: 24px;
+}
+
+.contact-honeypot {
+  display: none;
+}

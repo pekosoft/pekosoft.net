@@ -28,6 +28,7 @@ http://localhost:$Port {
     redir /index.php / 301
     @legacyRoot path_regexp legacyRoot ^/(beta|bitcoin)\.php$
     redir @legacyRoot /{re.legacyRoot.1} 301
+    redir /contact.php /contact 308
     @legacyTool path_regexp legacyTool ^/tools/([A-Za-z0-9_]+)\.php$
     redir @legacyTool /{re.legacyTool.1} 301
 
@@ -154,7 +155,9 @@ $checks = @(
     [pscustomobject]@{ Url = "$baseUrl/"; ExpectedStatus = 200; ExpectedLocation = '' },
     [pscustomobject]@{ Url = "$baseUrl/index.php"; ExpectedStatus = 301; ExpectedLocation = '/' },
     [pscustomobject]@{ Url = "$baseUrl/tools/tap_pad.php"; ExpectedStatus = 301; ExpectedLocation = '/tap_pad' },
-    [pscustomobject]@{ Url = "$baseUrl/tap_pad"; ExpectedStatus = 200; ExpectedLocation = '' }
+    [pscustomobject]@{ Url = "$baseUrl/tap_pad"; ExpectedStatus = 200; ExpectedLocation = '' },
+    [pscustomobject]@{ Url = "$baseUrl/contact"; ExpectedStatus = 200; ExpectedLocation = '' },
+    [pscustomobject]@{ Url = "$baseUrl/contact.php"; ExpectedStatus = 308; ExpectedLocation = '/contact' }
 )
 
 $allPassed = $true

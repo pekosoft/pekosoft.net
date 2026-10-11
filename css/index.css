@@ -170,6 +170,7 @@ button:not(.square):not(.pad):not(.toc-button) {
 select,
 input[type="number"],
 input[type="text"],
+input[type="email"],
 label {
   width: auto;
   min-width: 0;
@@ -201,7 +202,8 @@ optgroup {
   color: var(--white);
 }
 
-input[type="text"] {
+input[type="text"],
+input[type="email"] {
   font-size: var(--font-size);
   height: var(--size2);
   line-height: 16px;
@@ -999,6 +1001,7 @@ html.modules-page body:not(.layout-two-columns) {
 /* Label and field: stretch consistently */
 .pair>label,
 .pair>input[type="text"],
+.pair>input[type="email"],
 .pair>input[type="number"] {
   flex: 1 1 0;
   min-width: 80px;

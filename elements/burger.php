@@ -128,15 +128,21 @@ $hasPlaylistModule = in_array('playlist', $availableModules, true);
           </svg>
           Buy Us Coffee
         </button>
+        <button class="toc-button" data-href="/contact" title="Contact" aria-label="Contact">
+          <svg class="icons" role="img">
+            <use href="/icons.svg#speech"></use>
+          </svg>
+          Contact
+        </button>
+        <?php if ($release !== ''): ?>
+          <button id="share-toc-button" class="toc-button" title="Share" aria-label="Share"><svg class="icons" role="img"><use href="/icons.svg#share"></use></svg>Share</button>
+        <?php endif; ?>
         <button class="toc-button" data-href="/updates" title="Updates" aria-label="Updates">
           <svg class="icons" role="img">
             <use href="/icons.svg#github"></use>
           </svg>
           Updates
         </button>
-        <?php if ($release !== ''): ?>
-          <button id="share-toc-button" class="toc-button" title="Share" aria-label="Share"><svg class="icons" role="img"><use href="/icons.svg#share"></use></svg>Share</button>
-        <?php endif; ?>
       </div>
 
       <div class="toc-close">

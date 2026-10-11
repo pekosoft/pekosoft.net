@@ -26,10 +26,23 @@
         <span class="button-text">Wavescope</span>
       </button>
     </div>
-    <canvas id="volume-meter" class="meter-canvas" width="4096" height="32"></canvas>
-    <canvas id="frequency-analyzer" class="meter-canvas" width="4096" height="512"></canvas>
-    <canvas id="wavescope" class="meter-canvas" width="4096" height="256"></canvas>
-    <canvas id="waveform" class="meter-canvas active" width="4096" height="256"></canvas>
+    <div class="timeline-ruler-layout meters-ruler-layout">
+      <div class="meters-ruler-corner">
+        <svg id="meters-ruler-corner" aria-hidden="true"></svg>
+      </div>
+      <div class="meters-horizontal-ruler">
+        <svg id="meters-horizontal-ruler" aria-label="Meter horizontal ruler"></svg>
+      </div>
+      <div class="meters-vertical-ruler">
+        <svg id="meters-vertical-ruler" aria-label="Meter decibel ruler"></svg>
+      </div>
+      <div class="timeline-scroll meter-plot">
+        <canvas id="volume-meter" class="meter-canvas" width="4096" height="32"></canvas>
+        <canvas id="frequency-analyzer" class="meter-canvas" width="4096" height="512"></canvas>
+        <canvas id="wavescope" class="meter-canvas" width="4096" height="256"></canvas>
+        <canvas id="waveform" class="meter-canvas active" width="4096" height="256"></canvas>
+      </div>
+    </div>
   </div>
 
   <div class="module-footer wrapper colored">
@@ -39,11 +52,17 @@
       </svg>
       <span class="button-text">Guides</span>
     </button>
-    <button id="tool-bright-button" class="square" title="Toggle bright guides">
+    <button id="tool-bright-button" class="square" title="Toggle bright guides and rulers">
       <svg class="icons">
         <use href="/icons.svg#sun" />
       </svg>
       <span class="button-text">Bright</span>
+    </button>
+    <button id="tool-rulers-button" class="square" title="Toggle meter rulers" data-help-release="index" data-help-entry="Meter rulers">
+      <svg class="icons">
+        <use href="/icons.svg#ruler" />
+      </svg>
+      <span class="button-text">Rulers</span>
     </button>
     <button id="tool-color-button" class="square" title="Toggle multicolor meters">
       <svg class="icons">
@@ -52,4 +71,5 @@
       <span class="button-text">Color</span>
     </button>
   </div>
+  <script src="/js/svg_timeline.js?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/js/svg_timeline.js'); ?>"></script>
 </div>

@@ -136,7 +136,7 @@
 
   function drawVerticalRuler(svg, options) {
     if (!svg) return;
-    const { width, height, title = '', titleY = 24, ticks = [], color, bright = false, sideBorders = false, bottomBorder = true } = options || {};
+    const { width, height, title = '', titleY = 24, ticks = [], color, bright = false, sideBorders = false, topBorder = false, bottomBorder = true } = options || {};
     const inset = sideBorders ? 0.5 : 0;
     const axisX = Math.max(0, width - inset);
     svg.replaceChildren();
@@ -148,6 +148,15 @@
         y2: height,
         stroke: color
       }));
+      if (topBorder) {
+        svg.appendChild(createRulerElement('line', {
+          x1: 0,
+          y1: inset,
+          x2: width,
+          y2: inset,
+          stroke: color
+        }));
+      }
       if (bottomBorder) {
         svg.appendChild(createRulerElement('line', {
           x1: 0,
@@ -280,7 +289,7 @@
       stroke: color
     }));
 
-    ticks.forEach(({ position, label }) => {
+    ticks.forEach(({ position, label, labelPosition = 'after' }) => {
       if (Number(position) <= 0) return;
       const x = Math.max(0.5, Math.min(width - 0.5, Math.round(position) + 0.5));
       svg.appendChild(createRulerElement('line', {
@@ -292,12 +301,12 @@
       }));
       if (label === undefined || label === null || label === '') return;
       svg.appendChild(createRulerElement('text', {
-        x: x + 3,
+        x: labelPosition === 'before' ? x - 3 : x + 3,
         y: axisAtTop ? 12 : Math.max(10, height - 3),
         fill: color,
         'font-size': 12,
         'font-family': 'Arial, sans-serif',
-        'text-anchor': 'start'
+        'text-anchor': labelPosition === 'before' ? 'end' : 'start'
       }, label));
     });
   }

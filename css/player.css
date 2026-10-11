@@ -78,9 +78,6 @@ audio::-webkit-media-controls-time-remaining-display {
 }
 
 #meters-container.module-maximized .standard {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  grid-template-rows: minmax(0, 1fr) auto;
   height: 100%;
   width: 100%;
   min-width: 0;
@@ -98,7 +95,6 @@ audio::-webkit-media-controls-time-remaining-display {
 }
 
 #meters-container.module-maximized .meter-canvas {
-  grid-row: 1;
   min-height: 0;
   height: 100%;
   max-height: none;

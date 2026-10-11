@@ -234,6 +234,10 @@
     const enabled = !!nextState;
     localStorage.setItem("global.rulers", String(enabled));
     rulerStorageKeys.forEach((key) => localStorage.removeItem(key));
+    for (let index = localStorage.length - 1; index >= 0; index -= 1) {
+      const key = localStorage.key(index);
+      if (/^meters\..+\.rulers$/.test(key || "")) localStorage.removeItem(key);
+    }
     updateRulersSettingsButton();
     window.dispatchEvent(new CustomEvent("pekosoft:rulers-global-change", {
       detail: { enabled }

@@ -24,10 +24,10 @@ All ruler and guide lines must use the same explicit SVG contract:
 - Use the shared 48 px Y-ruler width unless a specific requirement justifies an exception. Confirm that signed labels fit without clipping.
 - BPM titles in Tap Pad and Metronome are placed between the highest two 30-BPM guides. This remains valid for every timeline height.
 - Tick labels default above their guide. A tick may request `labelPosition: 'below'` when it describes the lower region, such as BPM Calculator's `NOTE` label.
-- Every horizontal gridline must have an aligned ruler tick. Numbers may be omitted at endpoints or at intermediate ticks when space is tight. Retain the gridlines and ticks.
+- Every horizontal guide must have an aligned ruler tick. Numbers may be omitted at endpoints or at intermediate ticks when space is tight. Retain the guides and ticks.
 - Audio Calculator uses FS in the corner, omits the -0.031 and 0.031 endpoint numbers, and reduces intermediate label density on short timelines. Its signed amplitude scale stays in FS, not dBFS.
 - Preserve the existing shared guide and ruler colors and contrast, including Bright behavior. Do not introduce separate label contrast without explicit approval.
-- Ruler text and SVGs are non-selectable.
+- Follow the shared [guides text selection convention](pekosoft.md#guides-text-selection-convention). It applies to Meters and Player's separate ruler layout as well as the standard Timeline layout.
 
 ## State Model
 
@@ -47,6 +47,7 @@ Verify each ruler-enabled timeline (Audio Calculator, BPM Calculator, Metronome,
 | Rulers off, Bright on | Plot owns the complete Bright frame |
 | Rulers on, horizontal scroll | Vertical ruler remains fixed. Horizontal ruler and labels track plot scroll |
 | Timeline resized or maximized | Titles remain in their corner cell or guide gap with no label strike-through or crowded labels |
+| Selecting or dragging across labels | Text associated with guides and rulers stays unselected in every Meters mode and Timeline layout. Seeking, dragging and scrolling still work |
 | 100%, high-DPI, and browser zoom | Lines retain a single-pixel visual weight |
 | Playhead on/off | Full-height playhead appears only when enabled |
 | Follow on, manual scroll | Manual horizontal navigation disables Follow |

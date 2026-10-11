@@ -581,8 +581,13 @@ html.modules-page body:not(.layout-two-columns) {
   overflow: hidden;
 }
 
-#timeline-container .timeline-ruler-layout,
-#timeline-container .timeline-svg {
+.timeline-ruler-layout,
+.timeline-ruler-layout svg,
+.timeline-ruler-layout text,
+.player-ruler-layout,
+.player-ruler-layout svg,
+.player-ruler-layout text,
+.timeline-svg {
   -webkit-user-select: none;
   user-select: none;
 }
@@ -733,6 +738,75 @@ html.modules-page body:not(.layout-two-columns) {
 #meters-container .module-footer {
   flex: 0;
   margin-top: 0;
+}
+
+#meters-container .meters-ruler-layout {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr);
+  grid-template-rows: 24px minmax(0, 1fr);
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+#meters-container .meters-ruler-corner {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+#meters-container .meters-horizontal-ruler {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+#meters-container .meters-vertical-ruler {
+  grid-column: 1;
+  grid-row: 2;
+}
+
+#meters-container .meters-ruler-layout svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  margin: 0;
+  border: 0;
+  overflow: hidden;
+}
+
+#meters-container .meter-plot {
+  grid-column: 2;
+  grid-row: 2;
+  min-height: 0;
+  min-width: 0;
+  display: flex;
+  overflow: hidden;
+}
+
+#meters-container .meter-plot .meter-canvas {
+  height: 100%;
+  margin: 0;
+  border: 0;
+}
+
+#meters-container .meters-horizontal-only,
+#meters-container .timeline-rulers-hidden {
+  grid-template-columns: 0 minmax(0, 1fr);
+}
+
+#meters-container .meters-vertical-only,
+#meters-container .timeline-rulers-hidden {
+  grid-template-rows: 0 minmax(0, 1fr);
+}
+
+#meters-container .meters-horizontal-only .meters-ruler-corner,
+#meters-container .meters-horizontal-only .meters-vertical-ruler,
+#meters-container .meters-vertical-only .meters-ruler-corner,
+#meters-container .meters-vertical-only .meters-horizontal-ruler,
+#meters-container .timeline-rulers-hidden .meters-ruler-corner,
+#meters-container .timeline-rulers-hidden .meters-horizontal-ruler,
+#meters-container .timeline-rulers-hidden .meters-vertical-ruler {
+  display: none;
 }
 
 .colored {

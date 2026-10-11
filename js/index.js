@@ -1149,7 +1149,8 @@ function getStatusDescriptor(target) {
   return {
     icon,
     iconHref,
-    entry: name,
+    entry: target.dataset.helpEntry?.trim() || name,
+    release: target.dataset.helpRelease?.trim(),
     kind,
     label: statusLabel || (sentenceTooltip ? (matchesTooltip ? sentenceTooltip : `${name}: ${sentenceTooltip}`) : name),
   };
@@ -1166,7 +1167,7 @@ function getCurrentHelpRelease() {
 }
 
 function getStatusHelpHref(descriptor) {
-  const parameters = new URLSearchParams({ t: getCurrentHelpRelease() });
+  const parameters = new URLSearchParams({ t: descriptor?.release || getCurrentHelpRelease() });
   if (descriptor?.entry) {
     parameters.set('e', descriptor.entry.toLocaleLowerCase());
     parameters.set('k', descriptor.kind.toLocaleLowerCase());

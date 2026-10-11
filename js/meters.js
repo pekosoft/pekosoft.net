@@ -24,6 +24,12 @@
   const guidesButton = document.getElementById('tool-guides-button');
   const brightButton = document.getElementById('tool-bright-button');
   const colorButton = document.getElementById('tool-color-button');
+  const rulersButton = document.getElementById('tool-rulers-button');
+  const rulerLayout = metersContainer.querySelector('.meters-ruler-layout');
+  const rulerCorner = document.getElementById('meters-ruler-corner');
+  const horizontalRuler = document.getElementById('meters-horizontal-ruler');
+  const verticalRuler = document.getElementById('meters-vertical-ruler');
+  const timelineUtils = window.PekoSvgTimeline;
   const availableModes = Object.keys(canvasByMode).filter((mode) => !!canvasByMode[mode]);
   if (!availableModes.length) return;
 
@@ -45,6 +51,11 @@
     return saved === null
       ? (window.PekoBrightGuides?.getGlobal() || false)
       : saved === 'on';
+  }
+
+  function getSavedRulers() {
+    const saved = localStorage.getItem(`${storagePrefix}.rulers`);
+    return saved === null ? window.PekoRulers.getGlobal() : saved === 'on';
   }
 
   function getSavedMulticolor() {
@@ -94,11 +105,6 @@
 
   const colorGrey1 = getComputedStyle(document.documentElement).getPropertyValue('--grey1').trim() || '#222';
   let guideColor = colorGrey1;
-  const guideLabelInset = 6;
-  const guideLabelHeight = 10;
-  const guideLabelGap = 4;
-  const guideGridLeft = 32;
-  const guideGridTop = guideLabelInset + guideLabelHeight + guideLabelGap;
 
   function snapGuideCoordinate(value) {
     const dpr = window.devicePixelRatio || 1;
@@ -109,58 +115,6 @@
     ctx.lineWidth = 1 / (window.devicePixelRatio || 1);
   }
 
-  function drawToolGuideLabel(ctx, text, x, y, align = 'left', bounds = null) {
-    ctx.save();
-    ctx.font = '10px Arial';
-    const textWidth = ctx.measureText(text).width;
-    const minX = guideLabelInset;
-    const minY = guideLabelInset;
-    const maxY = bounds ? Math.max(minY, bounds.height - guideLabelHeight - guideLabelInset) : y;
-    const safeY = Math.max(minY, Math.min(maxY, y));
-
-    let safeAlign = align;
-    let safeX = x;
-
-    if (bounds) {
-      const maxTextRight = Math.max(minX, bounds.width - 6);
-      if (safeAlign === 'left') {
-        safeX = Math.max(minX, Math.min(maxTextRight - textWidth, x));
-      } else if (safeAlign === 'right') {
-        const minRight = minX + textWidth;
-        safeX = Math.max(minRight, Math.min(maxTextRight, x));
-      } else {
-        const half = textWidth / 2;
-        const minCenter = minX + half;
-        const maxCenter = maxTextRight - half;
-        safeX = Math.max(minCenter, Math.min(maxCenter, x));
-      }
-    }
-
-    ctx.textAlign = safeAlign;
-    ctx.textBaseline = 'top';
-    ctx.fillStyle = guideColor;
-    ctx.fillText(text, safeX, safeY);
-    ctx.restore();
-  }
-
-  function drawHorizontalGuideLabel(ctx, text, y, width, height) {
-    const labelY = y <= guideLabelInset
-      ? Math.round(y) + guideLabelGap
-      : Math.round(y) - guideLabelHeight - guideLabelGap;
-    drawToolGuideLabel(
-      ctx,
-      text,
-      guideGridLeft - guideLabelGap,
-      labelY,
-      'right',
-      { width, height }
-    );
-  }
-
-  function drawVerticalGuideLabel(ctx, text, x, width, height) {
-    drawToolGuideLabel(ctx, text, Math.round(x) + guideLabelGap, guideLabelInset, 'left', { width, height });
-  }
-
   function frequencyToSpectrumX(freqHz, width, sampleRate) {
     const fMin = 20;
     const nyquist = Math.max(fMin + 1, sampleRate / 2);
@@ -169,47 +123,19 @@
     return width * Math.log(freqHz / fMin) / Math.log(nyquist / fMin);
   }
 
-  function drawWaveformDbScale(ctx, width, height, centerY, amplitude) {
+  function getWaveformDbTicks(height, centerY, amplitude, channelLabel = '') {
     const minusSixDbGain = Math.pow(10, -6 / 20);
-    const marks = [
+    return [
       { label: '0 dB', offset: -1 },
       { label: '-6 dB', offset: -minusSixDbGain },
-      { label: '-∞', offset: 0 },
+      { label: channelLabel ? `${channelLabel} -∞` : '-∞', offset: 0 },
       { label: '-6 dB', offset: minusSixDbGain },
       { label: '0 dB', offset: 1 }
-    ];
-    ctx.save();
-    ctx.strokeStyle = guideColor;
-    setCrispGuideStroke(ctx);
-    marks.slice(1, -1).forEach(({ offset }) => {
-      const y = snapGuideCoordinate(centerY + (offset * amplitude));
-      ctx.beginPath();
-      ctx.moveTo(0, y);
-      ctx.lineTo(width, y);
-      ctx.stroke();
-    });
-    ctx.restore();
-
-    marks.forEach(({ label, offset }) => {
-      drawHorizontalGuideLabel(ctx, label, centerY + (offset * amplitude), width, height);
-    });
-  }
-
-  function drawWaveformValueSeparator(ctx, height) {
-    const x = snapGuideCoordinate(guideGridLeft);
-    ctx.save();
-    ctx.strokeStyle = guideColor;
-    setCrispGuideStroke(ctx);
-    ctx.beginPath();
-    ctx.moveTo(x, 0);
-    ctx.lineTo(x, height);
-    ctx.stroke();
-    ctx.restore();
-  }
-
-  function drawToolGuidesForOscilloscope(ctx, width, height) {
-    drawWaveformValueSeparator(ctx, height);
-    drawWaveformDbScale(ctx, width, height, height / 2, height / 2);
+    ].map(({ label, offset }) => ({
+      position: Math.max(0, Math.min(height - 1, Math.floor(centerY + offset * amplitude))),
+      label,
+      labelPosition: offset === -1 && !channelLabel ? 'below' : 'above'
+    }));
   }
 
   function drawBrightGuideBoundary(ctx, width, height) {
@@ -219,84 +145,97 @@
     const lineWidth = 1 / dpr;
     ctx.save();
     ctx.fillStyle = guideColor;
-    ctx.fillRect(0, 0, width, lineWidth);
+    if (!rulersOn || activeMode === 'oscilloscope' || activeMode === 'wavescope') {
+      ctx.fillRect(0, 0, width, lineWidth);
+    }
     ctx.fillRect(Math.max(0, width - lineWidth), 0, lineWidth, height);
     ctx.fillRect(0, Math.max(0, height - lineWidth), width, lineWidth);
-    ctx.fillRect(0, 0, lineWidth, height);
+    if (!rulersOn || activeMode === 'level') {
+      ctx.fillRect(0, 0, lineWidth, height);
+    }
     ctx.restore();
   }
 
-  function drawToolGuidesForLevelMeter(ctx, width, height, channelCount) {
-    const dBMarks = [-60, -40, -24, -12, -6, 0];
-    const gap = channelCount > 1 ? 4 : 0;
-    const barH = Math.floor((height - gap * (channelCount - 1)) / channelCount);
-    ctx.save();
-    ctx.strokeStyle = guideColor;
-    setCrispGuideStroke(ctx);
+  function getMeterTicks(mode, width, height, source) {
+    if (mode === 'spectroscope') {
+      const sampleRate = source?.sampleRate || 44100;
+      return {
+        horizontal: [20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000]
+          .filter((freq) => freq <= sampleRate / 2)
+          .map((freq) => ({
+            position: Math.max(0, Math.min(width - 1, Math.floor(frequencyToSpectrumX(freq, width, sampleRate)))),
+            label: freq >= 1000 ? `${freq / 1000}k` : `${freq}`
+          })),
+        vertical: [-60, -48, -36, -24, -12, 0].map((db) => ({
+          position: Math.max(0, Math.min(height - 1, Math.floor(-db / 60 * height))),
+          label: `${db}`,
+          labelPosition: db === 0 ? 'below' : 'above'
+        }))
+      };
+    }
+    if (mode === 'level') {
+      const channels = (source?.channelCount || 2) > 1 ? 2 : 1;
+      const gap = channels > 1 ? 4 : 0;
+      const barHeight = Math.floor((height - gap * (channels - 1)) / channels);
+      return {
+        horizontal: [-60, -40, -24, -12, -6, 0].map((db) => ({
+          position: Math.max(0, Math.min(width - 1, Math.floor(width * Math.pow(10, db / 20)))),
+          label: `${db} dB`,
+          labelPosition: db === 0 ? 'before' : 'after'
+        })),
+        vertical: [{ position: channels > 1 ? barHeight + gap / 2 : height / 2, label: '' }]
+      };
+    }
+    const stereo = mode === 'wavescope' && (source?.channelCount || 1) > 1;
+    return {
+      horizontal: [],
+      vertical: stereo
+        ? [
+          ...getWaveformDbTicks(height, height * 0.25, height * 0.18, 'L'),
+          ...getWaveformDbTicks(height, height * 0.75, height * 0.18, 'R')
+        ]
+        : getWaveformDbTicks(height, height / 2, height / 2)
+    };
+  }
 
-    ctx.font = '10px Arial';
-    let lastLabelRight = -Infinity;
-    const minLabelGap = 4;
+  let rulerRenderKey = '';
 
-    dBMarks.forEach((db) => {
-      const amplitude = Math.pow(10, db / 20);
-      const x = snapGuideCoordinate(width * amplitude);
-      ctx.beginPath();
-      ctx.moveTo(x, 0);
-      ctx.lineTo(x, height);
-      ctx.stroke();
+  function drawMeterRulers(source) {
+    rulerLayout.classList.toggle('meters-horizontal-only', activeMode === 'level');
+    rulerLayout.classList.toggle('meters-vertical-only', activeMode === 'oscilloscope' || activeMode === 'wavescope');
+    rulerLayout.classList.toggle('timeline-rulers-hidden', !rulersOn);
+    const canvas = canvasByMode[activeMode];
+    const { width, height } = canvas.getBoundingClientRect();
+    const key = [activeMode, width, height, source?.sampleRate, source?.channelCount, guideColor, rulersOn].join(':');
+    if (key === rulerRenderKey) return;
+    rulerRenderKey = key;
+    meterNeedsRedraw = true;
+    if (!rulersOn) return;
 
-      const label = `${db} dB`;
-      const labelWidth = ctx.measureText(label).width;
-      const labelRight = x - guideLabelGap;
-      const labelLeft = labelRight - labelWidth;
-      if (labelLeft >= lastLabelRight + minLabelGap || db === 0) {
-        drawVerticalGuideLabel(ctx, label, x, width, height);
-        lastLabelRight = labelRight;
+    const ticks = getMeterTicks(activeMode, width, height, source);
+    timelineUtils.syncViewBox(verticalRuler, 48, height);
+    timelineUtils.drawVerticalRuler(verticalRuler, {
+      width: 48, height, ticks: ticks.vertical, color: guideColor, bright: brightGuides, sideBorders: true,
+      topBorder: activeMode === 'wavescope' && (source?.channelCount || 1) > 1
+    });
+    timelineUtils.syncViewBox(horizontalRuler, width, 24);
+    timelineUtils.drawHorizontalRuler(horizontalRuler, {
+      width, height: 24, ticks: ticks.horizontal, color: guideColor,
+      bright: brightGuides, sideBorders: true, leftBorder: activeMode === 'level'
+    });
+    let labelRight = 0;
+    horizontalRuler.querySelectorAll('text').forEach((label) => {
+      const bounds = label.getBBox();
+      if (bounds.x < labelRight + 4 || bounds.x + bounds.width > width) {
+        label.remove();
+      } else {
+        labelRight = bounds.x + bounds.width;
       }
     });
-
-    const splitY = channelCount > 1
-      ? snapGuideCoordinate(barH + gap / 2)
-      : snapGuideCoordinate(height / 2);
-    ctx.beginPath();
-    ctx.moveTo(0, splitY);
-    ctx.lineTo(width, splitY);
-    ctx.stroke();
-
-    ctx.restore();
-  }
-
-  function drawToolGuidesForSpectrum(ctx, width, height, sampleRate) {
-    const freqs = [20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000];
-    const dBMarks = [-60, -48, -36, -24, -12, 0];
-    ctx.save();
-    ctx.strokeStyle = guideColor;
-    setCrispGuideStroke(ctx);
-
-    dBMarks.forEach((db) => {
-      const ratio = (db + 60) / 60;
-      const rawY = snapGuideCoordinate(height - (Math.max(0, Math.min(1, ratio)) * height));
-      const y = db === 0 ? guideGridTop : rawY;
-      ctx.beginPath();
-      ctx.moveTo(0, y);
-      ctx.lineTo(width, y);
-      ctx.stroke();
-      drawHorizontalGuideLabel(ctx, `${db}`, y, width, height);
+    timelineUtils.syncViewBox(rulerCorner, 48, 24);
+    timelineUtils.drawRulerCorner(rulerCorner, {
+      width: 48, height: 24, color: guideColor, bright: brightGuides, title: 'dB', sideBorders: true
     });
-
-    freqs.forEach((freq) => {
-      const rawX = snapGuideCoordinate(frequencyToSpectrumX(freq, width, sampleRate));
-      const x = freq === 20 ? guideGridLeft : rawX;
-      const label = freq >= 1000 ? `${(freq / 1000).toFixed(freq >= 10000 ? 0 : 1)}k` : `${freq}`;
-      ctx.beginPath();
-      ctx.moveTo(x, 0);
-      ctx.lineTo(x, height);
-      ctx.stroke();
-      drawVerticalGuideLabel(ctx, label, x, width, height);
-    });
-
-    ctx.restore();
   }
 
   const timeArray = new Uint8Array(2048);
@@ -402,6 +341,7 @@
 
   let guidesOn = getSavedGuides();
   let brightGuides = getSavedBright();
+  let rulersOn = getSavedRulers();
   let multicolorOn = getSavedMulticolor();
   let meterNeedsRedraw = true;
   let wasMeterActive = false;
@@ -444,6 +384,16 @@
     if (brightButton) {
       brightButton.classList.toggle('button-on', brightGuides);
     }
+    meterNeedsRedraw = true;
+  }
+
+  function applyRulers(nextState, persist = true) {
+    rulersOn = !!nextState;
+    if (persist) {
+      localStorage.setItem(`${storagePrefix}.rulers`, rulersOn ? 'on' : 'off');
+    }
+    rulersButton.classList.toggle('button-on', rulersOn);
+    rulersButton.setAttribute('aria-pressed', String(rulersOn));
     meterNeedsRedraw = true;
   }
 
@@ -901,42 +851,28 @@
       return;
     }
 
-    if (mode === 'oscilloscope') {
-      drawToolGuidesForOscilloscope(ctx, width, height);
-      drawBrightGuideBoundary(ctx, width, height);
-      return;
-    }
-
-    if (mode === 'wavescope') {
-      const isStereo = (source?.channelCount || 1) > 1;
-      const lanes = isStereo
-        ? [{ label: 'L', center: 0.25 }, { label: 'R', center: 0.75 }]
-        : [{ label: '', center: 0.5 }];
-      const laneAmplitude = isStereo ? 0.18 : 0.5;
-
-      drawWaveformValueSeparator(ctx, height);
-      lanes.forEach(({ label, center }) => {
-        drawWaveformDbScale(ctx, width, height, height * center, height * laneAmplitude);
-        if (label) {
-          drawToolGuideLabel(ctx, label, width - 8, Math.round(height * center) - 6, 'right', { width, height });
-        }
-      });
-      drawBrightGuideBoundary(ctx, width, height);
-      return;
-    }
-
-    if (mode === 'spectroscope') {
-      const sampleRate = source?.sampleRate || 44100;
-      drawToolGuidesForSpectrum(ctx, width, height, sampleRate);
-      drawBrightGuideBoundary(ctx, width, height);
-      return;
-    }
-
-    if (mode === 'level') {
-      const channelCount = source?.channelCount || 2;
-      drawToolGuidesForLevelMeter(ctx, width, height, channelCount);
-      drawBrightGuideBoundary(ctx, width, height);
-    }
+    const ticks = getMeterTicks(mode, width, height, source);
+    ctx.save();
+    ctx.strokeStyle = guideColor;
+    setCrispGuideStroke(ctx);
+    ticks.horizontal.forEach(({ position }) => {
+      if (rulersOn && mode === 'spectroscope' && position === 0) return;
+      const x = snapGuideCoordinate(position + 0.5);
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, height);
+      ctx.stroke();
+    });
+    ticks.vertical.forEach(({ position }) => {
+      if (rulersOn && mode === 'spectroscope' && position === 0) return;
+      const y = snapGuideCoordinate(position + 0.5);
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(width, y);
+      ctx.stroke();
+    });
+    ctx.restore();
+    drawBrightGuideBoundary(ctx, width, height);
   }
 
   function drawIdleMeterFrame(canvas, ctx, source) {
@@ -977,6 +913,7 @@
 
   function redrawMeterFrame() {
     const source = getSourceConfig();
+    drawMeterRulers(source);
     const canvas = canvasByMode[activeMode];
     if (!canvas) return;
 
@@ -1004,6 +941,7 @@
     lastMeterFrameMs = timestamp - (elapsedMs % meterFrameIntervalMs);
 
     const source = getSourceConfig();
+    drawMeterRulers(source);
     const sourceIsActive = Boolean(source && (!source.isActive || source.isActive()));
     const releaseIsActive = Boolean(source && !sourceIsActive && (
       (activeMode === 'spectroscope' && spectrumDisplayState.levels.some((value) => value > 0))
@@ -1061,6 +999,8 @@
     colorButton.addEventListener('click', () => applyMulticolor(!multicolorOn));
   }
 
+  rulersButton.addEventListener('click', () => applyRulers(!rulersOn));
+
   if (typeof ResizeObserver !== 'undefined') {
     const resizeObserver = new ResizeObserver(() => {
       meterNeedsRedraw = true;
@@ -1088,6 +1028,10 @@
     applyMulticolor(event.detail?.enabled, false);
   });
 
+  window.addEventListener('pekosoft:rulers-global-change', (event) => {
+    applyRulers(event.detail?.enabled, false);
+  });
+
   const resetButton = document.getElementById('reset-button');
   if (resetButton) {
     resetButton.addEventListener('click', () => {
@@ -1098,6 +1042,7 @@
   applyMode(activeMode);
   applyGuides(guidesOn);
   applyBright(brightGuides);
+  applyRulers(rulersOn, false);
   applyMulticolor(multicolorOn, false);
   window.__pekosoftClearMeterFrame = clearMeterFrame;
   requestAnimationFrame(tick);

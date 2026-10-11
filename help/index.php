@@ -274,6 +274,14 @@
 </div>
 
 <div class="feature-row border">
+  <svg class="standard-image-help"><use href="/icons.svg#ruler"></use></svg>
+  <div class="justify">
+    <h1>Meter rulers <span class="object">button</span></h1>
+    The Rulers button in Meters shows or hides SVG scales independently of Guides. Spectroscope shows frequency and decibel rulers. Level shows a decibel ruler. Oscilloscope and Wavescope show decibel rulers, with channel labels for stereo Wavescope. Bright changes both guide and ruler contrast. The local Rulers button overrides the Settings Rulers option for Meters only. <span class="default">Default: on.</span>
+  </div>
+</div>
+
+<div class="feature-row border">
   <svg class="standard-image-help"><use href="/icons.svg#speech"></use></svg>
   <div class="justify"><h1>Speech <span class="object">button</span></h1>Speaks current Panel text. Press again to stop.</div>
 </div>

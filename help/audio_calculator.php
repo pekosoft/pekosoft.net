@@ -329,11 +329,11 @@
   </svg>
   <div class="justify">
     <h1>Points <span class="object">button</span></h1>
-    In Panel, the third tab lists every sample in the mono Timeline illustration's selected time window, starting at sample zero. Shows time in milliseconds, the original signal and quantized amplitudes in full scale (FS), and quantization error (quantized minus signal). Values are rounded for display. Small amplitudes and errors use scientific notation. Updates with the Bit depth, Sam. rate, Frequency, Amplitude and Window controls, regardless of which Timeline parts are visible. Copy, Download and Speech use the current Panel output.
+    In Panel, the Points button lists every sample in the mono Timeline illustration's selected time window, starting at sample zero. Shows time in milliseconds, the original signal and quantized amplitudes in full scale (FS), and quantization error (quantized minus signal). Values are rounded for display. Small amplitudes and errors use scientific notation. Updates with the Bit depth, Sam. rate, Frequency, Amplitude and Window controls, regardless of which Timeline parts are visible. Copy, Download and Speech use the current Panel output.
     <br><br>
     The summary shows RMS (root mean square) error, peak error (the largest absolute error), and SNR (signal-to-noise ratio, calculated as 20 times the base-10 logarithm of signal RMS divided by error RMS). RMS error is also shown in dBFS. These are calculated from the illustrated sample points, not from the entire hypothetical file. No error gives zero RMS and peak error, negative infinity error dBFS, and infinite SNR for a nonzero signal. SNR is undefined when the sampled signal is zero. Calculations use unrounded sample values, subject to JavaScript numeric precision. An RMS error below the smallest representable positive number is shown as an upper bound.
     <br><br>
-    In Timeline, the Points footer button shows or hides the quantized sample markers, independently of Signal and Steps. <span class="default">Default: on.</span>
+    In Timeline, the Points button shows or hides the quantized sample markers, independently of Signal and Steps. <span class="default">Default: on.</span>
   </div>
 </div>
 

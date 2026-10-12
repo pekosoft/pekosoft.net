@@ -655,6 +655,16 @@
       this.audioContext = new AudioContextClass();
       this.analyser = this.audioContext.createAnalyser();
       this.analyser.fftSize = 2048;
+      this.analyser.channelCountMode = "explicit";
+      this.analyser.channelCount = 2;
+      this.channelSplitter = this.audioContext.createChannelSplitter(2);
+      this.analyserLeft = this.audioContext.createAnalyser();
+      this.analyserRight = this.audioContext.createAnalyser();
+      this.analyserLeft.fftSize = 2048;
+      this.analyserRight.fftSize = 2048;
+      this.analyser.connect(this.channelSplitter);
+      this.channelSplitter.connect(this.analyserLeft, 0);
+      this.channelSplitter.connect(this.analyserRight, 1);
       this.compressor = this.audioContext.createDynamicsCompressor();
       this.compressor.threshold.value = -18;
       this.compressor.knee.value = 12;
@@ -670,6 +680,8 @@
 
       window.__pekosoftMetersSource = {
         analyser: this.analyser,
+        analyserLeft: this.analyserLeft,
+        analyserRight: this.analyserRight,
         channelCount: 2,
         sampleRate: this.audioContext.sampleRate,
         isActive: () => {

@@ -180,6 +180,7 @@ Pekosoft audio tools should follow one simple signal path unless a tool has a cl
 - Route audible voices through an analyser first, then through a master output gain, then to destination.
 - Use the master output gain as SOUND control (`1` on, `0` off), not by rewiring/disconnecting graph nodes.
 - Keep `window.__pekosoftMetersSource` pointed at the analyser so meters keep one shared contract.
+- Stereo Meters sources must also expose separate `analyserLeft` and `analyserRight` nodes. Level and Wavescope must read the corresponding channel, not the mixed analyser or a copy of the other channel. Upmix centered mono voices before splitting a stereo tool's output so both channels match the audible signal.
 - On any user gesture that starts sound or unmutes SOUND, perform a best-effort `AudioContext.resume()`.
 
 Reference path:

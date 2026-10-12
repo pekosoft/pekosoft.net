@@ -690,7 +690,7 @@
       return;
     }
 
-    source.analyser.getByteTimeDomainData(timeArray);
+    (source.analyserLeft || source.analyser).getByteTimeDomainData(timeArray);
     if (source.channelCount > 1 && source.analyserRight) {
       source.analyserRight.getByteTimeDomainData(timeArrayR);
     }

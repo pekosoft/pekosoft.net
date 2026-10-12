@@ -90,6 +90,18 @@
       </svg>
       <span class="button-text">Color</span>
     </button>
+    <button id="meters-save-button" class="square" title="Save bitmap" data-help-release="index" data-help-entry="Meter bitmap">
+      <svg class="icons">
+        <use href="/icons.svg#photo" />
+      </svg>
+      <span class="button-text">Save</span>
+    </button>
+    <button id="meters-copy-button" class="square" title="Copy bitmap" data-help-release="index" data-help-entry="Meter bitmap">
+      <svg class="icons">
+        <use href="/icons.svg#copy" />
+      </svg>
+      <span class="button-text">Copy</span>
+    </button>
   </div>
   <script src="/js/svg_timeline.js?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/js/svg_timeline.js'); ?>"></script>
 </div>

@@ -1055,19 +1055,9 @@ function setupPanelWrapToggle() {
 
 async function copyTimelineCanvasToClipboard(timelineContainer) {
   const bitmapBuilder = typeof window.buildTimelineBitmap === "function" ? window.buildTimelineBitmap : null;
-  if (!bitmapBuilder) return;
+  if (!bitmapBuilder) throw new Error("The bitmap export helper is unavailable.");
   const canvas = await bitmapBuilder(timelineContainer);
-  if (!canvas) return;
-  if (!navigator.clipboard || typeof navigator.clipboard.write !== "function" || typeof ClipboardItem === "undefined") return;
-
-  const blob = await new Promise((resolve) => {
-    canvas.toBlob((result) => resolve(result), "image/png");
-  });
-  if (!blob) return;
-
-  await navigator.clipboard.write([
-    new ClipboardItem({ "image/png": blob })
-  ]);
+  await copyBitmapToClipboard(canvas);
 }
 
 function setupTimelineCopyButton() {

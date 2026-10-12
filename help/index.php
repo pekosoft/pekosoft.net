@@ -306,6 +306,14 @@
 </div>
 
 <div class="feature-row border">
+  <svg class="standard-image-help"><use href="/icons.svg#photo"></use></svg>
+  <div class="justify">
+    <h1>Meter bitmap <span class="object">button</span></h1>
+    Save bitmap downloads the current Meters plot as a PNG. Copy bitmap copies the same image to the clipboard in supported browsers. The image includes the displayed trace, canvas guides and readouts, but not the outer SVG rulers, crosshair overlay or controls. Freeze first to capture a held frame. Saving and copying do not change the selected view, Freeze or audio playback.
+  </div>
+</div>
+
+<div class="feature-row border">
   <svg class="standard-image-help"><use href="/icons.svg#speech"></use></svg>
   <div class="justify"><h1>Speech <span class="object">button</span></h1>Speaks current Panel text. Press again to stop.</div>
 </div>

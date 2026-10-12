@@ -949,6 +949,24 @@ function triggerDownloadFromCanvas(canvas, filename) {
   link.click();
 }
 
+async function copyBitmapToClipboard(canvas) {
+  if (!canvas) throw new Error("No bitmap is available to copy.");
+  if (!navigator.clipboard || typeof navigator.clipboard.write !== "function" || typeof ClipboardItem === "undefined") {
+    throw new Error("This browser does not support copying bitmaps to the clipboard.");
+  }
+
+  const blob = new Promise((resolve, reject) => {
+    canvas.toBlob((result) => {
+      if (result) resolve(result);
+      else reject(new Error("Could not encode the bitmap as PNG."));
+    }, "image/png");
+  });
+
+  await navigator.clipboard.write([
+    new ClipboardItem({ "image/png": blob })
+  ]);
+}
+
 function buildTimelineBitmap(timelineContainer) {
   if (!timelineContainer) return null;
 

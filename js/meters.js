@@ -29,6 +29,8 @@
   const rulersButton = document.getElementById('tool-rulers-button');
   const freezeButton = document.getElementById('meters-freeze-button');
   const crosshairButton = document.getElementById('meters-crosshair-button');
+  const saveButton = document.getElementById('meters-save-button');
+  const copyButton = document.getElementById('meters-copy-button');
   const meterPlot = metersContainer.querySelector('.meter-plot');
   const crosshairOverlay = metersContainer.querySelector('.meters-crosshair');
   const rulerLayout = metersContainer.querySelector('.meters-ruler-layout');
@@ -1389,6 +1391,25 @@
   rulersButton.addEventListener('click', () => applyRulers(!rulersOn));
   freezeButton.addEventListener('click', () => applyFreeze(!frozen));
   crosshairButton.addEventListener('click', () => applyCrosshair(!crosshairOn));
+  saveButton.addEventListener('click', () => {
+    try {
+      const bitmap = buildTimelineBitmap(meterPlot);
+      if (!bitmap) throw new Error('No Meters bitmap is available to save.');
+      const now = new Date();
+      const date = [now.getDate(), now.getMonth() + 1, now.getFullYear()].map(value => String(value).padStart(2, '0')).join('-');
+      const time = [now.getHours(), now.getMinutes(), now.getSeconds()].map(value => String(value).padStart(2, '0')).join('-');
+      triggerDownloadFromCanvas(bitmap, `${release}_meters_${activeMode}_${date}_${time}.png`);
+    } catch (error) {
+      console.warn('Meters bitmap save failed:', error);
+    }
+  });
+  copyButton.addEventListener('click', async () => {
+    try {
+      await copyBitmapToClipboard(buildTimelineBitmap(meterPlot));
+    } catch (error) {
+      console.warn('Meters bitmap copy failed:', error);
+    }
+  });
   meterPlot.addEventListener('pointerdown', moveCrosshair);
   meterPlot.addEventListener('pointerenter', moveCrosshair);
   meterPlot.addEventListener('pointermove', moveCrosshair);

@@ -269,6 +269,10 @@ Sitewide reset is only allowed from the Settings page.
 
 Clearing local Guides, Bright, Rulers and Multicolor overrides restores their global defaults. Bright returns to off when the global Bright setting is off.
 
+## Meters Freeze
+
+The shared Meters Freeze button holds meter samples without stopping audio or recording. Guides, Bright, Rulers, Color, mode changes and resizing redraw from cached samples or Wavescope history without sampling or advancing the held signal. Freeze is transient, starts off and is released by tool Reset or page reload. Document its shared behavior in General Help rather than individual tool Help files.
+
 ## Panel editability rule
 
 Panels are always input fields.

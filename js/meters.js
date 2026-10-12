@@ -25,6 +25,7 @@
   const brightButton = document.getElementById('tool-bright-button');
   const colorButton = document.getElementById('tool-color-button');
   const rulersButton = document.getElementById('tool-rulers-button');
+  const freezeButton = document.getElementById('meters-freeze-button');
   const rulerLayout = metersContainer.querySelector('.meters-ruler-layout');
   const rulerCorner = document.getElementById('meters-ruler-corner');
   const horizontalRuler = document.getElementById('meters-horizontal-ruler');
@@ -343,10 +344,20 @@
   let brightGuides = getSavedBright();
   let rulersOn = getSavedRulers();
   let multicolorOn = getSavedMulticolor();
+  let frozen = false;
+  let frozenSource = null;
   let meterNeedsRedraw = true;
   let wasMeterActive = false;
   let meterPalette = null;
   const meterReleaseMs = 350;
+
+  function applyFreeze(nextState) {
+    frozen = !!nextState;
+    frozenSource = frozen ? getSourceConfig() : null;
+    freezeButton.classList.toggle('button-on', frozen);
+    freezeButton.setAttribute('aria-pressed', String(frozen));
+    meterNeedsRedraw = true;
+  }
 
   function applyMode(nextMode) {
     if (!availableModes.includes(nextMode)) return;
@@ -608,19 +619,23 @@
     drawSpectrumFromData(ctx, width, height, source, freqArray, true);
   }
 
-  function renderWavescope(ctx, canvas, source) {
+  function renderWavescope(ctx, canvas, source, sampleLive = true) {
     resizeCanvasToDisplaySize(canvas, ctx);
     const width = canvas.width / (window.devicePixelRatio || 1);
     const height = canvas.height / (window.devicePixelRatio || 1);
 
-    source.analyser.getByteTimeDomainData(timeArray);
-    if (source.channelCount > 1 && source.analyserRight) {
-      source.analyserRight.getByteTimeDomainData(timeArrayR);
-    }
-
     const pixelWidth = Math.max(1, Math.floor(width));
     if (wavescopeState.width !== pixelWidth) {
       resizeWavescopeHistory(pixelWidth);
+    }
+    if (!sampleLive) {
+      drawWavescopeFromHistory(ctx, width, height, source);
+      return;
+    }
+
+    source.analyser.getByteTimeDomainData(timeArray);
+    if (source.channelCount > 1 && source.analyserRight) {
+      source.analyserRight.getByteTimeDomainData(timeArrayR);
     }
 
     const nowMs = performance.now();
@@ -675,6 +690,10 @@
     }
     wavescopeState.lastPushMs = nowMs;
 
+    drawWavescopeFromHistory(ctx, width, height, source);
+  }
+
+  function drawWavescopeFromHistory(ctx, width, height, source) {
     ctx.clearRect(0, 0, width, height);
     drawGuidesBehind('wavescope', ctx, width, height, source, 0);
 
@@ -824,6 +843,7 @@
   }
 
   function clearMeterFrame(modeToClear = activeMode) {
+    if (frozen) return;
     if (modeToClear === 'wavescope') {
       const wavescopeCanvas = canvasByMode.wavescope;
       const wavescopeWidth = wavescopeCanvas
@@ -877,7 +897,7 @@
 
   function drawIdleMeterFrame(canvas, ctx, source) {
     if (source && activeMode === 'wavescope') {
-      renderWavescope(ctx, canvas, source);
+      renderWavescope(ctx, canvas, source, !frozen);
       return;
     }
 
@@ -912,7 +932,9 @@
   }
 
   function redrawMeterFrame() {
-    const source = getSourceConfig();
+    const source = frozen
+      ? (frozenSource ? { ...frozenSource, palette: getMeterPalette() } : null)
+      : getSourceConfig();
     drawMeterRulers(source);
     const canvas = canvasByMode[activeMode];
     if (!canvas) return;
@@ -933,6 +955,11 @@
   let lastMeterFrameMs = 0;
 
   function tick(timestamp) {
+    if (frozen) {
+      if (meterNeedsRedraw) redrawMeterFrame();
+      requestAnimationFrame(tick);
+      return;
+    }
     const elapsedMs = timestamp - lastMeterFrameMs;
     if (lastMeterFrameMs && elapsedMs < meterFrameIntervalMs) {
       requestAnimationFrame(tick);
@@ -1000,6 +1027,7 @@
   }
 
   rulersButton.addEventListener('click', () => applyRulers(!rulersOn));
+  freezeButton.addEventListener('click', () => applyFreeze(!frozen));
 
   if (typeof ResizeObserver !== 'undefined') {
     const resizeObserver = new ResizeObserver(() => {
@@ -1035,6 +1063,7 @@
   const resetButton = document.getElementById('reset-button');
   if (resetButton) {
     resetButton.addEventListener('click', () => {
+      applyFreeze(false);
       clearMeterFrame('wavescope');
     });
   }

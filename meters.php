@@ -46,6 +46,12 @@
   </div>
 
   <div class="module-footer wrapper colored">
+    <button id="meters-freeze-button" class="square" title="Toggle meter freeze" aria-label="Freeze" aria-pressed="false" data-help-release="index" data-help-entry="Meter freeze">
+      <svg class="icons">
+        <use href="/icons.svg#pause" />
+      </svg>
+      <span class="button-text">Freeze</span>
+    </button>
     <button id="tool-guides-button" class="square" title="Toggle guides">
       <svg class="icons">
         <use href="/icons.svg#guides" />

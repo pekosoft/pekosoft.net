@@ -274,6 +274,14 @@
 </div>
 
 <div class="feature-row border">
+  <svg class="standard-image-help"><use href="/icons.svg#pause"></use></svg>
+  <div class="justify">
+    <h1>Meter freeze <span class="object">button</span></h1>
+    The Freeze button in Meters holds the signal without stopping audio or recording. Guides, Bright, Rulers and Color remain adjustable while frozen. Press again to resume live updates. Reset and page reload release Freeze. <span class="default">Default: off.</span>
+  </div>
+</div>
+
+<div class="feature-row border">
   <svg class="standard-image-help"><use href="/icons.svg#ruler"></use></svg>
   <div class="justify">
     <h1>Meter rulers <span class="object">button</span></h1>

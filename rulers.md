@@ -31,6 +31,7 @@ All ruler and guide lines must use the same explicit SVG contract:
 
 ## Meters Canvas Ownership
 
+- Meter plots use a crosshair cursor, matching Player Timeline. Rulers and module controls retain their existing cursors.
 - Shared Meters owns its canvas backing dimensions and drawing transforms. Tool-specific Timeline resize routines must not resize meter canvases.
 - Meter backing dimensions scale with `devicePixelRatio`. Replacing them with CSS dimensions clears the signal and transform, causing flashing with live signals and shrunken guides with idle signals.
 - SVG rulers use the plot's CSS dimensions and must remain aligned with its full-size canvas guides after clicks, mode changes and Timeline resizing.

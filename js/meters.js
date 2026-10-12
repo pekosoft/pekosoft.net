@@ -752,7 +752,7 @@
     const scaleY = Math.max(0, height - 12);
     ctx.save();
     ctx.font = '12px Arial, sans-serif';
-    if (rulersOn) {
+    if (guidesOn) {
       ctx.strokeStyle = guideColor;
       ctx.fillStyle = guideColor;
       setCrispGuideStroke(ctx);

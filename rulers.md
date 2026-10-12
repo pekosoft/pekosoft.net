@@ -34,6 +34,11 @@ All ruler and guide lines must use the same explicit SVG contract:
 - Shared Meters owns its canvas backing dimensions and drawing transforms. Tool-specific Timeline resize routines must not resize meter canvases.
 - Meter backing dimensions scale with `devicePixelRatio`. Replacing them with CSS dimensions clears the signal and transform, causing flashing with live signals and shrunken guides with idle signals.
 - SVG rulers use the plot's CSS dimensions and must remain aligned with its full-size canvas guides after clicks, mode changes and Timeline resizing.
+- Oscilloscope's horizontal time scale uses its sample count and source sample rate, in milliseconds. Wavescope's horizontal time scale uses its 90 Hz capture history, in seconds before the newest signal at 0 s. Silence and paused updates do not advance that history.
+- Wavescope keeps fractional capture intervals between frames. Resizing preserves the newest history samples at their original time spacing instead of stretching them.
+- Level's left ruler names the channels with L and R for stereo or M for mono. Place labels beside their bars independently of guide ticks, with M above the mono center guide to avoid a line through the label.
+- Level's horizontal ruler separates its label band from its short tick band. Include each reference as a complete tick, value and guide group, or omit the entire group. Never leave an unlabeled tick or guide.
+- Include -3 dB among Level's reference values. Omit crowded groups based on label widths and groups within 12 CSS pixels of the left edge on its linear amplitude scale. Rulers and canvas guides must use the same filtered references, including after resizing.
 
 ## State Model
 

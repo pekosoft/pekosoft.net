@@ -146,12 +146,12 @@
     const lineWidth = 1 / dpr;
     ctx.save();
     ctx.fillStyle = guideColor;
-    if (!rulersOn || activeMode === 'oscilloscope' || activeMode === 'wavescope') {
+    if (!rulersOn) {
       ctx.fillRect(0, 0, width, lineWidth);
     }
     ctx.fillRect(Math.max(0, width - lineWidth), 0, lineWidth, height);
     ctx.fillRect(0, Math.max(0, height - lineWidth), width, lineWidth);
-    if (!rulersOn || activeMode === 'level') {
+    if (!rulersOn) {
       ctx.fillRect(0, 0, lineWidth, height);
     }
     ctx.restore();
@@ -179,17 +179,19 @@
       const gap = channels > 1 ? 4 : 0;
       const barHeight = Math.floor((height - gap * (channels - 1)) / channels);
       return {
-        horizontal: [-60, -40, -24, -12, -6, 0].map((db) => ({
-          position: Math.max(0, Math.min(width - 1, Math.floor(width * Math.pow(10, db / 20)))),
-          label: `${db} dB`,
-          labelPosition: db === 0 ? 'before' : 'after'
-        })),
-        vertical: [{ position: channels > 1 ? barHeight + gap / 2 : height / 2, label: '' }]
+        horizontal: getLevelHorizontalTicks(width),
+        vertical: [{ position: channels > 1 ? barHeight + gap / 2 : height / 2, label: '' }],
+        labels: channels > 1
+          ? [
+            { position: barHeight / 2, label: 'L' },
+            { position: barHeight + gap + barHeight / 2, label: 'R' }
+          ]
+          : [{ position: height / 2 - 9, label: 'M' }]
       };
     }
     const stereo = mode === 'wavescope' && (source?.channelCount || 1) > 1;
     return {
-      horizontal: [],
+      horizontal: getMeterTimeTicks(mode, width, source),
       vertical: stereo
         ? [
           ...getWaveformDbTicks(height, height * 0.25, height * 0.18, 'L'),
@@ -199,11 +201,66 @@
     };
   }
 
+  function getLevelHorizontalTicks(width) {
+    const ctx = canvasByMode.level.getContext('2d');
+    if (!ctx) return [];
+    width = Math.floor(width);
+    const ticks = [-60, -40, -24, -12, -6, -3, 0].map((db) => ({
+      position: Math.max(0, Math.min(width - 1, Math.floor(width * Math.pow(10, db / 20)))),
+      label: `${db} dB`,
+      labelPosition: db === 0 ? 'before' : 'after'
+    }));
+    ctx.save();
+    ctx.font = '12px Arial, sans-serif';
+    const endLabelLeft = width - 0.5 - 3 - ctx.measureText('0 dB').width;
+    let labelRight = 0;
+    const visibleTicks = ticks.filter((tick) => {
+      const labelWidth = ctx.measureText(tick.label).width;
+      const labelLeft = tick.labelPosition === 'before'
+        ? endLabelLeft
+        : tick.position + 0.5 + 3;
+      const labelEnd = labelLeft + labelWidth;
+      if (tick.position < 12 || labelLeft < labelRight + 4 || labelEnd > width
+        || (tick.labelPosition !== 'before' && labelEnd + 4 > endLabelLeft)) {
+        return false;
+      }
+      labelRight = labelEnd;
+      return true;
+    });
+    ctx.restore();
+    return visibleTicks;
+  }
+
+  function getMeterTimeTicks(mode, width, source) {
+    const scrolling = mode === 'wavescope';
+    const duration = scrolling
+      ? Math.max(0, Math.floor(width) - 1) / wavescopeState.sampleRateHz
+      : timeArray.length / (source?.sampleRate || 44100) * 1000;
+    if (duration <= 0) return [];
+
+    const targetStep = duration / Math.max(1, Math.floor(width / 80));
+    const magnitude = Math.pow(10, Math.floor(Math.log10(targetStep)));
+    const step = [1, 2, 5, 10].find((factor) => factor * magnitude >= targetStep) * magnitude;
+    const decimals = Math.max(0, -Math.floor(Math.log10(step)));
+    const ticks = [];
+    for (let i = 1; i * step < duration; i++) {
+      const value = i * step;
+      ticks.push({
+        position: scrolling
+          ? Math.floor(width) - 1 - value * wavescopeState.sampleRateHz
+          : value / duration * width,
+        label: `${scrolling ? '-' : ''}${value.toFixed(decimals)} ${scrolling ? 's' : 'ms'}`
+      });
+    }
+    if (scrolling) {
+      ticks.push({ position: Math.max(0, Math.floor(width) - 1), label: '0 s', labelPosition: 'before' });
+    }
+    return ticks.sort((a, b) => a.position - b.position);
+  }
+
   let rulerRenderKey = '';
 
   function drawMeterRulers(source) {
-    rulerLayout.classList.toggle('meters-horizontal-only', activeMode === 'level');
-    rulerLayout.classList.toggle('meters-vertical-only', activeMode === 'oscilloscope' || activeMode === 'wavescope');
     rulerLayout.classList.toggle('timeline-rulers-hidden', !rulersOn);
     const canvas = canvasByMode[activeMode];
     const { width, height } = canvas.getBoundingClientRect();
@@ -214,28 +271,33 @@
     if (!rulersOn) return;
 
     const ticks = getMeterTicks(activeMode, width, height, source);
+    verticalRuler.setAttribute('aria-label', activeMode === 'level' ? 'Meter channel ruler' : 'Meter decibel ruler');
     timelineUtils.syncViewBox(verticalRuler, 48, height);
     timelineUtils.drawVerticalRuler(verticalRuler, {
-      width: 48, height, ticks: ticks.vertical, color: guideColor, bright: brightGuides, sideBorders: true,
-      topBorder: activeMode === 'wavescope' && (source?.channelCount || 1) > 1
+      width: 48, height, ticks: ticks.vertical, labels: ticks.labels, color: guideColor, bright: brightGuides, sideBorders: true,
+      topBorder: false
     });
     timelineUtils.syncViewBox(horizontalRuler, width, 24);
     timelineUtils.drawHorizontalRuler(horizontalRuler, {
       width, height: 24, ticks: ticks.horizontal, color: guideColor,
-      bright: brightGuides, sideBorders: true, leftBorder: activeMode === 'level'
+      bright: brightGuides, sideBorders: true, leftBorder: false,
+      tickLength: activeMode === 'level' ? 5 : undefined,
+      labelBaseline: activeMode === 'level' ? 14 : undefined
     });
-    let labelRight = 0;
-    horizontalRuler.querySelectorAll('text').forEach((label) => {
-      const bounds = label.getBBox();
-      if (bounds.x < labelRight + 4 || bounds.x + bounds.width > width) {
-        label.remove();
-      } else {
-        labelRight = bounds.x + bounds.width;
-      }
-    });
+    if (activeMode !== 'level') {
+      let labelRight = 0;
+      horizontalRuler.querySelectorAll('text').forEach((label) => {
+        const bounds = label.getBBox();
+        if (bounds.x < labelRight + 4 || bounds.x + bounds.width > width) {
+          label.remove();
+        } else {
+          labelRight = bounds.x + bounds.width;
+        }
+      });
+    }
     timelineUtils.syncViewBox(rulerCorner, 48, 24);
     timelineUtils.drawRulerCorner(rulerCorner, {
-      width: 48, height: 24, color: guideColor, bright: brightGuides, title: 'dB', sideBorders: true
+      width: 48, height: 24, color: guideColor, bright: brightGuides, title: activeMode === 'level' ? '' : 'dB', sideBorders: true
     });
   }
 
@@ -311,28 +373,21 @@
     const oldMinR = wavescopeState.historyMinR;
     const oldMaxR = wavescopeState.historyMaxR;
 
-    const remap = (source) => {
+    const resize = (source) => {
       if (!oldSize || !Array.isArray(source) || !source.length) {
         return new Array(newSize).fill(null);
       }
 
-      const result = new Array(newSize);
-      const denom = Math.max(1, newSize - 1);
-      const sourceDenom = Math.max(1, oldSize - 1);
-
-      for (let i = 0; i < newSize; i++) {
-        const t = i / denom;
-        const sourceIndex = Math.round(t * sourceDenom);
-        result[i] = source[Math.max(0, Math.min(oldSize - 1, sourceIndex))];
-      }
-      return result;
+      return newSize > oldSize
+        ? new Array(newSize - oldSize).fill(null).concat(source)
+        : source.slice(oldSize - newSize);
     };
 
     wavescopeState.width = newSize;
-    wavescopeState.historyMinL = remap(oldMinL);
-    wavescopeState.historyMaxL = remap(oldMaxL);
-    wavescopeState.historyMinR = remap(oldMinR);
-    wavescopeState.historyMaxR = remap(oldMaxR);
+    wavescopeState.historyMinL = resize(oldMinL);
+    wavescopeState.historyMaxL = resize(oldMaxL);
+    wavescopeState.historyMinR = resize(oldMinR);
+    wavescopeState.historyMaxR = resize(oldMaxR);
   }
 
   let activeMode = getSavedMode();
@@ -354,6 +409,7 @@
   function applyFreeze(nextState) {
     frozen = !!nextState;
     frozenSource = frozen ? getSourceConfig() : null;
+    wavescopeState.lastPushMs = 0;
     freezeButton.classList.toggle('button-on', frozen);
     freezeButton.setAttribute('aria-pressed', String(frozen));
     meterNeedsRedraw = true;
@@ -361,6 +417,7 @@
 
   function applyMode(nextMode) {
     if (!availableModes.includes(nextMode)) return;
+    if (activeMode !== nextMode) wavescopeState.lastPushMs = 0;
     activeMode = nextMode;
     localStorage.setItem(`${storagePrefix}.mode`, activeMode);
 
@@ -517,7 +574,7 @@
   }
 
   function drawOscilloscopeFromData(ctx, width, height, data, source, shouldCache = false) {
-    drawGuidesBehind('oscilloscope', ctx, width, height, null, 0);
+    drawGuidesBehind('oscilloscope', ctx, width, height, source, 0);
 
     if (shouldCache) {
       pausedFrameState.oscilloscopeData.set(data);
@@ -641,7 +698,8 @@
     const nowMs = performance.now();
     const pushIntervalMs = 1000 / wavescopeState.sampleRateHz;
     const elapsedMs = wavescopeState.lastPushMs ? (nowMs - wavescopeState.lastPushMs) : pushIntervalMs;
-    const pushCount = Math.max(1, Math.min(8, Math.floor(elapsedMs / pushIntervalMs)));
+    const elapsedPushCount = Math.floor(elapsedMs / pushIntervalMs);
+    const pushCount = Math.min(8, elapsedPushCount);
 
     const getMinMaxNormalized = (array) => {
       let min = 255;
@@ -688,7 +746,9 @@
         wavescopeState.historyMaxR.push(wavescopeState.smoothMaxR);
       }
     }
-    wavescopeState.lastPushMs = nowMs;
+    wavescopeState.lastPushMs = isSilent || !wavescopeState.lastPushMs
+      ? nowMs
+      : wavescopeState.lastPushMs + elapsedPushCount * pushIntervalMs;
 
     drawWavescopeFromHistory(ctx, width, height, source);
   }
@@ -876,7 +936,7 @@
     ctx.strokeStyle = guideColor;
     setCrispGuideStroke(ctx);
     ticks.horizontal.forEach(({ position }) => {
-      if (rulersOn && mode === 'spectroscope' && position === 0) return;
+      if (rulersOn && position === 0) return;
       const x = snapGuideCoordinate(position + 0.5);
       ctx.beginPath();
       ctx.moveTo(x, 0);
@@ -884,7 +944,7 @@
       ctx.stroke();
     });
     ticks.vertical.forEach(({ position }) => {
-      if (rulersOn && mode === 'spectroscope' && position === 0) return;
+      if (rulersOn && mode !== 'level' && position === 0) return;
       const y = snapGuideCoordinate(position + 0.5);
       ctx.beginPath();
       ctx.moveTo(0, y);
@@ -976,6 +1036,7 @@
     ));
     const meterIsActive = sourceIsActive || releaseIsActive;
     const activityEnded = wasMeterActive && !meterIsActive;
+    if (activityEnded) wavescopeState.lastPushMs = 0;
     const canvas = canvasByMode[activeMode];
     if (canvas) {
       const ctx = canvas.getContext('2d');

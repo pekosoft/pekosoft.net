@@ -136,7 +136,7 @@
 
   function drawVerticalRuler(svg, options) {
     if (!svg) return;
-    const { width, height, title = '', titleY = 24, ticks = [], color, bright = false, sideBorders = false, topBorder = false, bottomBorder = true } = options || {};
+    const { width, height, title = '', titleY = 24, ticks = [], labels = [], color, bright = false, sideBorders = false, topBorder = false, bottomBorder = true } = options || {};
     const inset = sideBorders ? 0.5 : 0;
     const axisX = Math.max(0, width - inset);
     svg.replaceChildren();
@@ -185,6 +185,17 @@
         'text-anchor': 'end'
       }, title));
     }
+
+    labels.forEach(({ position, label }) => {
+      svg.appendChild(createRulerElement('text', {
+        x: Math.max(0, width - 8),
+        y: Math.max(10, Math.min(height - 5, position + 4)),
+        fill: color,
+        'font-size': 12,
+        'font-family': 'Arial, sans-serif',
+        'text-anchor': 'end'
+      }, label));
+    });
 
     ticks.forEach(({ position, label, labelPosition = 'above' }) => {
       const y = Math.max(0.5, Math.min(height + 0.5, Math.floor(position) + 0.5));
@@ -262,7 +273,8 @@
 
   function drawHorizontalRuler(svg, options) {
     if (!svg) return;
-    const { width, height, ticks = [], color, bright = false, axisPosition = 'bottom', sideBorders = false, leftBorder = true } = options || {};
+    const { width, height, ticks = [], color, bright = false, axisPosition = 'bottom', sideBorders = false, leftBorder = true,
+      tickLength, labelBaseline } = options || {};
     const inset = sideBorders ? 0.5 : 0;
     const axisAtTop = axisPosition === 'top';
     const axisY = axisAtTop ? inset : Math.max(0, height - inset);
@@ -296,13 +308,15 @@
         x1: x,
         y1: axisY,
         x2: x,
-        y2: axisAtTop ? Math.ceil(height * 0.55) : Math.min(axisY, Math.floor(height * 0.45)),
+        y2: tickLength === undefined
+          ? (axisAtTop ? Math.ceil(height * 0.55) : Math.min(axisY, Math.floor(height * 0.45)))
+          : axisY + (axisAtTop ? 1 : -1) * tickLength,
         stroke: color
       }));
       if (label === undefined || label === null || label === '') return;
       svg.appendChild(createRulerElement('text', {
         x: labelPosition === 'before' ? x - 3 : x + 3,
-        y: axisAtTop ? 12 : Math.max(10, height - 3),
+        y: labelBaseline === undefined ? (axisAtTop ? 12 : Math.max(10, height - 3)) : labelBaseline,
         fill: color,
         'font-size': 12,
         'font-family': 'Arial, sans-serif',

@@ -285,7 +285,7 @@
   <svg class="standard-image-help"><use href="/icons.svg#ruler"></use></svg>
   <div class="justify">
     <h1>Meter rulers <span class="object">button</span></h1>
-    The Rulers button in Meters shows or hides SVG scales independently of Guides. Spectroscope shows frequency and decibel rulers. Level shows a decibel ruler. Oscilloscope and Wavescope show decibel rulers, with channel labels for stereo Wavescope. Bright changes both guide and ruler contrast. The local Rulers button overrides the Settings Rulers option for Meters only. <span class="default">Default: on.</span>
+    The Rulers button in Meters shows or hides SVG scales independently of Guides. Spectroscope shows frequency and decibel rulers. Level shows a decibel ruler, including -3 dB where space permits, and channel labels, L and R for left and right or M for mono. Crowded Level references are omitted together with their ticks and guides. Oscilloscope shows milliseconds across its sample window. Wavescope shows seconds back from the newest captured signal at 0 s, excluding silence and paused updates. Both show decibel rulers, with channel labels for stereo Wavescope. Bright changes both guide and ruler contrast. The local Rulers button overrides the Settings Rulers option for Meters only. <span class="default">Default: on.</span>
   </div>
 </div>
 

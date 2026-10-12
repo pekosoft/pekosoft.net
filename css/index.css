@@ -791,20 +791,14 @@ html.modules-page body:not(.layout-two-columns) {
   border: 0;
 }
 
-#meters-container .meters-horizontal-only,
 #meters-container .timeline-rulers-hidden {
   grid-template-columns: 0 minmax(0, 1fr);
 }
 
-#meters-container .meters-vertical-only,
 #meters-container .timeline-rulers-hidden {
   grid-template-rows: 0 minmax(0, 1fr);
 }
 
-#meters-container .meters-horizontal-only .meters-ruler-corner,
-#meters-container .meters-horizontal-only .meters-vertical-ruler,
-#meters-container .meters-vertical-only .meters-ruler-corner,
-#meters-container .meters-vertical-only .meters-horizontal-ruler,
 #meters-container .timeline-rulers-hidden .meters-ruler-corner,
 #meters-container .timeline-rulers-hidden .meters-horizontal-ruler,
 #meters-container .timeline-rulers-hidden .meters-vertical-ruler {

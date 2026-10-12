@@ -26,6 +26,9 @@
   const colorButton = document.getElementById('tool-color-button');
   const rulersButton = document.getElementById('tool-rulers-button');
   const freezeButton = document.getElementById('meters-freeze-button');
+  const crosshairButton = document.getElementById('meters-crosshair-button');
+  const meterPlot = metersContainer.querySelector('.meter-plot');
+  const crosshairOverlay = metersContainer.querySelector('.meters-crosshair');
   const rulerLayout = metersContainer.querySelector('.meters-ruler-layout');
   const rulerCorner = document.getElementById('meters-ruler-corner');
   const horizontalRuler = document.getElementById('meters-horizontal-ruler');
@@ -399,12 +402,53 @@
   let brightGuides = getSavedBright();
   let rulersOn = getSavedRulers();
   let multicolorOn = getSavedMulticolor();
+  let crosshairOn = localStorage.getItem(`${storagePrefix}.crosshair`) === 'on';
+  let crosshairPointer = null;
   let frozen = false;
   let frozenSource = null;
   let meterNeedsRedraw = true;
   let wasMeterActive = false;
   let meterPalette = null;
   const meterReleaseMs = 350;
+
+  function updateCrosshair() {
+    if (!crosshairOn || !crosshairPointer) {
+      crosshairOverlay.hidden = true;
+      return;
+    }
+    const rect = meterPlot.getBoundingClientRect();
+    const x = crosshairPointer.x - rect.left;
+    const y = crosshairPointer.y - rect.top;
+    if (x < 0 || y < 0 || x >= rect.width || y >= rect.height) {
+      crosshairOverlay.hidden = true;
+      return;
+    }
+    crosshairOverlay.style.setProperty('--meter-crosshair-x', `${Math.floor(x)}px`);
+    crosshairOverlay.style.setProperty('--meter-crosshair-y', `${Math.floor(y)}px`);
+    crosshairOverlay.hidden = false;
+  }
+
+  function applyCrosshair(nextState, persist = true) {
+    crosshairOn = !!nextState;
+    if (persist) {
+      localStorage.setItem(`${storagePrefix}.crosshair`, crosshairOn ? 'on' : 'off');
+    }
+    crosshairButton.classList.toggle('button-on', crosshairOn);
+    crosshairButton.setAttribute('aria-pressed', String(crosshairOn));
+    updateCrosshair();
+  }
+
+  function moveCrosshair(event) {
+    crosshairPointer = event.pointerType === 'touch'
+      ? null
+      : { x: event.clientX, y: event.clientY };
+    updateCrosshair();
+  }
+
+  function clearCrosshair() {
+    crosshairPointer = null;
+    updateCrosshair();
+  }
 
   function applyFreeze(nextState) {
     frozen = !!nextState;
@@ -1089,10 +1133,18 @@
 
   rulersButton.addEventListener('click', () => applyRulers(!rulersOn));
   freezeButton.addEventListener('click', () => applyFreeze(!frozen));
+  crosshairButton.addEventListener('click', () => applyCrosshair(!crosshairOn));
+  meterPlot.addEventListener('pointerenter', moveCrosshair);
+  meterPlot.addEventListener('pointermove', moveCrosshair);
+  meterPlot.addEventListener('pointerleave', clearCrosshair);
+  meterPlot.addEventListener('pointercancel', clearCrosshair);
+  window.addEventListener('blur', clearCrosshair);
+  window.addEventListener('scroll', updateCrosshair, true);
 
   if (typeof ResizeObserver !== 'undefined') {
     const resizeObserver = new ResizeObserver(() => {
       meterNeedsRedraw = true;
+      updateCrosshair();
     });
     Object.values(canvasByMode).forEach((canvas) => {
       if (canvas) resizeObserver.observe(canvas);
@@ -1100,6 +1152,7 @@
   } else {
     window.addEventListener('resize', () => {
       meterNeedsRedraw = true;
+      updateCrosshair();
     });
   }
 
@@ -1124,6 +1177,8 @@
   const resetButton = document.getElementById('reset-button');
   if (resetButton) {
     resetButton.addEventListener('click', () => {
+      localStorage.removeItem(`${storagePrefix}.crosshair`);
+      applyCrosshair(false, false);
       applyFreeze(false);
       clearMeterFrame('wavescope');
     });
@@ -1134,6 +1189,9 @@
   applyBright(brightGuides);
   applyRulers(rulersOn, false);
   applyMulticolor(multicolorOn, false);
+  applyCrosshair(crosshairOn, false);
   window.__pekosoftClearMeterFrame = clearMeterFrame;
   requestAnimationFrame(tick);
 })();
+
+// END OF FILE

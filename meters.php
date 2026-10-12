@@ -41,6 +41,7 @@
         <canvas id="frequency-analyzer" class="meter-canvas" width="4096" height="512"></canvas>
         <canvas id="wavescope" class="meter-canvas" width="4096" height="256"></canvas>
         <canvas id="waveform" class="meter-canvas active" width="4096" height="256"></canvas>
+        <div class="meters-crosshair" aria-hidden="true" hidden></div>
       </div>
     </div>
   </div>
@@ -51,6 +52,12 @@
         <use href="/icons.svg#pause" />
       </svg>
       <span class="button-text">Freeze</span>
+    </button>
+    <button id="meters-crosshair-button" class="square" title="Toggle crosshair" aria-label="Crosshair" aria-pressed="false" data-help-release="index" data-help-entry="Meter crosshair">
+      <svg class="icons">
+        <use href="/icons.svg#crosshair" />
+      </svg>
+      <span class="button-text">Crosshair</span>
     </button>
     <button id="tool-guides-button" class="square" title="Toggle guides">
       <svg class="icons">

@@ -32,6 +32,7 @@ All ruler and guide lines must use the same explicit SVG contract:
 ## Meters Canvas Ownership
 
 - Meter plots use a crosshair cursor, matching Player Timeline. Rulers and module controls retain their existing cursors.
+- The local Crosshair toggle adds pointer-following, 1 px `--grey2` lines within the plot. Use a non-interactive overlay rather than drawing into or resizing the meter canvases, so the lines remain responsive during Freeze. Hide them outside the plot and keep the crosshair cursor regardless of the toggle. Save the setting per tool, default off, and clear it on Reset.
 - Shared Meters owns its canvas backing dimensions and drawing transforms. Tool-specific Timeline resize routines must not resize meter canvases.
 - Meter backing dimensions scale with `devicePixelRatio`. Replacing them with CSS dimensions clears the signal and transform, causing flashing with live signals and shrunken guides with idle signals.
 - SVG rulers use the plot's CSS dimensions and must remain aligned with its full-size canvas guides after clicks, mode changes and Timeline resizing.
@@ -62,6 +63,7 @@ Verify each ruler-enabled timeline (Audio Calculator, BPM Calculator, Metronome,
 | Selecting or dragging across labels | Text associated with guides and rulers stays unselected in every Meters mode and Timeline layout. Seeking, dragging and scrolling still work |
 | 100%, high-DPI, and browser zoom | Lines retain a single-pixel visual weight |
 | Clicking meter plots or reselecting a meter mode | Live, paused and idle meters retain their full-size signals and guides without clearing the canvas |
+| Crosshair on/off, all Meters modes and Freeze | Grey2 lines follow the pointer only inside the plot, stay 1 px thick, and do not affect signals, guides, rulers or the crosshair cursor |
 | Player Timeline resized or Rulers toggled at high DPI | Meters retains its DPI-scaled backing dimensions and drawing transform |
 | Playhead on/off | Full-height playhead appears only when enabled |
 | Follow on, manual scroll | Manual horizontal navigation disables Follow |

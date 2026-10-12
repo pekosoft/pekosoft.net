@@ -146,22 +146,37 @@
     }));
   }
 
-  function drawBrightGuideBoundary(ctx, width, height) {
+  function drawBrightGuideBoundary(ctx, width, height, completeFrame = false) {
     if (!brightGuides) return;
 
     const dpr = window.devicePixelRatio || 1;
     const lineWidth = 1 / dpr;
     ctx.save();
     ctx.fillStyle = guideColor;
-    if (!rulersOn) {
+    if (!rulersOn || completeFrame) {
       ctx.fillRect(0, 0, width, lineWidth);
     }
     ctx.fillRect(Math.max(0, width - lineWidth), 0, lineWidth, height);
     ctx.fillRect(0, Math.max(0, height - lineWidth), width, lineWidth);
-    if (!rulersOn) {
+    if (!rulersOn || completeFrame) {
       ctx.fillRect(0, 0, lineWidth, height);
     }
     ctx.restore();
+  }
+
+  function buildMeterBitmap() {
+    const bitmap = buildTimelineBitmap(meterPlot);
+    if (!bitmap) throw new Error('No Meters bitmap is available to export.');
+    if (guidesOn && brightGuides) {
+      const ctx = bitmap.getContext('2d');
+      if (!ctx) throw new Error('Could not draw the Meters bitmap outline.');
+      const dpr = window.devicePixelRatio || 1;
+      ctx.save();
+      ctx.scale(dpr, dpr);
+      drawBrightGuideBoundary(ctx, bitmap.width / dpr, bitmap.height / dpr, true);
+      ctx.restore();
+    }
+    return bitmap;
   }
 
   function getMeterTicks(mode, width, height, source) {
@@ -1393,8 +1408,7 @@
   crosshairButton.addEventListener('click', () => applyCrosshair(!crosshairOn));
   saveButton.addEventListener('click', () => {
     try {
-      const bitmap = buildTimelineBitmap(meterPlot);
-      if (!bitmap) throw new Error('No Meters bitmap is available to save.');
+      const bitmap = buildMeterBitmap();
       const now = new Date();
       const date = [now.getDate(), now.getMonth() + 1, now.getFullYear()].map(value => String(value).padStart(2, '0')).join('-');
       const time = [now.getHours(), now.getMinutes(), now.getSeconds()].map(value => String(value).padStart(2, '0')).join('-');
@@ -1405,7 +1419,7 @@
   });
   copyButton.addEventListener('click', async () => {
     try {
-      await copyBitmapToClipboard(buildTimelineBitmap(meterPlot));
+      await copyBitmapToClipboard(buildMeterBitmap());
     } catch (error) {
       console.warn('Meters bitmap copy failed:', error);
     }

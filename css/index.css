@@ -793,6 +793,10 @@ html.modules-page body:not(.layout-two-columns) {
   cursor: crosshair;
 }
 
+#meters-container .meter-plot.meters-crosshair-on {
+  touch-action: pinch-zoom;
+}
+
 #meters-container .meters-crosshair {
   position: absolute;
   inset: 0;

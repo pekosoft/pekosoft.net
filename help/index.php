@@ -285,7 +285,7 @@
   <svg class="standard-image-help"><use href="/icons.svg#crosshair"></use></svg>
   <div class="justify">
     <h1>Meter crosshair <span class="object">button</span></h1>
-    Shows one-pixel grey crosshair lines across the Meters plot at the pointer. The lines follow the pointer while it is over the plot, including while frozen, and hide when it leaves. Crosshair is independent of Guides, Bright and Rulers. The cursor always stays crosshair, even when the lines are off. The setting is saved for the current tool. Reset turns it off. <span class="default">Default: off.</span>
+    Shows one-pixel grey crosshair lines across the Meters plot. With a mouse, the lines follow the pointer and hide when it leaves. On phone, tap or drag the plot to position the lines. They stay after you lift your finger, and pinch zoom remains available. Crosshair also works while frozen and is independent of Guides, Bright and Rulers. The cursor always stays crosshair, even when the lines are off. The setting is saved for the current tool. Reset turns it off. <span class="default">Default: off.</span>
   </div>
 </div>
 

@@ -417,8 +417,9 @@
       return;
     }
     const rect = meterPlot.getBoundingClientRect();
-    const x = crosshairPointer.x - rect.left;
-    const y = crosshairPointer.y - rect.top;
+    const isTouch = crosshairPointer.pointerType === 'touch';
+    const x = isTouch ? crosshairPointer.x * rect.width : crosshairPointer.x - rect.left;
+    const y = isTouch ? crosshairPointer.y * rect.height : crosshairPointer.y - rect.top;
     if (x < 0 || y < 0 || x >= rect.width || y >= rect.height) {
       crosshairOverlay.hidden = true;
       return;
@@ -435,14 +436,28 @@
     }
     crosshairButton.classList.toggle('button-on', crosshairOn);
     crosshairButton.setAttribute('aria-pressed', String(crosshairOn));
+    meterPlot.classList.toggle('meters-crosshair-on', crosshairOn);
+    if (!crosshairOn && crosshairPointer?.pointerType === 'touch') crosshairPointer = null;
     updateCrosshair();
   }
 
   function moveCrosshair(event) {
-    crosshairPointer = event.pointerType === 'touch'
-      ? null
-      : { x: event.clientX, y: event.clientY };
+    if (event.pointerType === 'touch') {
+      if (!crosshairOn || !event.isPrimary) return;
+      const rect = meterPlot.getBoundingClientRect();
+      crosshairPointer = {
+        x: (event.clientX - rect.left) / rect.width,
+        y: (event.clientY - rect.top) / rect.height,
+        pointerType: 'touch'
+      };
+    } else {
+      crosshairPointer = { x: event.clientX, y: event.clientY, pointerType: event.pointerType };
+    }
     updateCrosshair();
+  }
+
+  function leaveCrosshair(event) {
+    if (event.pointerType !== 'touch') clearCrosshair();
   }
 
   function clearCrosshair() {
@@ -1134,9 +1149,10 @@
   rulersButton.addEventListener('click', () => applyRulers(!rulersOn));
   freezeButton.addEventListener('click', () => applyFreeze(!frozen));
   crosshairButton.addEventListener('click', () => applyCrosshair(!crosshairOn));
+  meterPlot.addEventListener('pointerdown', moveCrosshair);
   meterPlot.addEventListener('pointerenter', moveCrosshair);
   meterPlot.addEventListener('pointermove', moveCrosshair);
-  meterPlot.addEventListener('pointerleave', clearCrosshair);
+  meterPlot.addEventListener('pointerleave', leaveCrosshair);
   meterPlot.addEventListener('pointercancel', clearCrosshair);
   window.addEventListener('blur', clearCrosshair);
   window.addEventListener('scroll', updateCrosshair, true);

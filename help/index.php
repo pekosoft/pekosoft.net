@@ -282,6 +282,14 @@
 </div>
 
 <div class="feature-row border">
+  <svg class="standard-image-help"><use href="/icons.svg#skip_right"></use></svg>
+  <div class="justify">
+    <h1>Next meter <span class="object">button</span></h1>
+    Selects the next Meters view in tab order: Spectroscope, Level, Oscilloscope, Wavescope and Phasescope, then back to Spectroscope. This works like selecting the corresponding tab and saves the selected view for the current tool. Freeze and audio playback are unchanged.
+  </div>
+</div>
+
+<div class="feature-row border">
   <svg class="standard-image-help"><use href="/icons.svg#crosshair"></use></svg>
   <div class="justify">
     <h1>Meter crosshair <span class="object">button</span></h1>

@@ -29,6 +29,7 @@
   const rulersButton = document.getElementById('tool-rulers-button');
   const freezeButton = document.getElementById('meters-freeze-button');
   const crosshairButton = document.getElementById('meters-crosshair-button');
+  const nextButton = document.getElementById('meters-next-button');
   const saveButton = document.getElementById('meters-save-button');
   const copyButton = document.getElementById('meters-copy-button');
   const meterPlot = metersContainer.querySelector('.meter-plot');
@@ -1389,6 +1390,10 @@
   Object.entries(buttonByMode).forEach(([mode, button]) => {
     if (!button) return;
     button.addEventListener('click', () => applyMode(mode));
+  });
+
+  nextButton.addEventListener('click', () => {
+    applyMode(availableModes[(availableModes.indexOf(activeMode) + 1) % availableModes.length]);
   });
 
   if (guidesButton) {

@@ -31,6 +31,12 @@
         </svg>
         <span class="button-text">Phasescope</span>
       </button>
+      <button id="meters-next-button" class="square" title="Next meter" data-help-release="index" data-help-entry="Next meter">
+        <svg class="icons">
+          <use href="/icons.svg#skip_right" />
+        </svg>
+        <span class="button-text">Next</span>
+      </button>
     </div>
     <div class="timeline-ruler-layout meters-ruler-layout">
       <div class="meters-ruler-corner">

@@ -46,7 +46,7 @@
   </div>
 
   <div class="module-footer wrapper colored">
-    <button id="meters-freeze-button" class="square" title="Toggle meter freeze" aria-label="Freeze" aria-pressed="false" data-help-release="index" data-help-entry="Meter freeze">
+    <button id="meters-freeze-button" class="square" title="Toggle freeze" aria-label="Freeze" aria-pressed="false" data-help-release="index" data-help-entry="Meter freeze">
       <svg class="icons">
         <use href="/icons.svg#pause" />
       </svg>
@@ -64,13 +64,13 @@
       </svg>
       <span class="button-text">Bright</span>
     </button>
-    <button id="tool-rulers-button" class="square" title="Toggle meter rulers" data-help-release="index" data-help-entry="Meter rulers">
+    <button id="tool-rulers-button" class="square" title="Toggle rulers" data-help-release="index" data-help-entry="Meter rulers">
       <svg class="icons">
         <use href="/icons.svg#ruler" />
       </svg>
       <span class="button-text">Rulers</span>
     </button>
-    <button id="tool-color-button" class="square" title="Toggle multicolor meters">
+    <button id="tool-color-button" class="square" title="Toggle multicolor">
       <svg class="icons">
         <use href="/icons.svg#alpha" />
       </svg>

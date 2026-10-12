@@ -25,6 +25,12 @@
         </svg>
         <span class="button-text">Wavescope</span>
       </button>
+      <button id="tool-phasescope-button" class="square" title="Phasescope" data-help-release="index" data-help-entry="Phasescope">
+        <svg class="icons">
+          <use href="/icons.svg?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/icons.svg'); ?>#phasescope" />
+        </svg>
+        <span class="button-text">Phasescope</span>
+      </button>
     </div>
     <div class="timeline-ruler-layout meters-ruler-layout">
       <div class="meters-ruler-corner">
@@ -41,6 +47,7 @@
         <canvas id="frequency-analyzer" class="meter-canvas" width="4096" height="512"></canvas>
         <canvas id="wavescope" class="meter-canvas" width="4096" height="256"></canvas>
         <canvas id="waveform" class="meter-canvas active" width="4096" height="256"></canvas>
+        <canvas id="phasescope" class="meter-canvas" width="4096" height="256" role="img" aria-label="Stereo phasescope with phase correlation"></canvas>
         <div class="meters-crosshair" aria-hidden="true" hidden></div>
       </div>
     </div>

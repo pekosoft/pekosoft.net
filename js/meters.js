@@ -11,14 +11,16 @@
     spectroscope: document.getElementById('frequency-analyzer'),
     level: document.getElementById('volume-meter'),
     oscilloscope: document.getElementById('waveform'),
-    wavescope: document.getElementById('wavescope')
+    wavescope: document.getElementById('wavescope'),
+    phasescope: document.getElementById('phasescope')
   };
 
   const buttonByMode = {
     spectroscope: document.getElementById('tool-spectroscope-button'),
     level: document.getElementById('tool-level-button'),
     oscilloscope: document.getElementById('tool-oscilloscope-button'),
-    wavescope: document.getElementById('tool-wavescope-button')
+    wavescope: document.getElementById('tool-wavescope-button'),
+    phasescope: document.getElementById('tool-phasescope-button')
   };
 
   const guidesButton = document.getElementById('tool-guides-button');
@@ -161,6 +163,20 @@
   }
 
   function getMeterTicks(mode, width, height, source) {
+    if (mode === 'phasescope') {
+      const { centerX, centerY, radius } = getPhasescopeGeometry(width, height);
+      return {
+        horizontal: [-1, 0, 1].map((value) => ({
+          position: centerX + value * radius,
+          label: value > 0 ? '+1' : `${value}`
+        })),
+        vertical: [1, 0, -1].map((value) => ({
+          position: centerY - value * radius,
+          label: value > 0 ? '+1' : `${value}`,
+          labelPosition: value === 1 ? 'below' : 'above'
+        }))
+      };
+    }
     if (mode === 'spectroscope') {
       const sampleRate = source?.sampleRate || 44100;
       return {
@@ -274,7 +290,11 @@
     if (!rulersOn) return;
 
     const ticks = getMeterTicks(activeMode, width, height, source);
-    verticalRuler.setAttribute('aria-label', activeMode === 'level' ? 'Meter channel ruler' : 'Meter decibel ruler');
+    verticalRuler.setAttribute('aria-label', activeMode === 'level'
+      ? 'Meter channel ruler'
+      : activeMode === 'phasescope' ? 'Meter mid amplitude ruler' : 'Meter decibel ruler');
+    horizontalRuler.setAttribute('aria-label', activeMode === 'phasescope'
+      ? 'Meter side amplitude ruler' : 'Meter horizontal ruler');
     timelineUtils.syncViewBox(verticalRuler, 48, height);
     timelineUtils.drawVerticalRuler(verticalRuler, {
       width: 48, height, ticks: ticks.vertical, labels: ticks.labels, color: guideColor, bright: brightGuides, sideBorders: true,
@@ -300,7 +320,8 @@
     }
     timelineUtils.syncViewBox(rulerCorner, 48, 24);
     timelineUtils.drawRulerCorner(rulerCorner, {
-      width: 48, height: 24, color: guideColor, bright: brightGuides, title: activeMode === 'level' ? '' : 'dB', sideBorders: true
+      width: 48, height: 24, color: guideColor, bright: brightGuides,
+      title: activeMode === 'level' ? '' : activeMode === 'phasescope' ? 'M/S' : 'dB', sideBorders: true
     });
   }
 
@@ -327,6 +348,17 @@
   const spectrumDisplayState = {
     levels: new Float32Array(32),
     lastUpdateMs: 0
+  };
+
+  const phasescopeState = {
+    left: new Float32Array(0),
+    right: new Float32Array(0),
+    ready: false,
+    correlation: null,
+    correlationMin: null,
+    correlationMax: null,
+    correlationHistory: [],
+    invalidSource: null
   };
 
   const wavescopeState = {
@@ -630,6 +662,167 @@
       isStopped: typeof source.isStopped === 'function' ? source.isStopped : null,
       palette: getMeterPalette()
     };
+  }
+
+  function getPhasescopeGeometry(width, height) {
+    const plotTop = Math.min(32, height / 2);
+    const plotHeight = Math.max(0, height - plotTop * 2);
+    return {
+      centerX: width / 2,
+      centerY: height / 2,
+      radius: Math.max(0, (Math.min(width, plotHeight) - 16) / 2),
+      plotTop,
+      plotHeight
+    };
+  }
+
+  function getPhaseCorrelation(left, right) {
+    const count = Math.min(left.length, right.length);
+    const leftOffset = left.length - count;
+    const rightOffset = right.length - count;
+    let leftEnergy = 0;
+    let rightEnergy = 0;
+    let product = 0;
+    for (let i = 0; i < count; i++) {
+      const l = left[leftOffset + i];
+      const r = right[rightOffset + i];
+      leftEnergy += l * l;
+      rightEnergy += r * r;
+      product += l * r;
+    }
+    const denominator = Math.sqrt(leftEnergy * rightEnergy);
+    return denominator > 0 ? Math.max(-1, Math.min(1, product / denominator)) : null;
+  }
+
+  function updatePhaseCorrelation(correlation, nowMs = performance.now()) {
+    phasescopeState.correlation = correlation;
+    phasescopeState.correlationMin = correlation;
+    phasescopeState.correlationMax = correlation;
+    if (correlation === null) {
+      phasescopeState.correlationHistory.length = 0;
+      return;
+    }
+    const history = phasescopeState.correlationHistory;
+    while (history.length && history[0].time <= nowMs - 1000) history.shift();
+    history.push({ time: nowMs, value: correlation });
+    for (const sample of history) {
+      phasescopeState.correlationMin = Math.min(phasescopeState.correlationMin, sample.value);
+      phasescopeState.correlationMax = Math.max(phasescopeState.correlationMax, sample.value);
+    }
+  }
+
+  function drawPhasescopeFromData(ctx, width, height, source) {
+    const { centerX, centerY, radius, plotTop, plotHeight } = getPhasescopeGeometry(width, height);
+    ctx.clearRect(0, 0, width, height);
+    drawGuidesBehind('phasescope', ctx, width, height, source);
+    const paletteSource = source || { palette: getMeterPalette() };
+    if (source && phasescopeState.ready) {
+      const count = Math.min(phasescopeState.left.length, phasescopeState.right.length);
+      const leftOffset = phasescopeState.left.length - count;
+      const rightOffset = phasescopeState.right.length - count;
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(0, plotTop, width, plotHeight);
+      ctx.clip();
+      ctx.lineWidth = 1;
+      if (multicolorOn && radius > 0) {
+        const gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, radius);
+        gradient.addColorStop(0, getMeterColorStyle(source, 0, true));
+        gradient.addColorStop(1, getMeterColorStyle(source, 1, true));
+        ctx.strokeStyle = gradient;
+      } else {
+        ctx.strokeStyle = getMeterColorStyle(source, 0);
+      }
+      ctx.beginPath();
+      for (let i = 0; i < count; i++) {
+        const left = phasescopeState.left[leftOffset + i];
+        const right = phasescopeState.right[rightOffset + i];
+        const x = centerX + (right - left) * radius / 2;
+        const y = centerY - (left + right) * radius / 2;
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    const correlation = source && phasescopeState.ready ? phasescopeState.correlation : null;
+    const scaleLeft = Math.min(8, width / 2);
+    const scaleWidth = Math.max(0, width - scaleLeft * 2);
+    const scaleY = Math.max(0, height - 12);
+    ctx.save();
+    ctx.font = '12px Arial, sans-serif';
+    if (rulersOn) {
+      ctx.strokeStyle = guideColor;
+      ctx.fillStyle = guideColor;
+      setCrispGuideStroke(ctx);
+      ctx.beginPath();
+      ctx.moveTo(scaleLeft, snapGuideCoordinate(scaleY));
+      ctx.lineTo(scaleLeft + scaleWidth, snapGuideCoordinate(scaleY));
+      for (let i = 0; i <= 10; i++) {
+        const x = snapGuideCoordinate(scaleLeft + scaleWidth * i / 10);
+        ctx.moveTo(x, scaleY - 3);
+        ctx.lineTo(x, scaleY + 4);
+      }
+      ctx.stroke();
+      ctx.textAlign = 'left';
+      ctx.fillText('-1', scaleLeft, scaleY - 8);
+      ctx.textAlign = 'right';
+      ctx.fillText('+1', scaleLeft + scaleWidth, scaleY - 8);
+      ctx.textAlign = 'center';
+      ctx.fillText('0', centerX, scaleY - 8);
+    }
+    const value = correlation === null ? '-' : `${correlation >= 0 ? '+' : ''}${correlation.toFixed(2)}`;
+    const { primary, secondary } = paletteSource.palette;
+    const blue = `rgb(${primary.r}, ${primary.g}, ${primary.b})`;
+    const magenta = `rgb(${secondary.r}, ${secondary.g}, ${secondary.b})`;
+    ctx.fillStyle = blue;
+    ctx.textAlign = 'center';
+    ctx.fillText(source && phasescopeState.invalidSource
+      ? 'Stereo unavailable'
+      : width >= 180 ? `Correlation: ${value}` : value, centerX, 16);
+    if (correlation !== null) {
+      const drawCursor = (value, color) => {
+        ctx.fillStyle = color;
+        const x = scaleLeft + (value + 1) / 2 * scaleWidth;
+        ctx.fillRect(Math.floor(x), scaleY + 1, 1, 8);
+      };
+      drawCursor(phasescopeState.correlationMin, magenta);
+      drawCursor(phasescopeState.correlationMax, magenta);
+      drawCursor(correlation, blue);
+    }
+    ctx.restore();
+  }
+
+  function renderPhasescope(ctx, canvas, source) {
+    resizeCanvasToDisplaySize(canvas, ctx);
+    const width = canvas.width / (window.devicePixelRatio || 1);
+    const height = canvas.height / (window.devicePixelRatio || 1);
+    const stereo = source.channelCount > 1;
+    const leftAnalyser = stereo ? source.analyserLeft : source.analyserLeft || source.analyser;
+    const rightAnalyser = stereo ? source.analyserRight : leftAnalyser;
+    if (!leftAnalyser || !rightAnalyser) {
+      if (phasescopeState.invalidSource !== source.analyser) {
+        console.error('Meters Phasescope requires separate left and right analysers for stereo audio.');
+      }
+      phasescopeState.invalidSource = source.analyser;
+      phasescopeState.ready = false;
+      updatePhaseCorrelation(null);
+    } else {
+      phasescopeState.invalidSource = null;
+      if (phasescopeState.left.length !== leftAnalyser.fftSize) {
+        phasescopeState.left = new Float32Array(leftAnalyser.fftSize);
+      }
+      if (phasescopeState.right.length !== rightAnalyser.fftSize) {
+        phasescopeState.right = new Float32Array(rightAnalyser.fftSize);
+      }
+      leftAnalyser.getFloatTimeDomainData(phasescopeState.left);
+      if (stereo) rightAnalyser.getFloatTimeDomainData(phasescopeState.right);
+      else phasescopeState.right.set(phasescopeState.left);
+      updatePhaseCorrelation(getPhaseCorrelation(phasescopeState.left, phasescopeState.right));
+      phasescopeState.ready = true;
+    }
+    drawPhasescopeFromData(ctx, width, height, source);
   }
 
   function drawOscilloscopeFromData(ctx, width, height, data, source, shouldCache = false) {
@@ -963,6 +1156,12 @@
 
   function clearMeterFrame(modeToClear = activeMode) {
     if (frozen) return;
+    if (modeToClear === 'phasescope') {
+      phasescopeState.ready = false;
+      updatePhaseCorrelation(null);
+      phasescopeState.invalidSource = null;
+      meterNeedsRedraw = true;
+    }
     if (modeToClear === 'wavescope') {
       const wavescopeCanvas = canvasByMode.wavescope;
       const wavescopeWidth = wavescopeCanvas
@@ -987,6 +1186,35 @@
 
   function drawGuidesBehind(mode, ctx, width, height, source) {
     if (!guidesOn) {
+      return;
+    }
+
+    if (mode === 'phasescope') {
+      const { centerX, centerY, radius } = getPhasescopeGeometry(width, height);
+      const diagonal = radius * Math.SQRT1_2;
+      ctx.save();
+      ctx.strokeStyle = guideColor;
+      setCrispGuideStroke(ctx);
+      ctx.beginPath();
+      const x = snapGuideCoordinate(centerX);
+      const y = snapGuideCoordinate(centerY);
+      ctx.moveTo(centerX - radius, y);
+      ctx.lineTo(centerX + radius, y);
+      ctx.moveTo(x, centerY - radius);
+      ctx.lineTo(x, centerY + radius);
+      ctx.moveTo(centerX - diagonal, centerY - diagonal);
+      ctx.lineTo(centerX + diagonal, centerY + diagonal);
+      ctx.moveTo(centerX - diagonal, centerY + diagonal);
+      ctx.lineTo(centerX + diagonal, centerY - diagonal);
+      ctx.stroke();
+      ctx.font = '12px Arial, sans-serif';
+      ctx.fillStyle = guideColor;
+      ctx.textAlign = 'left';
+      ctx.fillText('L', centerX - radius, centerY - radius + 12);
+      ctx.textAlign = 'right';
+      ctx.fillText('R', centerX + radius, centerY - radius + 12);
+      ctx.restore();
+      drawBrightGuideBoundary(ctx, width, height);
       return;
     }
 
@@ -1015,6 +1243,16 @@
   }
 
   function drawIdleMeterFrame(canvas, ctx, source) {
+    if (activeMode === 'phasescope') {
+      resizeCanvasToDisplaySize(canvas, ctx);
+      drawPhasescopeFromData(
+        ctx,
+        canvas.width / (window.devicePixelRatio || 1),
+        canvas.height / (window.devicePixelRatio || 1),
+        source
+      );
+      return;
+    }
     if (source && activeMode === 'wavescope') {
       renderWavescope(ctx, canvas, source, !frozen);
       return;
@@ -1114,6 +1352,8 @@
             renderSpectrum(ctx, canvas, source);
           } else if (activeMode === 'level') {
             renderLevel(ctx, canvas, source);
+          } else if (activeMode === 'phasescope') {
+            renderPhasescope(ctx, canvas, source);
           }
           meterNeedsRedraw = false;
         }
@@ -1197,6 +1437,7 @@
       applyCrosshair(false, false);
       applyFreeze(false);
       clearMeterFrame('wavescope');
+      clearMeterFrame('phasescope');
     });
   }
 

@@ -180,7 +180,9 @@ Pekosoft audio tools should follow one simple signal path unless a tool has a cl
 - Route audible voices through an analyser first, then through a master output gain, then to destination.
 - Use the master output gain as SOUND control (`1` on, `0` off), not by rewiring/disconnecting graph nodes.
 - Keep `window.__pekosoftMetersSource` pointed at the analyser so meters keep one shared contract.
-- Stereo Meters sources must also expose separate `analyserLeft` and `analyserRight` nodes. Level and Wavescope must read the corresponding channel, not the mixed analyser or a copy of the other channel. Upmix centered mono voices before splitting a stereo tool's output so both channels match the audible signal.
+- Stereo Meters sources must also expose separate `analyserLeft` and `analyserRight` nodes. Level, Wavescope and Phasescope must read the corresponding channel, not the mixed analyser or a copy of the other channel. Upmix centered mono voices before splitting a stereo tool's output so both channels match the audible signal.
+
+Phasescope uses float time-domain samples from separate L/R analysers, aligning the newest samples if their FFT sizes differ. Plot (R - L) / 2 horizontally and (L + R) / 2 vertically at equal physical scales. Compute correlation as the normalized L/R sample product, clamped to [-1, +1], and show a dash when either channel has no energy. Mono uses the same signal for both channels. Never fabricate a mono trace for a stereo source missing its channel analysers. Correlation uses a current-value cursor and numeric readout in fixed `--color1` blue, with one-second rolling minimum and maximum cursors in fixed `--color2` magenta. Color changes only the phase trace, never these indicators. Cache the trace, correlation and extrema together so Freeze and paused presentation changes never sample audio or age the held range. On live updates, discard range samples at least 1000 ms old. Undefined correlation and Reset clear the range.
 - On any user gesture that starts sound or unmutes SOUND, perform a best-effort `AudioContext.resume()`.
 
 Reference path:

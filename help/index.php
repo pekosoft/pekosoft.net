@@ -290,10 +290,18 @@
 </div>
 
 <div class="feature-row border">
+  <svg class="standard-image-help"><use href="/icons.svg?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/icons.svg'); ?>#phasescope"></use></svg>
+  <div class="justify">
+    <h1>Phasescope <span class="object">button</span></h1>
+    Shows the stereo signal as a phase trace centered in the Meters canvas, with L and R at the upper corners of the guide area. Matching left and right signals form a vertical line. Opposite-polarity signals form a horizontal line. A wider trace indicates more stereo difference. Left-only and right-only signals follow the corresponding diagonal axes. Mono uses the same signal on both sides. The correlation reading appears above the trace. Its scale below the trace ranges from -1 for opposite polarity through a centered 0 for unrelated signals to +1 for matching signals. A blue cursor shows the current value, and magenta cursors show the minimum and maximum over the last second of live updates. The correlation text and numbers stay blue. Color affects only the phase trace. A dash means correlation is undefined because one or both channels are silent, which also clears the cursors and their range. Guides shows the phase axes. Rulers shows the normalized mid and side amplitude scales and correlation ticks. The horizontal side signal is (R - L) / 2, and the vertical mid signal is (L + R) / 2. Freeze holds the trace, correlation and all three cursors without stopping audio. Paused and frozen redraws preserve the held range. Live updates discard samples older than one second. The selected Meters view is saved for the current tool.
+  </div>
+</div>
+
+<div class="feature-row border">
   <svg class="standard-image-help"><use href="/icons.svg#ruler"></use></svg>
   <div class="justify">
     <h1>Meter rulers <span class="object">button</span></h1>
-    The Rulers button in Meters shows or hides SVG scales independently of Guides. Spectroscope shows frequency and decibel rulers. Level shows a decibel ruler, including -3 dB where space permits, and channel labels, L and R for left and right or M for mono. Crowded Level references are omitted together with their ticks and guides. Oscilloscope shows milliseconds across its sample window. Wavescope shows seconds back from the newest captured signal at 0 s, excluding silence and paused updates. Both show decibel rulers, with channel labels for stereo Wavescope. Bright changes both guide and ruler contrast. The local Rulers button overrides the Settings Rulers option for Meters only. <span class="default">Default: on.</span>
+    The Rulers button in Meters shows or hides SVG scales independently of Guides. Spectroscope shows frequency and decibel rulers. Level shows a decibel ruler, including -3 dB where space permits, and channel labels, L and R for left and right or M for mono. Crowded Level references are omitted together with their ticks and guides. Oscilloscope shows milliseconds across its sample window. Wavescope shows seconds back from the newest captured signal at 0 s, excluding silence and paused updates. Both show decibel rulers, with channel labels for stereo Wavescope. Phasescope shows normalized mid and side amplitude scales and correlation ticks. Bright changes both guide and ruler contrast. The local Rulers button overrides the Settings Rulers option for Meters only. <span class="default">Default: on.</span>
   </div>
 </div>
 

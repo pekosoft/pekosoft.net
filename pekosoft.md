@@ -255,7 +255,7 @@ Tooltip placement rule:
 
 ## Reset scope policy
 
-Player System Audio uses `getDisplayMedia` through the existing Input menu. Monitoring and recording share one audio-only stream and do not route it twice into Meters. The browser's video track is retained only for sharing-session lifetime and is never processed or recorded. Do not reopen display capture automatically on reload. Windows system audio requires a supported browser and an audio-enabled sharing source.
+Player System Audio uses `getDisplayMedia` through the existing Input menu. Request stereo with echo cancellation, noise suppression and automatic gain control disabled to preserve the captured signal. Use the audio track's reported channel count, not the `MediaStreamAudioSourceNode.channelCount` input configuration, for live Meters and input details. Rebuild the channel splitter and update the Meters bridge when restoring another source after monitoring or recording ends. Monitoring and recording share one audio-only stream and do not route it twice into Meters. The browser's video track is retained only for sharing-session lifetime and is never processed or recorded. Do not reopen display capture automatically on reload. Windows system audio requires a supported browser and an audio-enabled sharing source.
 
 RESET buttons inside tools must clear that tool completely:
 

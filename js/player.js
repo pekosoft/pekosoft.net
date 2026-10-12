@@ -1750,20 +1750,22 @@ function disconnectSourceFromMeters(sourceNode) {
     }
 }
 
+function getInputChannelCount(source) {
+    const track = source.mediaStream.getAudioTracks()[0];
+    return Math.max(1, track?.getSettings().channelCount || source.channelCount || 1);
+}
+
 function restoreMeterChannelCount() {
     if (recordingSource) {
-        loadedChannelCount = Math.max(1, recordingSource.channelCount || 1);
-        return;
-    }
-    if (inputSource) {
-        loadedChannelCount = Math.max(1, inputSource.channelCount || 1);
-        return;
-    }
-    if (loadedAudioBuffer) {
+        loadedChannelCount = getInputChannelCount(recordingSource);
+    } else if (inputSource) {
+        loadedChannelCount = getInputChannelCount(inputSource);
+    } else if (loadedAudioBuffer) {
         loadedChannelCount = loadedAudioBuffer.numberOfChannels;
-        return;
+    } else {
+        loadedChannelCount = 1;
     }
-    loadedChannelCount = 1;
+    recreateChannelSplitter(loadedChannelCount);
 }
 
 function syncVisualFreeze() {
@@ -1802,7 +1804,12 @@ async function requestSelectedInput() {
     systemCaptureRequest = (async () => {
         const capture = await navigator.mediaDevices.getDisplayMedia({
             video: true,
-            audio: { channelCount: { ideal: 2 } },
+            audio: {
+                channelCount: { ideal: 2 },
+                echoCancellation: false,
+                noiseSuppression: false,
+                autoGainControl: false
+            },
             systemAudio: 'include'
         });
         const tracks = capture.getAudioTracks().filter(track => track.readyState === 'live');
@@ -1877,7 +1884,7 @@ async function setInputMonitoringEnabled(enabled) {
         if (recordingSource && recordingStream === systemAudioStream) disconnectSourceFromMeters(recordingSource);
         inputSource = mainAudioContext.createMediaStreamSource(inputStream);
         connectSourceToMeters(inputSource);
-        loadedChannelCount = Math.max(1, inputSource.channelCount || 1);
+        loadedChannelCount = getInputChannelCount(inputSource);
         recreateChannelSplitter(loadedChannelCount);
         toggleInput.classList.add('button-on');
         localStorage.setItem(STORAGE.inputMonitor, 'true');
@@ -2845,7 +2852,7 @@ recordButton.addEventListener('click', async () => {
             recordingStream = stream;
             recordingSource = mainAudioContext.createMediaStreamSource(stream);
             connectSourceToMeters(recordingSource);
-            loadedChannelCount = Math.max(1, recordingSource.channelCount || 1);
+            loadedChannelCount = getInputChannelCount(recordingSource);
             recreateChannelSplitter(loadedChannelCount);
 
             mediaRecorder = new MediaRecorder(stream);
@@ -3877,7 +3884,7 @@ function updateAudioInfo() {
             const source = audioContext.createMediaStreamSource(stream);
             const deviceLabel = audioInput.selectedOptions[0]?.text || 'Unknown Device';
             panelState.input.sampleRate = `${audioContext.sampleRate} Hz`;
-            panelState.input.channels = source.channelCount;
+            panelState.input.channels = getInputChannelCount(source);
             panelState.input.latency = `${audioContext.baseLatency.toFixed(4)} s`;
             panelState.input.device = deviceLabel;
             renderPanel();

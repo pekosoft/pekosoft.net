@@ -154,7 +154,7 @@
   </svg>
   <div class="justify">
     <h1>Input <span class="object">menu</span></h1>
-    Selects the audio input device or System Audio. System Audio opens the browser sharing dialog. On Windows, use Chrome or Edge, select a source with audio and enable its audio sharing option. Only audio is processed and recorded. Availability depends on the browser and selected source. Turn Sound off to avoid feeding captured audio back into system output. Selecting another input or stopping sharing ends the capture. System Audio requires a new user action after reloading.
+    Selects the audio input device or System Audio. System Audio opens the browser sharing dialog. On Windows, use Chrome or Edge, select a source with audio and enable its audio sharing option. Only audio is processed and recorded. System Audio requests stereo without echo cancellation, noise suppression or automatic gain control. Meters use the channels supplied by the capture, which may be mono depending on the browser and selected source. Turn Sound off to avoid feeding captured audio back into system output. Selecting another input or stopping sharing ends the capture. System Audio requires a new user action after reloading.
   </div>
 </div>
 

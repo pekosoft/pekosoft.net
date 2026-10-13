@@ -315,7 +315,8 @@
       ? 'Meter side amplitude ruler' : 'Meter horizontal ruler');
     timelineUtils.syncViewBox(verticalRuler, 48, height);
     timelineUtils.drawVerticalRuler(verticalRuler, {
-      width: 48, height, ticks: ticks.vertical, labels: ticks.labels, color: guideColor, bright: brightGuides, sideBorders: true,
+      width: 48, height, ticks: ticks.vertical.map(tick => ({ ...tick, drawLine: tick.position > 0 })),
+      labels: ticks.labels, color: guideColor, bright: brightGuides, sideBorders: true,
       topBorder: false
     });
     timelineUtils.syncViewBox(horizontalRuler, width, 24);

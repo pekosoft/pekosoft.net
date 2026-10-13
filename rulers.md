@@ -40,6 +40,7 @@ All ruler and guide lines must use the same explicit SVG contract:
 - Meters bitmap exports capture the active canvas without its outer SVG rulers. With Guides and Bright on, complete all four outline edges in the exported copy at one backing pixel thick, regardless of Rulers. Do not alter the on-screen frame or cached signal.
 - Meter backing dimensions scale with `devicePixelRatio`. Replacing them with CSS dimensions clears the signal and transform, causing flashing with live signals and shrunken guides with idle signals.
 - SVG rulers use the plot's CSS dimensions and must remain aligned with its full-size canvas guides after clicks, mode changes and Timeline resizing.
+- The corner ruler owns the seam above Meters' vertical ruler. A tick at the vertical ruler's top retains its label but uses `drawLine: false` to avoid a second adjacent seam line.
 - Oscilloscope's horizontal time scale uses its sample count and source sample rate, in milliseconds. Wavescope's horizontal time scale uses its 90 Hz capture history, in seconds before the newest signal at 0 s. Silence and paused updates do not advance that history.
 - Wavescope keeps fractional capture intervals between frames. Resizing preserves the newest history samples at their original time spacing instead of stretching them.
 - Level's left ruler names the channels with L and R for stereo or M for mono. Place labels beside their bars independently of guide ticks, with M above the mono center guide to avoid a line through the label.

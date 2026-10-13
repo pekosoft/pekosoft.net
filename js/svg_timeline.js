@@ -197,15 +197,17 @@
       }, label));
     });
 
-    ticks.forEach(({ position, label, labelPosition = 'above' }) => {
+    ticks.forEach(({ position, label, labelPosition = 'above', drawLine = true }) => {
       const y = Math.max(0.5, Math.min(height + 0.5, Math.floor(position) + 0.5));
-      svg.appendChild(createRulerElement('line', {
-        x1: 0,
-        y1: y,
-        x2: width,
-        y2: y,
-        stroke: color
-      }));
+      if (drawLine) {
+        svg.appendChild(createRulerElement('line', {
+          x1: 0,
+          y1: y,
+          x2: width,
+          y2: y,
+          stroke: color
+        }));
+      }
       if (label === undefined || label === null || label === '') return;
       const labelY = labelPosition === 'below'
         ? Math.min(height - 5, y + 24)

@@ -4158,7 +4158,8 @@ function formatAddedTimestamp(timestamp) {
     const y = date.getFullYear();
     const h = String(date.getHours()).padStart(2, '0');
     const min = String(date.getMinutes()).padStart(2, '0');
-    return `${d}-${m}-${y} ${h}:${min}`;
+    const seconds = String(date.getSeconds()).padStart(2, '0');
+    return `${d}-${m}-${y} ${h}:${min}:${seconds}`;
 }
 
 function createPlaylistWaveformPeaks(audioBuffer, sampleCount = PLAYLIST_WAVEFORM_SAMPLE_COUNT) {

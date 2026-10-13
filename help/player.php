@@ -56,6 +56,7 @@
     <h1>Record <span class="object">button</span></h1>
     Starts or stops recording from selected input. Starting a recording switches to the Custom playlist.
     Finished recordings are added to Custom and can be played again from the playlist.
+    Recording filenames include the date and local time down to seconds.
     WAV is the default and records uncompressed 16-bit PCM directly from the input at the audio engine's sample rate.
   </div>
 </div>
@@ -473,6 +474,7 @@
   <div class="justify">
     <h1>Playlist <span class="object">module</span></h1>
     Manages queued tracks and per-row actions. Presets is the default view, and Custom holds your own playlist. The selected view is saved locally. Switching views does not interrupt playback. Previous and Next track follow the displayed playlist. Drag a column header edge to resize that column. On touchscreens, drag the right side of the header. Double-click or double-tap the edge to restore its default width.
+    Modified and Added show the date and local time down to seconds.
   </div>
 </div>
 

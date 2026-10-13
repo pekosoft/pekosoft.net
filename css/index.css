@@ -823,6 +823,24 @@ html.modules-page body:not(.layout-two-columns) {
   height: 1px;
 }
 
+#meters-container .meters-crosshair-tooltip {
+  position: absolute;
+  z-index: 1;
+  width: max-content;
+  max-width: calc(100% - 8px);
+  box-sizing: border-box;
+  padding: 4px 6px;
+  border: 1px solid var(--grey2);
+  background: var(--black);
+  color: var(--white);
+  font: 12px Arial, sans-serif;
+  line-height: 16px;
+  text-align: left;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+  user-select: none;
+}
+
 #meters-container .timeline-rulers-hidden {
   grid-template-columns: 0 minmax(0, 1fr);
 }

@@ -54,7 +54,9 @@
         <canvas id="wavescope" class="meter-canvas" width="4096" height="256"></canvas>
         <canvas id="waveform" class="meter-canvas active" width="4096" height="256"></canvas>
         <canvas id="phasescope" class="meter-canvas" width="4096" height="256" role="img" aria-label="Stereo phasescope with phase correlation"></canvas>
-        <div class="meters-crosshair" aria-hidden="true" hidden></div>
+        <div class="meters-crosshair" hidden>
+          <div id="meters-crosshair-tooltip" class="meters-crosshair-tooltip" role="tooltip"></div>
+        </div>
       </div>
     </div>
   </div>

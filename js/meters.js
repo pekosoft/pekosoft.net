@@ -34,6 +34,7 @@
   const copyButton = document.getElementById('meters-copy-button');
   const meterPlot = metersContainer.querySelector('.meter-plot');
   const crosshairOverlay = metersContainer.querySelector('.meters-crosshair');
+  const crosshairTooltip = document.getElementById('meters-crosshair-tooltip');
   const rulerLayout = metersContainer.querySelector('.meters-ruler-layout');
   const rulerCorner = document.getElementById('meters-ruler-corner');
   const horizontalRuler = document.getElementById('meters-horizontal-ruler');
@@ -462,6 +463,60 @@
   let meterPalette = null;
   const meterReleaseMs = 350;
 
+  function formatCrosshairAmplitude(amplitude) {
+    const magnitude = Math.abs(amplitude);
+    return magnitude > 0 ? `${(20 * Math.log10(magnitude)).toFixed(1)} dBFS` : '-∞ dBFS';
+  }
+
+  function getCrosshairReadout(x, y, width, height, source) {
+    const sampleRate = source?.sampleRate || 44100;
+    if (activeMode === 'spectroscope') {
+      const frequency = 20 * Math.pow(Math.max(21, sampleRate / 2) / 20, x / width);
+      const index = Math.min(31, Math.floor(x / width * 32));
+      const level = spectrumDisplayState.levels[index];
+      const bar = pausedFrameState.spectrumReady ? `${(-60 + level * 60).toFixed(1)} dB` : '-';
+      return `Frequency: ${frequency.toFixed(1)} Hz\nCursor: ${(-60 * y / height).toFixed(1)} dB\nBar: ${bar}`;
+    }
+    if (activeMode === 'level') {
+      const channels = pausedFrameState.levelReady ? pausedFrameState.levelChannels : (source?.channelCount || 2);
+      const barHeight = Math.max(1, Math.floor((height - (channels > 1 ? 4 : 0)) / Math.min(2, channels)));
+      if (channels > 1 && y >= barHeight && y < barHeight + 4) return 'Between channels';
+      const right = channels > 1 && y >= barHeight + 4;
+      const channel = channels > 1 ? (right ? 'R' : 'L') : 'M';
+      const level = right ? pausedFrameState.levelRight : pausedFrameState.levelLeft;
+      const signal = pausedFrameState.levelReady ? formatCrosshairAmplitude(level) : '-';
+      return `Channel: ${channel}\nCursor: ${formatCrosshairAmplitude(x / width)}\nLevel: ${signal}`;
+    }
+    if (activeMode === 'phasescope') {
+      const { centerX, centerY, radius, plotTop, plotHeight } = getPhasescopeGeometry(width, height);
+      if (!radius || y < plotTop || y > plotTop + plotHeight) return 'Outside phase plot';
+      const side = (x - centerX) / radius;
+      const mid = (centerY - y) / radius;
+      const correlation = phasescopeState.ready && phasescopeState.correlation !== null
+        ? phasescopeState.correlation.toFixed(2) : '-';
+      return `Mid: ${mid.toFixed(3)} FS\nSide: ${side.toFixed(3)} FS\nL: ${(mid - side).toFixed(3)} FS  R: ${(mid + side).toFixed(3)} FS\nCorrelation: ${correlation}`;
+    }
+    const stereo = activeMode === 'wavescope' && (source?.channelCount || 1) > 1;
+    const right = stereo && y >= height / 2;
+    const channel = stereo ? (right ? 'R' : 'L') : 'M';
+    const centerY = stereo ? height * (right ? 0.75 : 0.25) : height / 2;
+    const amplitude = (centerY - y) / (height * (stereo ? 0.18 : 0.5));
+    const cursor = `Cursor: ${amplitude.toFixed(3)} FS (${formatCrosshairAmplitude(amplitude)})`;
+    if (activeMode === 'wavescope') {
+      const index = Math.min(Math.max(0, wavescopeState.width - 1), Math.floor(x));
+      const min = (right ? wavescopeState.historyMinR : wavescopeState.historyMinL)[index];
+      const max = (right ? wavescopeState.historyMaxR : wavescopeState.historyMaxL)[index];
+      const signal = Number.isFinite(min) && Number.isFinite(max)
+        ? `${min.toFixed(3)} to ${max.toFixed(3)} FS` : '-';
+      const seconds = Math.min(0, (x - Math.max(0, Math.floor(width) - 1)) / wavescopeState.sampleRateHz);
+      return `Time: ${seconds.toFixed(3)} s\nChannel: ${channel}\n${cursor}\nRange: ${signal}`;
+    }
+    const index = Math.min(timeArray.length - 1, Math.floor(x / width * timeArray.length));
+    const signal = pausedFrameState.oscilloscopeReady
+      ? ((pausedFrameState.oscilloscopeData[index] - 128) / 128).toFixed(3) + ' FS' : '-';
+    return `Time: ${(x / width * timeArray.length / sampleRate * 1000).toFixed(2)} ms\n${cursor}\nSample: ${signal}`;
+  }
+
   function updateCrosshair() {
     if (!crosshairOn || !crosshairPointer) {
       crosshairOverlay.hidden = true;
@@ -478,6 +533,15 @@
     crosshairOverlay.style.setProperty('--meter-crosshair-x', `${Math.floor(x)}px`);
     crosshairOverlay.style.setProperty('--meter-crosshair-y', `${Math.floor(y)}px`);
     crosshairOverlay.hidden = false;
+    const source = frozen ? frozenSource : getSourceConfig();
+    const text = getCrosshairReadout(x, y, rect.width, rect.height, source);
+    if (crosshairTooltip.textContent !== text) crosshairTooltip.textContent = text;
+    const tooltipWidth = crosshairTooltip.offsetWidth;
+    const tooltipHeight = crosshairTooltip.offsetHeight;
+    const left = x + 12 + tooltipWidth <= rect.width - 4 ? x + 12 : x - tooltipWidth - 12;
+    const top = y + 12 + tooltipHeight <= rect.height - 4 ? y + 12 : y - tooltipHeight - 12;
+    crosshairTooltip.style.left = `${Math.max(4, Math.min(rect.width - tooltipWidth - 4, left))}px`;
+    crosshairTooltip.style.top = `${Math.max(4, Math.min(rect.height - tooltipHeight - 4, top))}px`;
   }
 
   function applyCrosshair(nextState, persist = true) {
@@ -1343,6 +1407,7 @@
   function tick(timestamp) {
     if (frozen) {
       if (meterNeedsRedraw) redrawMeterFrame();
+      updateCrosshair();
       requestAnimationFrame(tick);
       return;
     }
@@ -1395,6 +1460,7 @@
       }
     }
     wasMeterActive = meterIsActive;
+    updateCrosshair();
     requestAnimationFrame(tick);
   }
 

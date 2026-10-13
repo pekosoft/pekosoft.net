@@ -294,6 +294,13 @@
   <div class="justify">
     <h1>Meter crosshair <span class="object">button</span></h1>
     Shows one-pixel grey crosshair lines across the Meters plot. With a mouse, the lines follow the pointer and hide when it leaves. On phone, tap or drag the plot to position the lines. They stay after you lift your finger, and pinch zoom remains available. Crosshair also works while frozen and is independent of Guides, Bright and Rulers. The cursor always stays crosshair, even when the lines are off. The setting is saved for the current tool. Reset turns it off. <span class="default">Default: off.</span>
+    A tooltip follows the crosshair and stays within the plot. Spectroscope shows frequency, cursor decibels and the displayed bar level.
+    Level shows the channel, cursor dBFS and displayed level. Oscilloscope shows time, signed cursor amplitude and the cached sample.
+    Wavescope shows time before the newest sample, channel, cursor amplitude and the displayed minimum-to-maximum range.
+    Phasescope shows cursor Mid/Side and corresponding L/R amplitudes, plus the signal's overall correlation.
+    FS is normalized full-scale amplitude. Cursor values describe the pointer position, not the measured signal.
+    Signal readouts use displayed data and remain held during Freeze. A dash means no sample is available, while zero amplitude is shown as -∞ dBFS.
+    The tooltip is not included in bitmap exports.
   </div>
 </div>
 

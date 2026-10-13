@@ -30,6 +30,7 @@ All ruler and guide lines must use the same explicit SVG contract:
 - Audio Calculator uses FS in the corner, omits the -0.031 and 0.031 endpoint numbers, and reduces intermediate label density on short timelines. Its signed amplitude scale stays in FS, not dBFS.
 - Preserve the existing shared guide and ruler colors and contrast, including Bright behavior. Do not introduce separate label contrast without explicit approval.
 - Follow the shared [guides text selection convention](pekosoft.md#guides-text-selection-convention). It applies to Meters and Player's separate ruler layout as well as the standard Timeline layout.
+- Keep Phasescope's `Correlation: ` label and value start anchored independently of the displayed value's width. Reserve a fixed signed-value width for the centered readout so undefined correlation (`-`) and live updates do not move the label.
 
 ## Meters Canvas Ownership
 

@@ -796,9 +796,19 @@
     const magenta = `rgb(${secondary.r}, ${secondary.g}, ${secondary.b})`;
     ctx.fillStyle = blue;
     ctx.textAlign = 'center';
-    ctx.fillText(source && phasescopeState.invalidSource
-      ? 'Stereo unavailable'
-      : width >= 180 ? `Correlation: ${value}` : value, centerX, 16);
+    if (source && phasescopeState.invalidSource) {
+      ctx.fillText('Stereo unavailable', centerX, 16);
+    } else if (width >= 180) {
+      const label = 'Correlation: ';
+      const labelWidth = ctx.measureText(label).width;
+      const valueWidth = Math.max(ctx.measureText('+1.00').width, ctx.measureText('-1.00').width);
+      const labelX = centerX - (labelWidth + valueWidth) / 2;
+      ctx.textAlign = 'left';
+      ctx.fillText(label, labelX, 16);
+      ctx.fillText(value, labelX + labelWidth, 16);
+    } else {
+      ctx.fillText(value, centerX, 16);
+    }
     if (correlation !== null) {
       const drawCursor = (value, color) => {
         ctx.fillStyle = color;

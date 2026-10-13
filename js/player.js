@@ -1179,7 +1179,7 @@ function updateActionButtonStates() {
     const hasAudio = hasLoadedAudioSource();
     const hasDownloadableRecording = Boolean(downloadButton && downloadButton.dataset.audioUrl);
     const canSeek = Number.isFinite(audioPlayer.duration) && audioPlayer.duration > 0;
-    const hasPlayablePlaylist = playlist.some(item => Boolean(item?.file));
+    const hasPlayablePlaylist = playlist.some(item => Boolean(item?.file || item?.preset));
     const hasEditableBuffer = Boolean(loadedAudioBuffer);
     const hasSelection = hasActiveSelection();
     const hasTimelineDuration = hasEditableBuffer && Number.isFinite(loadedAudioBuffer.duration) && loadedAudioBuffer.duration > 0;
@@ -2508,7 +2508,7 @@ function getAdjacentPlayableIndex(direction) {
 
     for (let tries = 0; tries < playlist.length; tries++) {
         index = (index + direction + playlist.length) % playlist.length;
-        if (playlist[index]?.file) return index;
+        if (playlist[index]?.file || playlist[index]?.preset) return index;
     }
 
     return -1;
@@ -3144,6 +3144,8 @@ function clearStaticWaveform() {
 }
 
 function clearLoadedTimelineAudio() {
+    currentPlaylistItem = null;
+    currentPlaylistIndex = -1;
     loadedAudioBuffer = null;
     revokeGeneratedAudioUrl();
     audioPlayer.pause();
@@ -3913,13 +3915,66 @@ const playlistCleanButton = document.getElementById('playlist-clean-button');
 const playlistAutoCleanButton = document.getElementById('playlist-auto-clean-button');
 const playlistSaveButton = document.getElementById('playlist-save-button');
 const playlistLoadButton = document.getElementById('playlist-load-button');
+const playlistPresetsButton = document.getElementById('playlist-presets-button');
+const playlistCustomButton = document.getElementById('playlist-custom-button');
 
 let playlist = [];
+let customPlaylist = [];
+let presetPlaylist = [];
+let playlistView = 'presets';
+let currentPlaylistItem = null;
 let currentPlaylistIndex = -1;
 
 const STORAGE_PLAYLIST = 'player.playlist';
+const STORAGE_PLAYLIST_VIEW = 'player.playlist_view';
 const STORAGE_PLAYLIST_AUTO_CLEAN = 'player.playlist_auto_clean';
 const PLAYLIST_WAVEFORM_SAMPLE_COUNT = 96;
+
+async function playGeneratedTone(item) {
+    try {
+        audioPlayer.pause();
+        clearMetaInfo();
+        clearStaticWaveform();
+        const buffer = window.PekoTestTones.generateBuffer(mainAudioContext, item.preset);
+        item.waveformPeaks = createPlaylistWaveformPeaks(buffer);
+        drawStaticWaveform(buffer);
+        audioPlayer.currentTime = 0;
+        await refreshAudioSourceFromBuffer();
+        if (currentPlaylistItem !== item) return;
+        displayFileInfo(item, buffer);
+        panelState.meta.fileSize = '-';
+        renderPanel();
+        if (mainAudioContext.state === 'suspended') await mainAudioContext.resume();
+        if (currentPlaylistItem !== item) return;
+        await audioPlayer.play();
+        playButton.classList.add('button-on');
+    } catch (error) {
+        playButton.classList.remove('button-on');
+        console.error('Error playing generated test tone:', error);
+    }
+    syncVisualFreeze();
+    updateActionButtonStates();
+    renderPlaylist();
+}
+
+function getCustomPlaylist() {
+    return playlistView === 'custom' ? playlist : customPlaylist;
+}
+
+function setPlaylistView(view, persist = true) {
+    if (playlistView === 'custom') customPlaylist = playlist;
+    else presetPlaylist = playlist;
+    playlistView = view;
+    playlist = view === 'custom' ? customPlaylist : presetPlaylist;
+    currentPlaylistIndex = playlist.indexOf(currentPlaylistItem);
+    playlistPresetsButton.classList.toggle('button-on', view === 'presets');
+    playlistPresetsButton.setAttribute('aria-pressed', String(view === 'presets'));
+    playlistCustomButton.classList.toggle('button-on', view === 'custom');
+    playlistCustomButton.setAttribute('aria-pressed', String(view === 'custom'));
+    if (persist) localStorage.setItem(STORAGE_PLAYLIST_VIEW, view);
+    renderPlaylist();
+    updateActionButtonStates();
+}
 
 function formatDuration(seconds) {
     if (!Number.isFinite(seconds) || seconds < 0) return '--:--:---';
@@ -4121,7 +4176,7 @@ function updatePlaylistSummary() {
 }
 
 function isDeadPlaylistItem(item) {
-    return !item?.file;
+    return !item?.file && !item?.preset;
 }
 
 function getDeadPlaylistCount() {
@@ -4134,6 +4189,12 @@ function isAutoCleanDeadFilesEnabled() {
 
 function syncPlaylistDeadFileButtons() {
     const deadCount = getDeadPlaylistCount();
+    const presets = playlistView === 'presets';
+    [playlistClearButton, playlistCleanButton, playlistAutoCleanButton, playlistSaveButton].forEach(button => {
+        if (!button) return;
+        button.disabled = presets;
+        setButtonGrey(button, presets);
+    });
 
     if (playlistCleanButton) {
         setButtonGrey(playlistCleanButton, deadCount === 0);
@@ -4152,7 +4213,7 @@ function cleanDeadPlaylistItems() {
 
     playlist = playlist.filter((item) => !isDeadPlaylistItem(item));
 
-    if (currentItem?.file) {
+    if (currentItem && !isDeadPlaylistItem(currentItem)) {
         currentPlaylistIndex = playlist.indexOf(currentItem);
     } else {
         currentPlaylistIndex = -1;
@@ -4183,6 +4244,7 @@ function setAutoCleanDeadFilesEnabled(enabled) {
 
 function addToPlaylist(files) {
     if (!files || files.length === 0) return;
+    setPlaylistView('custom');
 
     for (let file of files) {
         if (file.type.startsWith('audio/')) {
@@ -4276,7 +4338,7 @@ function renderPlaylist() {
         channelsCell.textContent = item.channels !== null ? item.channels : '--';
 
         sizeCell.className = 'col-size';
-        sizeCell.textContent = formatFileSize(item.size);
+        sizeCell.textContent = item.preset ? '-' : formatFileSize(item.size);
 
         const typeCell = document.createElement('td');
         typeCell.className = 'col-type';
@@ -4311,6 +4373,8 @@ function renderPlaylist() {
         removeBtn.title = 'Remove track';
         removeBtn.setAttribute('aria-label', 'Remove track');
         removeBtn.innerHTML = '<svg class="icons" role="img"><use href="/icons.svg#delete" /></svg>';
+        removeBtn.disabled = Boolean(item.preset);
+        setButtonGrey(removeBtn, Boolean(item.preset));
         removeBtn.addEventListener('click', () => removeFromPlaylist(index));
 
         const removeCell = document.createElement('td');
@@ -4343,18 +4407,25 @@ function playPlaylistItem(index) {
     if (index < 0 || index >= playlist.length) return;
 
     const item = playlist[index];
-    if (!item?.file) {
+    if (isDeadPlaylistItem(item)) {
         renderPlaylist();
         return;
     }
 
     currentPlaylistIndex = index;
+    currentPlaylistItem = item;
     renderPlaylist();
+
+    if (item.preset) {
+        playGeneratedTone(item);
+        return;
+    }
 
     let url;
     try {
         url = URL.createObjectURL(item.file);
         revokeGeneratedAudioUrl();
+        generatedAudioObjectUrl = url;
         audioPlayer.src = url;
     } catch (error) {
         console.error('Error creating object URL for playlist item:', error);
@@ -4365,6 +4436,7 @@ function playPlaylistItem(index) {
         if (mainAudioContext.state === 'suspended') {
             await mainAudioContext.resume();
         }
+        if (currentPlaylistItem !== item) return;
         try {
             await audioPlayer.play();
             playButton.classList.add('button-on');
@@ -4389,6 +4461,7 @@ function playPlaylistItem(index) {
         const arrayBuffer = e.target.result;
         const offlineAudioContext = new OfflineAudioContext(2, 44100 * 40, 44100);
         offlineAudioContext.decodeAudioData(arrayBuffer).then(buffer => {
+            if (currentPlaylistItem !== item) return;
             item.duration = buffer.duration;
             item.channels = buffer.numberOfChannels;
             item.waveformPeaks = createPlaylistWaveformPeaks(buffer);
@@ -4411,7 +4484,7 @@ async function togglePlaylistItemPlayback(index) {
     if (index < 0 || index >= playlist.length) return;
 
     const isCurrent = index === currentPlaylistIndex;
-    const canToggleCurrent = isCurrent && Boolean(playlist[index]?.file) && hasLoadedAudioSource();
+    const canToggleCurrent = isCurrent && !isDeadPlaylistItem(playlist[index]) && hasLoadedAudioSource();
 
     if (!canToggleCurrent) {
         playPlaylistItem(index);
@@ -4450,6 +4523,10 @@ async function togglePlaylistItemPlayback(index) {
 
 function removeFromPlaylist(index) {
     if (index < 0 || index >= playlist.length) return;
+    if (playlist[index].preset) {
+        console.warn('Preset test tones cannot be removed.');
+        return;
+    }
 
     if (index === currentPlaylistIndex) {
         clearLoadedTimelineAudio();
@@ -4468,21 +4545,23 @@ function randomizePlaylist() {
         const j = Math.floor(Math.random() * (i + 1));
         [playlist[i], playlist[j]] = [playlist[j], playlist[i]];
     }
-    currentPlaylistIndex = -1;
+    currentPlaylistIndex = playlist.indexOf(currentPlaylistItem);
     renderPlaylist();
     savePlaylistToStorage();
 }
 
 function clearPlaylist() {
+    if (playlistView === 'presets') {
+        console.warn('Preset test tones cannot be cleared.');
+        return;
+    }
     if (playlist.length === 0) return;
     if (!confirm('Clear entire playlist? This cannot be undone.')) return;
 
+    const keepPresetPlayback = Boolean(currentPlaylistItem?.preset);
     playlist = [];
     currentPlaylistIndex = -1;
-    revokeGeneratedAudioUrl();
-    audioPlayer.src = '';
-    clearStaticWaveform();
-    clearMetaInfo();
+    if (!keepPresetPlayback) clearLoadedTimelineAudio();
     renderPlaylist();
     savePlaylistToStorage();
 }
@@ -4496,7 +4575,7 @@ function formatFileSize(bytes) {
 }
 
 function savePlaylistToStorage() {
-    const playlistData = playlist.map(item => ({
+    const playlistData = getCustomPlaylist().map(item => ({
         name: item.name,
         size: item.size,
         type: item.type,
@@ -4517,7 +4596,7 @@ function loadPlaylistFromStorage() {
         const data = JSON.parse(raw);
         if (!Array.isArray(data)) return;
 
-        playlist = data
+        customPlaylist = data
             .filter(item => item && typeof item.name === 'string')
             .map(item => ({
                 name: item.name,
@@ -4532,10 +4611,9 @@ function loadPlaylistFromStorage() {
                 file: null
             }));
 
-        currentPlaylistIndex = -1;
-        renderPlaylist();
         if (isAutoCleanDeadFilesEnabled()) {
-            cleanDeadPlaylistItems();
+            customPlaylist = customPlaylist.filter(item => !isDeadPlaylistItem(item));
+            savePlaylistToStorage();
         }
     } catch (error) {
         console.error('Error loading playlist from localStorage:', error);
@@ -4607,6 +4685,7 @@ if (playlistLoadButton) {
                 try {
                     const data = JSON.parse(event.target.result);
                     if (Array.isArray(data)) {
+                        setPlaylistView('custom');
                         playlist = data
                             .filter(item => item && typeof item.name === 'string')
                             .map(item => ({
@@ -4622,6 +4701,7 @@ if (playlistLoadButton) {
                                 file: null
                             }));
                         currentPlaylistIndex = -1;
+                        currentPlaylistItem = null;
                         renderPlaylist();
                         if (isAutoCleanDeadFilesEnabled()) {
                             cleanDeadPlaylistItems();
@@ -4643,7 +4723,7 @@ if (playlistLoadButton) {
 audioFileInput.addEventListener('change', function (event) {
     const files = event.target.files;
     if (files && files.length > 0) {
-        const firstNewIndex = playlist.length;
+        const firstNewIndex = getCustomPlaylist().length;
         addToPlaylist(files);
         const firstNewPlayableIndex = playlist.findIndex((item, index) => index >= firstNewIndex && item?.file);
         if (firstNewPlayableIndex !== -1) {
@@ -4653,7 +4733,14 @@ audioFileInput.addEventListener('change', function (event) {
 });
 
 loadPlaylistFromStorage();
-syncPlaylistDeadFileButtons();
+presetPlaylist = window.PekoTestTones.createPresets().map(item => ({
+    ...item, file: null, size: 0, type: 'audio/generated', lastModified: 0, addedAt: 0,
+    duration: 5, channels: item.preset.frequencies.length, waveformPeaks: null
+}));
+playlist = presetPlaylist;
+setPlaylistView(localStorage.getItem(STORAGE_PLAYLIST_VIEW) === 'custom' ? 'custom' : 'presets', false);
+playlistPresetsButton.addEventListener('click', () => setPlaylistView('presets'));
+playlistCustomButton.addEventListener('click', () => setPlaylistView('custom'));
 
 audioPlayer.addEventListener('play', renderPlaylist);
 audioPlayer.addEventListener('pause', renderPlaylist);

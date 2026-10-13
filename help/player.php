@@ -454,7 +454,34 @@
   </svg>
   <div class="justify">
     <h1>Playlist <span class="object">module</span></h1>
-    Manages queued tracks and per-row actions. Drag a column header edge to resize that column. On touchscreens, drag the right side of the header. Double-click or double-tap the edge to restore its default width.
+    Manages queued tracks and per-row actions. Presets is the default view, and Custom holds your own playlist. The selected view is saved locally. Switching views does not interrupt playback. Previous and Next track follow the displayed playlist. Drag a column header edge to resize that column. On touchscreens, drag the right side of the header. Double-click or double-tap the edge to restore its default width.
+  </div>
+</div>
+
+<div class="feature-row border">
+  <svg class="standard-image-help"><use href="/icons.svg#wavelength"></use></svg>
+  <div class="justify">
+    <h1>Presets <span class="object">button</span></h1>
+    Shows eight built-in sine test tones. Only tone definitions are loaded initially. The selected tone is generated on demand as a five-second, 48 kHz buffer with short fades to avoid clicks, using Player's existing in-memory playback and Timeline pipeline. No preset audio files are saved, hosted or fetched. Use Loop for continuous testing. Playback starts only when requested. Keep listening volume low when testing tones. Presets cannot be removed or cleared. They never replace or enter your saved Custom playlist.
+    <p>Titles follow <strong>waveform - channels - frequency - phase - peak level</strong>. Sine means a sinusoidal waveform. Mono means one channel, and Stereo means two channels. Left only and Right only identify the active channel in a stereo signal. L and R mean left and right. Hz is frequency in cycles per second. Phase is the starting angle in degrees, with separate L/R angles for stereo. Muted means that channel is silent. The final -12 dBFS is peak level relative to digital full scale, about 25% of full-scale amplitude. A steady sine at this peak has approximately -15 dBFS RMS.</p>
+    <ul>
+      <li><strong>Sine - Mono - 100 Hz - 0 deg - -12 dBFS</strong>: A low-frequency reference for bass response, low-frequency spectrum and waveform checks. Mono is mirrored to both sides in Phasescope, producing a vertical trace and correlation +1.</li>
+      <li><strong>Sine - Mono - 440 Hz - 0 deg - -12 dBFS</strong>: A concert A reference for pitch and midrange checks. Compare its spectrum position and waveform period with the 100 Hz tone.</li>
+      <li><strong>Sine - Stereo - 1000 Hz - L 0 deg R 0 deg - -12 dBFS</strong>: Identical channels for checking equal L/R levels and an in-phase stereo reference. Phasescope should show a vertical trace and correlation +1.</li>
+      <li><strong>Sine - Stereo - 1000 Hz - L 0 deg R 180 deg - -12 dBFS</strong>: Opposite-polarity channels for checking polarity and mono cancellation. Phasescope should show a horizontal trace and correlation -1. Summing L and R cancels the tone.</li>
+      <li><strong>Sine - Stereo - 1000 Hz - L 0 deg R 90 deg - -12 dBFS</strong>: Equal-level channels a quarter cycle apart for checking quadrature and Phasescope geometry. Expect a circular trace and correlation near 0. Neither channel is silent.</li>
+      <li><strong>Sine - Stereo (Left only) - 1000 Hz - L 0 deg R muted - -12 dBFS</strong>: Checks left-channel routing and isolation. Only the left level meter should respond. Phasescope follows the L diagonal and shows undefined correlation because the right channel is silent.</li>
+      <li><strong>Sine - Stereo (Right only) - 1000 Hz - L muted R 0 deg - -12 dBFS</strong>: Checks right-channel routing and isolation. Only the right level meter should respond. Phasescope follows the R diagonal and shows undefined correlation because the left channel is silent.</li>
+      <li><strong>Sine - Stereo - L 440 Hz R 880 Hz - L 0 deg R 0 deg - -12 dBFS</strong>: Checks channel separation using distinguishable frequencies, one octave apart. Expect spectrum peaks at 440 and 880 Hz and a looping Phasescope pattern, with correlation averaging near 0. Both channels start at 0 degrees, but their relative phase changes because their frequencies differ.</li>
+    </ul>
+  </div>
+</div>
+
+<div class="feature-row border">
+  <svg class="standard-image-help"><use href="/icons.svg#view_list"></use></svg>
+  <div class="justify">
+    <h1>Custom <span class="object">button</span></h1>
+    Shows your own audio files and saved playlist metadata. Opening audio files or importing a playlist switches to Custom automatically. Clear, Remove, Auto clean and playlist export apply to Custom. Reset clears Custom and restores the default Presets view.
   </div>
 </div>
 

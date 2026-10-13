@@ -175,6 +175,8 @@ Pekosoft uses one consistent SOUND button rule across tools:
 
 ## Audio routing convention
 
+Test-tone definitions, names and sample generation live in [js/test_tones.js](js/test_tones.js), exposed through `window.PekoTestTones`. Generate buffers on demand using the caller's AudioContext. Player owns playlist metadata, playback, looping and Timeline integration. The helper must not create its own AudioContext, start playback or encode audio files.
+
 Pekosoft audio tools should follow one simple signal path unless a tool has a clear reason to differ:
 
 - Route audible voices through an analyser first, then through a master output gain, then to destination.

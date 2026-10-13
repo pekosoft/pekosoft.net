@@ -395,12 +395,22 @@
 
   <div id="playlist-container" class="container">
     <div class="module-body standard border">
+      <div class="controls-buttons wrapper">
+        <button id="playlist-presets-button" class="square" title="Preset test tones" aria-pressed="true" data-help-entry="Presets">
+          <svg class="icons"><use href="/icons.svg#wavelength" /></svg>
+          <span class="button-text">Presets</span>
+        </button>
+        <button id="playlist-custom-button" class="square" title="Custom playlist" aria-pressed="false" data-help-entry="Custom">
+          <svg class="icons"><use href="/icons.svg#view_list" /></svg>
+          <span class="button-text">Custom</span>
+        </button>
+      </div>
       <div class="playlist-table scrollable">
         <table class="playlist-data">
           <thead>
             <tr>
               <th class="col-index" title="Track number">#</th>
-              <th class="col-name" title="Filename">Filename</th>
+              <th class="col-name" title="Track name">Name</th>
               <th class="col-waveform" title="Waveform preview">Waveform</th>
               <th class="col-duration" title="Track duration">Duration</th>
               <th class="col-channels" title="Audio channels">Ch</th>
@@ -515,6 +525,7 @@
 
   <script src="/js/modules.js?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/js/modules.js'); ?>"></script>
   <script src="/js/drag.js?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/js/drag.js'); ?>"></script>
+  <script src="/js/test_tones.js?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/js/test_tones.js'); ?>"></script>
   <script src="/js/<?php echo $release; ?>.js?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/js/' . $release . '.js'); ?>"></script>
   <?php require($_SERVER['DOCUMENT_ROOT'] . "/elements/beta_footer.php"); ?>
 </body>

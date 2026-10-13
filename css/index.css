@@ -358,6 +358,7 @@ thead {
   position: sticky;
   top: 0;
   z-index: 2;
+  background: var(--black);
   box-shadow: inset 0 -1px var(--grey1);
 }
 
@@ -597,7 +598,6 @@ html.modules-page body:not(.layout-two-columns) {
 #timeline-container .timeline-ruler-corner {
   grid-column: 1;
   grid-row: 1;
-  background: var(--black);
 }
 
 #timeline-container .timeline-ruler-corner svg {
@@ -614,7 +614,6 @@ html.modules-page body:not(.layout-two-columns) {
   grid-column: 2;
   grid-row: 1;
   overflow: hidden;
-  background: var(--black);
 }
 
 #timeline-container .timeline-vertical-ruler {
@@ -622,7 +621,6 @@ html.modules-page body:not(.layout-two-columns) {
   grid-column: 1;
   grid-row: 2;
   overflow: hidden;
-  background: var(--black);
 }
 
 #timeline-container .timeline-horizontal-ruler svg {

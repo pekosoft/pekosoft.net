@@ -483,7 +483,7 @@
 
 <div class="feature-row border">
   <svg class="standard-image-help"><use href="/icons.svg#color_depth"></use></svg>
-  <div class="justify"><h1>Alpha <span class="object">option</span></h1>Applies transparency to selected interface surfaces.</div>
+  <div class="justify"><h1>Alpha <span class="object">option</span></h1>Applies transparency to selected interface surfaces. Sticky table headers remain opaque so scrolling rows cannot show through. Timeline rulers have no separate opaque background.</div>
 </div>
 
 <div class="feature-row border">

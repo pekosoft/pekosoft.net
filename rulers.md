@@ -10,6 +10,8 @@ Timeline rulers and plots are separate SVG roots. Each visible edge has one owne
 - Plot: guide lines, data, playhead, plus the right and bottom Bright edges while rulers are visible.
 - Plot with rulers hidden: owns the complete Bright frame.
 
+Timeline ruler cells have no separate opaque background. They occupy dedicated layout cells, so plots do not scroll behind them. Let the containing surface control their background and Alpha transparency.
+
 All ruler and guide lines must use the same explicit SVG contract:
 
 - `stroke-width: 1`

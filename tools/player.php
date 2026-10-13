@@ -42,7 +42,7 @@
           <span class="button-text">Open</span>
         </button>
 
-        <button id="record-button" class="square" title="Record audio">
+        <button id="record-button" class="square" title="Record audio" data-pcm-worklet-url="/js/pcm_recorder.js?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/js/pcm_recorder.js'); ?>">
           <svg class="icons">
             <use href="/icons.svg#record" />
           </svg>
@@ -178,6 +178,13 @@
         <div class="pair timer-pair">
           <label title="Remaining time">Remain:</label>
           <input type="text" id="remaining-display" class="time-display" value="00:00:000" readonly>
+        </div>
+
+        <div class="pair">
+          <label for="recording-format-select" title="Recording audio format">Format:</label>
+          <select id="recording-format-select" aria-label="Recording format">
+            <option value="wav">WAV (PCM)</option>
+          </select>
         </div>
 
         <audio id="audio-player"></audio>

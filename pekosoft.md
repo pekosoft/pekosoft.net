@@ -156,6 +156,13 @@ Pekosoft favors:
 - minimal distraction
 - real utility over feature bloat
 
+## Code naming convention
+
+- **Code names must be generic, descriptive and unbranded.** This applies to classes, functions, variables, modules, namespaces, worklet processor IDs and other internal identifiers.
+- Do not introduce `Peko`, `Pekosoft`, `peko-` or `pekosoft-` prefixes in code names. Use `PcmRecorderProcessor` and `pcm-recorder`, not `PekoPcmRecorderProcessor` and `pekosoft-pcm-recorder`.
+- Follow this rule for every new or renamed identifier. Preserve existing public names when compatibility requires them, and do not mass-rename unrelated legacy code.
+- Product text, attribution and user-facing download filenames may retain the Pekosoft brand. They are not internal code identifiers.
+
 ## Guides text selection convention
 
 - Use "guides" when referring to plot reference lines collectively, not "grid" or "guide". Use Guides when referring to the named control.
@@ -176,6 +183,8 @@ Pekosoft uses one consistent SOUND button rule across tools:
 ## Audio routing convention
 
 Test-tone definitions, names and sample generation live in [js/test_tones.js](js/test_tones.js), exposed through `window.PekoTestTones`. Generate buffers on demand using the caller's AudioContext. Player owns playlist metadata, playback, looping and Timeline integration. The helper must not create its own AudioContext, start playback or encode audio files.
+
+Player records uncompressed WAV by default. [js/pcm_recorder.js](js/pcm_recorder.js) is an AudioWorklet processor that sends channel-separated PCM chunks to Player, which uses its existing 16-bit WAV encoder. Its output is silent and connected only to keep capture processing active. Capture uses the existing AudioContext and preserves its sample rate and the input channel count. The recording-format menu persists under `player.recording_format` and offers only browser-supported MediaRecorder alternatives. Recorded downloads retain their actual MIME type and extension. Timeline edits and generated tones remain WAV.
 
 Pekosoft audio tools should follow one simple signal path unless a tool has a clear reason to differ:
 

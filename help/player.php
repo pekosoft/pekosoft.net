@@ -56,6 +56,7 @@
     <h1>Record <span class="object">button</span></h1>
     Starts or stops recording from selected input. Starting a recording switches to the Custom playlist.
     Finished recordings are added to Custom and can be played again from the playlist.
+    WAV is the default and records uncompressed 16-bit PCM directly from the input at the audio engine's sample rate.
   </div>
 </div>
 
@@ -105,7 +106,7 @@
   </svg>
   <div class="justify">
     <h1>Download <span class="object">button</span></h1>
-    Downloads audio as WAV file.
+    Downloads the current recording in its recorded format. Edited audio and test tones are downloaded as uncompressed WAV.
   </div>
 </div>
 
@@ -156,6 +157,22 @@
   <div class="justify">
     <h1>Input <span class="object">menu</span></h1>
     Selects the audio input device or System Audio. System Audio opens the browser sharing dialog. On Windows, use Chrome or Edge, select a source with audio and enable its audio sharing option. Only audio is processed and recorded. System Audio requests stereo without echo cancellation, noise suppression or automatic gain control. Meters use the channels supplied by the capture, which may be mono depending on the browser and selected source. Turn Sound off to avoid feeding captured audio back into system output. Selecting another input or stopping sharing ends the capture. System Audio requires a new user action after reloading.
+  </div>
+</div>
+
+<div class="feature-row border">
+  <svg class="standard-image-help">
+    <use href="/icons.svg#menu"></use>
+  </svg>
+  <div class="justify">
+    <h1>Format <span class="object">menu</span></h1>
+    Selects the preferred format for new recordings. WAV records uncompressed 16-bit PCM without a lossy intermediate format.
+    WebM (Opus), Ogg (Opus) and MP4 (AAC) are compressed alternatives, shown only when supported by the browser.
+    Editing compressed recordings also requires browser decoding support.
+    The preference is saved and cannot be changed during capture. Changing it does not convert existing audio.
+    Edited audio and test-tone downloads remain WAV. Recordings are kept in memory, with playlist metadata saved separately.
+    Download recordings before reloading to keep their audio. WAV avoids codec compression, but input processing and sample-rate conversion can still affect the signal.
+    <span class="default">Default: WAV (PCM).</span>
   </div>
 </div>
 

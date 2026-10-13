@@ -57,6 +57,7 @@ const panelInputButton = document.getElementById('panel-input-button');
 const panelPlaylistButton = document.getElementById('panel-playlist-button');
 const fadeCurveSelect = document.getElementById('fade-curve-select');
 const responseSelect = document.getElementById('response-select');
+const recordingFormatSelect = document.getElementById('recording-format-select');
 const fadeInButton = document.getElementById('fade-in-button');
 const fadeOutButton = document.getElementById('fade-out-button');
 const normalizeButton = document.getElementById('normalize-button');
@@ -139,6 +140,7 @@ const STORAGE = {
     waveformMultiColor: 'player.waveform_multi_color',
     fadeCurve: 'player.fade_curve',
     response: 'player.response',
+    recordingFormat: 'player.recording_format',
     bass: 'player.bass',
     treble: 'player.treble',
     balance: 'player.balance',
@@ -190,6 +192,7 @@ if (savedWaveformMultiColor === null) {
 }
 localStorage.removeItem('player.tool_guides');
 let mediaRecorder;
+let pcmRecorderModulePromise = null;
 let audioChunks = [];
 let startTime;
 let timerInterval;
@@ -819,6 +822,7 @@ async function refreshAudioSourceFromBuffer() {
     audioPlayer.src = generatedAudioObjectUrl;
     if (downloadButton) {
         downloadButton.dataset.audioUrl = generatedAudioObjectUrl;
+        downloadButton.dataset.audioType = editedBlob.type;
     }
 
     await new Promise((resolve) => {
@@ -1175,6 +1179,7 @@ async function reverseBufferRange() {
 
 function updateActionButtonStates() {
     const isRecording = Boolean(mediaRecorder && mediaRecorder.state === 'recording');
+    recordingFormatSelect.disabled = Boolean(recordingPending || recordingStream || isRecording);
     const isPlaying = !audioPlayer.paused && !audioPlayer.ended && hasLoadedAudioSource();
     const hasAudio = hasLoadedAudioSource();
     const hasDownloadableRecording = Boolean(downloadButton && downloadButton.dataset.audioUrl);
@@ -2829,6 +2834,131 @@ resetButton.addEventListener('click', () => {
 });
 
 // Recording
+const recordingFormats = [
+    { value: 'wav', label: 'WAV (PCM)', mimeType: 'audio/wav', extension: 'wav' },
+    { value: 'webm', label: 'WebM (Opus)', mimeType: 'audio/webm;codecs=opus', extension: 'webm' },
+    { value: 'ogg', label: 'Ogg (Opus)', mimeType: 'audio/ogg;codecs=opus', extension: 'ogg' },
+    { value: 'mp4', label: 'MP4 (AAC)', mimeType: 'audio/mp4;codecs=mp4a.40.2', extension: 'm4a' }
+].filter(format => format.value === 'wav'
+    || (typeof MediaRecorder !== 'undefined' && MediaRecorder.isTypeSupported(format.mimeType)));
+
+for (const format of recordingFormats.slice(1)) {
+    recordingFormatSelect.add(new Option(format.label, format.value));
+}
+const savedRecordingFormat = localStorage.getItem(STORAGE.recordingFormat);
+if (savedRecordingFormat && !recordingFormats.some(format => format.value === savedRecordingFormat)) {
+    console.warn(`Saved recording format "${savedRecordingFormat}" is not supported in this browser. Using WAV.`);
+    localStorage.removeItem(STORAGE.recordingFormat);
+}
+recordingFormatSelect.value = recordingFormats.some(format => format.value === savedRecordingFormat)
+    ? savedRecordingFormat : 'wav';
+recordingFormatSelect.addEventListener('change', () => {
+    localStorage.setItem(STORAGE.recordingFormat, recordingFormatSelect.value);
+});
+
+function getAudioFileExtension(mimeType) {
+    const type = mimeType.split(';')[0];
+    const format = recordingFormats.find(format => format.mimeType.split(';')[0] === type);
+    if (!format) throw new Error(`Unsupported audio download format: ${mimeType}`);
+    return format.extension;
+}
+
+async function createWavRecorder(source, channelCount) {
+    if (!mainAudioContext.audioWorklet) {
+        throw new Error('Uncompressed WAV recording requires a browser with AudioWorklet support.');
+    }
+    if (!pcmRecorderModulePromise) {
+        pcmRecorderModulePromise = mainAudioContext.audioWorklet.addModule(recordButton.dataset.pcmWorkletUrl)
+            .catch(error => {
+                pcmRecorderModulePromise = null;
+                throw error;
+            });
+    }
+    await pcmRecorderModulePromise;
+    const node = new AudioWorkletNode(mainAudioContext, 'pcm-recorder', {
+        numberOfInputs: 1,
+        numberOfOutputs: 1,
+        outputChannelCount: [1],
+        channelCount,
+        channelCountMode: 'explicit',
+        channelInterpretation: 'discrete',
+        processorOptions: { channelCount }
+    });
+    const recorder = new EventTarget();
+    const chunks = [];
+    let frameCount = 0;
+    let disposed = false;
+    recorder.state = 'inactive';
+    recorder.mimeType = 'audio/wav';
+    recorder.dispose = () => {
+        if (disposed) return;
+        disposed = true;
+        recorder.state = 'inactive';
+        source.disconnect(node);
+        node.disconnect();
+        node.port.close();
+        chunks.length = 0;
+    };
+    recorder.start = () => {
+        recorder.state = 'recording';
+        node.port.postMessage('start');
+    };
+    recorder.stop = () => {
+        recorder.state = 'inactive';
+        node.port.postMessage('stop');
+    };
+    const fail = error => {
+        recorder.dispose();
+        recorder.dispatchEvent(new ErrorEvent('error', { error, message: error.message }));
+    };
+    node.onprocessorerror = () => fail(new Error('The PCM recording processor failed.'));
+    node.port.onmessage = ({ data }) => {
+        if (data.type === 'data') {
+            chunks.push(data.channels);
+            frameCount += data.channels[0].length;
+        } else if (data.type === 'stop') {
+            try {
+                if (!frameCount) throw new Error('No PCM audio was captured. Record for longer before stopping.');
+                const buffer = mainAudioContext.createBuffer(channelCount, frameCount, mainAudioContext.sampleRate);
+                let offset = 0;
+                for (const chunk of chunks) {
+                    for (let channel = 0; channel < channelCount; channel++) {
+                        buffer.getChannelData(channel).set(chunk[channel], offset);
+                    }
+                    offset += chunk[0].length;
+                }
+                const blob = encodeAudioBufferToWavBlob(buffer);
+                recorder.audioBuffer = buffer;
+                recorder.dispose();
+                recorder.dispatchEvent(new BlobEvent('dataavailable', { data: blob }));
+                recorder.dispatchEvent(new Event('stop'));
+            } catch (error) {
+                fail(error);
+            }
+        }
+    };
+    source.connect(node);
+    // A silent output keeps the worklet running without monitoring the captured input.
+    node.connect(mainAudioContext.destination);
+    return recorder;
+}
+
+function releaseRecordingInput() {
+    if (recordingSource) {
+        disconnectSourceFromMeters(recordingSource);
+        recordingSource = null;
+    }
+    if (recordingStream) {
+        const stream = recordingStream;
+        recordingStream = null;
+        releaseInputStream(stream);
+    }
+    recordButton.classList.remove('button-on');
+    stopTimer();
+    restoreMeterChannelCount();
+    syncVisualFreeze();
+}
+
 recordButton.addEventListener('click', async () => {
     if (recordingPending || (mediaRecorder?.state === 'inactive' && recordingStream)) return;
     if (!mediaRecorder || mediaRecorder.state === 'inactive') {
@@ -2836,11 +2966,27 @@ recordButton.addEventListener('click', async () => {
         recordingPending = true;
         pendingInputRequests++;
         const requestId = ++recordingRequestId;
+        const format = recordingFormats.find(format => format.value === recordingFormatSelect.value);
         let stream;
+        let source;
+        let recorder;
+        updateActionButtonStates();
         try {
+            if (!format) throw new Error('Select a supported recording format.');
             stream = await requestSelectedInput();
             if (mainAudioContext.state === 'suspended') await mainAudioContext.resume();
             if (requestId !== recordingRequestId) {
+                releaseInputStream(stream);
+                return;
+            }
+            source = mainAudioContext.createMediaStreamSource(stream);
+            const channelCount = getInputChannelCount(source);
+            recorder = format.value === 'wav'
+                ? await createWavRecorder(source, channelCount)
+                : new MediaRecorder(stream, { mimeType: format.mimeType });
+            if (requestId !== recordingRequestId) {
+                recorder.dispose?.();
+                source.disconnect();
                 releaseInputStream(stream);
                 return;
             }
@@ -2854,24 +3000,28 @@ recordButton.addEventListener('click', async () => {
             resetAnalyser();
 
             recordingStream = stream;
-            recordingSource = mainAudioContext.createMediaStreamSource(stream);
+            recordingSource = source;
             connectSourceToMeters(recordingSource);
             loadedChannelCount = getInputChannelCount(recordingSource);
             recreateChannelSplitter(loadedChannelCount);
 
-            mediaRecorder = new MediaRecorder(stream);
+            mediaRecorder = recorder;
             audioChunks = [];
-            recordButton.classList.add('button-on');
-            startTimer();
-            mediaRecorder.start();
-            updateActionButtonStates();
-            syncVisualFreeze();
-
-            mediaRecorder.addEventListener('dataavailable', event => audioChunks.push(event.data));
-            mediaRecorder.addEventListener('stop', () => {
-                const audioBlob = new Blob(audioChunks, { type: mediaRecorder.mimeType });
+            let recordingFailed = false;
+            recorder.addEventListener('error', event => {
+                recordingFailed = true;
+                recorder.dispose?.();
+                if (recorder.state === 'recording') recorder.stop();
+                releaseRecordingInput();
+                reportInputError(event.error || new Error(event.message || 'Audio recording failed.'));
+                updateActionButtonStates();
+            });
+            recorder.addEventListener('dataavailable', event => audioChunks.push(event.data));
+            recorder.addEventListener('stop', () => {
+                if (recordingFailed) return;
+                const audioBlob = new Blob(audioChunks, { type: recorder.mimeType });
                 const timestamp = Date.now();
-                const file = new File([audioBlob], `Recording - ${formatAddedTimestamp(timestamp)}`, {
+                const file = new File([audioBlob], `Recording - ${formatAddedTimestamp(timestamp)}.${format.extension}`, {
                     type: audioBlob.type,
                     lastModified: timestamp
                 });
@@ -2882,6 +3032,7 @@ recordButton.addEventListener('click', async () => {
                     lastModified: timestamp,
                     addedAt: timestamp,
                     file,
+                    recording: true,
                     duration: null,
                     channels: null,
                     waveformPeaks: null
@@ -2896,54 +3047,44 @@ recordButton.addEventListener('click', async () => {
                 generatedAudioObjectUrl = audioUrl;
                 audioPlayer.src = audioUrl;
                 downloadButton.dataset.audioUrl = audioUrl;
-                recordButton.classList.remove('button-on');
-                stopTimer();
-                if (recordingSource) {
-                    disconnectSourceFromMeters(recordingSource);
-                    recordingSource = null;
-                }
-                if (recordingStream) {
-                    const stream = recordingStream;
-                    recordingStream = null;
-                    releaseInputStream(stream);
-                }
-                restoreMeterChannelCount();
-                syncVisualFreeze();
+                downloadButton.dataset.audioType = audioBlob.type;
+                releaseRecordingInput();
                 if (selectedDeviceId === SYSTEM_AUDIO_INPUT) updateAudioInfo();
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    mainAudioContext.decodeAudioData(e.target.result).then(buffer => {
-                        item.duration = buffer.duration;
-                        item.channels = buffer.numberOfChannels;
-                        item.waveformPeaks = createPlaylistWaveformPeaks(buffer);
-                        if (currentPlaylistItem === item) {
-                            drawStaticWaveform(buffer);
-                            displayRecordingInfo(audioBlob, buffer);
-                        }
-                        renderPlaylist();
-                        savePlaylistToStorage();
-                        updateActionButtonStates();
-                    }).catch(error => {
-                        console.error('Error decoding recording:', error);
-                        alert('The recording was captured, but this browser could not decode it for editing.');
-                        updateActionButtonStates();
-                    });
+                const showRecording = buffer => {
+                    item.duration = buffer.duration;
+                    item.channels = buffer.numberOfChannels;
+                    item.waveformPeaks = createPlaylistWaveformPeaks(buffer);
+                    if (currentPlaylistItem === item) {
+                        drawStaticWaveform(buffer);
+                        displayFileInfo(file, buffer);
+                    }
+                    renderPlaylist();
+                    savePlaylistToStorage();
+                    updateActionButtonStates();
                 };
-                reader.readAsArrayBuffer(audioBlob);
+                if (recorder.audioBuffer) {
+                    showRecording(recorder.audioBuffer);
+                } else {
+                    audioBlob.arrayBuffer().then(data => mainAudioContext.decodeAudioData(data))
+                        .then(showRecording).catch(error => {
+                            console.error('Error decoding recording:', error);
+                            alert('The recording was captured, but this browser could not decode it for editing.');
+                            updateActionButtonStates();
+                        });
+                }
                 updateActionButtonStates();
             });
+            recordButton.classList.add('button-on');
+            startTimer();
+            recorder.start();
+            updateActionButtonStates();
+            syncVisualFreeze();
             updateAudioInfo();
         } catch (error) {
-            if (recordingSource) {
-                disconnectSourceFromMeters(recordingSource);
-                recordingSource = null;
-            }
-            recordingStream = null;
+            recorder?.dispose?.();
+            source?.disconnect();
+            releaseRecordingInput();
             releaseInputStream(stream);
-            recordButton.classList.remove('button-on');
-            stopTimer();
-            restoreMeterChannelCount();
-            syncVisualFreeze();
             if (requestId === recordingRequestId) reportInputError(error);
         } finally {
             recordingPending = false;
@@ -3030,7 +3171,15 @@ downloadButton.addEventListener('click', () => {
     if (!downloadButton.dataset.audioUrl) return;
     const now = new Date();
     const timestamp = `${String(now.getDate()).padStart(2, '0')}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getFullYear())}-${String(now.getHours()).padStart(2, '0')}-${String(now.getMinutes()).padStart(2, '0')}-${String(now.getSeconds()).padStart(2, '0')}`;
-    const filename = `pekosoft_player_${timestamp}.wav`;
+    let extension;
+    try {
+        extension = getAudioFileExtension(downloadButton.dataset.audioType || 'audio/wav');
+    } catch (error) {
+        console.error('Error downloading audio:', error);
+        alert(error.message);
+        return;
+    }
+    const filename = `pekosoft_player_${timestamp}.${extension}`;
     const link = document.createElement('a');
     link.href = downloadButton.dataset.audioUrl;
     link.download = typeof window.ensurePekosoftFilename === 'function'
@@ -3390,25 +3539,6 @@ function applyPanelMetaAnalysis(buffer) {
         ? `${analysis.averagePitchHz.toFixed(1)} Hz`
         : 'N/A';
     panelState.meta.dcOffset = `${analysis.dcOffsetPercent.toFixed(3)} %`;
-}
-
-function displayRecordingInfo(blob, buffer) {
-    const durationInSeconds = buffer.duration;
-    const durationFormatted = formatDurationForPanel(durationInSeconds);
-    const sampleRate = buffer.sampleRate;
-    const numChannels = buffer.numberOfChannels;
-    const fileSize = (blob.size / 1024 / 1024).toFixed(2);
-
-    panelState.meta.fileName = 'New recording';
-    panelState.meta.fileSize = `${fileSize} MB`;
-    panelState.meta.duration = durationFormatted;
-    panelState.meta.sampleRate = `${sampleRate} Hz`;
-    panelState.meta.channels = numChannels;
-    panelState.meta.format = 'audio/wav';
-    applyPanelMetaAnalysis(buffer);
-    loadedChannelCount = numChannels;
-    setDurationDisplay(durationInSeconds);
-    renderPanel();
 }
 
 function displayFileInfo(file, buffer) {
@@ -4460,6 +4590,8 @@ function playPlaylistItem(index) {
         revokeGeneratedAudioUrl();
         generatedAudioObjectUrl = url;
         audioPlayer.src = url;
+        downloadButton.dataset.audioUrl = item.recording ? url : '';
+        downloadButton.dataset.audioType = item.recording ? item.type : '';
     } catch (error) {
         console.error('Error creating object URL for playlist item:', error);
         return;

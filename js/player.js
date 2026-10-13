@@ -2832,6 +2832,7 @@ resetButton.addEventListener('click', () => {
 recordButton.addEventListener('click', async () => {
     if (recordingPending || (mediaRecorder?.state === 'inactive' && recordingStream)) return;
     if (!mediaRecorder || mediaRecorder.state === 'inactive') {
+        setPlaylistView('custom');
         recordingPending = true;
         pendingInputRequests++;
         const requestId = ++recordingRequestId;
@@ -2845,6 +2846,9 @@ recordButton.addEventListener('click', async () => {
             }
             revokeGeneratedAudioUrl();
             audioPlayer.src = '';
+            currentPlaylistItem = null;
+            currentPlaylistIndex = -1;
+            renderPlaylist();
             clearMetaInfo();
             clearStaticWaveform();
             resetAnalyser();
@@ -2866,8 +2870,30 @@ recordButton.addEventListener('click', async () => {
             mediaRecorder.addEventListener('dataavailable', event => audioChunks.push(event.data));
             mediaRecorder.addEventListener('stop', () => {
                 const audioBlob = new Blob(audioChunks, { type: mediaRecorder.mimeType });
+                const timestamp = Date.now();
+                const file = new File([audioBlob], `Recording - ${formatAddedTimestamp(timestamp)}`, {
+                    type: audioBlob.type,
+                    lastModified: timestamp
+                });
+                const item = {
+                    name: file.name,
+                    size: file.size,
+                    type: file.type,
+                    lastModified: timestamp,
+                    addedAt: timestamp,
+                    file,
+                    duration: null,
+                    channels: null,
+                    waveformPeaks: null
+                };
+                getCustomPlaylist().push(item);
+                currentPlaylistItem = item;
+                currentPlaylistIndex = playlist.indexOf(item);
+                renderPlaylist();
+                savePlaylistToStorage();
                 const audioUrl = URL.createObjectURL(audioBlob);
                 revokeGeneratedAudioUrl();
+                generatedAudioObjectUrl = audioUrl;
                 audioPlayer.src = audioUrl;
                 downloadButton.dataset.audioUrl = audioUrl;
                 recordButton.classList.remove('button-on');
@@ -2887,8 +2913,15 @@ recordButton.addEventListener('click', async () => {
                 const reader = new FileReader();
                 reader.onload = (e) => {
                     mainAudioContext.decodeAudioData(e.target.result).then(buffer => {
-                        drawStaticWaveform(buffer);
-                        displayRecordingInfo(audioBlob, buffer);
+                        item.duration = buffer.duration;
+                        item.channels = buffer.numberOfChannels;
+                        item.waveformPeaks = createPlaylistWaveformPeaks(buffer);
+                        if (currentPlaylistItem === item) {
+                            drawStaticWaveform(buffer);
+                            displayRecordingInfo(audioBlob, buffer);
+                        }
+                        renderPlaylist();
+                        savePlaylistToStorage();
                         updateActionButtonStates();
                     }).catch(error => {
                         console.error('Error decoding recording:', error);

@@ -54,7 +54,8 @@
   </svg>
   <div class="justify">
     <h1>Record <span class="object">button</span></h1>
-    Starts or stops recording from selected input.
+    Starts or stops recording from selected input. Starting a recording switches to the Custom playlist.
+    Finished recordings are added to Custom and can be played again from the playlist.
   </div>
 </div>
 

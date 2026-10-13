@@ -14,7 +14,7 @@
   </svg>
   <div class="justify">
     <h1>Instrument <span class="object">module</span></h1>
-    Three wheel rings show major, minor and diminished relationships. Four centered triangles move key selection and mode focus.
+    Three wheel rings show major, minor and diminished relationships. Four triangles move key selection and mode focus.
   </div>
 </div>
 
@@ -234,7 +234,7 @@
   </svg>
   <div class="justify">
     <h1>Copy <span class="object">button</span></h1>
-    Copies the Timeline canvas as a PNG image to clipboard.
+    Copies the Timeline as a PNG image to clipboard.
   </div>
 </div>
 

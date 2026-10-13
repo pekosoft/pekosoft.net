@@ -294,7 +294,7 @@
     <h1>Meter crosshair <span class="object">button</span></h1>
     Shows crosshair lines across the Meters plot. With a mouse, the lines follow the pointer and hide when it leaves. On phone, tap or drag the plot to position the lines. They stay after you lift your finger, and pinch zoom remains available. Crosshair also works while frozen and is independent of Guides, Bright and Rulers. The cursor always stays crosshair, even when the lines are off. The setting is saved for the current tool. Reset turns it off. <span class="default">Default: off.</span>
     A tooltip follows the crosshair and stays within the plot. Spectroscope shows frequency, cursor decibels and the displayed bar level.
-    Level shows the channel, cursor dBFS and displayed level. Oscilloscope shows time, signed cursor amplitude and the cached sample.
+    Level shows the channel, cursor dBFS and displayed level. Oscilloscope shows time, signed cursor amplitude and the sample value.
     Wavescope shows time before the newest sample, channel, cursor amplitude and the displayed minimum-to-maximum range.
     Phasescope shows cursor Mid/Side and corresponding L/R amplitudes, plus the signal's overall correlation.
     FS is normalized full-scale amplitude. Cursor values describe the pointer position, not the measured signal.
@@ -307,7 +307,7 @@
   <svg class="standard-image-help"><use href="/icons.svg?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/icons.svg'); ?>#phasescope"></use></svg>
   <div class="justify">
     <h1>Phasescope <span class="object">button</span></h1>
-    Shows the stereo signal as a phase trace centered in the Meters canvas, with L and R at the upper corners of the guide area. Matching left and right signals form a vertical line. Opposite-polarity signals form a horizontal line. A wider trace indicates more stereo difference. Left-only and right-only signals follow the corresponding diagonal axes. Mono uses the same signal on both sides. The correlation reading appears above the trace. Its scale below the trace ranges from -1 for opposite polarity through a centered 0 for unrelated signals to +1 for matching signals. Three cursors show the current value and the minimum and maximum over the last second of live updates. Color affects only the phase trace. A dash means correlation is undefined because one or both channels are silent, which also clears the cursors and their range. Guides shows the phase axes and the correlation scale, ticks and labels. Rulers shows the normalized mid and side amplitude scales. The correlation readout and cursors are independent of both toggles. The horizontal side signal is (R - L) / 2, and the vertical mid signal is (L + R) / 2. Freeze holds the trace, correlation and all three cursors without stopping audio. Paused and frozen redraws preserve the held range. Live updates discard samples older than one second. The selected Meters view is saved for the current tool.
+    Shows the stereo signal as a phase trace. Matching left and right signals form a vertical line. Opposite-polarity signals form a horizontal line. A wider trace indicates more stereo difference. Left-only and right-only signals follow the corresponding diagonal axes. Mono uses the same signal on both sides. The correlation reading appears above the trace. Its scale below the trace ranges from -1 for opposite polarity through 0 for unrelated signals to +1 for matching signals. Three cursors show the current value and the minimum and maximum over the last second of live updates. Color affects only the phase trace. A dash means correlation is undefined because one or both channels are silent, which also clears the cursors and their range. Guides shows the phase axes and the correlation scale, ticks and labels. Rulers shows the normalized mid and side amplitude scales. The correlation readout and cursors are independent of both toggles. The horizontal side signal is (R - L) / 2, and the vertical mid signal is (L + R) / 2. Freeze holds the trace, correlation and all three cursors without stopping audio. The selected Meters view is saved for the current tool.
   </div>
 </div>
 
@@ -315,7 +315,7 @@
   <svg class="standard-image-help"><use href="/icons.svg#ruler"></use></svg>
   <div class="justify">
     <h1>Meter rulers <span class="object">button</span></h1>
-    The Rulers button in Meters shows or hides SVG scales independently of Guides. Spectroscope shows frequency and decibel rulers. Level shows a decibel ruler, including -3 dB where space permits, and channel labels, L and R for left and right or M for mono. Crowded Level references are omitted together with their ticks and guides. Oscilloscope shows milliseconds across its sample window. Wavescope shows seconds back from the newest captured signal at 0 s, excluding silence and paused updates. Both show decibel rulers, with channel labels for stereo Wavescope. Phasescope shows normalized mid and side amplitude scales. Its bottom correlation meter is independent of Rulers. Bright changes both guide and ruler contrast. The local Rulers button overrides the Settings Rulers option for Meters only. <span class="default">Default: on.</span>
+    The Rulers button in Meters shows or hides scales independently of Guides. Spectroscope shows frequency and decibel rulers. Level shows a decibel ruler, including -3 dB where space permits, and channel labels, L and R for left and right or M for mono. Crowded Level references are omitted together with their ticks and guides. Oscilloscope shows milliseconds across its sample window. Wavescope shows seconds back from the newest captured signal at 0 s, excluding silence and paused updates. Both show decibel rulers, with channel labels for stereo Wavescope. Phasescope shows normalized mid and side amplitude scales. Its bottom correlation meter is independent of Rulers. Bright changes both guide and ruler contrast. The local Rulers button overrides the Settings Rulers option for Meters only. <span class="default">Default: on.</span>
   </div>
 </div>
 
@@ -323,7 +323,7 @@
   <svg class="standard-image-help"><use href="/icons.svg#photo"></use></svg>
   <div class="justify">
     <h1>Meter bitmap <span class="object">button</span></h1>
-    Save bitmap downloads the current Meters plot as a PNG. Copy bitmap copies the same image to the clipboard in supported browsers. The image includes the displayed trace, canvas guides and readouts, but not the outer SVG rulers, crosshair overlay or controls. With Guides and Bright on, the image has a complete bright outline even when Rulers is on. Freeze first to capture a held frame. Saving and copying do not change the selected view, Freeze or audio playback.
+    Save bitmap downloads the current Meters plot as a PNG. Copy bitmap copies the same image to the clipboard in supported browsers. The image includes the displayed trace, guides and readouts, but not the outer rulers, crosshair overlay or controls. With Guides and Bright on, the image has a complete bright outline even when Rulers is on. Freeze first to capture a held frame. Saving and copying do not change the selected view, Freeze or audio playback.
   </div>
 </div>
 

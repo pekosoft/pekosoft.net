@@ -313,7 +313,7 @@
   </svg>
   <div class="justify">
     <h1>Rulers <span class="object">button</span></h1>
-    Toggles the SVG time, beats and dB rulers in Timeline. Click the time or beats ruler to seek. The beats ruler snaps to beats and lets you drag an active selection. <span class="default">Default: on.</span>
+    Toggles the time, beats and dB rulers in Timeline. Click the time or beats ruler to seek. The beats ruler snaps to beats and lets you drag an active selection. <span class="default">Default: on.</span>
   </div>
 </div>
 

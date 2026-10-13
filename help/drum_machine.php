@@ -287,7 +287,7 @@
     <use href="/icons.svg#photo"></use>
   </svg>
   <div class="justify">
-    <h1>Save <span class="object">button</span></h1>Saves the Timeline canvas as a PNG image.
+    <h1>Save <span class="object">button</span></h1>Saves the Timeline as a PNG image.
   </div>
 </div>
 
@@ -296,7 +296,7 @@
     <use href="/icons.svg#copy"></use>
   </svg>
   <div class="justify">
-    <h1>Copy <span class="object">button</span></h1>Copies the Timeline canvas as a PNG image to clipboard.
+    <h1>Copy <span class="object">button</span></h1>Copies the Timeline as a PNG image to clipboard.
   </div>
 </div>
 

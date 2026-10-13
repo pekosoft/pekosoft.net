@@ -79,7 +79,7 @@ Made JavaScript file available directly in browser.
 10-12-2014
 </h1>
 
-Timeline can now show also delay times. They are displayed in blue, and are selected from Table. 1/4 is default value.
+Timeline can now show also delay times, selected from Table. 1/4 is default value.
 
 
 <h1>1.16
@@ -87,7 +87,7 @@ Timeline can now show also delay times. They are displayed in blue, and are sele
 </h1>
 
 Introducing file size fields: Rate (input), Resolution (input), Channels (input) and Size (result).
-Added Background button for toggling yellow background in value fields.
+Added Background button for toggling background bars in value fields.
 
 
 <h1>1.15
@@ -104,7 +104,7 @@ Simplified short and long description.
 21-09-2014
 </h1>
 
-Added notes and cents. Results only. Grey fields are back.
+Added notes and cents as result fields.
 Improved button, hover and toggle aspects of interface.
 
 
@@ -115,7 +115,7 @@ Improved button, hover and toggle aspects of interface.
 Improved Timeline layout.
 Changed all text fields to number fields. Meaning all fields now have up and down buttons, up and down keys on keyboard work too, and hold is now supported.
 Added restriction against negative numbers.
-Wavelength column now works in reverse. No more grey fields.
+Wavelength column now works in reverse.
 
 
 <h1>1.12
@@ -134,7 +134,7 @@ Removed max 8 characters input limit for BPM, SPB and BPS fields.
 Added Timeline.
 Added headers to Buttons, Timeline and Table.
 All three modules can now be toggled.
-Added yellow background corresponding to their values to all fields.
+Added background bars corresponding to their values to all fields.
 Reset button now clears all fields backgrounds.
 
 
@@ -142,7 +142,7 @@ Reset button now clears all fields backgrounds.
 04-09-2014
 </h1>
 
-BPM, SPB and BPS fields now have (yellow) background corresponding to their values.
+BPM, SPB and BPS fields now have background bars corresponding to their values.
 Added toggle buttons button.
 Expanded BPM buttons with another row. 250 - 315.
 
@@ -161,7 +161,7 @@ Added whole notes.
 
 Now works also in reverse for both MS and HZ.
 Now has a much slimmer design.
-Changed non-input fields background from yellow to grey.
+Distinguished result fields from input fields.
 Released this change-log.
 
 

@@ -14,7 +14,7 @@
   </svg>
   <div class="justify">
     <h1>Instrument <span class="object">module</span></h1>
-    The pad is for tapping, and also shows the average BPM, rounded to whole number, in large font.
+    The pad is for tapping, and also shows the average BPM, rounded to whole number.
   </div>
 </div>
 

@@ -57,9 +57,9 @@ window.addEventListener('DOMContentLoaded', () => {
     samplePointsVisible: true
   };
   const samplingLayers = [
-    { key: 'signalVisible', id: 'sampling-signal', description: 'white signal', button: document.getElementById('toggle-signal-button') },
-    { key: 'quantizedVisible', id: 'sampling-quantized', description: 'blue quantized steps', button: document.getElementById('toggle-quantized-steps-button') },
-    { key: 'samplePointsVisible', id: 'sampling-points', description: 'magenta sample points', button: document.getElementById('toggle-sample-points-button') }
+    { key: 'signalVisible', id: 'sampling-signal', description: 'original signal', button: document.getElementById('toggle-signal-button') },
+    { key: 'quantizedVisible', id: 'sampling-quantized', description: 'quantized steps', button: document.getElementById('toggle-quantized-steps-button') },
+    { key: 'samplePointsVisible', id: 'sampling-points', description: 'sample points', button: document.getElementById('toggle-sample-points-button') }
   ];
   const samplingLayerVisibility = Object.fromEntries(samplingLayers.map(({ key }) => [key, DEFAULT_STATE[key]]));
   const controlKnobs = [

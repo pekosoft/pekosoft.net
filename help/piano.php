@@ -14,7 +14,7 @@
   </svg>
   <div class="justify">
     <h1>Instrument <span class="object">module</span></h1>
-    The Instrument module shows the piano keyboard. White and black keys can be played with mouse or touch.
+    The Instrument module shows the piano keyboard. Keys can be played with mouse or touch.
   </div>
 </div>
 

@@ -58,8 +58,7 @@
   </svg>
   <div class="justify">
     <h1>Simple</h1>
-    Fast and responsive. No gradients, rounded corners or bloat. Only essential features make the final cut.
-    Pekosoft uses two colors (blue and magenta) and two fonts (Arial and Consolas).
+    Fast and responsive. No bloat. Only essential features make the final cut.
   </div>
 </div>
 
@@ -293,7 +292,7 @@
   <svg class="standard-image-help"><use href="/icons.svg#crosshair"></use></svg>
   <div class="justify">
     <h1>Meter crosshair <span class="object">button</span></h1>
-    Shows one-pixel grey crosshair lines across the Meters plot. With a mouse, the lines follow the pointer and hide when it leaves. On phone, tap or drag the plot to position the lines. They stay after you lift your finger, and pinch zoom remains available. Crosshair also works while frozen and is independent of Guides, Bright and Rulers. The cursor always stays crosshair, even when the lines are off. The setting is saved for the current tool. Reset turns it off. <span class="default">Default: off.</span>
+    Shows crosshair lines across the Meters plot. With a mouse, the lines follow the pointer and hide when it leaves. On phone, tap or drag the plot to position the lines. They stay after you lift your finger, and pinch zoom remains available. Crosshair also works while frozen and is independent of Guides, Bright and Rulers. The cursor always stays crosshair, even when the lines are off. The setting is saved for the current tool. Reset turns it off. <span class="default">Default: off.</span>
     A tooltip follows the crosshair and stays within the plot. Spectroscope shows frequency, cursor decibels and the displayed bar level.
     Level shows the channel, cursor dBFS and displayed level. Oscilloscope shows time, signed cursor amplitude and the cached sample.
     Wavescope shows time before the newest sample, channel, cursor amplitude and the displayed minimum-to-maximum range.
@@ -308,7 +307,7 @@
   <svg class="standard-image-help"><use href="/icons.svg?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/icons.svg'); ?>#phasescope"></use></svg>
   <div class="justify">
     <h1>Phasescope <span class="object">button</span></h1>
-    Shows the stereo signal as a phase trace centered in the Meters canvas, with L and R at the upper corners of the guide area. Matching left and right signals form a vertical line. Opposite-polarity signals form a horizontal line. A wider trace indicates more stereo difference. Left-only and right-only signals follow the corresponding diagonal axes. Mono uses the same signal on both sides. The correlation reading appears above the trace. Its scale below the trace ranges from -1 for opposite polarity through a centered 0 for unrelated signals to +1 for matching signals. A blue cursor shows the current value, and magenta cursors show the minimum and maximum over the last second of live updates. The correlation text and numbers stay blue. Color affects only the phase trace. A dash means correlation is undefined because one or both channels are silent, which also clears the cursors and their range. Guides shows the phase axes and the grey correlation scale, ticks and labels. Rulers shows the normalized mid and side amplitude scales. The correlation readout and coloured cursors are independent of both toggles. The horizontal side signal is (R - L) / 2, and the vertical mid signal is (L + R) / 2. Freeze holds the trace, correlation and all three cursors without stopping audio. Paused and frozen redraws preserve the held range. Live updates discard samples older than one second. The selected Meters view is saved for the current tool.
+    Shows the stereo signal as a phase trace centered in the Meters canvas, with L and R at the upper corners of the guide area. Matching left and right signals form a vertical line. Opposite-polarity signals form a horizontal line. A wider trace indicates more stereo difference. Left-only and right-only signals follow the corresponding diagonal axes. Mono uses the same signal on both sides. The correlation reading appears above the trace. Its scale below the trace ranges from -1 for opposite polarity through a centered 0 for unrelated signals to +1 for matching signals. Three cursors show the current value and the minimum and maximum over the last second of live updates. Color affects only the phase trace. A dash means correlation is undefined because one or both channels are silent, which also clears the cursors and their range. Guides shows the phase axes and the correlation scale, ticks and labels. Rulers shows the normalized mid and side amplitude scales. The correlation readout and cursors are independent of both toggles. The horizontal side signal is (R - L) / 2, and the vertical mid signal is (L + R) / 2. Freeze holds the trace, correlation and all three cursors without stopping audio. Paused and frozen redraws preserve the held range. Live updates discard samples older than one second. The selected Meters view is saved for the current tool.
   </div>
 </div>
 
@@ -354,7 +353,7 @@
   </svg>
   <div class="justify">
     <h1>Button</h1>
-    Buttons can be command or toggle. They are colored when on, and greyed out when not accessible. Rectangle with text, or square with icon, can be toggled from Settings. Certain buttons are always square with icon. Text in buttons is in upper case. Some buttons support hold.
+    Buttons can be command or toggle. Toggle buttons indicate whether they are on. Unavailable buttons are disabled. Settings lets you choose text or icon buttons where supported. Some buttons support hold.
   </div>
 </div>
 

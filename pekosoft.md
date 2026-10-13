@@ -156,6 +156,16 @@ Pekosoft favors:
 - minimal distraction
 - real utility over feature bloat
 
+## User-facing writing convention
+
+- **Describe function and behavior, not cosmetic styling. This rule is mandatory across the entire site**, including General and tool-specific Help, tooltips, accessibility descriptions, About and History text.
+- Do not specify interface colors, pixel sizes, line thicknesses, font names or decorative styling in user-facing descriptions. Do not identify controls, traces, cursors or states by their colors. Describe their purpose, meaning or state instead.
+- Write "Shows crosshair lines across the Meters plot.", not "Shows one-pixel grey crosshair lines across the Meters plot."
+- Describe correlation cursors by the values they represent: current, minimum and maximum. Do not list their colors or the color of the readout.
+- Keep information needed to use a feature: interactions, units, ranges, defaults, signal meanings and the behavior of named controls such as Color, Bright, Alpha and Font. Actual data measurements such as System's screen dimensions and pixel ratio, or an adjustable Icons grid size, retain their relevant units. These are functional values, not descriptions of cosmetic styling.
+- Implementation documentation may specify CSS sizes, palette values and rendering details. Keep those details out of user-facing prose.
+- Apply this convention before adding or changing any user-facing text. Check related entries for the same issue and centralize shared behavior in General Help rather than repeating it in every tool's Help.
+
 ## Code naming convention
 
 - **Code names must be generic, descriptive and unbranded.** This applies to classes, functions, variables, modules, namespaces, worklet processor IDs and other internal identifiers.

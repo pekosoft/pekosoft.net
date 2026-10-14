@@ -181,8 +181,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (settings.guides) {
     settings.guides.addEventListener("change", () => {
-      saveGuidesSetting();
       if (window.PekoGuides) window.PekoGuides.setGlobal(settings.guides.checked);
+      else saveGuidesSetting();
       if (window.applySiteSettings) window.applySiteSettings();
     });
   }

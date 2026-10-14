@@ -53,6 +53,7 @@
   };
 
   const buttonIds = new Set(["guides-button", "timeline-guides-button", "tool-guides-button"]);
+  let applyingGlobalGuides = false;
 
   function readBoolean(value, fallback) {
     if (value === null || value === undefined) return fallback;
@@ -159,6 +160,7 @@
   }
 
   function syncPageRegistry() {
+    if (applyingGlobalGuides) return;
     const registry = getRegistry();
     if (!Object.keys(registry).length) {
       storageKeys.forEach((key) => {
@@ -186,21 +188,29 @@
     });
   }
 
-  function setGlobal(nextState) {
+  function setGlobal(nextState, persist = true) {
     const enabled = !!nextState;
-    localStorage.setItem("global.guides", String(enabled));
-    storageKeys.forEach((key) => localStorage.removeItem(key));
-    clearNestedGuideState();
+    if (persist) {
+      storageKeys.forEach((key) => localStorage.removeItem(key));
+      clearNestedGuideState();
 
-    const registry = {};
-    storageKeys.forEach((key) => {
-      registry[key] = enabled;
-    });
-    saveRegistry(registry);
+      const registry = {};
+      storageKeys.forEach((key) => {
+        registry[key] = enabled;
+      });
+      saveRegistry(registry);
+    }
 
-    guideButtons().forEach((button) => {
-      if (button.classList.contains("button-on") !== enabled) button.click();
-    });
+    // Do not publish intermediate states while updating modules one at a time.
+    applyingGlobalGuides = true;
+    try {
+      guideButtons().forEach((button) => {
+        if (button.classList.contains("button-on") !== enabled) button.click();
+      });
+    } finally {
+      applyingGlobalGuides = false;
+    }
+    if (persist) localStorage.setItem("global.guides", String(enabled));
     updateSettingsButton();
     window.dispatchEvent(new CustomEvent("pekosoft:guides-global-change", {
       detail: { enabled }
@@ -216,10 +226,12 @@
     }
   }
 
-  function setBrightGlobal(nextState) {
+  function setBrightGlobal(nextState, persist = true) {
     const enabled = !!nextState;
-    localStorage.setItem("global.bright_guides", String(enabled));
-    clearBrightLocalOverrides();
+    if (persist) {
+      localStorage.setItem("global.bright_guides", String(enabled));
+      clearBrightLocalOverrides();
+    }
     syncTimelineBrightButton();
     updateBrightSettingsButton();
     window.dispatchEvent(new CustomEvent("pekosoft:bright-guides-global-change", {
@@ -230,13 +242,15 @@
     }));
   }
 
-  function setRulersGlobal(nextState) {
+  function setRulersGlobal(nextState, persist = true) {
     const enabled = !!nextState;
-    localStorage.setItem("global.rulers", String(enabled));
-    rulerStorageKeys.forEach((key) => localStorage.removeItem(key));
-    for (let index = localStorage.length - 1; index >= 0; index -= 1) {
-      const key = localStorage.key(index);
-      if (/^meters\..+\.rulers$/.test(key || "")) localStorage.removeItem(key);
+    if (persist) {
+      localStorage.setItem("global.rulers", String(enabled));
+      rulerStorageKeys.forEach((key) => localStorage.removeItem(key));
+      for (let index = localStorage.length - 1; index >= 0; index -= 1) {
+        const key = localStorage.key(index);
+        if (/^meters\..+\.rulers$/.test(key || "")) localStorage.removeItem(key);
+      }
     }
     updateRulersSettingsButton();
     window.dispatchEvent(new CustomEvent("pekosoft:rulers-global-change", {
@@ -294,13 +308,13 @@
 
   window.addEventListener("storage", (event) => {
     if (event.key === "global.guides" && event.newValue !== null) {
-      setGlobal(readBoolean(event.newValue, defaultGuides));
+      setGlobal(getGlobal(), false);
     }
     if (event.key === "global.bright_guides" && event.newValue !== null) {
-      setBrightGlobal(event.newValue === "true");
+      setBrightGlobal(getBrightGlobal(), false);
     }
     if (event.key === "global.rulers" && event.newValue !== null) {
-      setRulersGlobal(readBoolean(event.newValue, defaultRulers));
+      setRulersGlobal(getRulersGlobal(), false);
     }
   });
 

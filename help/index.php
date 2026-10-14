@@ -100,7 +100,10 @@
   </svg>
   <div class="justify">
     <h1>Secure</h1>
-    The site uses HTTPS and follows modern coding and error-handling practices.
+    The site uses HTTPS (Hypertext Transfer Protocol Secure) and follows modern coding and error-handling practices.
+    It uses its own scripts, without third-party libraries.
+    Audio files and recordings are processed in your browser rather than uploaded, and microphone and screen capture require browser permission.
+    The contact form validates input and includes safeguards against forged submissions and spam.
   </div>
 </div>
 
@@ -160,7 +163,7 @@
   </svg>
   <div class="justify">
     <h1>Pages</h1>
-    The following is a description of the pages each tool has. They are Tool, Help, History and About. Pages can be swiped left and right in header. Tools are accessible from front page, TOC and footer. On mobile, TOC closes during page navigation, including Back.
+    The following is a description of the pages each tool has. They are Tool, Help, History and About. Pages can be swiped left and right in header. Tools are accessible from front page and TOC. On mobile, TOC closes during page navigation, including Back.
   </div>
 </div>
 
@@ -194,21 +197,27 @@
   </div>
 </div>
 
-<div class="feature-row border"><svg class="standard-image-help">
-    <use href="/icons.svg#js"></use>
-  </svg>
+<div class="feature-row border">
+  <svg class="standard-image-help"><use href="/icons.svg#speech"></use></svg>
   <div class="justify">
-    <h1>JS <span class="object">pages</span></h1>
-    JavaScript is the functionality.
+    <h1>Contact <span class="object">button</span></h1>
+    Opens the contact form for general messages, bug reports and feature requests. Enter your name, email address and message, choose a category, then press Send.
   </div>
 </div>
 
-<div class="feature-row border"><svg class="standard-image-help">
-    <use href="/icons.svg#css"></use>
-  </svg>
+<div class="feature-row border">
+  <svg class="standard-image-help"><use href="/icons.svg#share"></use></svg>
   <div class="justify">
-    <h1>CSS <span class="object">pages</span></h1>
-    CSS (Cascading Style Sheets) controls styling.
+    <h1>Share <span class="object">button</span></h1>
+    Shares the current page using your device's sharing options. If sharing is unavailable, copies the link to the clipboard or shows it for manual copying.
+  </div>
+</div>
+
+<div class="feature-row border">
+  <svg class="standard-image-help"><use href="/icons.svg#github"></use></svg>
+  <div class="justify">
+    <h1>Updates <span class="object">button</span></h1>
+    Opens a list of recent Pekosoft updates. Use Previous and Next to browse the list, and select an update title to view the change on GitHub.
   </div>
 </div>
 
@@ -263,12 +272,36 @@
 </div>
 
 <div class="feature-row module">
+  <svg class="standard-image-help"><use href="/icons.svg#view_list"></use></svg>
+  <div class="justify">
+    <h1>Playlist <span class="object">module</span></h1>
+    Lists files, presets or patterns for selection and playback. The available items and list actions depend on the tool.
+  </div>
+</div>
+
+<div class="feature-row module">
+  <svg class="standard-image-help"><use href="/icons.svg#undo"></use></svg>
+  <div class="justify">
+    <h1>History <span class="object">module</span></h1>
+    Records edits in tools that support undo and redo. Select an entry to return to that state. This is separate from the History page, which lists versioned changes.
+  </div>
+</div>
+
+<div class="feature-row module">
   <svg class="standard-image-help">
     <use href="/icons.svg#panel"></use>
   </svg>
   <div class="justify">
     <h1>Panel <span class="object">module</span></h1>
     Panel textareas are editable by default and show session data. Generated output may refresh as the tool updates. Whether edited text changes tool state depends on the tool. See its Help for details.
+  </div>
+</div>
+
+<div class="feature-row module">
+  <svg class="standard-image-help"><use href="/icons.svg#meter"></use></svg>
+  <div class="justify">
+    <h1>Meters <span class="object">module</span></h1>
+    Displays the current tool's audio signal. Choose Spectroscope, Level, Oscilloscope, Wavescope or Phasescope to inspect different aspects of the signal. Freeze, Crosshair, Guides, Bright, Rulers and Color adjust the view without changing the audio.
   </div>
 </div>
 
@@ -373,7 +406,7 @@
   </svg>
   <div class="justify">
     <h1>Value field</h1>
-    Can be input, output or both. Have zero or three decimals. Background bars can be toggled from Settings.
+    Can be input, output or both. Decimal precision varies by field. Background bars can be toggled from Settings.
   </div>
 </div>
 
@@ -558,7 +591,7 @@
   </svg>
   <div class="justify">
     <h1>Decimals</h1>
-    Most values, both inputs and results, are limited to and rounded to three decimals. Certain values, like the large BPM in Tap Pad, are rounded to whole number. Comma is used for decimal values. 
+    Most values are displayed with three decimals. Some, like the average BPM on Tap Pad, are rounded to whole numbers. Values that benefit from greater precision include amplitude in Audio Calculator, where an entry such as 2.54321% is used without rounding it to three decimals.
   </div>
 </div>
 
@@ -566,7 +599,7 @@
     <use href="/icons.svg#qr"></use>
   </svg>
   <div class="justify">
-    <h1>Buy us coffee</h1>
+    <h1>Buy Us Coffee</h1>
     For donations and business in general use the bitcoin QR. This is a bitcoin only address.
   </div>
 </div>

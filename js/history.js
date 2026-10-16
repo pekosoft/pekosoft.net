@@ -180,7 +180,7 @@
     createEntry(position, label, timestamp, icon) {
       const row = document.createElement("tr");
       row.className = "module-history-entry";
-      row.classList.toggle("active", position === this.position);
+      row.classList.toggle("table-row-selected", position === this.position);
       row.setAttribute("role", "option");
       row.setAttribute("aria-selected", position === this.position ? "true" : "false");
       row.title = label;

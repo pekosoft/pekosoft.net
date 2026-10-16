@@ -440,6 +440,10 @@ tbody tr:hover {
   background: var(--grey1);
 }
 
+tbody tr.table-row-selected {
+  background: var(--grey1);
+}
+
 /* CLASSES */
 
 /* GENERAL */

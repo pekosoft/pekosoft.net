@@ -340,10 +340,6 @@ canvas {
   color: var(--white);
 }
 
-.playlist-data tbody tr.active {
-  background: var(--grey1);
-}
-
 .playlist-data tbody tr.dead td {
   color: var(--grey2);
 }

@@ -551,8 +551,8 @@ function renderRow(note, i, multiplier, type) {
         resultTable.querySelectorAll('input[type="radio"]').forEach(input => {
           input.checked = input.value === rowId;
         });
-        resultTable.querySelectorAll('tr').forEach(tr => tr.classList.remove('row-selected'));
-        row.classList.add('row-selected');
+        resultTable.querySelectorAll('tr').forEach(tr => tr.classList.remove('table-row-selected'));
+        row.classList.add('table-row-selected');
         updatePanel();
         drawCanvas();
         saveState();
@@ -632,9 +632,9 @@ function renderRow(note, i, multiplier, type) {
   
   // Update row selection styling
   if (state.selected === rowId) {
-    row.classList.add('row-selected');
+    row.classList.add('table-row-selected');
   } else {
-    row.classList.remove('row-selected');
+    row.classList.remove('table-row-selected');
   }
 }
 
@@ -1137,7 +1137,7 @@ selectNoneButton.addEventListener('click', () => {
     radio.checked = false;
   });
   // Remove selection styling from all rows
-  resultTable.querySelectorAll('tr').forEach(tr => tr.classList.remove('row-selected'));
+  resultTable.querySelectorAll('tr').forEach(tr => tr.classList.remove('table-row-selected'));
   
   // Only call calculateValues if NOT currently playing
   if (!state.isPlaying) {

@@ -1,10 +1,6 @@
 /* Pekosoft BPM Calculator */
 /* pekosoft.net/css/bpm_calculator.css */
 
-.row-selected {
-  background: var(--black);
-}
-
 .scrollable-table td input[type="number"] {
   width: 100%;
   max-width: 100%;

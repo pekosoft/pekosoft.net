@@ -4441,7 +4441,7 @@ function renderPlaylist() {
     playlist.forEach((item, index) => {
         const row = document.createElement('tr');
         const isDead = isDeadPlaylistItem(item);
-        row.className = index === currentPlaylistIndex && !isDead ? 'active' : '';
+        row.className = index === currentPlaylistIndex && !isDead ? 'table-row-selected' : '';
         row.classList.toggle('dead', isDead);
         row.dataset.index = index;
 

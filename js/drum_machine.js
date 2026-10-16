@@ -494,7 +494,7 @@
         this.recordings.forEach((recording, index) => {
           const row = document.createElement("tr");
           row.dataset.index = String(index);
-          row.classList.toggle("active", index === this.selectedRecordingIndex);
+          row.classList.toggle("table-row-selected", index === this.selectedRecordingIndex);
           row.addEventListener("click", (event) => {
             if (event.target.closest("button")) return;
             this.selectRecording(index);

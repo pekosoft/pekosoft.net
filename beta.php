@@ -29,6 +29,8 @@
     <div class="item"><a href="/audio_calculator" title="Audio Calculator"><svg class="large-icon" role="img" aria-label="Audio Calculator"><use href="/icons.svg#audio_calculator" /></svg></a></div>
     <div class="item"><a href="/piano" title="Piano"><svg class="large-icon" role="img" aria-label="Piano"><use href="/icons.svg#piano" /></svg></a></div>
     <div class="item"><a href="/icons" title="Icons"><svg class="large-icon" role="img" aria-label="Icons"><use href="/icons.svg#icons" /></svg></a></div>
+    <div class="item release-placeholder" aria-hidden="true"></div>
+    <div class="item release-placeholder" aria-hidden="true"></div>
   </div>
 
   <div class="standard padded border">

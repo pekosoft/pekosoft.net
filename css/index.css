@@ -1249,6 +1249,16 @@ li h1 img {
   background-color: var(--grey1);
 }
 
+.release-placeholder {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .release-placeholder {
+    display: block;
+  }
+}
+
 .assets {
   width: auto;
   height: 32px;

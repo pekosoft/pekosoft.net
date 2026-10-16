@@ -122,6 +122,41 @@ test('a stalled timer skips missed beats instead of playing a catch-up burst', (
   assert.equal(recovered.filter(sound => sound.kind === 'beat').length, 1);
 });
 
+test('rapid Note knob changes schedule immediately without disturbing the 320 BPM beat clock', () => {
+  const { context, sounds } = createPlayback({
+    bpm: 320, modes: { base: true, dotted: true, triplet: true }
+  });
+  Object.assign(context, {
+    noteKnob: { style: { setProperty() {} }, dataset: {}, setAttribute() {} },
+    resultTable: { querySelectorAll: () => [] },
+    selectionRenderFrame: null, saveState() {}, updatePanel() {},
+    getValueLabel: (note, type) => `${note} ${type}`
+  });
+  vm.runInContext(source.slice(
+    source.indexOf('function getRowDelayMs('),
+    source.indexOf('function updateSortButton(')
+  ), context);
+  context.startPlayback();
+  const beatOrigin = context.playbackBeatOriginSec;
+  const transportOrigin = context.timelineStartTime;
+  for (let index = 1; index < 400; index++) {
+    context.audioContext.currentTime = transportOrigin + index * 0.025;
+    const pendingBeats = context.scheduledAudioNodes.filter(sound => sound.kind === 'beat');
+    context.setNoteKnobIndex(index % 34);
+    assert.equal(context.playbackBeatOriginSec, beatOrigin);
+    assert.equal(context.timelineStartTime, transportOrigin);
+    assert.ok(pendingBeats.every(sound => !sound.stopped));
+    assert.ok(context.scheduledAudioNodes.length < 8);
+    assert.ok(context.scheduledAudioNodes.every(sound =>
+      sound.startTime < context.audioContext.currentTime + 0.151));
+  }
+  const beats = sounds.filter(sound => sound.kind === 'beat');
+  assert.equal(new Set(beats.map(sound => sound.startTime)).size, beats.length);
+  for (let index = 1; index < beats.length; index++) {
+    assert.ok(Math.abs(beats[index].startTime - beats[index - 1].startTime - 60 / 320) < 1e-8);
+  }
+});
+
 test('pause cancels queued audio and resume preserves position with only one scheduler', () => {
   const { context, sounds, timers, advance } = createPlayback({ selected: '6-base' });
   context.startPlayback();

@@ -36,6 +36,60 @@ if (window.visualViewport) {
   window.visualViewport.addEventListener('scroll', syncPekosoftViewport);
 }
 
+function bindKnobControl(knob, handlers) {
+  if (!knob) return;
+  let drag = null;
+
+  knob.addEventListener('wheel', (event) => {
+    event.preventDefault();
+    if (event.deltaY !== 0) handlers.nudge(event.deltaY < 0 ? 1 : -1);
+  }, { passive: false });
+
+  knob.addEventListener('keydown', (event) => {
+    if (event.key === 'ArrowUp' || event.key === 'ArrowRight') {
+      event.preventDefault();
+      handlers.nudge(1);
+    } else if (event.key === 'ArrowDown' || event.key === 'ArrowLeft') {
+      event.preventDefault();
+      handlers.nudge(-1);
+    } else if (event.key === 'Home' && typeof handlers.home === 'function') {
+      event.preventDefault();
+      handlers.home();
+    } else if (event.key === 'End' && typeof handlers.end === 'function') {
+      event.preventDefault();
+      handlers.end();
+    }
+  });
+
+  knob.addEventListener('dblclick', (event) => {
+    event.preventDefault();
+    handlers.reset();
+  });
+
+  knob.addEventListener('pointerdown', (event) => {
+    if (!event.isPrimary || event.button !== 0) return;
+    event.preventDefault();
+    knob.focus({ preventScroll: true });
+    drag = { pointerId: event.pointerId, y: event.clientY, value: handlers.get() };
+    knob.setPointerCapture(event.pointerId);
+  });
+
+  knob.addEventListener('pointermove', (event) => {
+    if (!drag || event.pointerId !== drag.pointerId) return;
+    event.preventDefault();
+    handlers.drag(drag.value, drag.y - event.clientY);
+  });
+
+  const endDrag = (event) => {
+    if (!drag || event.pointerId !== drag.pointerId) return;
+    drag = null;
+    if (knob.hasPointerCapture(event.pointerId)) knob.releasePointerCapture(event.pointerId);
+  };
+  knob.addEventListener('pointerup', endDrag);
+  knob.addEventListener('pointercancel', endDrag);
+  knob.addEventListener('lostpointercapture', endDrag);
+}
+
 // Function to toggle the TOC visibility
 
 function isDesktopSidebarLayout() {
@@ -1259,7 +1313,7 @@ function setupStatusBars() {
     const showFromTarget = (target) => {
       const descriptor = getStatusDescriptor(target);
       if (!descriptor) return;
-      textNode.textContent = descriptor.label;
+      if (textNode.textContent !== descriptor.label) textNode.textContent = descriptor.label;
       iconNode.setAttribute('href', descriptor.iconHref || `/icons.svg#${descriptor.icon}`);
       helpLink.href = getStatusHelpHref(descriptor);
       helpLink.setAttribute('aria-label', `Open Help for ${descriptor.entry}`);
@@ -1360,6 +1414,13 @@ function setupStatusBars() {
       const target = event.target.closest(statusTargetSelector);
       if (!target) return;
       showFromTarget(target);
+    });
+
+    ['wheel', 'keydown', 'pointermove'].forEach(type => {
+      root.addEventListener(type, (event) => {
+        const knob = event.target.closest('.knob-control[title]');
+        if (knob) showFromTarget(knob);
+      }, { passive: true });
     });
   });
 }

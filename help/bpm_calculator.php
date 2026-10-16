@@ -357,7 +357,7 @@
   </svg>
   <div class="justify">
     <h1>Controls <span class="object">module</span></h1>
-    Tempo and Volume sliders are in Controls module.
+    Tempo and Volume sliders and Note knob are in Controls module.
   </div>
 </div>
 
@@ -378,6 +378,16 @@
   <div class="justify">
     <h1>Volume <span class="object">slider</span></h1>
     Sets playback volume from 0 to 100. Decrease and Increase buttons support hold. <span class="default">Default: 100.</span>
+  </div>
+</div>
+
+<div class="feature-row border">
+  <svg class="standard-image-help">
+    <use href="/icons.svg#knob"></use>
+  </svg>
+  <div class="justify">
+    <h1>Note <span class="object">knob</span></h1>
+    Selects a visible Instrument note, or None, following the table's order.
   </div>
 </div>
 

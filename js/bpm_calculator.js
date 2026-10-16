@@ -42,6 +42,7 @@ const volumeIncreaseButton = document.getElementById('volume-increase-button');
 const volumeDecreaseButton = document.getElementById('volume-decrease-button');
 const beatSoundSelect = document.getElementById('beat-sound-type');
 const toneTypeSelect = document.getElementById('tone-type');
+const noteKnob = document.getElementById('note-knob');
 const timelineContainer = document.getElementById('timeline-container');
 const timelineScroll = timelineSvg?.closest('.scrollable');
 const svgUtils = window.PekoSvgUtils;
@@ -133,6 +134,7 @@ const noteData = {
 
 let needsFullRebuild = false; // when true, calculateValues will start from scratch
 let editingNumericInput = null;
+let selectionRenderFrame = null;
 
 function createDefaultColumns() {
   return {
@@ -393,6 +395,64 @@ function getVisibleRowDescriptors() {
   return descriptors;
 }
 
+function getNoteKnobIndex(selected = state.selected) {
+  return getVisibleRowDescriptors().findIndex(row => row.rowKey === `row-${selected}`) + 1;
+}
+
+function syncNoteKnob() {
+  const rows = getVisibleRowDescriptors();
+  const index = rows.findIndex(row => row.rowKey === `row-${state.selected}`) + 1;
+  const selected = rows[index - 1];
+  const label = selected ? getValueLabel(selected.note, selected.type) : 'None';
+  noteKnob.disabled = rows.length === 0;
+  noteKnob.style.setProperty('--knob-angle', `${-135 + index / Math.max(1, rows.length) * 270}deg`);
+  noteKnob.setAttribute('role', 'slider');
+  noteKnob.setAttribute('aria-orientation', 'vertical');
+  noteKnob.setAttribute('aria-valuemin', '0');
+  noteKnob.setAttribute('aria-valuemax', String(rows.length));
+  noteKnob.setAttribute('aria-valuenow', String(index));
+  noteKnob.setAttribute('aria-valuetext', label);
+  noteKnob.title = `Note: ${label}`;
+  noteKnob.dataset.statusLabel = noteKnob.title;
+}
+
+function setSelectedNote(rowId) {
+  if (state.selected === rowId) return;
+  state.selected = rowId;
+  if (state.isPlaying) schedulePlaybackEvents();
+  resultTable.querySelectorAll('input[type="radio"]').forEach(input => {
+    input.checked = input.value === rowId;
+  });
+  resultTable.querySelectorAll('tr').forEach(row => {
+    row.classList.toggle('table-row-selected', row.id === `row-${rowId}`);
+  });
+  syncNoteKnob();
+  saveState();
+  if (selectionRenderFrame !== null) return;
+  selectionRenderFrame = requestAnimationFrame(() => {
+    selectionRenderFrame = null;
+    updatePanel();
+    drawCanvas();
+  });
+}
+
+function setNoteKnobIndex(index) {
+  const rows = getVisibleRowDescriptors();
+  const row = rows[Math.max(0, Math.min(rows.length, Math.round(index))) - 1];
+  setSelectedNote(row ? `${row.i}-${row.type}` : null);
+}
+
+function initNoteKnob() {
+  bindKnobControl(noteKnob, {
+    get: () => getNoteKnobIndex(),
+    nudge: direction => setNoteKnobIndex(getNoteKnobIndex() + direction),
+    drag: (startValue, deltaY) => setNoteKnobIndex(startValue + Math.round(deltaY / 14)),
+    home: () => setNoteKnobIndex(0),
+    end: () => setNoteKnobIndex(getVisibleRowDescriptors().length),
+    reset: () => setNoteKnobIndex(getNoteKnobIndex(createDefaultState().selected))
+  });
+}
+
 function updateSortButton() {
   if (!sortButton) return;
   const iconUse = sortButton.querySelector('use');
@@ -500,6 +560,7 @@ function calculateValues() {
   updateColumnHeaders();
   updateModeButtons();
   updateSortButton();
+  syncNoteKnob();
   updatePanel();
   updatePlaybackReadout();
   drawCanvas();
@@ -575,16 +636,7 @@ function renderRow(note, i, multiplier, type) {
     // radio selection listener
     row.querySelectorAll('input[type="radio"]').forEach(radio => {
       radio.addEventListener('change', () => {
-        state.selected = rowId;
-        if (state.isPlaying) schedulePlaybackEvents();
-        resultTable.querySelectorAll('input[type="radio"]').forEach(input => {
-          input.checked = input.value === rowId;
-        });
-        resultTable.querySelectorAll('tr').forEach(tr => tr.classList.remove('table-row-selected'));
-        row.classList.add('table-row-selected');
-        updatePanel();
-        drawCanvas();
-        saveState();
+        setSelectedNote(rowId);
       });
     });
 
@@ -1144,24 +1196,7 @@ toolCopyButton?.addEventListener('click', () => {
 });
 
 selectNoneButton.addEventListener('click', () => {
-  state.selected = null;
-  if (state.isPlaying) schedulePlaybackEvents();
-  // Uncheck all radio buttons in the table
-  resultTable.querySelectorAll('input[type="radio"]').forEach(radio => {
-    radio.checked = false;
-  });
-  // Remove selection styling from all rows
-  resultTable.querySelectorAll('tr').forEach(tr => tr.classList.remove('table-row-selected'));
-  
-  // Only call calculateValues if NOT currently playing
-  if (!state.isPlaying) {
-    calculateValues();
-  } else {
-    // Just redraw canvas - scheduler will pick up the change automatically
-    drawCanvas();
-    updatePanel();
-    saveState();
-  }
+  setSelectedNote(null);
 });
 
 resetButton.addEventListener('click', () => {
@@ -1970,6 +2005,7 @@ if (followButton) {
 // INITIAL LOAD
 
 loadState();
+document.addEventListener('DOMContentLoaded', initNoteKnob);
 state.beatSound = normalizeTone(state.beatSound);
 state.toneType = normalizeToneType(state.toneType);
 setupTimelineFollow();

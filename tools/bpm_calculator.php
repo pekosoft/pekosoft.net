@@ -337,6 +337,10 @@
         </div>
       </div>
 
+      <div class="controls-knobs wrapper">
+        <div class="controls-knob"><button id="note-knob" class="knob-control" type="button" title="Select note value" aria-label="Note"></button><span>Note</span></div>
+      </div>
+
     </div>
   </div>
 

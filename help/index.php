@@ -201,7 +201,11 @@
   <svg class="standard-image-help"><use href="/icons.svg#speech"></use></svg>
   <div class="justify">
     <h1>Contact <span class="object">button</span></h1>
-    Opens the contact form for general messages, bug reports and feature requests. Enter your name, email address and message, choose a category, then press Send.
+    Opens the <a href="/contact">contact form</a> for general messages, bug reports and feature requests.
+    Enter your name, email address and message, then choose General, Bug report or Feature request from Category.
+    Name, email address and message are required. Names can contain up to 100 characters and messages up to 10,000 characters.
+    Press Send to submit your message. A confirmation appears when it has been sent. If submission fails, the form explains the problem and keeps your text so you can correct it or try again.
+    Wait at least one minute between successful submissions. Press Reset to clear the form and restore the General category.
   </div>
 </div>
 

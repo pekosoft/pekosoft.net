@@ -1,5 +1,9 @@
 <?php
 $requestedRelease = isset($_GET['t']) ? basename((string) $_GET['t']) : '';
+if ($requestedRelease === 'contact') {
+  header('Location: /help.php?t=index&e=contact&k=button', true, 302);
+  exit;
+}
 if ($requestedRelease === 'settings') {
   require($_SERVER['DOCUMENT_ROOT'] . '/404.php');
   exit;

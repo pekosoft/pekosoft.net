@@ -52,7 +52,7 @@
   </svg>
   <div class="justify">
     <h1>BPM <span class="object">field</span></h1>
-    Sets beats per minute. Updates related values accordingly. <span class="default">Default: 120.</span>
+    Sets beats per minute from 30 to 320. Updates related values accordingly. <span class="default">Default: 120.</span>
   </div>
 </div>
 
@@ -111,7 +111,7 @@
   </svg>
   <div class="justify">
     <h1>Play <span class="object">button</span></h1>
-    Toggles playback of the Timeline visualization with audio. <span class="default">Default: off.</span>
+    Plays or pauses the Timeline with audio. Pausing preserves the playback position. <span class="default">Default: off.</span>
   </div>
 </div>
 
@@ -397,7 +397,7 @@
   </svg>
   <div class="justify">
     <h1>Position <span class="object">field</span></h1>
-    Displays the current playback position in milliseconds during Timeline playback. Read-only field that updates in real time. <span class="default">Default: 0.</span>
+    Displays the playback position in milliseconds. In All beats mode, changing tempo also updates this position. Read-only. <span class="default">Default: 0.</span>
   </div>
 </div>
 

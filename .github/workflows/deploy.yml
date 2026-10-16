@@ -9,10 +9,15 @@ on:
       - .dev/**
       - .githooks/**
       - .vscode/**
+      - tests/**
+      - .editorconfig
       - .ftpignore
       - .gitignore
       - DEPLOYMENT.md
       - README.md
+      - pekosoft.md
+      - icons.md
+      - rulers.md
       - LICENCE
   workflow_dispatch:
     inputs:
@@ -123,7 +128,7 @@ jobs:
 
           is_excluded() {
             case "$1" in
-              .git/*|.github/*|.vscode/*|.ftpignore|.gitignore|DEPLOYMENT.md|README.md|LICENCE)
+              .git/*|.github/*|.dev/*|.githooks/*|.vscode/*|tests/*|.editorconfig|.ftpignore|.gitignore|DEPLOYMENT.md|README.md|pekosoft.md|icons.md|rulers.md|LICENCE)
                 return 0
                 ;;
             esac
@@ -257,11 +262,18 @@ jobs:
           mirror --reverse --verbose --only-newer --no-perms --parallel=4 \
             --exclude-glob .git/** \
             --exclude-glob .github/** \
+            --exclude-glob .dev/** \
+            --exclude-glob .githooks/** \
             --exclude-glob .vscode/** \
+            --exclude-glob tests/** \
+            --exclude-glob .editorconfig \
             --exclude-glob .ftpignore \
             --exclude-glob .gitignore \
             --exclude-glob DEPLOYMENT.md \
             --exclude-glob README.md \
+            --exclude-glob pekosoft.md \
+            --exclude-glob icons.md \
+            --exclude-glob rulers.md \
             --exclude-glob LICENCE \
             ./ "$SFTP_REMOTE_DIR"
           bye

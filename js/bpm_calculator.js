@@ -132,6 +132,7 @@ const noteData = {
 // STATE
 
 let needsFullRebuild = false; // when true, calculateValues will start from scratch
+let editingNumericInput = null;
 
 function createDefaultColumns() {
   return {
@@ -233,20 +234,24 @@ let metersLastActiveSec = 0;
 let playbackTimer = null;
 let timelineStartTime = 0;
 let playbackEvents = [];
+let playbackScheduleKeys = {};
+let playbackScheduledUntil = { beat: 0, delay: 0 };
+let playbackAnimationFrame = null;
+let playbackBeatOriginSec = 0;
+let playbackTempo = 120;
+let pausedBeatPhase = 0;
+let timelineRenderKey = '';
+let timelineLayer = null;
+let timelinePlayhead = null;
+let timelineMarkers = [];
 let currentBeatMs = null;
 let currentDelayMs = null;
-let pausedElapsedMs = 0;
-let delayMutedUntil = 0;
-let nextBeatTime = 0;
-let beatIndex = 0;
 let scheduledAudioNodes = [];
 let scheduledVisualEvents = [];
 let lastVisualCheckSec = 0;
 let beatHighlightUntilSec = 0;
 let delayHighlightUntilSec = 0;
 let pausedTimelineMs = 0;
-let lastBeatAnchorMs = null;
-let lastBeatAnchorSec = 0;
 const activeRowPreviews = new Map();
 const VISUAL_HIGHLIGHT_HOLD_SEC = 0.07;
 const VISUAL_MATCH_TOLERANCE_MS = 2;
@@ -262,7 +267,7 @@ function loadState() {
     state.columns = { ...createDefaultColumns(), ...(parsed.columns ?? {}) };
     state.rows = new Set(parsed.rows);
     state.modes = parsed.modes ?? { dotted: true, base: true, triplet: true };
-    state.selected = parsed.selected ?? '5-base';
+    state.selected = parsed.selected === null ? null : (parsed.selected ?? '5-base');
     state.viewMode = parsed.viewMode ?? 'all';
     state.isSoundOn = parsed.isSoundOn ?? true;
     state.isLoopOn = parsed.isLoopOn ?? false;
@@ -325,6 +330,24 @@ function enforceThreeDecimals(input) {
       input.value = int + '.' + dec.slice(0, 3);
     }
   }
+}
+
+function updateNumericInput(input, value) {
+  if (input === editingNumericInput) return;
+  input.value = value.toFixed(3);
+  input.setCustomValidity('');
+}
+
+function readPositiveInput(input, commit) {
+  editingNumericInput = commit ? null : input;
+  const value = input.value.trim() === '' ? NaN : Number(input.value);
+  const valid = Number.isFinite(value) && value > 0;
+  input.setCustomValidity(valid ? '' : 'Enter a positive number.');
+  if (!valid) {
+    if (commit) input.reportValidity();
+    return null;
+  }
+  return value;
 }
 
 function setupToolMenuPanel() {
@@ -422,14 +445,19 @@ function getValueLabel(note, type) {
 }
 
 function calculateValues() {
+  if (state.selected) {
+    const [index, type] = state.selected.split('-');
+    if (!state.rows.has(Number(index)) || !state.modes[type]) state.selected = null;
+  }
+  if (state.isPlaying) schedulePlaybackEvents();
   // always show exactly three decimals in bpm input
-  bpmInput.value = state.bpm.toFixed(3);
+  updateNumericInput(bpmInput, state.bpm);
 
   const spb = 60 / state.bpm;
   const bps = state.bpm / 60;
 
-  spbField.value = spb.toFixed(3);
-  bpsField.value = bps.toFixed(3);
+  updateNumericInput(spbField, spb);
+  updateNumericInput(bpsField, bps);
 
   bpmSlider.value = state.bpm;
   viewModeSelect.value = state.viewMode;
@@ -448,9 +476,11 @@ function calculateValues() {
     renderRow(note, i, multiplier, type);
   });
 
-  orderedRowKeys.forEach(rowKey => {
+  orderedRowKeys.forEach((rowKey, index) => {
     const row = document.getElementById(rowKey);
-    if (row) resultTable.appendChild(row);
+    if (row && row !== resultTable.children[index]) {
+      resultTable.insertBefore(row, resultTable.children[index] || null);
+    }
   });
 
   for (const rowId of activeRowPreviews.keys()) {
@@ -471,9 +501,8 @@ function calculateValues() {
   updateModeButtons();
   updateSortButton();
   updatePanel();
+  updatePlaybackReadout();
   drawCanvas();
-
-  // No resync needed - incremental scheduler picks up changes automatically
 
   saveState();
   // update all numeric inputs' backgrounds in a batch
@@ -492,8 +521,8 @@ function bindRowBpmInput(input, clampBpm, computeBpmFromValue) {
 
   const handler = (e) => {
     enforceThreeDecimals(e.target);
-    const rawVal = parseFloat(e.target.value);
-    if (!isFinite(rawVal) || rawVal <= 0) return;
+    const rawVal = readPositiveInput(e.target, e.type === 'change');
+    if (rawVal === null) return;
 
     const ii = parseInt(e.target.dataset.i, 10);
     const mult = parseFloat(e.target.dataset.multiplier);
@@ -501,7 +530,6 @@ function bindRowBpmInput(input, clampBpm, computeBpmFromValue) {
     if (!isFinite(newBpm) || newBpm <= 0) return;
 
     state.bpm = clampBpm(newBpm);
-    bpmInput.value = state.bpm.toFixed(3);
     scheduleCalculation();
   };
 
@@ -527,7 +555,7 @@ function renderRow(note, i, multiplier, type) {
     row.id = rowKey;
 
     row.innerHTML = `
-      ${state.columns.select ? `<td class="select-field"><input type="radio" name="rowSelect-${rowId}" value="${rowId}" ${state.selected === rowId ? 'checked' : ''}></td>` : ''}
+      ${state.columns.select ? `<td class="select-field"><input type="radio" name="rowSelect" value="${rowId}" ${state.selected === rowId ? 'checked' : ''}></td>` : ''}
       ${state.columns.note ? `<td class="note-field"><svg class="icons"><use href="/icons.svg#${noteData.symbols[i]}" /></svg></td>` : ''}
       ${state.columns.value ? `<td class="left value-field">${valueLabel}</td>` : ''}
       ${state.columns.ms ? `<td class="right ms-field"><input type="number" class="ms-input" step="0.001" data-i="${i}" data-multiplier="${multiplier}" value="${ms.toFixed(3)}"></td>` : ''}
@@ -548,6 +576,7 @@ function renderRow(note, i, multiplier, type) {
     row.querySelectorAll('input[type="radio"]').forEach(radio => {
       radio.addEventListener('change', () => {
         state.selected = rowId;
+        if (state.isPlaying) schedulePlaybackEvents();
         resultTable.querySelectorAll('input[type="radio"]').forEach(input => {
           input.checked = input.value === rowId;
         });
@@ -570,7 +599,7 @@ function renderRow(note, i, multiplier, type) {
     });
 
     bindRowBpmInput(row.querySelector('.cm-input'), clampBpm, (cmVal, ii, mult) => {
-      const hzVal = speedOfSound / cmVal;
+      const hzVal = getSpeedOfSoundCmPerSec() / cmVal;
       const msVal = 1000 / hzVal;
       return (60000 * mult * Math.pow(2, 5 - ii)) / msVal;
     });
@@ -578,7 +607,7 @@ function renderRow(note, i, multiplier, type) {
     bindRowBpmInput(row.querySelector('.inches-input'), clampBpm, (inVal, ii, mult) => {
       // convert back to cm for calculation
       const cmVal = inVal * 2.54;
-      const hzVal = speedOfSound / cmVal;
+      const hzVal = getSpeedOfSoundCmPerSec() / cmVal;
       const msVal = 1000 / hzVal;
       return (60000 * mult * Math.pow(2, 5 - ii)) / msVal;
     });
@@ -603,14 +632,14 @@ function renderRow(note, i, multiplier, type) {
   } else {
     // update existing row's input values and radio check state
     if (state.columns.value) row.querySelector('.value-field').textContent = valueLabel;
-    if (state.columns.ms) row.querySelector('.ms-input').value = ms.toFixed(3);
-    if (state.columns.hz) row.querySelector('.hz-input').value = hz.toFixed(3);
-    if (state.columns.cm) row.querySelector('.cm-input').value = wavelength.toFixed(3);
+    if (state.columns.ms) updateNumericInput(row.querySelector('.ms-input'), ms);
+    if (state.columns.hz) updateNumericInput(row.querySelector('.hz-input'), hz);
+    if (state.columns.cm) updateNumericInput(row.querySelector('.cm-input'), wavelength);
     if (state.columns.inches) {
       const inp = row.querySelector('.inches-input');
-      if (inp) inp.value = (wavelength/2.54).toFixed(3);
+      if (inp) updateNumericInput(inp, wavelength / 2.54);
     }
-    if (state.columns.bpm) row.querySelector('.row-bpm-input').value = (60000 / ms).toFixed(3);
+    if (state.columns.bpm) updateNumericInput(row.querySelector('.row-bpm-input'), 60000 / ms);
     if (state.columns.diff) {
       const diffInput = row.querySelector('.diff-input');
       if (diffInput) diffInput.value = ((60000 / ms) - state.bpm).toFixed(3);
@@ -619,15 +648,15 @@ function renderRow(note, i, multiplier, type) {
       const percentInput = row.querySelector('.percent-input');
       if (percentInput) percentInput.value = (Math.pow(2, 5 - i) * multiplier * 100).toFixed(3);
     }
-    const playButton = row.querySelector('.play-toggle-button');
-    if (playButton) {
-      playButton.dataset.ms = ms.toFixed(3);
-      const isActive = activeRowPreviews.has(rowId);
-      playButton.classList.toggle('button-on', isActive);
-      playButton.title = isActive ? 'Stop note' : 'Play note';
-    }
     const radio = row.querySelector('input[type="radio"]');
     if (radio) radio.checked = state.selected === rowId;
+  }
+  const playButton = row.querySelector('.play-toggle-button');
+  if (playButton) {
+    playButton.dataset.ms = ms.toFixed(3);
+    const isActive = activeRowPreviews.has(rowId);
+    playButton.classList.toggle('button-on', isActive);
+    playButton.title = isActive ? 'Stop note' : 'Play note';
   }
   
   // Update row selection styling
@@ -729,7 +758,7 @@ function updatePanel() {
     const noteMs = (60000 / (bpm / Math.pow(2, 5 - i))) * multiplier;
 
     const beatInterval = 60000 / bpm;
-    const numBeats = Math.floor(state.bpm);
+    const numBeats = Math.ceil(state.bpm);
 
     for (let n = 0; n < numBeats; n++) {
       const beatTime = n * (60000 / state.bpm);
@@ -746,11 +775,25 @@ function drawCanvas() {
   if (!timelineSvg) return;
 
   const h = getTimelineHeight();
-  syncTimelineViewport(h);
 
   const w = BPM_TIMELINE_WIDTH;
+  const timelineStyles = getComputedStyle(document.documentElement);
+  const beatColor = timelineStyles.getPropertyValue('--color1').trim();
+  const delayColor = timelineStyles.getPropertyValue('--color2').trim();
+  const highlightColor = timelineStyles.getPropertyValue('--white').trim();
   const guideColor = window.PekoBrightGuides?.getTimelineGuideColor(getCssVariable('--grey1')) || getCssVariable('--grey1');
   const isBright = state.showGuides && Boolean(window.PekoBrightGuides?.getTimelineBright?.());
+  const renderKey = JSON.stringify([
+    h, state.bpm, state.viewMode, state.selected, [...state.rows], state.modes,
+    state.showGuides, state.showPlayhead, isBright, bpmTimelineRulers?.getVisible(),
+    beatColor, delayColor, highlightColor, guideColor
+  ]);
+  if (renderKey === timelineRenderKey && timelineSvg.firstElementChild === timelineLayer) {
+    updateTimelineAnimation(highlightColor);
+    return;
+  }
+  timelineRenderKey = renderKey;
+  syncTimelineViewport(h);
   bpmTimelineRulers?.render({
     width: w,
     height: h,
@@ -775,8 +818,10 @@ function drawCanvas() {
   const offsetX = 16;
   const usableWidth = w - offsetX;
   const layer = svgUtils.createElement('g');
-  timelineSvg.innerHTML = '';
-  timelineSvg.appendChild(layer);
+  timelineLayer = layer;
+  timelineMarkers = [];
+  timelinePlayhead = null;
+  timelineSvg.replaceChildren(layer);
   if (state.showGuides) {
     const middleY = (h / 2) + 0.5;
     layer.appendChild(createTimelineLine(0, middleY, w, middleY, guideColor));
@@ -791,26 +836,20 @@ function drawCanvas() {
   }
 
   if (state.showPlayhead) {
-    const playheadMs = getCurrentPlayheadMs();
-    const clampedPlayheadMs = Math.max(0, Math.min(60000, playheadMs));
-    const playheadX = offsetX + (clampedPlayheadMs / 60000) * usableWidth;
-    layer.appendChild(createTimelineLine(playheadX, 0, playheadX, h, getCssVariable('--white')));
+    timelinePlayhead = createTimelineLine(offsetX, 0, offsetX, h, highlightColor);
+    layer.appendChild(timelinePlayhead);
   }
 
+  const addMarker = (kind, ms, x, color, title, highlightCircle = true) => {
+    const isBeat = kind === 'beat';
+    const line = createTimelineLine(x, isBeat ? 0 : h / 2, x, isBeat ? h / 2 : h, color);
+    const circle = createTimelineCircle(x, isBeat ? 16 : h - 16, 8, color, title);
+    layer.append(line, circle);
+    timelineMarkers.push({ kind, ms, line, circle, color, highlightCircle, lineLit: false, circleLit: false });
+  };
+
   if (state.viewMode === 'single') {
-    const isCurrentBeat = currentBeatMs !== null && Math.abs(currentBeatMs) < VISUAL_MATCH_TOLERANCE_MS;
-
-    // BLUE reference line (downbeat)
-    layer.appendChild(createTimelineLine(
-      offsetX,
-      0,
-      offsetX,
-      h / 2,
-      isCurrentBeat ? getCssVariable('--white') : getComputedStyle(document.documentElement).getPropertyValue('--color1')
-    ));
-
-    // Beat heads
-    layer.appendChild(createTimelineCircle(offsetX, 16, 8, isCurrentBeat ? getCssVariable('--white') : getCssVariable('--color1'), 'Beat 1'));
+    addMarker('beat', 0, offsetX, beatColor, 'Beat 1');
 
     const bpm = state.bpm;
 
@@ -823,19 +862,9 @@ function drawCanvas() {
         const multiplier = type === 'dotted' ? 1.5 : type === 'triplet' ? 2 / 3 : 1;
         const noteMs = (60000 / (bpm / Math.pow(2, 5 - i))) * multiplier;
         const delayX = offsetX + (noteMs / 60000) * usableWidth;
-        const isCurrentDelay = currentDelayMs !== null && Math.abs(currentDelayMs - noteMs) < VISUAL_MATCH_TOLERANCE_MS;
-
-        // Line
-        layer.appendChild(createTimelineLine(delayX, h / 2, delayX, h, isCurrentDelay ? getCssVariable('--white') : getCssVariable('--color2')));
-
-        // Note heads
-        layer.appendChild(createTimelineCircle(
-          delayX,
-          h - 16,
-          8,
-          isCurrentDelay ? getCssVariable('--white') : getCssVariable('--color2'),
+        addMarker('delay', noteMs, delayX, delayColor,
           `${note}${type === 'base' ? '' : ` ${type}`} = ${noteMs.toFixed(3)} MS`
-        ));
+        );
         
       });
     });
@@ -844,29 +873,14 @@ function drawCanvas() {
   else if (state.viewMode === 'all') {
     const bpm = state.bpm;
     const beatInterval = 60000 / bpm;
-    const numBeats = Math.floor(state.bpm);
+    const numBeats = Math.ceil(state.bpm);
 
     for (let n = 0; n < numBeats; n++) {
       const beatTime = n * (60000 / state.bpm);
       const beatX = offsetX + (beatTime / 60000) * usableWidth;
 
-      const isCurrentBeat = currentBeatMs !== null && Math.abs(currentBeatMs - beatTime) < VISUAL_MATCH_TOLERANCE_MS;
-      const isBothHit = isCurrentBeat && currentDelayMs !== null && Math.abs(currentDelayMs - beatTime) < VISUAL_MATCH_TOLERANCE_MS;
-      layer.appendChild(createTimelineLine(
-        beatX,
-        0,
-        beatX,
-        h / 2,
-        isCurrentBeat ? getCssVariable('--white') : getComputedStyle(document.documentElement).getPropertyValue('--color1')
-      ));
-      // Beat heads
-      layer.appendChild(createTimelineCircle(
-        beatX,
-        16,
-        8,
-        isBothHit ? getCssVariable('--white') : blue,
-        `Beat ${n + 1} | ${beatTime.toFixed(3)} ms`
-      ));
+      addMarker('beat', beatTime, beatX, beatColor,
+        `Beat ${n + 1} | ${beatTime.toFixed(3)} ms`, 'both');
 
       if (state.selected) {
         const [iStr, type] = state.selected.split('-');
@@ -878,42 +892,41 @@ function drawCanvas() {
 
         if (delayMs <= 60000) {
           const delayX = offsetX + (delayMs / 60000) * usableWidth;
-          const isCurrentDelay = currentDelayMs !== null && Math.abs(currentDelayMs - delayMs) < VISUAL_MATCH_TOLERANCE_MS;
-          
-          // Check if this delay time coincides with any beat
-          let delayCoincidesBeat = false;
-          for (let b = 0; b < numBeats; b++) {
-            const checkBeatTime = b * (60000 / state.bpm);
-            if (Math.abs(delayMs - checkBeatTime) < VISUAL_MATCH_TOLERANCE_MS) {
-              delayCoincidesBeat = true;
-              break;
-            }
-          }
-          const shouldDelayBeWhite = isCurrentDelay && delayCoincidesBeat;
-
-          layer.appendChild(createTimelineLine(
-            delayX,
-            h / 2,
-            delayX,
-            h,
-            isCurrentDelay ? getCssVariable('--white') : getComputedStyle(document.documentElement).getPropertyValue('--color2')
-          ));
-          // Note heads
-          layer.appendChild(createTimelineCircle(
-            delayX,
-            h - 16,
-            8,
-            shouldDelayBeWhite ? getCssVariable('--white') : magenta,
-            `${noteLabel} ${type} | ${delayMs.toFixed(3)} ms`
-          ));
+          const nearestBeat = Math.round(delayMs / beatInterval);
+          const delayCoincidesBeat = nearestBeat < numBeats
+            && Math.abs(delayMs - nearestBeat * beatInterval) < VISUAL_MATCH_TOLERANCE_MS;
+          addMarker('delay', delayMs, delayX, delayColor,
+            `${noteLabel} ${type} | ${delayMs.toFixed(3)} ms`, delayCoincidesBeat);
         }
       }
     }
   }
 
-  if (state.isPlaying) {
-    timelineFollow?.followRatio(getCurrentPlayheadMs() / 60000);
+  updateTimelineAnimation(highlightColor);
+}
+
+function updateTimelineAnimation(highlightColor) {
+  const playheadMs = getTimelinePlayheadMs();
+  if (timelinePlayhead) {
+    const x = 16 + Math.max(0, Math.min(60000, playheadMs)) / 60000 * (BPM_TIMELINE_WIDTH - 16);
+    timelinePlayhead.setAttribute('x1', x);
+    timelinePlayhead.setAttribute('x2', x);
   }
+  for (const marker of timelineMarkers) {
+    const currentMs = marker.kind === 'beat' ? currentBeatMs : currentDelayMs;
+    const lit = currentMs !== null && Math.abs(currentMs - marker.ms) < VISUAL_MATCH_TOLERANCE_MS;
+    const circleLit = lit && Boolean(marker.highlightCircle) && (marker.highlightCircle !== 'both'
+      || (currentDelayMs !== null && Math.abs(currentDelayMs - marker.ms) < VISUAL_MATCH_TOLERANCE_MS));
+    if (lit !== marker.lineLit) {
+      marker.line.setAttribute('stroke', lit ? highlightColor : marker.color);
+      marker.lineLit = lit;
+    }
+    if (circleLit !== marker.circleLit) {
+      marker.circle.setAttribute('fill', circleLit ? highlightColor : marker.color);
+      marker.circleLit = circleLit;
+    }
+  }
+  if (state.isPlaying) timelineFollow?.followRatio(playheadMs / 60000);
 }
 
 function createSvgElement(name) {
@@ -1028,6 +1041,7 @@ tripletModeButton.addEventListener('click', () => {
 // schedule calculations to avoid repeated work on rapid events
 let calcScheduled = false;
 function scheduleCalculation() {
+  if (state.isPlaying) schedulePlaybackEvents();
   if (!calcScheduled) {
     calcScheduled = true;
     requestAnimationFrame(() => {
@@ -1038,20 +1052,17 @@ function scheduleCalculation() {
 }
 
 bpmInput.addEventListener("input", () => {
-  // limit user to three decimals while typing
   enforceThreeDecimals(bpmInput);
-  let val = parseFloat(bpmInput.value);
-  if (isFinite(val)) {
-    // clamp to allowed range
-    val = Math.max(minBPM, Math.min(maxBPM, val));
-    state.bpm = val;
-  }
+  const val = readPositiveInput(bpmInput, false);
+  if (val === null) return;
+  state.bpm = Math.max(minBPM, Math.min(maxBPM, val));
   scheduleCalculation();
 });
 // ensure value always three decimals
 bpmInput.addEventListener("change", () => {
-  state.bpm = parseFloat(bpmInput.value);
-  bpmInput.value = state.bpm.toFixed(3);
+  const val = readPositiveInput(bpmInput, true);
+  if (val === null) return;
+  state.bpm = Math.max(minBPM, Math.min(maxBPM, val));
   scheduleCalculation();
 });
 
@@ -1074,10 +1085,11 @@ bpmSlider.addEventListener("change", () => {
 // allow editing SPB/BPS to update global BPM
 spbField.addEventListener('input', () => {
   enforceThreeDecimals(spbField);
+  readPositiveInput(spbField, false);
 });
 spbField.addEventListener('change', () => {
-  const spb = parseFloat(spbField.value);
-  if (!isFinite(spb) || spb <= 0) return;
+  const spb = readPositiveInput(spbField, true);
+  if (spb === null) return;
   const newBpm = 60 / spb;
   state.bpm = Math.max(minBPM, Math.min(maxBPM, newBpm));
   // keep the field rounded after we schedule an update
@@ -1087,11 +1099,12 @@ spbField.addEventListener('change', () => {
 
 bpsField.addEventListener('input', () => {
   enforceThreeDecimals(bpsField);
+  readPositiveInput(bpsField, false);
 });
 
 bpsField.addEventListener('change', () => {
-  const bps = parseFloat(bpsField.value);
-  if (!isFinite(bps) || bps <= 0) return;
+  const bps = readPositiveInput(bpsField, true);
+  if (bps === null) return;
   const newBpm = bps * 60;
   state.bpm = Math.max(minBPM, Math.min(maxBPM, newBpm));
   bpsField.value = bps.toFixed(3);
@@ -1132,6 +1145,7 @@ toolCopyButton?.addEventListener('click', () => {
 
 selectNoneButton.addEventListener('click', () => {
   state.selected = null;
+  if (state.isPlaying) schedulePlaybackEvents();
   // Uncheck all radio buttons in the table
   resultTable.querySelectorAll('input[type="radio"]').forEach(radio => {
     radio.checked = false;
@@ -1145,13 +1159,14 @@ selectNoneButton.addEventListener('click', () => {
   } else {
     // Just redraw canvas - scheduler will pick up the change automatically
     drawCanvas();
+    updatePanel();
+    saveState();
   }
 });
 
 resetButton.addEventListener('click', () => {
   stopPlayback();
   timelineStartTime = 0;
-  pausedElapsedMs = 0;
   state = createDefaultState();
   timelineFollow?.setEnabled(state.followTimeline);
   timelineFollow?.reset();
@@ -1345,7 +1360,7 @@ function playClick(when, durationSec) {
   touchMetersActivity(startTime);
   updateMetersSourceBridge();
   if (event?.stopNode) {
-    scheduledAudioNodes.push({ oscillator: event.stopNode, gainNode: event.gainNode, stopTime: event.stopTime });
+    scheduledAudioNodes.push({ oscillator: event.stopNode, gainNode: event.gainNode, startTime, stopTime: event.stopTime, kind: 'beat' });
   }
 }
 
@@ -1368,7 +1383,7 @@ function playDelayClick(when, durationSec) {
   touchMetersActivity(startTime);
   updateMetersSourceBridge();
   if (event?.stopNode) {
-    scheduledAudioNodes.push({ oscillator: event.stopNode, gainNode: event.gainNode, stopTime: event.stopTime });
+    scheduledAudioNodes.push({ oscillator: event.stopNode, gainNode: event.gainNode, startTime, stopTime: event.stopTime, kind: 'delay' });
   }
 }
 
@@ -1468,13 +1483,11 @@ function startRowPreview(rowId, durationMs) {
   }
 
   if (oscillator && gainNode) {
-    oscillator.onended = () => {
-      oscillator.disconnect();
-      gainNode.disconnect();
+    oscillator.addEventListener('ended', () => {
       if (activeRowPreviews.get(rowId)?.oscillator === oscillator) {
         stopRowPreview(rowId);
       }
-    };
+    }, { once: true });
   }
 }
 
@@ -1508,21 +1521,8 @@ function updateTimelineReadout(positionMs = 0, beatNumber = 0) {
 
 function getCurrentPlayheadMs() {
   if (state.isPlaying && audioContext) {
-    if (state.viewMode === 'all') {
-      if (lastBeatAnchorMs !== null && lastBeatAnchorSec > 0) {
-        const now = audioContext.currentTime;
-        const playheadMs = lastBeatAnchorMs + ((now - lastBeatAnchorSec) * 1000);
-
-        if (state.isLoopOn) {
-          return ((playheadMs % 60000) + 60000) % 60000;
-        }
-
-        return Math.max(0, Math.min(60000, playheadMs));
-      }
-    }
-
     if (timelineStartTime > 0) {
-      const elapsedMs = (audioContext.currentTime - timelineStartTime) * 1000;
+      const elapsedMs = Math.max(0, (audioContext.currentTime - timelineStartTime) * 1000);
       if (state.isLoopOn) {
         return ((elapsedMs % 60000) + 60000) % 60000;
       }
@@ -1533,14 +1533,30 @@ function getCurrentPlayheadMs() {
   return pausedTimelineMs;
 }
 
+function getTimelinePlayheadMs() {
+  if (state.viewMode !== 'all') return getCurrentPlayheadMs();
+  const phase = state.isPlaying && audioContext
+    ? Math.max(0, (audioContext.currentTime - playbackBeatOriginSec) * playbackTempo / 60)
+    : pausedBeatPhase;
+  return Math.min(60000, (phase % Math.ceil(state.bpm)) * 60000 / state.bpm);
+}
+
+function updatePlaybackReadout() {
+  const position = getTimelinePlayheadMs();
+  const beat = state.isPlaying || pausedTimelineMs > 0
+    ? (state.viewMode === 'single' ? 1 : Math.floor(position * state.bpm / 60000) + 1)
+    : 0;
+  updateTimelineReadout(position, beat);
+}
+
 function getTimelineEvents() {
   const events = [];
   const bpm = state.bpm;
   const beatInterval = 60000 / bpm;
-  const numBeats = Math.floor(bpm);
+  const numBeats = Math.ceil(bpm);
 
   if (state.viewMode === 'single') {
-    events.push({ timeMs: 0, kind: 'beat' });
+    events.push({ timeMs: 0, kind: 'beat', beatNumber: 1 });
     noteData.values.forEach((note, i) => {
       if (!state.rows.has(i)) return;
       ['dotted', 'base', 'triplet'].forEach(type => {
@@ -1548,7 +1564,7 @@ function getTimelineEvents() {
         const multiplier = getMultiplier(type);
         const delayMs = (60000 / (bpm / Math.pow(2, 5 - i))) * multiplier;
         if (delayMs <= 60000) {
-          events.push({ timeMs: delayMs, kind: 'delay' });
+          events.push({ timeMs: delayMs, kind: 'delay', beatNumber: 1 });
         }
       });
     });
@@ -1556,7 +1572,7 @@ function getTimelineEvents() {
     // Always generate beat events, even if no delay is selected
     for (let n = 0; n < numBeats; n++) {
       const beatTime = n * beatInterval;
-      events.push({ timeMs: beatTime, kind: 'beat' });
+      events.push({ timeMs: beatTime, kind: 'beat', beatNumber: n + 1 });
       
       // Only generate delay events if a row is selected
       if (state.selected) {
@@ -1566,7 +1582,7 @@ function getTimelineEvents() {
         const noteMs = (60000 / (bpm / Math.pow(2, 5 - i))) * multiplier;
         const delayMs = beatTime + noteMs;
         if (delayMs <= 60000) {
-          events.push({ timeMs: delayMs, kind: 'delay' });
+          events.push({ timeMs: delayMs, kind: 'delay', beatNumber: n + 1 });
         }
       }
     }
@@ -1603,12 +1619,7 @@ function updateVisualMarkers() {
     if (event.time > lastVisualCheckSec && event.time <= now + 0.002) {
       if (event.kind === 'beat') {
         currentBeatMs = event.ms;
-        if (state.viewMode === 'all') {
-          lastBeatAnchorMs = event.ms;
-          lastBeatAnchorSec = event.time;
-        }
         beatHighlightUntilSec = now + VISUAL_HIGHLIGHT_HOLD_SEC;
-        updateTimelineReadout(event.ms, event.beatNumber ?? (state.viewMode === 'single' ? 1 : 0));
         if (currentDelayMs !== null && Math.abs(currentDelayMs - event.ms) > coincideToleranceMs) {
           currentDelayMs = null;
           delayHighlightUntilSec = 0;
@@ -1616,7 +1627,6 @@ function updateVisualMarkers() {
       } else {
         currentDelayMs = event.ms;
         delayHighlightUntilSec = now + VISUAL_HIGHLIGHT_HOLD_SEC;
-        updateTimelineReadout(event.ms, event.beatNumber ?? (state.viewMode === 'single' ? 1 : 0));
         if (currentBeatMs !== null && Math.abs(currentBeatMs - event.ms) > coincideToleranceMs) {
           currentBeatMs = null;
           beatHighlightUntilSec = 0;
@@ -1642,13 +1652,120 @@ function updateVisualMarkers() {
   }
 
   lastVisualCheckSec = now;
+  updatePlaybackReadout();
 
   if (shouldRedraw) {
     drawCanvas();
   }
 }
 
+function cancelPlaybackEvents(kind, includeStarted = false) {
+  const now = audioContext.currentTime;
+  scheduledAudioNodes = scheduledAudioNodes.filter(event => {
+    if (event.stopTime <= now) return false;
+    if ((kind && event.kind !== kind) || (!includeStarted && event.startTime <= now)) return true;
+    event.oscillator.stop(now);
+    return false;
+  });
+  scheduledVisualEvents = scheduledVisualEvents.filter(event =>
+    (kind && event.kind !== kind) || (!includeStarted && event.time <= now));
+}
+
+function schedulePlaybackEvents() {
+  if (!state.isPlaying || !audioContext) return;
+  const now = audioContext.currentTime;
+  const elapsed = Math.max(0, now - timelineStartTime);
+  const until = elapsed + 0.15;
+  const beatKey = JSON.stringify([state.bpm, state.viewMode, state.isLoopOn]);
+  const delayKey = JSON.stringify([beatKey, state.viewMode === 'all'
+    ? state.selected : [[...state.rows], state.modes]]);
+
+  if (playbackScheduleKeys.beat !== beatKey || playbackScheduleKeys.delay !== delayKey) {
+    const beatChanged = playbackScheduleKeys.beat !== beatKey;
+    if (playbackTempo !== state.bpm) {
+      const phase = (now - playbackBeatOriginSec) * playbackTempo / 60;
+      playbackBeatOriginSec = now - phase * 60 / state.bpm;
+      playbackTempo = state.bpm;
+    }
+    cancelPlaybackEvents(beatChanged ? null : 'delay');
+    if (beatChanged && playbackScheduleKeys.beat) playbackScheduledUntil.beat = elapsed + 0.000001;
+    if (playbackScheduleKeys.delay) playbackScheduledUntil.delay = elapsed + 0.000001;
+    playbackScheduleKeys = { beat: beatKey, delay: delayKey };
+    playbackEvents = getTimelineEvents();
+    currentDelayMs = null;
+    delayHighlightUntilSec = 0;
+  }
+
+  scheduledAudioNodes = scheduledAudioNodes.filter(event => event.stopTime > now);
+  scheduledVisualEvents = scheduledVisualEvents.filter(event => event.time >= now - 0.25);
+  for (const kind of ['beat', 'delay']) {
+    // Skip missed events after a stall instead of playing a catch-up burst.
+    const from = Math.max(playbackScheduledUntil[kind], elapsed);
+    if (state.viewMode === 'all') {
+      scheduleBeatWindow(kind, from, until);
+      playbackScheduledUntil[kind] = until;
+      continue;
+    }
+    const firstCycle = Math.max(0, Math.floor(from / 60) - 1);
+    const lastCycle = state.isLoopOn ? Math.floor(until / 60) : 0;
+    for (let cycle = firstCycle; cycle <= lastCycle; cycle++) {
+      for (const event of playbackEvents) {
+        if (event.kind !== kind) continue;
+        const position = cycle * 60 + event.timeMs / 1000;
+        if (position < from || position >= until) continue;
+        const time = timelineStartTime + position;
+        if (kind === 'beat') playClick(time, FIXED_CLICK_DURATION_SEC);
+        else playDelayClick(time, FIXED_CLICK_DURATION_SEC);
+        scheduledVisualEvents.push({
+          time, kind, ms: event.timeMs, beatNumber: event.beatNumber
+        });
+      }
+    }
+    playbackScheduledUntil[kind] = until;
+  }
+  scheduledVisualEvents.sort((a, b) => a.time - b.time);
+}
+
+function scheduleBeatWindow(kind, from, until) {
+  if (kind === 'delay' && !state.selected) return;
+  const interval = 60 / state.bpm;
+  const offset = kind === 'delay' ? getSelectedRowMs() / 1000 / interval : 0;
+  const fromTime = timelineStartTime + from;
+  const untilTime = Math.min(timelineStartTime + until,
+    state.isLoopOn ? Infinity : timelineStartTime + 60 + (kind === 'delay' ? 0.000001 : 0));
+  const firstBeat = Math.max(0, Math.ceil((fromTime - playbackBeatOriginSec) / interval - offset - 1e-9));
+  const beatsPerMinute = Math.ceil(state.bpm);
+  for (let beat = firstBeat; ; beat++) {
+    const time = playbackBeatOriginSec + (beat + offset) * interval;
+    if (time >= untilTime) break;
+    if (time < fromTime) continue;
+    const beatInMinute = beat % beatsPerMinute;
+    const ms = (beatInMinute + offset) * interval * 1000;
+    if (kind === 'delay' && ms > 60000 + 0.000001) continue;
+    if (kind === 'beat') playClick(time, FIXED_CLICK_DURATION_SEC);
+    else playDelayClick(time, FIXED_CLICK_DURATION_SEC);
+    scheduledVisualEvents.push({ time, kind, ms, beatNumber: beatInMinute + 1 });
+  }
+}
+
+function runPlaybackScheduler() {
+  if (!state.isPlaying) return;
+  if (!state.isLoopOn && audioContext.currentTime >= timelineStartTime + 60.06) {
+    stopPlayback();
+    return;
+  }
+  schedulePlaybackEvents();
+  playbackTimer = setTimeout(runPlaybackScheduler, 25);
+}
+
+function animatePlayback() {
+  if (!state.isPlaying) return;
+  updateVisualMarkers();
+  playbackAnimationFrame = requestAnimationFrame(animatePlayback);
+}
+
 function startPlayback() {
+  if (state.isPlaying) return;
   initAudioContext();
   if (audioContext.state === 'suspended') {
     audioContext.resume().catch(() => {
@@ -1656,135 +1773,36 @@ function startPlayback() {
     });
   }
 
-  if (!state.isPlaying) {
-    state.isPlaying = true;
-    togglePlayButton.classList.add('button-on');
-    
-    // Initialize or resume timing
-    if (nextBeatTime === 0 && pausedElapsedMs === 0) {
-      // Starting fresh
-      nextBeatTime = audioContext.currentTime + 0.001;
-      timelineStartTime = audioContext.currentTime;
-      pausedTimelineMs = 0;
-      beatIndex = 0;
-    } else if (pausedElapsedMs !== 0) {
-      // Resuming from pause - restore the time offset
-      nextBeatTime = audioContext.currentTime + (pausedElapsedMs / 1000);
-      timelineStartTime = audioContext.currentTime - (pausedTimelineMs / 1000);
-      pausedElapsedMs = 0;
-    } else {
-      // Resuming after stop-in-middle or similar - adjust to current time
-      nextBeatTime = audioContext.currentTime + 0.001;
-      timelineStartTime = audioContext.currentTime;
-      pausedTimelineMs = 0;
-    }
-  }
-  updateMetersSourceBridge();
-
+  timelineStartTime = audioContext.currentTime + 0.01 - pausedTimelineMs / 1000;
+  playbackTempo = state.bpm;
+  playbackBeatOriginSec = audioContext.currentTime + 0.01 - pausedBeatPhase * 60 / playbackTempo;
+  playbackScheduledUntil = { beat: pausedTimelineMs / 1000, delay: pausedTimelineMs / 1000 };
+  playbackScheduleKeys = {};
+  state.isPlaying = true;
+  togglePlayButton.classList.add('button-on');
   currentBeatMs = null;
   currentDelayMs = null;
-  lastBeatAnchorMs = null;
-  lastBeatAnchorSec = 0;
   lastVisualCheckSec = audioContext.currentTime;
   beatHighlightUntilSec = 0;
   delayHighlightUntilSec = 0;
-  drawCanvas();
-  
-  function scheduler() {
-    if (!state.isPlaying || !audioContext) return;
-    const scheduleAheadTime = 0.12;
-    const currentTime = audioContext.currentTime;
-    const bpm = state.bpm;
-    const beatInterval = 60 / bpm;
-    const numBeats = Math.floor(bpm);
-
-    while (nextBeatTime < currentTime + scheduleAheadTime) {
-      if (state.viewMode === 'single') {
-        if (beatIndex >= 1) {
-          if (state.isLoopOn) {
-            beatIndex = 0;
-            continue;
-          }
-          stopPlayback();
-          return;
-        }
-
-        // Single mode: one downbeat + all active note delays across the 60-second timeline.
-        playClick(nextBeatTime, FIXED_CLICK_DURATION_SEC);
-        scheduledVisualEvents.push({ time: nextBeatTime, kind: 'beat', ms: 0, beatNumber: 1 });
-
-        noteData.values.forEach((note, i) => {
-          if (!state.rows.has(i)) return;
-          ['dotted', 'base', 'triplet'].forEach(type => {
-            if (!state.modes[type]) return;
-            const multiplier = getMultiplier(type);
-            const delayMs = (60000 / (bpm / Math.pow(2, 5 - i))) * multiplier;
-            if (delayMs <= 60000) {
-              const delayTime = nextBeatTime + (delayMs / 1000);
-              playDelayClick(delayTime, FIXED_CLICK_DURATION_SEC);
-              scheduledVisualEvents.push({ time: delayTime, kind: 'delay', ms: delayMs, beatNumber: 1 });
-            }
-          });
-        });
-
-        beatIndex = 1;
-        nextBeatTime += 60;
-      } else {
-        // All mode: every beat in the minute + selected delay per beat.
-        playClick(nextBeatTime, FIXED_CLICK_DURATION_SEC);
-        const beatTimeMs = beatIndex * (60000 / bpm);
-        const beatNumber = beatIndex + 1;
-
-        scheduledVisualEvents.push({ time: nextBeatTime, kind: 'beat', ms: beatTimeMs, beatNumber });
-
-        if (state.selected) {
-          const [iStr, type] = state.selected.split('-');
-          const i = parseInt(iStr, 10);
-          const multiplier = getMultiplier(type);
-          const noteMs = (60000 / (bpm / Math.pow(2, 5 - i))) * multiplier;
-          const delayTimeMs = beatTimeMs + noteMs;
-
-          if (delayTimeMs <= 60000) {
-            const delayTime = nextBeatTime + (noteMs / 1000);
-            playDelayClick(delayTime, FIXED_CLICK_DURATION_SEC);
-
-            scheduledVisualEvents.push({ time: delayTime, kind: 'delay', ms: delayTimeMs, beatNumber });
-          }
-        }
-
-        nextBeatTime += beatInterval;
-        beatIndex++;
-
-        if (beatIndex >= numBeats) {
-          if (state.isLoopOn) {
-            beatIndex = 0;
-          } else {
-            stopPlayback();
-            return;
-          }
-        }
-      }
-    }
-
-    updateVisualMarkers();
-
-    playbackTimer = setTimeout(scheduler, 25);
-  }
-  scheduler();
+  updateMetersSourceBridge();
+  runPlaybackScheduler();
+  animatePlayback();
 }
 
 function pausePlayback() {
   if (!state.isPlaying) return;
   pausedTimelineMs = getCurrentPlayheadMs();
+  pausedBeatPhase = Math.max(0, (audioContext.currentTime - playbackBeatOriginSec) * playbackTempo / 60);
   state.isPlaying = false;
   togglePlayButton.classList.remove('button-on');
   clearTimeout(playbackTimer);
   playbackTimer = null;
-  // Store how far ahead the next beat was scheduled
-  if (audioContext) {
-    pausedElapsedMs = (nextBeatTime - audioContext.currentTime) * 1000;
-  }
+  cancelAnimationFrame(playbackAnimationFrame);
+  playbackAnimationFrame = null;
+  cancelPlaybackEvents(null, true);
   updateMetersSourceBridge();
+  updatePlaybackReadout();
   drawCanvas();
 }
 
@@ -1805,18 +1823,16 @@ function stopPlayback() {
   togglePlayButton.classList.remove('button-on');
   clearTimeout(playbackTimer);
   playbackTimer = null;
+  cancelAnimationFrame(playbackAnimationFrame);
+  playbackAnimationFrame = null;
   timelineStartTime = 0;
   pausedTimelineMs = 0;
-  pausedElapsedMs = 0;
-  nextBeatTime = 0;
-  beatIndex = 0;
+  pausedBeatPhase = 0;
   lastVisualCheckSec = 0;
   beatHighlightUntilSec = 0;
   delayHighlightUntilSec = 0;
   currentBeatMs = null;
   currentDelayMs = null;
-  lastBeatAnchorMs = null;
-  lastBeatAnchorSec = 0;
   playbackEvents = [];
 
   stopAllRowPreviews();

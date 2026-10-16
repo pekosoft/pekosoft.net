@@ -1,3 +1,20 @@
+# Repository-only files
+.git/**
+.github/**
+.dev/**
+.githooks/**
+.vscode/**
+tests/**
+.editorconfig
+.ftpignore
+.gitignore
+DEPLOYMENT.md
+README.md
+pekosoft.md
+icons.md
+rulers.md
+LICENCE
+
 # Prevent accidental upload of local debug/scratch artifacts
 js_variable_list.txt
 

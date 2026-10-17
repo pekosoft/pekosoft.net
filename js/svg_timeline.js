@@ -94,7 +94,9 @@
         drawVertical(verticalRuler, { width: axisWidth, height, bright });
       }
       if (typeof drawHorizontal === 'function') {
-        drawHorizontal(horizontalRuler, { width, height: horizontalHeight, bright });
+        drawHorizontal(horizontalRuler, {
+          width, height: horizontalHeight, bright, sideBorders: true, leftBorder: false
+        });
       }
       syncHorizontalRuler();
     }

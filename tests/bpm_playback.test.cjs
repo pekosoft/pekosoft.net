@@ -128,14 +128,16 @@ test('rapid Note knob changes schedule immediately without disturbing the 320 BP
   });
   Object.assign(context, {
     noteKnob: { style: { setProperty() {} }, dataset: {}, setAttribute() {} },
+    noteSelect: { options: [], replaceChildren(...options) { this.options = options; } },
+    typeSelect: { options: [], replaceChildren(...options) { this.options = options; } },
+    Option: function(text, value) { this.text = text; this.value = value; },
     resultTable: { querySelectorAll: () => [] },
-    selectionRenderFrame: null, saveState() {}, updatePanel() {},
-    getValueLabel: (note, type) => `${note} ${type}`
+    selectionRenderFrame: null, saveState() {}, updatePanel() {}
   });
   vm.runInContext(source.slice(
     source.indexOf('function getRowDelayMs('),
     source.indexOf('function updateSortButton(')
-  ), context);
+  ) + source.slice(source.indexOf('function getValueLabel('), source.indexOf('function calculateValues(')), context);
   context.startPlayback();
   const beatOrigin = context.playbackBeatOriginSec;
   const transportOrigin = context.timelineStartTime;

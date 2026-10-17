@@ -391,6 +391,26 @@
   </div>
 </div>
 
+<div class="feature-row border">
+  <svg class="standard-image-help">
+    <use href="/icons.svg#menu"></use>
+  </svg>
+  <div class="justify">
+    <h1>Note <span class="object">menu</span></h1>
+    Selects a note value from visible Instrument rows, or None.
+  </div>
+</div>
+
+<div class="feature-row border">
+  <svg class="standard-image-help">
+    <use href="/icons.svg#menu"></use>
+  </svg>
+  <div class="justify">
+    <h1>Type <span class="object">menu</span></h1>
+    Selects an available type for the current note: Straight, Dotted, or Triplet.
+  </div>
+</div>
+
 <div class="feature-row module">
   <svg class="standard-image-help">
     <use href="/icons.svg#timeline"></use>

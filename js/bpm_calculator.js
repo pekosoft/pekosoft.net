@@ -43,6 +43,8 @@ const volumeDecreaseButton = document.getElementById('volume-decrease-button');
 const beatSoundSelect = document.getElementById('beat-sound-type');
 const toneTypeSelect = document.getElementById('tone-type');
 const noteKnob = document.getElementById('note-knob');
+const noteSelect = document.getElementById('note-select');
+const typeSelect = document.getElementById('type-select');
 const timelineContainer = document.getElementById('timeline-container');
 const timelineScroll = timelineSvg?.closest('.scrollable');
 const svgUtils = window.PekoSvgUtils;
@@ -399,11 +401,28 @@ function getNoteKnobIndex(selected = state.selected) {
   return getVisibleRowDescriptors().findIndex(row => row.rowKey === `row-${selected}`) + 1;
 }
 
-function syncNoteKnob() {
+function updateMenuOptions(menu, options) {
+  if (menu.options.length === options.length && options.every((option, index) =>
+    menu.options[index].value === option.value && menu.options[index].text === option.label)) return;
+  menu.replaceChildren(...options.map(option => new Option(option.label, option.value)));
+}
+
+function syncNoteControls() {
   const rows = getVisibleRowDescriptors();
   const index = rows.findIndex(row => row.rowKey === `row-${state.selected}`) + 1;
   const selected = rows[index - 1];
   const label = selected ? getValueLabel(selected.note, selected.type) : 'None';
+  const notes = Array.from(new Set(rows.map(row => row.i)), i => ({
+    value: String(i), label: noteData.values[i]
+  }));
+  const types = ['base', 'dotted', 'triplet'].filter(type => rows.some(row => row.type === type))
+    .map(type => ({ value: type, label: getNoteTypeLabel(type) }));
+  updateMenuOptions(noteSelect, [{ value: '', label: 'None' }, ...notes]);
+  updateMenuOptions(typeSelect, selected ? types : [{ value: '', label: 'None' }, ...types]);
+  noteSelect.value = selected ? String(selected.i) : '';
+  typeSelect.value = selected ? selected.type : '';
+  noteSelect.disabled = rows.length === 0;
+  typeSelect.disabled = !selected;
   noteKnob.disabled = rows.length === 0;
   noteKnob.style.setProperty('--knob-angle', `${-135 + index / Math.max(1, rows.length) * 270}deg`);
   noteKnob.setAttribute('role', 'slider');
@@ -426,7 +445,7 @@ function setSelectedNote(rowId) {
   resultTable.querySelectorAll('tr').forEach(row => {
     row.classList.toggle('table-row-selected', row.id === `row-${rowId}`);
   });
-  syncNoteKnob();
+  syncNoteControls();
   saveState();
   if (selectionRenderFrame !== null) return;
   selectionRenderFrame = requestAnimationFrame(() => {
@@ -442,7 +461,24 @@ function setNoteKnobIndex(index) {
   setSelectedNote(row ? `${row.i}-${row.type}` : null);
 }
 
-function initNoteKnob() {
+function initNoteControls() {
+  noteSelect.addEventListener('change', () => {
+    if (noteSelect.value === '') {
+      setSelectedNote(null);
+      return;
+    }
+    const rows = getVisibleRowDescriptors().filter(row => String(row.i) === noteSelect.value);
+    const currentType = state.selected?.split('-')[1] || 'base';
+    const row = rows.find(row => row.type === currentType) || rows[0];
+    if (!row) throw new Error('Selected note value is no longer available in Instrument.');
+    setSelectedNote(`${row.i}-${row.type}`);
+  });
+  typeSelect.addEventListener('change', () => {
+    const row = getVisibleRowDescriptors().find(row =>
+      String(row.i) === noteSelect.value && row.type === typeSelect.value);
+    if (!row) throw new Error('Selected note type is no longer available in Instrument.');
+    setSelectedNote(`${row.i}-${row.type}`);
+  });
   bindKnobControl(noteKnob, {
     get: () => getNoteKnobIndex(),
     nudge: direction => setNoteKnobIndex(getNoteKnobIndex() + direction),
@@ -499,9 +535,13 @@ function getVisibleValuesText() {
 }
 
 function getValueLabel(note, type) {
-  if (type === 'dotted') return `${note} dotted`;
-  if (type === 'triplet') return `${note} triplet`;
-  return `${note} straight`;
+  return `${note} ${getNoteTypeLabel(type).toLowerCase()}`;
+}
+
+function getNoteTypeLabel(type) {
+  if (type === 'dotted') return 'Dotted';
+  if (type === 'triplet') return 'Triplet';
+  return 'Straight';
 }
 
 function calculateValues() {
@@ -560,7 +600,7 @@ function calculateValues() {
   updateColumnHeaders();
   updateModeButtons();
   updateSortButton();
-  syncNoteKnob();
+  syncNoteControls();
   updatePanel();
   updatePlaybackReadout();
   drawCanvas();
@@ -2005,7 +2045,7 @@ if (followButton) {
 // INITIAL LOAD
 
 loadState();
-document.addEventListener('DOMContentLoaded', initNoteKnob);
+document.addEventListener('DOMContentLoaded', initNoteControls);
 state.beatSound = normalizeTone(state.beatSound);
 state.toneType = normalizeToneType(state.toneType);
 setupTimelineFollow();

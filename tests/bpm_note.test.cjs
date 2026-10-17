@@ -23,6 +23,20 @@ function createControl(overrides = {}) {
   let frameId = 0;
   let rows = [];
   let radios = [];
+  const createMenu = () => {
+    const events = new Map();
+    return {
+      value: '', options: [], disabled: false, replacements: 0,
+      addEventListener(name, listener) { events.set(name, listener); },
+      replaceChildren(...options) { this.options = options; this.replacements++; },
+      get selectedOptions() { return this.options.filter(option => option.value === this.value); },
+      change(value) {
+        if (this.disabled) return;
+        this.value = value;
+        events.get('change')();
+      }
+    };
+  };
   const knob = {
     disabled: false, dataset: {}, style: { setProperty() {} }, capture: null,
     addEventListener(name, listener) { listeners.set(name, listener); },
@@ -50,7 +64,8 @@ function createControl(overrides = {}) {
     noteData: { values: '8/1 4/1 2/1 1/1 1/2 1/4 1/8 1/16 1/32 1/64 1/128'.split(' ') },
     getMultiplier: type => type === 'dotted' ? 1.5 : type === 'triplet' ? 2 / 3 : 1,
     createDefaultState: () => ({ selected: '5-base' }),
-    noteKnob: knob, selectionRenderFrame: null,
+    noteKnob: knob, noteSelect: createMenu(), typeSelect: createMenu(), selectionRenderFrame: null,
+    Option: function(text, value) { this.text = text; this.value = value; },
     resultTable: { querySelectorAll: selector => selector === 'tr' ? rows : radios },
     schedulePlaybackEvents() { stats.scheduled++; },
     saveState() { stats.saved.push(context.state.selected); },
@@ -74,10 +89,10 @@ function createControl(overrides = {}) {
     radios = includeRadios ? rows.map(row => ({
       value: row.id.slice(4), checked: row.selected
     })) : [];
-    context.syncNoteKnob();
+    context.syncNoteControls();
   };
   rebuild();
-  context.initNoteKnob();
+  context.initNoteControls();
   return {
     context, knob, stats, frames, rebuild,
     rows: () => rows, radios: () => radios,
@@ -98,7 +113,63 @@ test('Note knob uses all 33 visible notes in the Instrument table order', () => 
     context.setNoteKnobIndex(index + 1);
     assert.equal(context.state.selected, `${row.i}-${row.type}`);
     assert.equal(knob.getAttribute('aria-valuetext'), context.getValueLabel(row.note, row.type));
+    assert.equal(context.noteSelect.selectedOptions[0].text, row.note);
+    assert.equal(context.typeSelect.value, row.type);
   });
+});
+
+test('Note and Type menus identify straight, dotted, and triplet selections separately', () => {
+  const { context } = createControl();
+  for (const [type, label] of [['base', 'Straight'], ['dotted', 'Dotted'], ['triplet', 'Triplet']]) {
+    context.setSelectedNote(`5-${type}`);
+    assert.equal(context.noteSelect.selectedOptions[0].text, '1/4');
+    assert.equal(context.typeSelect.selectedOptions[0].text, label);
+    assert.equal(context.getValueLabel('1/4', type), `1/4 ${label.toLowerCase()}`);
+  }
+});
+
+test('Note and Type menus change selection independently and preserve the other choice', () => {
+  const { context, stats } = createControl({ isPlaying: true });
+  context.noteSelect.change('6');
+  assert.equal(context.state.selected, '6-base');
+  context.typeSelect.change('triplet');
+  assert.equal(context.state.selected, '6-triplet');
+  context.noteSelect.change('4');
+  assert.equal(context.state.selected, '4-triplet');
+  context.typeSelect.change('dotted');
+  assert.equal(context.state.selected, '4-dotted');
+  assert.equal(stats.scheduled, 4);
+  context.noteSelect.change('');
+  assert.equal(context.state.selected, null);
+  assert.equal(context.typeSelect.disabled, true);
+  context.noteSelect.change('5');
+  assert.equal(context.state.selected, '5-base');
+  assert.equal(context.typeSelect.disabled, false);
+});
+
+test('menus list only visible families and types, following table sort for note values', () => {
+  const { context, rebuild } = createControl({
+    rows: new Set([4, 6, 9]), modes: { base: true, dotted: false, triplet: true }, selected: null
+  });
+  assert.deepEqual(Array.from(context.noteSelect.options, option => option.value), ['', '4', '6', '9']);
+  assert.deepEqual(Array.from(context.typeSelect.options, option => option.value), ['', 'base', 'triplet']);
+  context.noteSelect.change('4');
+  context.state.sort = 'asc';
+  rebuild();
+  assert.deepEqual(Array.from(context.noteSelect.options, option => option.value), ['', '9', '6', '4']);
+  assert.equal(context.state.selected, '4-base');
+  assert.deepEqual(Array.from(context.typeSelect.options, option => option.value), ['base', 'triplet']);
+});
+
+test('note changes reuse existing menu options instead of rebuilding them during playback', () => {
+  const { context } = createControl();
+  const noteReplacements = context.noteSelect.replacements;
+  const typeReplacements = context.typeSelect.replacements;
+  context.noteSelect.change('6');
+  context.typeSelect.change('triplet');
+  context.setNoteKnobIndex(5);
+  assert.equal(context.noteSelect.replacements, noteReplacements);
+  assert.equal(context.typeSelect.replacements, typeReplacements);
 });
 
 test('Note knob excludes hidden note families and modifiers', () => {
@@ -120,6 +191,8 @@ test('sorting preserves selection and reverses the knob position and next-note o
   context.state.sort = 'asc';
   rebuild();
   assert.equal(context.state.selected, '5-base');
+  assert.equal(context.noteSelect.selectedOptions[0].text, '1/4');
+  assert.equal(context.typeSelect.value, 'base');
   assert.equal(context.getNoteKnobIndex() + before, 34);
   const next = context.getVisibleRowDescriptors()[context.getNoteKnobIndex()];
   knob.emit('keydown', { key: 'ArrowRight' });
@@ -135,6 +208,8 @@ test('table selection synchronizes the knob and radios, schedules immediately, a
   assert.equal(stats.drawn, 0);
   assert.equal(frames.size, 1);
   assert.equal(knob.getAttribute('aria-valuetext'), '1/16 straight');
+  assert.equal(context.noteSelect.selectedOptions[0].text, '1/16');
+  assert.equal(context.typeSelect.value, 'base');
   assert.deepEqual(control.radios().filter(radio => radio.checked).map(radio => radio.value), ['7-base']);
   assert.deepEqual(control.rows().filter(row => row.selected).map(row => row.id), ['row-7-base']);
   assert.deepEqual(stats.saved, ['6-triplet', '7-base']);
@@ -149,6 +224,8 @@ test('keyboard controls clamp at None and the last visible note without wrapping
   knob.emit('keydown', { key: 'Home' });
   assert.equal(context.state.selected, null);
   assert.equal(knob.getAttribute('aria-valuetext'), 'None');
+  assert.equal(context.noteSelect.selectedOptions[0].text, 'None');
+  assert.equal(context.typeSelect.selectedOptions[0].text, 'None');
   knob.emit('keydown', { key: 'ArrowDown' });
   assert.equal(context.state.selected, null);
   knob.emit('keydown', { key: 'ArrowUp' });
@@ -211,6 +288,10 @@ test('empty and single-note tables keep valid ranges and never select hidden not
   const { context, knob, rebuild } = createControl({ rows: new Set(), selected: null });
   assert.equal(knob.disabled, true);
   assert.equal(knob.getAttribute('aria-valuemax'), '0');
+  assert.equal(context.noteSelect.selectedOptions[0].text, 'None');
+  assert.equal(context.typeSelect.selectedOptions[0].text, 'None');
+  assert.equal(context.noteSelect.disabled, true);
+  assert.equal(context.typeSelect.disabled, true);
   knob.emit('wheel', { deltaY: -1 });
   assert.equal(context.state.selected, null);
   context.state.rows.add(6);
@@ -220,6 +301,8 @@ test('empty and single-note tables keep valid ranges and never select hidden not
   knob.emit('keydown', { key: 'End' });
   assert.equal(context.state.selected, '6-triplet');
   assert.equal(knob.getAttribute('aria-valuenow'), '1');
+  assert.equal(context.noteSelect.selectedOptions[0].text, '1/8');
+  assert.equal(context.typeSelect.value, 'triplet');
   knob.emit('keydown', { key: 'ArrowUp' });
   assert.equal(context.state.selected, '6-triplet');
 });

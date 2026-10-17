@@ -288,6 +288,20 @@
         </div>
 
         <div class="pair">
+          <label for="note-select" title="Select note value">Note:</label>
+          <select id="note-select">
+            <option value="">None</option>
+          </select>
+        </div>
+
+        <div class="pair">
+          <label for="type-select" title="Select note type">Type:</label>
+          <select id="type-select">
+            <option value="">None</option>
+          </select>
+        </div>
+
+        <div class="pair">
           <label for="beat-sound-type" title="Beat sound">Beat:</label>
           <select id="beat-sound-type">
             <?php include $_SERVER['DOCUMENT_ROOT'] . '/elements/beat.php'; ?>

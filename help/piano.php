@@ -23,7 +23,7 @@
     <use href="/icons.svg#two"></use>
   </svg>
   <div class="justify">
-    <h1>Show one key row / Show two key rows <span class="object">buttons</span></h1>
+    <h1>One key row / Two key rows <span class="object">buttons</span></h1>
     Selects one visible key row with two octaves or two visible key rows with four octaves. <span class="default">Default: two key rows.</span>
   </div>
 </div>

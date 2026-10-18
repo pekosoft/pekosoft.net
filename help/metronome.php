@@ -275,7 +275,7 @@
   </svg>
   <div class="justify">
     <h1>Panel <span class="object">module</span></h1>
-    Text-based output showing timestamp, beat number, BPM and interval in ms.
+    Select Beats or Tempi in the Panel tabs to switch between beat history and the Italian tempi list. Beat history includes timestamp, beat number, BPM and interval in ms. Skip selects the next tab.
   </div>
 </div>
 

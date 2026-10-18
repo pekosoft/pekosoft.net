@@ -231,7 +231,15 @@
   </svg>
   <div class="justify">
     <h1>Modules</h1>
-    Each tool is organized into modules. Depending on the tool, these are Instrument, Controls, Timeline, Playlist, History, Panel and Meters. Modules can be toggled from Menu. Double click or double tap a module header to minimize or restore it when the two-module Layout is off.
+    Each tool is organized into modules. Depending on the tool, these are Instrument, Controls, Timeline, Playlist, History, Panel and Meters. Modules with tabs include the selected tab in their header, such as Instrument: Notes or Meters: Spectroscope. Tab tooltips name their content directly, such as File metadata, Curve or Values. Modules can be toggled from Menu. Double click or double tap a module header to minimize or restore it when the two-module Layout is off.
+  </div>
+</div>
+
+<div class="feature-row border">
+  <svg class="standard-image-help"><use href="/icons.svg#skip_right"></use></svg>
+  <div class="justify">
+    <h1>Skip <span class="object">button</span></h1>
+    Selects the next tab in the same section, returning to the first after the last. This works like selecting the tab directly, including any saved selection. Other tab sections and playback are unchanged. In Meters, use Next meter for the same behavior.
   </div>
 </div>
 

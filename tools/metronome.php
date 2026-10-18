@@ -275,23 +275,24 @@
 
   <div id="panel-container" class="container">
     <div class="module-body standard border">
+      <div class="controls-buttons wrapper module-tabs">
+        <button id="panel-beats-button" class="square" title="Beats history" data-module-tab="Beats">
+          <svg class="icons">
+            <use href="/icons.svg#timeline" />
+          </svg>
+          <span class="button-text">Beats</span>
+        </button>
+
+        <button id="panel-tempi-button" class="square" title="Italian tempi" data-module-tab="Italian Tempi">
+          <svg class="icons">
+            <use href="/icons.svg#italy" />
+          </svg>
+          <span class="button-text">Tempi</span>
+        </button>
+      </div>
       <textarea id="metronome-text" placeholder="Metronome data will appear here. Each line format: {timestamp} BPM: {bpm} | Beat: {beat} | Note duration: {interval}"></textarea>
     </div>
     <div class="module-footer wrapper colored">
-      <button id="panel-beats-button" class="square" title="Show beats history">
-        <svg class="icons">
-          <use href="/icons.svg#timeline" />
-        </svg>
-        <span class="button-text">Beats</span>
-      </button>
-
-      <button id="panel-tempi-button" class="square" title="Show Italian tempi">
-        <svg class="icons">
-          <use href="/icons.svg#italy" />
-        </svg>
-        <span class="button-text">Tempi</span>
-      </button>
-
       <button id="copy-button" class="square" title="Copy data">
         <svg class="icons">
           <use href="/icons.svg#copy" />

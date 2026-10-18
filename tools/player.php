@@ -402,7 +402,7 @@
 
   <div id="playlist-container" class="container">
     <div class="module-body standard border">
-      <div class="controls-buttons wrapper">
+      <div class="controls-buttons wrapper module-tabs">
         <button id="playlist-presets-button" class="square" title="Preset test tones" aria-pressed="true" data-help-entry="Presets">
           <svg class="icons"><use href="/icons.svg#wavelength" /></svg>
           <span class="button-text">Presets</span>
@@ -492,22 +492,22 @@
 
   <div id="panel-container" class="container">
     <div class="module-body standard border">
-      <div class="controls-buttons wrapper">
-        <button id="panel-meta-button" class="square" title="Show file metadata">
+      <div class="controls-buttons wrapper module-tabs">
+        <button id="panel-meta-button" class="square" title="File metadata" data-module-tab="Meta">
           <svg class="icons">
             <use href="/icons.svg#tag" />
           </svg>
           <span class="button-text">Meta</span>
         </button>
 
-        <button id="panel-input-button" class="square" title="Show audio input details">
+        <button id="panel-input-button" class="square" title="Audio input details" data-module-tab="Input">
           <svg class="icons">
             <use href="/icons.svg#mic" />
           </svg>
           <span class="button-text">Input</span>
         </button>
 
-        <button id="panel-playlist-button" class="square" title="Show playlist data">
+        <button id="panel-playlist-button" class="square" title="Playlist data" data-module-tab="Playlist">
           <svg class="icons">
             <use href="/icons.svg#view_list" />
           </svg>

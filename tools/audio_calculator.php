@@ -225,7 +225,7 @@
 
   <div id="panel-container" class="container">
     <div class="module-body standard border">
-      <div class="controls-buttons wrapper">
+      <div class="controls-buttons wrapper module-tabs">
         <button id="info-display-selected-button" class="square info-display-button button-on" type="button" title="Selected value" aria-label="Selected value" aria-pressed="true" data-panel-view="selected">
           <svg class="icons"><use href="/icons.svg#selected" /></svg>
           <span class="button-text">Selected</span>

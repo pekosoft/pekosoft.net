@@ -337,12 +337,57 @@ function createModuleIconPanel(id) {
   return panel;
 }
 
+function setupModuleTabSkipButtons() {
+  document.querySelectorAll(".module-tabs").forEach((section) => {
+    if (section.querySelector(".module-tab-skip-button")) return;
+
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "square module-tab-skip-button";
+    button.title = "Next tab";
+    button.setAttribute("aria-label", "Skip to next tab");
+    button.dataset.helpRelease = "index";
+    button.dataset.helpEntry = "Skip";
+    button.innerHTML = `
+      <svg class="icons" aria-hidden="true"><use href="/icons.svg#skip_right" /></svg>
+      <span class="button-text">Skip</span>`;
+    button.addEventListener("click", () => {
+      const tabs = [...section.querySelectorAll(":scope > button:not(.module-tab-skip-button)")]
+        .filter((tab) => !tab.disabled && !tab.hidden && !tab.classList.contains("hidden"));
+      const activeIndex = tabs.findIndex((tab) => tab.classList.contains("button-on"));
+      tabs[(activeIndex + 1) % tabs.length]?.click();
+    });
+    section.appendChild(button);
+  });
+}
+
+function setupModuleTabTitle(container) {
+  const tabButtons = [...container.querySelectorAll("button[data-module-tab]")];
+  if (!tabButtons.length) return;
+
+  const id = container.id.replace(/-container$/, "");
+  const baseTitle = moduleConfig[id]?.title || id;
+  const titleElement = container.querySelector(":scope > .module-header .module-title");
+  const updateTitle = () => {
+    const activeTab = tabButtons.find((button) => button.classList.contains("button-on"));
+    const title = activeTab ? `${baseTitle}: ${activeTab.dataset.moduleTab}` : baseTitle;
+    if (titleElement.textContent !== title) titleElement.textContent = title;
+  };
+
+  const observer = new MutationObserver(updateTitle);
+  tabButtons.forEach((button) => {
+    observer.observe(button, { attributes: true, attributeFilter: ["class"] });
+  });
+  updateTitle();
+}
+
 function setupModuleHeader(id) {
   const container = document.getElementById(id + "-container");
   if (!container) return;
 
   const header = createModuleHeader(id);
   container.prepend(header);
+  setupModuleTabTitle(container);
   const iconPanel = createModuleIconPanel(id);
   header.insertAdjacentElement("afterend", iconPanel);
 
@@ -1103,6 +1148,7 @@ function setupTimelineCopyButton() {
 document.addEventListener("DOMContentLoaded", () => {
   syncModuleViewportHeight();
   moduleIds.forEach(id => setupModuleHeader(id));
+  setupModuleTabSkipButtons();
   applyModuleOrder(loadModuleOrder());
   restoreModuleStates();
   syncFirstModule();

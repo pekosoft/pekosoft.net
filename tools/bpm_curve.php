@@ -236,12 +236,12 @@
 
   <div id="panel-container" class="container">
     <div class="module-body standard border">
-      <div class="controls-buttons wrapper">
-        <button id="panel-curve-button" class="square" title="Show curve view">
+      <div class="controls-buttons wrapper module-tabs">
+        <button id="panel-curve-button" class="square" title="Curve" data-module-tab="Curve">
           <svg class="icons" role="img"><use href="/icons.svg#wavelength" /></svg>
           <span class="button-text">Curve</span>
         </button>
-        <button id="panel-values-button" class="square" title="Show values view">
+        <button id="panel-values-button" class="square" title="Values" data-module-tab="Values">
           <svg class="icons" role="img"><use href="/icons.svg#value" /></svg>
           <span class="button-text">Values</span>
         </button>

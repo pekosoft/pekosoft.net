@@ -171,20 +171,20 @@
 
   <div id="panel-container" class="container">
     <div class="module-body standard border">
-      <div class="controls-buttons wrapper">
-        <button id="info-display-selected-button" class="square info-display-button button-on" title="Selected segment" aria-label="Selected segment">
+      <div class="controls-buttons wrapper module-tabs">
+        <button id="info-display-selected-button" class="square info-display-button button-on" title="Selected segment" aria-label="Selected segment" data-module-tab="Selected">
           <svg class="icons">
             <use href="/icons.svg#field" />
           </svg>
           <span class="button-text">Selected</span>
         </button>
-        <button id="info-display-active-button" class="square info-display-button" title="Active notes" aria-label="Active notes">
+        <button id="info-display-active-button" class="square info-display-button" title="Active notes" aria-label="Active notes" data-module-tab="Active">
           <svg class="icons">
             <use href="/icons.svg#sound" />
           </svg>
           <span class="button-text">Active</span>
         </button>
-        <button id="info-display-all-button" class="square info-display-button" title="All notes" aria-label="All notes">
+        <button id="info-display-all-button" class="square info-display-button" title="All notes" aria-label="All notes" data-module-tab="All">
           <svg class="icons">
             <use href="/icons.svg#timeline" />
           </svg>

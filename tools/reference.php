@@ -20,36 +20,36 @@
 
   <div id="tool-container" class="container one-module-tool">
     <div class="module-body standard border scrollable">
-      <div class="controls-buttons wrapper">
-        <button id="table-bpm-button" class="square" title="BPM">
+      <div class="controls-buttons wrapper module-tabs">
+        <button id="table-bpm-button" class="square" title="BPM" data-module-tab="BPM">
           <svg class="icons">
             <use href="/icons.svg#bpm" />
           </svg>
           <span class="button-text">BPM</span>
         </button>
 
-        <button id="table-tempi-button" class="square" title="Italian tempi">
+        <button id="table-tempi-button" class="square" title="Italian tempi" data-module-tab="Italian Tempi">
           <svg class="icons">
             <use href="/icons.svg#italy" />
           </svg>
           <span class="button-text">Tempi</span>
         </button>
 
-        <button id="table-notes-button" class="square" title="Notes">
+        <button id="table-notes-button" class="square" title="Notes" data-module-tab="Notes">
           <svg class="icons">
             <use href="/icons.svg#piano" />
           </svg>
           <span class="button-text">Notes</span>
         </button>
 
-        <button id="table-scales-button" class="square" title="Scales">
+        <button id="table-scales-button" class="square" title="Scales" data-module-tab="Scales">
           <svg class="icons">
             <use href="/icons.svg#timeline" />
           </svg>
           <span class="button-text">Scales</span>
         </button>
 
-        <button id="table-chords-button" class="square" title="Chords">
+        <button id="table-chords-button" class="square" title="Chords" data-module-tab="Chords">
           <svg class="icons">
             <use href="/icons.svg#value" />
           </svg>

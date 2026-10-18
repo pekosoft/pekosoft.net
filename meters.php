@@ -1,37 +1,37 @@
 <div id="meters-container" class="container">
   <div class="module-body standard border">
-    <div class="controls-buttons wrapper">
-      <button id="tool-spectroscope-button" class="square" title="Spectroscope">
+    <div class="controls-buttons wrapper module-tabs">
+      <button id="tool-spectroscope-button" class="square" title="Spectroscope" data-module-tab="Spectroscope">
         <svg class="icons">
           <use href="/icons.svg#eq" />
         </svg>
         <span class="button-text">Spectroscope</span>
       </button>
-      <button id="tool-level-button" class="square" title="Level meter">
+      <button id="tool-level-button" class="square" title="Level meter" data-module-tab="Level meter">
         <svg class="icons">
           <use href="/icons.svg#meter" />
         </svg>
         <span class="button-text">Level</span>
       </button>
-      <button id="tool-oscilloscope-button" class="square" title="Oscilloscope">
+      <button id="tool-oscilloscope-button" class="square" title="Oscilloscope" data-module-tab="Oscilloscope">
         <svg class="icons">
           <use href="/icons.svg#wavelength" />
         </svg>
         <span class="button-text">Oscilloscope</span>
       </button>
-      <button id="tool-wavescope-button" class="square" title="Wavescope">
+      <button id="tool-wavescope-button" class="square" title="Wavescope" data-module-tab="Wavescope">
         <svg class="icons">
           <use href="/icons.svg#pulse" />
         </svg>
         <span class="button-text">Wavescope</span>
       </button>
-      <button id="tool-phasescope-button" class="square" title="Phasescope" data-help-release="index" data-help-entry="Phasescope">
+      <button id="tool-phasescope-button" class="square" title="Phasescope" data-module-tab="Phasescope" data-help-release="index" data-help-entry="Phasescope">
         <svg class="icons">
           <use href="/icons.svg?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/icons.svg'); ?>#phasescope" />
         </svg>
         <span class="button-text">Phasescope</span>
       </button>
-      <button id="meters-next-button" class="square" title="Next meter" data-help-release="index" data-help-entry="Next meter">
+      <button id="meters-next-button" class="square module-tab-skip-button" title="Next meter" data-help-release="index" data-help-entry="Next meter">
         <svg class="icons">
           <use href="/icons.svg#skip_right" />
         </svg>

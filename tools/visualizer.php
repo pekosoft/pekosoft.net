@@ -214,14 +214,14 @@
       </div>
     </div>
     <div class="module-footer wrapper colored">
-      <button id="tool-mode-all-button" class="square button-on" title="Show all enabled meters">
+      <button id="tool-mode-all-button" class="square button-on" title="All enabled meters">
         <svg class="icons">
           <use href="/icons.svg#select_all" />
         </svg>
         <span class="button-text">All</span>
       </button>
 
-      <button id="tool-mode-single-button" class="square" title="Show one meter at a time">
+      <button id="tool-mode-single-button" class="square" title="One meter at a time">
         <svg class="icons">
           <use href="/icons.svg#radio_button" />
         </svg>

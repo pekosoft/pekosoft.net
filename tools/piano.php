@@ -19,8 +19,8 @@
       <div id="piano"></div>
     </div>
     <div class="module-footer wrapper colored">
-      <button id="piano-range-one-button" class="square icon-only" title="Show one key row" aria-label="Show one key row"><svg class="icons" role="img"><use href="/icons.svg#one" /></svg></button>
-      <button id="piano-range-two-button" class="square icon-only" title="Show two key rows" aria-label="Show two key rows"><svg class="icons" role="img"><use href="/icons.svg#two" /></svg></button>
+      <button id="piano-range-one-button" class="square icon-only" title="One key row" aria-label="One key row"><svg class="icons" role="img"><use href="/icons.svg#one" /></svg></button>
+      <button id="piano-range-two-button" class="square icon-only" title="Two key rows" aria-label="Two key rows"><svg class="icons" role="img"><use href="/icons.svg#two" /></svg></button>
       <button id="piano-scroll-left-button" class="square icon-only" title="Previous octave" aria-label="Previous octave">
         <svg class="icons" role="img"><use href="/icons.svg#decrease" /></svg>
       </button>

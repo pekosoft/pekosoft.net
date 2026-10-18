@@ -350,15 +350,15 @@
 
   <div id="panel-container" class="container">
     <div class="module-body standard border">
-      <div class="controls-buttons wrapper">
-        <button id="panel-current-button" class="square" title="Show current icon">
+      <div class="controls-buttons wrapper module-tabs">
+        <button id="panel-current-button" class="square" title="Current icon" data-module-tab="Current">
           <svg class="icons">
             <use href="/icons.svg#selected" />
           </svg>
           <span class="button-text">Current</span>
         </button>
 
-        <button id="panel-all-button" class="square" title="Show all icons">
+        <button id="panel-all-button" class="square" title="All icons" data-module-tab="All">
           <svg class="icons">
             <use href="/icons.svg#select_all" />
           </svg>

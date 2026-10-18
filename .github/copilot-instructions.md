@@ -1,5 +1,9 @@
 # Project instructions
 
+## Commit titles
+
+Always write Git commit titles in the past tense, both when suggesting titles and when creating commits. Use "Fixed", "Added" or "Updated", not "Fix", "Add" or "Update".
+
 ## Mandatory session startup
 
 Before any other task in every session:

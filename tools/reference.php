@@ -9,7 +9,7 @@
   $releasePage = "";
   $availableModules = ["tool"];
   ?>
-  <meta name="keywords" content="bpm reference, note frequency chart, scale reference, chord reference">
+  <meta name="keywords" content="bpm reference, Italian tempi, note frequency chart, scale reference, chord reference">
   <link rel="stylesheet" type="text/css" href="/css/<?php echo $release; ?>.css?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/css/' . $release . '.css'); ?>">
 </head>
 
@@ -21,28 +21,35 @@
   <div id="tool-container" class="container one-module-tool">
     <div class="module-body standard border scrollable">
       <div class="controls-buttons wrapper">
-        <button id="table-bpm-button" class="square" title="Show BPM">
+        <button id="table-bpm-button" class="square" title="BPM">
           <svg class="icons">
             <use href="/icons.svg#bpm" />
           </svg>
           <span class="button-text">BPM</span>
         </button>
 
-        <button id="table-notes-button" class="square" title="Show Notes">
+        <button id="table-tempi-button" class="square" title="Italian tempi">
+          <svg class="icons">
+            <use href="/icons.svg#italy" />
+          </svg>
+          <span class="button-text">Tempi</span>
+        </button>
+
+        <button id="table-notes-button" class="square" title="Notes">
           <svg class="icons">
             <use href="/icons.svg#piano" />
           </svg>
           <span class="button-text">Notes</span>
         </button>
 
-        <button id="table-scales-button" class="square" title="Show Scales">
+        <button id="table-scales-button" class="square" title="Scales">
           <svg class="icons">
             <use href="/icons.svg#timeline" />
           </svg>
           <span class="button-text">Scales</span>
         </button>
 
-        <button id="table-chords-button" class="square" title="Show Chords">
+        <button id="table-chords-button" class="square" title="Chords">
           <svg class="icons">
             <use href="/icons.svg#value" />
           </svg>
@@ -168,6 +175,7 @@
   <script src="/js/modules.js?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/js/modules.js'); ?>"></script>
   <script src="/js/drag.js?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/js/drag.js'); ?>"></script>
   <script src="/js/audio.js"></script>
+  <script src="/js/tempi.js?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/js/tempi.js'); ?>"></script>
   <script src="/js/<?php echo $release; ?>.js?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/js/' . $release . '.js'); ?>"></script>
   <?php require($_SERVER['DOCUMENT_ROOT'] . "/elements/beta_footer.php"); ?>
 </body>

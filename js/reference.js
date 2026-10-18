@@ -3,6 +3,7 @@
 
 const modeButtons = {
   bpm: document.getElementById('table-bpm-button'),
+  tempi: document.getElementById('table-tempi-button'),
   notes: document.getElementById('table-notes-button'),
   scales: document.getElementById('table-scales-button'),
   chords: document.getElementById('table-chords-button')
@@ -92,6 +93,7 @@ const state = {
   sort: 'asc',
   visibility: {
     bpm: [true, true, true, true, true, true, true, true, true, true],
+    tempi: [true, true, true],
     notes: [true, true, true, true, true, true, true, true],
     scales: [true, true, true, true, true, true],
     chords: [true, true, true, true, true, true]
@@ -511,6 +513,14 @@ function makeBpmRows() {
   });
 }
 
+function makeTempiRows() {
+  return italianTempi.map((tempo) => [
+    { text: tempo.name, className: 'left' },
+    { text: `${tempo.min}-${tempo.max}`, className: 'right' },
+    buildPlayCell('bpm', { bpm: (tempo.min + tempo.max) / 2 })
+  ]);
+}
+
 function makeNotesRows() {
   const speedOfSoundCmPerSec = 34300;
   const rows = [];
@@ -605,6 +615,11 @@ const TABLES = {
     aligns: ['right', 'left', 'left', 'right', 'right', 'right', 'right', 'right', 'right', 'center'],
     rows: makeBpmRows()
   },
+  tempi: {
+    columns: ['Tempo', 'BPM', 'Play'],
+    aligns: ['left', 'right', 'center'],
+    rows: makeTempiRows()
+  },
   notes: {
     columns: ['Note', 'Octave', 'Register', 'MIDI', 'Hz', 'Wave cm', 'Piano key', 'Play'],
     aligns: ['left', 'left', 'left', 'right', 'right', 'right', 'right', 'center'],
@@ -634,6 +649,11 @@ const REFERENCE_HEADER_TOOLTIPS = {
     SPB: 'Seconds per beat',
     BPS: 'Beats per second',
     Play: 'Play note'
+  },
+  tempi: {
+    Tempo: 'Italian tempo name',
+    BPM: 'Tempo range in beats per minute',
+    Play: 'Play eight beats at the midpoint of the tempo range'
   },
   notes: {
     Note: 'Note name',
@@ -886,7 +906,7 @@ function getCardLabel(modeKey, columnLabel) {
     }
   };
 
-  return labels[modeKey]?.[columnLabel] || columnLabel;
+  return labels[modeKey]?.[columnLabel.toUpperCase()] || columnLabel;
 }
 
 function appendBpmCardBody({ card, rowCells, table, visibility, copyLines }) {
@@ -897,7 +917,7 @@ function appendBpmCardBody({ card, rowCells, table, visibility, copyLines }) {
     return String(rowCells[index].text ?? '').trim();
   };
 
-  const writingValue = getValue('WRITING');
+  const writingValue = getValue('Writing');
   if (writingValue) {
     const writingLine = document.createElement('p');
     writingLine.className = 'reference-card-line';
@@ -907,7 +927,7 @@ function appendBpmCardBody({ card, rowCells, table, visibility, copyLines }) {
     copyLines.push(writingValue);
   }
 
-  const parityValue = getValue('PARITY');
+  const parityValue = getValue('Parity');
   if (parityValue) {
     const parityLine = document.createElement('p');
     parityLine.className = 'reference-card-line';
@@ -928,7 +948,7 @@ function appendBpmCardBody({ card, rowCells, table, visibility, copyLines }) {
     if (leftValue) {
       const left = document.createElement('span');
       left.className = 'reference-card-bpm-pair-left';
-      left.textContent = `${getCardLabel('bpm', leftName.toUpperCase())}: ${leftValue}`;
+      left.textContent = `${getCardLabel('bpm', leftName)}: ${leftValue}`;
       line.appendChild(left);
       copyLines.push(left.textContent);
     }
@@ -936,7 +956,7 @@ function appendBpmCardBody({ card, rowCells, table, visibility, copyLines }) {
     if (rightValue) {
       const right = document.createElement('span');
       right.className = 'reference-card-bpm-pair-right';
-      right.textContent = `${getCardLabel('bpm', rightName.toUpperCase())}: ${rightValue}`;
+      right.textContent = `${getCardLabel('bpm', rightName)}: ${rightValue}`;
       line.appendChild(right);
       copyLines.push(right.textContent);
     }
@@ -944,8 +964,8 @@ function appendBpmCardBody({ card, rowCells, table, visibility, copyLines }) {
     card.appendChild(line);
   };
 
-  appendPairLine('HALF', 'DOUBLE');
-  appendPairLine('TRIPLET', 'DOTTED');
+  appendPairLine('Half', 'Double');
+  appendPairLine('Triplet', 'Dotted');
 
   const spbValue = getValue('SPB');
   if (spbValue) {
@@ -978,7 +998,7 @@ function appendScalesCardBody({ card, rowCells, table, visibility, copyLines }) 
     return String(rowCells[index].text ?? '').trim();
   };
 
-  ['INTERVALS', 'DEGREES', 'C EXAMPLE'].forEach((columnName) => {
+  ['Intervals', 'Degrees', 'C example'].forEach((columnName) => {
     const value = getValue(columnName);
     if (!value) return;
 
@@ -990,7 +1010,7 @@ function appendScalesCardBody({ card, rowCells, table, visibility, copyLines }) 
     copyLines.push(value);
   });
 
-  const countValue = getValue('COUNT');
+  const countValue = getValue('Count');
   if (countValue) {
     const count = document.createElement('span');
     count.className = 'reference-card-scales-count';
@@ -1050,7 +1070,7 @@ function appendChordsCardBody({ card, rowCells, table, visibility, copyLines }) 
     return String(rowCells[index].text ?? '').trim();
   };
 
-  ['FORMULA', 'SEMITONES', 'C EXAMPLE'].forEach((columnName) => {
+  ['Formula', 'Semitones', 'C example'].forEach((columnName) => {
     const value = getValue(columnName);
     if (!value) return;
 
@@ -1062,7 +1082,7 @@ function appendChordsCardBody({ card, rowCells, table, visibility, copyLines }) 
     copyLines.push(value);
   });
 
-  const notesValue = getValue('NOTES');
+  const notesValue = getValue('Notes');
   if (notesValue) {
     const notes = document.createElement('span');
     notes.className = 'reference-card-chords-notes';
@@ -1077,7 +1097,7 @@ function renderCards() {
   const table = TABLES[state.activeMode];
   const visibility = state.visibility[state.activeMode];
   cardsView.innerHTML = '';
-  const playColumnIndex = table.columns.indexOf('PLAY');
+  const playColumnIndex = table.columns.indexOf('Play');
 
   getOrderedRows(table).forEach((rowCells) => {
     const card = document.createElement('article');
@@ -1196,6 +1216,7 @@ function toggleColumn(index) {
 }
 
 modeButtons.bpm.addEventListener('click', () => setMode('bpm'));
+modeButtons.tempi.addEventListener('click', () => setMode('tempi'));
 modeButtons.notes.addEventListener('click', () => setMode('notes'));
 modeButtons.scales.addEventListener('click', () => setMode('scales'));
 modeButtons.chords.addEventListener('click', () => setMode('chords'));

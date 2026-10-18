@@ -4,7 +4,7 @@
   </svg>
   <div class="justify">
     <h1>General</h1>
-    Pekosoft Reference is a lookup tool with two views. Includes BPM (beats per minute), notes, scales and chords data. Columns can be toggled and resized by dragging a column header edge in standard view. On touchscreens, drag the right side of the header. Double-click or double-tap the edge to restore its default width.
+    Pekosoft Reference is a lookup tool with two views. Includes BPM (beats per minute), Italian tempi, notes, scales and chords data. Columns can be toggled and resized by dragging a column header edge in standard view. On touchscreens, drag the right side of the header. Double-click or double-tap the edge to restore its default width.
   </div>
 </div>
 
@@ -24,7 +24,7 @@
   </svg>
   <div class="justify">
     <h1>Column <span class="object">buttons</span></h1>
-    Available in the Instrument Module options menu. Toggle columns for the currently selected mode in standard view. Column labels update automatically to match the active mode.
+    Available in the Instrument Module options menu. Toggle information for the currently selected mode in both standard and cards views. Column labels update automatically to match the active mode.
   </div>
 </div>
 
@@ -34,7 +34,7 @@
   </svg>
   <div class="justify">
     <h1>Instrument <span class="object">module</span></h1>
-    A full-width scrollable result view that changes by selected mode. Supports standard view and cards view. BPM lists 1 to 300 with writing, parity, half and double values. Notes lists chromatic notes from A0 to C8 with Helmholtz octave and register names, MIDI (Musical Instrument Digital Interface) note numbers and frequency data. Scales lists common scale formulas and C examples. Chords lists common chord formulas, semitone stacks and C examples.
+    A full-width scrollable result view that changes by selected mode. Supports standard view and cards view. BPM lists 1 to 300 with writing, parity, half and double values. Tempi lists the 11 Italian tempo names and BPM ranges used by Metronome. Notes lists chromatic notes from A0 to C8 with Helmholtz octave and register names, MIDI (Musical Instrument Digital Interface) note numbers and frequency data. Scales lists common scale formulas and C examples. Chords lists common chord formulas, semitone stacks and C examples.
   </div>
 </div>
 
@@ -45,6 +45,16 @@
   <div class="justify">
     <h1>BPM <span class="object">button</span></h1>
     Selects BPM mode.
+  </div>
+</div>
+
+<div class="feature-row border">
+  <svg class="standard-image-help">
+    <use href="/icons.svg#italy"></use>
+  </svg>
+  <div class="justify">
+    <h1>Tempi <span class="object">button</span></h1>
+    Selects Italian tempi mode, from Larghissimo (20-24 BPM) to Prestissimo (201-320 BPM). Play previews eight beats at the midpoint of each range. The same ranges are used by Metronome.
   </div>
 </div>
 
@@ -84,7 +94,7 @@
   </svg>
   <div class="justify">
     <h1>View <span class="object">button</span></h1>
-    Toggles standard table view and cards view.
+    Toggles standard table view and cards view. Cards show the enabled table information and Play control. Each card has a Copy button to copy its displayed information.
   </div>
 </div>
 

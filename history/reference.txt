@@ -1,4 +1,4 @@
 <h1>1.0
 XX-XX-2026
 </h1>
-Introducing: Pekosoft Reference. A selection of tables including BPMs, notes, scales and chords. Initial release.
+Introducing: Pekosoft Reference. A selection of tables including BPMs, Italian tempi, notes, scales and chords. Initial release.

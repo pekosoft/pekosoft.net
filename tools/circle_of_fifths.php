@@ -45,7 +45,7 @@
         <span class="button-text">Dim</span>
       </button>
       <button id="toggle-signature-button" class="square" title="Toggle key signature hints">
-        <svg class="icons" role="img"><use href="/icons.svg#field" /></svg>
+        <svg class="icons" role="img"><use href="/icons.svg#hash" /></svg>
         <span class="button-text">Sign</span>
       </button>
     </div>

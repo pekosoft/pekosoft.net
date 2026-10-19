@@ -176,7 +176,7 @@
 
       <button id="center-button" class="square" title="Center selected elements">
         <svg class="icons">
-          <use href="/icons.svg#asterisk" />
+          <use href="/icons.svg#center" />
         </svg>
         <span class="button-text">Center</span>
       </button>

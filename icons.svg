@@ -194,6 +194,10 @@
   <polygon points="288 352 400 512 512 352 432 352 432 0 368 0 368 352 288 352" />
 </symbol>
 
+<symbol id="arrows" viewBox="0 0 512 512">
+  <path d="M256 0l80 144H176ZM512 256l-144 80V176ZM256 512l-80-144h160ZM0 256l144-80v160Z" />
+</symbol>
+
 <symbol id="audio_calculator" viewBox="0 0 512 512">
   <rect y="0" width="512" height="32" />
   <rect y="480" width="512" height="32" />

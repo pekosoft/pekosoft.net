@@ -14,7 +14,17 @@
   </svg>
   <div class="justify">
     <h1>Instrument <span class="object">module</span></h1>
-    Three wheel rings show major, minor and diminished relationships. Four triangles move key selection and mode focus.
+    Three wheel rings show major, minor and diminished relationships. Optional navigation arrows move key selection and mode focus.
+  </div>
+</div>
+
+<div class="feature-row border">
+  <svg class="standard-image-help">
+    <use href="/icons.svg#arrows"></use>
+  </svg>
+  <div class="justify">
+    <h1>Arrows <span class="object">button</span></h1>
+    Shows or hides the wheel navigation controls for previous and next key and major and minor mode focus. The choice is saved. Reset turns Arrows on. <span class="default">Default: on.</span>
   </div>
 </div>
 
@@ -44,7 +54,7 @@
   </svg>
   <div class="justify">
     <h1>Sign <span class="object">button</span></h1>
-    Toggles key signature hints.
+    Toggles key signature hints outside the major chords ring.
   </div>
 </div>
 

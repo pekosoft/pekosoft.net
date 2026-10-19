@@ -31,6 +31,7 @@ Pekosoft uses a single SVG sprite file (`icons.svg`) for all interface icons. Ea
 - Beat keeps its lower cutout horizontally centered in the body, preserving the cutout's size and vertical position.
 - Knob's pointer cutout ends in an arc concentric with the knob, keeping a consistent inset from its circumference.
 - The `arrow_up_down` arrows reach the left and right canvas edges without changing their shapes or vertical positions.
+- `arrows` uses four outward-pointing triangles matching Circle Of Fifths' wheel navigation controls.
 - Asterisk is scaled to 90% around the canvas center. IP retains the location pin and circular cutout without an interior rectangle.
 - External uses square frame corners, a sharp arrowhead and flat line ends.
 - Pulse's horizontal sections share exact top and bottom coordinates, avoiding accumulated rounding differences from relative path commands.

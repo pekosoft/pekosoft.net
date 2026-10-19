@@ -99,6 +99,8 @@
       this.toggleDimButton = document.getElementById("toggle-dim-button");
       this.toggleSignatureButton = document.getElementById("toggle-signature-button");
       this.arrowUpButton = document.getElementById("arrow-up");
+      this.toggleArrowsButton = document.getElementById("toggle-arrows-button");
+      this.centerArrowControls = document.querySelector(".center-arrow-controls");
       this.arrowDownButton = document.getElementById("arrow-down");
       this.arrowLeftButton = document.getElementById("arrow-left");
       this.arrowRightButton = document.getElementById("arrow-right");
@@ -122,6 +124,7 @@
       this.selectedMode = "major";
       this.showDim = true;
       this.showSignatures = false;
+      this.showArrows = true;
       this.guidesOn = true;
       this.timelineRulers = localStorage.getItem("circle_of_fifths.rulers") === null
         ? (window.PekoRulers?.getGlobal() ?? true)
@@ -180,6 +183,7 @@
         if (["major", "minor", "dim"].includes(saved.selectedMode)) this.selectedMode = saved.selectedMode;
         if (typeof saved.showDim === "boolean") this.showDim = saved.showDim;
         if (typeof saved.showSignatures === "boolean") this.showSignatures = saved.showSignatures;
+        if (typeof saved.showArrows === "boolean") this.showArrows = saved.showArrows;
         if (typeof saved.guidesOn === "boolean") this.guidesOn = saved.guidesOn;
         if (typeof saved.soundEnabled === "boolean") this.soundEnabled = saved.soundEnabled;
         if (Number.isFinite(saved.playbackSpeed)) this.playbackSpeed = this.clamp(saved.playbackSpeed, MIN_PLAYBACK_SPEED, MAX_PLAYBACK_SPEED);
@@ -203,6 +207,7 @@
         selectedMode: this.selectedMode,
         showDim: this.showDim,
         showSignatures: this.showSignatures,
+        showArrows: this.showArrows,
         guidesOn: this.guidesOn,
         soundEnabled: this.soundEnabled,
         playbackSpeed: this.playbackSpeed,
@@ -263,6 +268,11 @@
         this.saveSettings();
       });
       this.arrowLeftButton?.addEventListener("click", () => this.stepKey(-1));
+      this.toggleArrowsButton?.addEventListener("click", () => {
+        this.showArrows = !this.showArrows;
+        this.updateControls();
+        this.saveSettings();
+      });
       this.arrowRightButton?.addEventListener("click", () => this.stepKey(1));
       this.arrowUpButton?.addEventListener("click", () => this.focusMode("major"));
       this.arrowDownButton?.addEventListener("click", () => this.focusMode("minor"));
@@ -349,6 +359,7 @@
       this.showDim = true;
       this.showSignatures = false;
       this.guidesOn = true;
+      this.showArrows = true;
       this.timelineRulers = true;
       localStorage.setItem("circle_of_fifths.rulers", "true");
       this.soundEnabled = true;
@@ -369,6 +380,7 @@
     }
 
     renderWheel() {
+      this.svg.setAttribute("viewBox", this.showSignatures ? "-32 -32 704 704" : "0 0 640 640");
       this.majorGroup.replaceChildren();
       this.minorGroup.replaceChildren();
       this.dimGroup.replaceChildren();
@@ -384,7 +396,7 @@
         this.appendSector(this.minorGroup, index, "minor", WHEEL_MINOR_INNER_RADIUS, WHEEL_MINOR_OUTER_RADIUS, startAngle, endAngle, this.getWheelLabel(key.minor, "minor"), WHEEL_MINOR_INNER_RADIUS + WHEEL_RING_WIDTH / 2, related);
         this.appendSector(this.dimGroup, index, "dim", WHEEL_DIM_INNER_RADIUS, WHEEL_DIM_OUTER_RADIUS, startAngle, endAngle, this.getWheelLabel(key.dim, "dim"), WHEEL_DIM_INNER_RADIUS + WHEEL_RING_WIDTH / 2, related);
         this.appendSpoke(startAngle);
-        if (this.showSignatures) this.appendLabel(this.majorGroup, this.compactSignature(key.signature), startAngle + step / 2, 286, "signature", "");
+        if (this.showSignatures) this.appendLabel(this.majorGroup, this.compactSignature(key.signature), startAngle + step / 2, WHEEL_MAJOR_OUTER_RADIUS + 24, "signature", "");
       });
 
       this.dimGroup.style.display = this.showDim ? "" : "none";
@@ -569,6 +581,10 @@
       this.soundButton?.classList.toggle("button-on", this.soundEnabled);
       this.toggleDimButton?.classList.toggle("button-on", this.showDim);
       this.toggleSignatureButton?.classList.toggle("button-on", this.showSignatures);
+      this.toggleArrowsButton?.classList.toggle("button-on", this.showArrows);
+      this.toggleArrowsButton?.setAttribute("aria-pressed", String(this.showArrows));
+      this.centerArrowControls?.setAttribute("display", this.showArrows ? "inline" : "none");
+      this.centerArrowControls?.setAttribute("aria-hidden", String(!this.showArrows));
       this.timelineGuidesButton?.classList.toggle("button-on", this.guidesOn);
       this.timelineBrightButton?.classList.toggle("button-on", this.timelineBright);
       this.timelineRulersButton?.classList.toggle("button-on", this.timelineRulers);

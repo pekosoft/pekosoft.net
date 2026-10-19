@@ -40,11 +40,15 @@
         <svg class="icons" role="img"><use href="/icons.svg#rotate" /></svg>
         <span class="button-text">Rotate</span>
       </button>
+      <button id="toggle-arrows-button" class="square button-on" title="Toggle arrows" aria-pressed="true">
+        <svg class="icons" role="img"><use href="/icons.svg#arrows" /></svg>
+        <span class="button-text">Arrows</span>
+      </button>
       <button id="toggle-dim-button" class="square button-on" title="Toggle diminished ring">
         <svg class="icons" role="img"><use href="/icons.svg#radio_button" /></svg>
         <span class="button-text">Dim</span>
       </button>
-      <button id="toggle-signature-button" class="square" title="Toggle key signature hints">
+      <button id="toggle-signature-button" class="square" title="Toggle key signature ring">
         <svg class="icons" role="img"><use href="/icons.svg#hash" /></svg>
         <span class="button-text">Sign</span>
       </button>

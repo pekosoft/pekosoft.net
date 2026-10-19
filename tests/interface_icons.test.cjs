@@ -27,7 +27,17 @@ test('Circle Of Fifths Signature button uses the standalone Hash icon', () => {
   const template = fs.readFileSync(path.join(__dirname, '..', 'tools', 'circle_of_fifths.php'), 'utf8');
   const button = template.match(/<button id="toggle-signature-button"[\s\S]*?<\/button>/)[0];
   assert.match(button, /href="\/icons\.svg#hash"/);
-  assert.match(button, /title="Toggle key signature hints"/);
+  assert.match(button, /title="Toggle key signature ring"/);
+});
+
+test('Circle Of Fifths Arrows button uses four outward triangles and its concise tooltip', () => {
+  const icon = content('arrows');
+  assert.doesNotMatch(icon, /<(?:text|use|image)\b|\b(?:fill|stroke|style)=/);
+  assert.match(icon, /d="M256 0l80 144H176ZM512 256l-144 80V176ZM256 512l-80-144h160ZM0 256l144-80v160Z"/);
+  const template = fs.readFileSync(path.join(__dirname, '..', 'tools', 'circle_of_fifths.php'), 'utf8');
+  const button = template.match(/<button id="toggle-arrows-button"[\s\S]*?<\/button>/)[0];
+  assert.match(button, /href="\/icons\.svg#arrows"/);
+  assert.match(button, /title="Toggle arrows"/);
 });
 
 test('BPM Curve leaves circular transparent gaps around three unchanged dots', () => {

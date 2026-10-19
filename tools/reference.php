@@ -76,70 +76,70 @@
           <div class="module-panel-menu-buttons">
         <button id="toggle-col-1-button" class="square" title="Toggle first column">
           <svg class="icons">
-            <use href="/icons.svg#asterisk" />
+            <use href="/icons.svg#bpm" />
           </svg>
           <span id="toggle-col-1-text" class="button-text">COL 1</span>
         </button>
 
         <button id="toggle-col-2-button" class="square" title="Toggle second column">
           <svg class="icons">
-            <use href="/icons.svg#asterisk" />
+            <use href="/icons.svg#text" />
           </svg>
           <span id="toggle-col-2-text" class="button-text">COL 2</span>
         </button>
 
         <button id="toggle-col-3-button" class="square" title="Toggle third column">
           <svg class="icons">
-            <use href="/icons.svg#asterisk" />
+            <use href="/icons.svg#plus_minus" />
           </svg>
           <span id="toggle-col-3-text" class="button-text">COL 3</span>
         </button>
 
         <button id="toggle-col-4-button" class="square" title="Toggle fourth column">
           <svg class="icons">
-            <use href="/icons.svg#asterisk" />
+            <use href="/icons.svg#triangle_down" />
           </svg>
           <span id="toggle-col-4-text" class="button-text">COL 4</span>
         </button>
 
         <button id="toggle-col-5-button" class="square" title="Toggle fifth column">
           <svg class="icons">
-            <use href="/icons.svg#asterisk" />
+            <use href="/icons.svg#triangle_up" />
           </svg>
           <span id="toggle-col-5-text" class="button-text">COL 5</span>
         </button>
 
         <button id="toggle-col-6-button" class="square" title="Toggle sixth column">
           <svg class="icons">
-            <use href="/icons.svg#asterisk" />
+            <use href="/icons.svg#triplet" />
           </svg>
           <span id="toggle-col-6-text" class="button-text">COL 6</span>
         </button>
 
         <button id="toggle-col-7-button" class="square" title="Toggle seventh column">
           <svg class="icons">
-            <use href="/icons.svg#asterisk" />
+            <use href="/icons.svg#1_4_dotted" />
           </svg>
           <span id="toggle-col-7-text" class="button-text">COL 7</span>
         </button>
 
         <button id="toggle-col-8-button" class="square" title="Toggle eighth column">
           <svg class="icons">
-            <use href="/icons.svg#asterisk" />
+            <use href="/icons.svg#clock" />
           </svg>
           <span id="toggle-col-8-text" class="button-text">COL 8</span>
         </button>
 
         <button id="toggle-col-9-button" class="square" title="Toggle ninth column">
           <svg class="icons">
-            <use href="/icons.svg#asterisk" />
+            <use href="/icons.svg#pulse" />
           </svg>
           <span id="toggle-col-9-text" class="button-text">COL 9</span>
         </button>
 
         <button id="toggle-col-10-button" class="square" title="Toggle tenth column">
           <svg class="icons">
-            <use href="/icons.svg#asterisk" />
+            <use href="/icons.svg#play" />
           </svg>
           <span id="toggle-col-10-text" class="button-text">COL 10</span>
         </button>

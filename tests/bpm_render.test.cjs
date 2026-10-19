@@ -172,3 +172,76 @@ test('numeric edits remain intact until committed and invalid values are explici
   assert.equal(input.value, '120.000');
   assert.equal(input.message, '');
 });
+
+test('enabled columns allow table and Cards layouts while disabled columns remain hidden', () => {
+  const header = { style: { display: 'table-cell' } };
+  const cell = { style: { display: 'table-cell' } };
+  const context = {
+    state: { columns: { ms: true } }, columnHeaders: { ms: header },
+    resultTable: { querySelectorAll: () => [cell] }, columnButtons: {}, columnPresetSelect: null
+  };
+  vm.createContext(context);
+  vm.runInContext(source.slice(source.indexOf('function updateColumnHeaders()'), source.indexOf('function updateModeButtons()')), context);
+  context.updateColumnHeaders();
+  assert.equal(header.style.display, '');
+  assert.equal(cell.style.display, '');
+  context.state.columns.ms = false;
+  context.updateColumnHeaders();
+  assert.equal(header.style.display, 'none');
+  assert.equal(cell.style.display, 'none');
+  context.state.columns.ms = true;
+  context.updateColumnHeaders();
+  assert.equal(cell.style.display, '');
+});
+
+test('Instrument rows use accessible icon controls without changing selection or preview handlers', () => {
+  const selected = [];
+  const previews = [];
+  const radio = { addEventListener(name, callback) { this[name] = callback; } };
+  const play = {
+    dataset: { rowId: '0-base' }, classList: { toggle() {} },
+    addEventListener(name, callback) { this[name] = callback; }
+  };
+  const value = {};
+  const row = {
+    classList: { add() {}, remove() {} },
+    querySelectorAll: () => [radio],
+    querySelector: selector => selector === '.play-toggle-button' ? play
+      : selector === '.value-field' ? value : selector === 'input[type="radio"]' ? radio : null
+  };
+  let rendered = false;
+  const context = {
+    state: {
+      bpm: 120, selected: '0-base',
+      columns: { select: true, note: true, value: true, rest: true, play: true, close: true }
+    },
+    document: { getElementById: () => rendered ? row : null, createElement: () => row },
+    resultTable: { appendChild() { rendered = true; } },
+    noteData: { symbols: ['note_whole'], restSymbols: ['rest_whole'] },
+    getSpeedOfSoundCmPerSec: () => 34300, getValueLabel: () => '8/1 straight',
+    minBPM: 30, maxBPM: 320, activeRowPreviews: new Map(),
+    bindRowBpmInput() {}, setSelectedNote: id => selected.push(id),
+    toggleRowPreview: (...values) => previews.push(values)
+  };
+  vm.createContext(context);
+  vm.runInContext(source.slice(source.indexOf('function renderRow('), source.indexOf('function getMultiplier(')), context);
+  context.renderRow('8/1', 0, 1, 'base');
+  assert.match(row.innerHTML, /type="radio"[^>]*aria-label="Select note"/);
+  assert.match(row.innerHTML, /role="img" aria-label="Note"/);
+  assert.match(row.innerHTML, /role="img" aria-label="Rest"/);
+  for (const icon of ['play', 'close']) {
+    assert.ok(row.innerHTML.includes(`<use href="/icons.svg#${icon}" />`));
+  }
+  assert.doesNotMatch(row.innerHTML, />[\u25b6X]</);
+  radio.change();
+  play.click();
+  assert.deepEqual(selected, ['0-base']);
+  assert.deepEqual(previews, [['0-base', 16000]]);
+  context.state.bpm = 240;
+  context.renderRow('8/1', 0, 1, 'base');
+  assert.equal(play.dataset.ms, '8000.000');
+  assert.equal(value.textContent, '8/1 straight');
+  assert.equal(radio.checked, true);
+  play.click();
+  assert.deepEqual(previews[1], ['0-base', 8000]);
+});

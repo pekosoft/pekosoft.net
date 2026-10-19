@@ -14,7 +14,7 @@
   </svg>
   <div class="justify">
     <h1>Instrument <span class="object">module</span></h1>
-    This table shows values and information for the current BPM. This is also where you choose what note value to visualize. Drag a column header edge to resize that column. On touchscreens, drag the right side of the header. Double-click or double-tap the edge to restore its default width. Columns: Select, Note, Value, ms, Hz, cm, in, USA, UK, BPM, Diff, Percent, Rest, Play and Close. Rows: triplet, base and dotted notes in the values of 8/1 to 1/128. All rows and columns can be toggled.
+    Shows values and information for the current BPM as a table or Cards. Use View to switch between them. Each card retains enabled information, editable values and the Select, Play and Close controls. Copy card copies that row's text values. Select chooses the note to visualize; Close removes that note family from the results. Drag a table column header edge to resize that column. On touchscreens, drag the right side of the header. Double-click or double-tap the edge to restore its default width. Columns: Select, Note, Value, ms, Hz, cm, in, USA, UK, BPM, Diff, Percent, Rest, Play and Close. Rows: triplet, base and dotted notes in the values of 8/1 to 1/128. All rows and columns can be toggled.
   </div>
 </div>
 

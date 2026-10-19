@@ -656,8 +656,8 @@ function renderRow(note, i, multiplier, type) {
     row.id = rowKey;
 
     row.innerHTML = `
-      ${state.columns.select ? `<td class="select-field"><input type="radio" name="rowSelect" value="${rowId}" ${state.selected === rowId ? 'checked' : ''}></td>` : ''}
-      ${state.columns.note ? `<td class="note-field"><svg class="icons"><use href="/icons.svg#${noteData.symbols[i]}" /></svg></td>` : ''}
+      ${state.columns.select ? `<td class="select-field"><input type="radio" name="rowSelect" value="${rowId}" title="Select note" aria-label="Select note" ${state.selected === rowId ? 'checked' : ''}></td>` : ''}
+      ${state.columns.note ? `<td class="note-field"><svg class="icons" role="img" aria-label="Note"><use href="/icons.svg#${noteData.symbols[i]}" /></svg></td>` : ''}
       ${state.columns.value ? `<td class="left value-field">${valueLabel}</td>` : ''}
       ${state.columns.ms ? `<td class="right ms-field"><input type="number" class="ms-input" step="0.001" data-i="${i}" data-multiplier="${multiplier}" value="${ms.toFixed(3)}"></td>` : ''}
       ${state.columns.hz ? `<td class="right hz-field"><input type="number" class="hz-input" step="0.001" data-i="${i}" data-multiplier="${multiplier}" value="${hz.toFixed(3)}"></td>` : ''}
@@ -668,9 +668,9 @@ function renderRow(note, i, multiplier, type) {
       ${state.columns.bpm ? `<td class="right bpm-field"><input type="number" class="row-bpm-input" step="0.001" data-i="${i}" data-multiplier="${multiplier}" value="${(60000 / ms).toFixed(3)}"></td>` : ''}
       ${state.columns.diff ? `<td class="right diff-field"><input type="number" class="diff-input" step="0.001" readonly data-i="${i}" data-multiplier="${multiplier}" value="${((60000 / ms) - state.bpm).toFixed(3)}"></td>` : ''}
       ${state.columns.percent ? `<td class="right percent-field"><input type="number" class="percent-input" step="0.001" readonly data-i="${i}" data-multiplier="${multiplier}" value="${(Math.pow(2, 5 - i) * multiplier * 100).toFixed(3)}"></td>` : ''}
-      ${state.columns.rest ? `<td class="rest-field"><svg class="icons"><use href="/icons.svg#${noteData.restSymbols[i]}" /></svg></td>` : ''}
-      ${state.columns.play ? `<td class="play-field"><button class="square transparent play-toggle-button" title="Play note" aria-label="Play" data-row-id="${rowId}" data-ms="${ms.toFixed(3)}">▶</button></td>` : ''}
-      ${state.columns.close ? `<td class="close-field"><button class="square transparent" title="Close row" aria-label="Close" id="row-close-${rowId}">X</button></td>` : ''}
+      ${state.columns.rest ? `<td class="rest-field"><svg class="icons" role="img" aria-label="Rest"><use href="/icons.svg#${noteData.restSymbols[i]}" /></svg></td>` : ''}
+      ${state.columns.play ? `<td class="play-field"><button class="square transparent icon-only play-toggle-button" type="button" title="Play note" aria-label="Play" data-row-id="${rowId}" data-ms="${ms.toFixed(3)}"><svg class="icons icons-small" aria-hidden="true"><use href="/icons.svg#play" /></svg></button></td>` : ''}
+      ${state.columns.close ? `<td class="close-field"><button class="square transparent icon-only" type="button" title="Close row" aria-label="Close" id="row-close-${rowId}"><svg class="icons icons-small" aria-hidden="true"><use href="/icons.svg#close" /></svg></button></td>` : ''}
     `;
 
     // radio selection listener
@@ -778,11 +778,11 @@ function updateColumnHeaders() {
     const visible = state.columns[key];
 
     // Toggle header cell
-    columnHeaders[key].style.display = visible ? 'table-cell' : 'none';
+    columnHeaders[key].style.display = visible ? '' : 'none';
 
     // Toggle every body cell with that class
     resultTable.querySelectorAll(`.${key}-field`).forEach(cell => {
-      cell.style.display = visible ? 'table-cell' : 'none';
+      cell.style.display = visible ? '' : 'none';
     });
 
     // Toggle button state

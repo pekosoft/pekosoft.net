@@ -295,7 +295,7 @@
   cursor: pointer;
 }
 
-#history-container .history-playlist-data .module-history-entry {
+#history-container .history-playlist-data:not(.table-cards) .module-history-entry {
   display: table-row;
   min-height: 0;
   height: auto;

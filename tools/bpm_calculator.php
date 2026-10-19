@@ -20,7 +20,7 @@
 
   <div id="tool-container" class="container">
     <div class="module-body scrollable table-container border">
-      <table class="over scrollable-table">
+      <table class="over scrollable-table" data-cards-key="bpm_calculator.table_view" data-cards-button="table-view-button" data-cards-heading="Value">
         <thead>
           <tr>
             <th id="select-header" title="Select row">Select</th>
@@ -179,6 +179,10 @@
       </div>
     </div>
     <div class="module-footer wrapper colored">
+      <button id="table-view-button" class="square" type="button" title="Switch to cards" aria-pressed="false" data-help-release="index" data-help-entry="Table view">
+        <svg class="icons"><use href="/icons.svg#view_list" /></svg>
+        <span class="button-text">View</span>
+      </button>
       <button id="sort-button" class="square" title="Sort rows">
         <svg class="icons">
           <use href="/icons.svg#arrow_up_down" />

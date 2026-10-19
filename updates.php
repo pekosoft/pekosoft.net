@@ -31,9 +31,13 @@ if (!in_array($requestPath, ['/updates', '/updates.php'], true)) {
       <button id="updates-next-button" class="square icon-only" title="Next updates" aria-label="Next updates" disabled>
         <svg class="icons" role="img"><use href="/icons.svg#arrow_right"></use></svg>
       </button>
+      <button id="updates-view-button" class="square" type="button" title="Switch to cards" aria-pressed="false" data-help-release="index" data-help-entry="Table view">
+        <svg class="icons"><use href="/icons.svg#view_list" /></svg>
+        <span class="button-text">View</span>
+      </button>
     </div>
     <div class="scrollable">
-      <table id="updates-table" class="over scrollable-table">
+      <table id="updates-table" class="over scrollable-table" data-cards-key="updates.table_view" data-cards-button="updates-view-button" data-cards-heading="Title">
         <thead>
           <tr>
             <th class="updates-col-title" title="Update title">Title</th>

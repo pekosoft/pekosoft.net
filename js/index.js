@@ -593,7 +593,7 @@ function setupResizableTables() {
     };
 
     const syncColumnWidths = () => {
-      if (resizingHeader) return;
+      if (resizingHeader || table.classList.contains('table-cards')) return;
 
       const headers = getVisibleHeaders();
       if (!headers.length) return;
@@ -745,6 +745,10 @@ function setupResizableTables() {
     });
     table.addEventListener('pointercancel', finishResize);
     table.addEventListener('lostpointercapture', finishResize);
+    table.addEventListener('tableviewchange', () => {
+      finishResize();
+      syncColumnWidths();
+    });
 
     table.addEventListener('dblclick', (event) => {
       const header = event.target.closest('th');
@@ -763,6 +767,7 @@ function setupResizableTables() {
     resizableTableControllers.set(table, { reset });
 
     window.requestAnimationFrame(() => {
+      if (table.classList.contains('table-cards')) return;
       const headers = getVisibleHeaders();
       const storedWidth = headers.reduce((width, header) => {
         return width + Number(header.dataset.columnWidth || 0);

@@ -7,13 +7,23 @@ const vm = require('node:vm');
 const source = fs.readFileSync(path.join(__dirname, '..', 'js', 'reference.js'), 'utf8');
 const tempiSource = fs.readFileSync(path.join(__dirname, '..', 'js', 'tempi.js'), 'utf8');
 const renderSource = source.slice(0, source.indexOf("modeButtons.bpm.addEventListener('click'"));
+const spriteSource = fs.readFileSync(path.join(__dirname, '..', 'icons.svg'), 'utf8');
+const spriteIcons = new Set([...spriteSource.matchAll(/<symbol id="([^"]+)"/g)].map(match => match[1]));
+const columnIcons = {
+  bpm: ['bpm', 'text', 'plus_minus', 'triangle_down', 'triangle_up', 'triplet', '1_4_dotted', 'clock', 'pulse', 'play'],
+  tempi: ['italy', 'bpm', 'play'],
+  notes: ['tuner', 'arrow_up_down', 'mic', 'midi', 'wavelength', 'cm', 'piano', 'play'],
+  scales: ['timeline', 'ruler', 'quantized_steps', 'letter_c', 'table_rows', 'play'],
+  chords: ['value', 'formula', 'piano', 'letter_c', 'table_rows', 'play']
+};
 
 function createRenderer(mode, savedSettings = {}) {
   function element() {
     return {
-      children: [], dataset: {}, attributes: {}, style: {}, className: '',
+      children: [], dataset: {}, attributes: {}, attributeWrites: [], style: {}, className: '',
       classList: { toggle() {} },
-      setAttribute(name, value) { this.attributes[name] = value; },
+      setAttribute(name, value) { this.attributes[name] = value; this.attributeWrites.push(name); },
+      getAttribute(name) { return this.attributes[name] ?? null; },
       appendChild(node) { this.children.push(node); },
       closest() { return table; },
       get cells() { return this.children; },
@@ -29,7 +39,14 @@ function createRenderer(mode, savedSettings = {}) {
   const elements = new Map();
   const document = {
     getElementById(id) {
-      if (!elements.has(id)) elements.set(id, element());
+      if (!elements.has(id)) {
+        const node = element();
+        if (/^toggle-col-\d+-button$/.test(id)) {
+          const icon = element();
+          node.querySelector = selector => selector === 'use' ? icon : null;
+        }
+        elements.set(id, node);
+      }
       return elements.get(id);
     },
     querySelector: () => element(),
@@ -73,6 +90,46 @@ function expectedCopy(mode, row, visibility) {
 }
 
 for (const mode of ['bpm', 'tempi', 'notes', 'scales', 'chords']) {
+  test(`${mode} toggles retain existing SVG references in both views`, () => {
+    const { context, state, table, elements } = createRenderer(mode);
+    context.updateColumnButtons();
+    const icons = Array.from({ length: 10 }, (_, index) => elements.get(`toggle-col-${index + 1}-button`).querySelector('use'));
+    icons.forEach(icon => { icon.attributeWrites.length = 0; });
+    for (const view of ['table', 'cards']) {
+      state.view = view;
+      for (let index = 0; index < table.columns.length; index++) {
+        context.toggleColumn(index);
+        assert.equal(elements.get(`toggle-col-${index + 1}-button`).attributes['aria-pressed'], 'false');
+        context.toggleColumn(index);
+        assert.equal(elements.get(`toggle-col-${index + 1}-button`).attributes['aria-pressed'], 'true');
+      }
+    }
+    icons.forEach(icon => assert.deepEqual(icon.attributeWrites, [], 'Column toggles must not reload SVG symbols'));
+  });
+
+  test(`${mode} column controls switch to matching existing icons without changing visibility`, () => {
+    const { context, state, elements } = createRenderer('bpm');
+    context.updateColumnButtons();
+    state.activeMode = mode;
+    state.visibility[mode][1] = false;
+    context.updateColumnButtons();
+    const columns = vm.runInContext(`TABLES.${mode}.columns`, context);
+    assert.equal(columnIcons[mode].length, columns.length);
+    for (let index = 0; index < 10; index++) {
+      const button = elements.get(`toggle-col-${index + 1}-button`);
+      assert.equal(button.hidden, index >= columns.length);
+      if (button.hidden) continue;
+      const icon = columnIcons[mode][index];
+      assert.ok(spriteIcons.has(icon), `Missing sprite icon: ${icon}`);
+      assert.equal(button.querySelector('use').attributes.href, `/icons.svg#${icon}`);
+      const label = context.formatButtonLabel(columns[index]);
+      assert.equal(elements.get(`toggle-col-${index + 1}-text`).textContent, label);
+      assert.equal(button.title, `Toggle ${label} column`);
+      assert.equal(button.attributes['aria-pressed'], index === 1 ? 'false' : 'true');
+    }
+    assert.equal(state.visibility[mode][1], false);
+  });
+
   test(`${mode} cards render and copy every table value with the matching Play payload`, () => {
     const { context, state, table, cards } = createRenderer(mode);
     context.renderCards();
@@ -157,6 +214,32 @@ for (const mode of ['bpm', 'tempi', 'notes', 'scales', 'chords']) {
     assert.equal(rows.children[0].children.length, table.columns.length - 1);
   });
 }
+
+test('initial column icons match BPM mode before the first update', () => {
+  const template = fs.readFileSync(path.join(__dirname, '..', 'tools', 'reference.php'), 'utf8');
+  const buttons = [...template.matchAll(/<button id="toggle-col-(\d+)-button"[^>]*>\s*<svg[^>]*>\s*<use href="([^"]+)"/g)];
+  assert.equal(buttons.length, columnIcons.bpm.length);
+  buttons.forEach(([, index, href]) => {
+    assert.equal(href, `/icons.svg#${columnIcons.bpm[Number(index) - 1]}`);
+  });
+});
+
+test('Formula uses a shared monochrome geometry icon without font dependencies', () => {
+  const symbol = spriteSource.match(/<symbol id="formula" viewBox="([^"]+)">([\s\S]*?)<\/symbol>/);
+  assert.ok(symbol, 'The formula icon must exist in the shared sprite');
+  assert.equal(symbol[1], '0 0 512 512');
+  assert.match(symbol[2], /<path\b/);
+  assert.doesNotMatch(symbol[2], /\b(?:fill|stroke|style)\s*=|<text\b/);
+});
+
+test('MIDI uses a shared monochrome five-pin connector icon', () => {
+  const symbol = spriteSource.match(/<symbol id="midi" viewBox="([^"]+)">([\s\S]*?)<\/symbol>/);
+  assert.ok(symbol, 'The MIDI icon must exist in the shared sprite');
+  assert.equal(symbol[1], '0 0 512 512');
+  assert.equal([...symbol[2].matchAll(/<circle\b/g)].length, 5);
+  assert.match(symbol[2], /<rect\b/);
+  assert.doesNotMatch(symbol[2], /\b(?:fill|stroke|style)\s*=|<text\b/);
+});
 
 test('card labels resolve title-case column names to their intended labels', () => {
   const { context } = createRenderer('scales');

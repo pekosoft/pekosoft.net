@@ -1,0 +1,144 @@
+table.table-cards {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  min-width: 100%;
+  margin: 0;
+}
+
+table.table-cards > thead {
+  display: none;
+}
+
+table.table-cards > tbody {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(260px, 100%), 1fr));
+  gap: 8px;
+  padding: 8px;
+}
+
+table.table-cards > tbody > tr {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0;
+  width: auto;
+  min-width: 0;
+  min-height: 260px;
+  height: auto;
+  padding: 36px 8px 8px;
+  border: 1px solid var(--grey1);
+  background: var(--black);
+  text-align: left;
+}
+
+table.table-cards > tbody > tr:hover,
+table.table-cards > tbody > tr:focus-within {
+  background: var(--grey1);
+}
+
+table.table-cards > tbody > tr.table-row-selected {
+  border-color: var(--color1);
+}
+
+table.table-cards > tbody > tr > td {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: none;
+  width: auto;
+  min-width: 0;
+  max-width: none;
+  height: auto;
+  margin: 0;
+  padding: 4px 0;
+  border: 0;
+  text-align: left;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  overflow: visible;
+}
+
+table.table-cards > tbody > tr > td[data-card-label]:not([data-card-label=""]):not([data-card-heading="true"])::before {
+  content: attr(data-card-label) ": ";
+  flex: none;
+  color: var(--grey3);
+  font-size: var(--font-size);
+}
+
+table.table-cards > tbody > tr > td[data-card-heading="true"] {
+  font-size: var(--size2);
+}
+
+table.table-cards > tbody > tr > td > :is(input, textarea, select, canvas, a) {
+  min-width: 0;
+  max-width: 100%;
+}
+
+table.table-cards > tbody > tr > td.table-card-actions {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  padding: 0;
+}
+
+table.table-cards .table-card-copy {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+table.table-cards > tbody > tr.table-card-message {
+  grid-column: 1 / -1;
+  min-height: 0;
+  padding: 8px;
+}
+
+table.table-cards > tfoot,
+table.table-cards > tfoot > tr,
+table.table-cards > tfoot > tr > td {
+  display: block;
+  width: auto;
+}
+
+table.table-cards [hidden] {
+  display: none;
+}
+
+#playlist-container table.table-cards > tbody > tr:not(.table-card-message) {
+  padding-bottom: 36px;
+}
+
+#playlist-container table.table-cards > tbody > tr > :is(.col-play, .col-remove, .recording-col-play, .recording-col-remove) {
+  position: absolute;
+  padding: 0;
+}
+
+#playlist-container table.table-cards > tbody > tr > :is(.col-play, .recording-col-play) {
+  top: 4px;
+  left: 4px;
+}
+
+#playlist-container table.table-cards > tbody > tr > :is(.col-remove, .recording-col-remove) {
+  bottom: 4px;
+  right: 4px;
+}
+
+#playlist-container table.table-cards > tbody > tr > :is(.col-play, .col-remove, .recording-col-play, .recording-col-remove)::before {
+  content: none;
+}
+
+#playlist-container table.table-cards :is(.col-play, .col-remove, .recording-col-play, .recording-col-remove, .table-card-actions) button {
+  width: 24px;
+  min-width: 24px;
+  height: 24px;
+  min-height: 24px;
+  padding: 0;
+  margin: 0;
+}
+
+#playlist-container table.table-cards :is(.col-play, .col-remove, .recording-col-play, .recording-col-remove, .table-card-actions) button .icons {
+  width: 16px;
+  height: 16px;
+}

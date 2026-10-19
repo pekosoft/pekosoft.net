@@ -24,7 +24,7 @@
   </svg>
   <div class="justify">
     <h1>Column <span class="object">buttons</span></h1>
-    Available in the Instrument Module options menu. Toggle information for the currently selected mode in both standard and cards views. Column labels update automatically to match the active mode.
+    Available in the Instrument Module options menu. Toggle information for the currently selected mode in both standard and cards views. Column controls update automatically to match the active mode.
   </div>
 </div>
 
@@ -40,7 +40,7 @@
 
 <div class="feature-row border">
   <svg class="standard-image-help">
-    <use href="/icons.svg#metronome"></use>
+    <use href="/icons.svg#bpm"></use>
   </svg>
   <div class="justify">
     <h1>BPM <span class="object">button</span></h1>

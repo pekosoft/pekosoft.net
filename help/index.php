@@ -236,6 +236,14 @@
 </div>
 
 <div class="feature-row border">
+  <svg class="standard-image-help"><use href="/icons.svg#view_list"></use></svg>
+  <div class="justify">
+    <h1>Table view <span class="object">button</span></h1>
+    Switches data tables between a table and Cards. Each card includes the row's enabled information and original controls, such as Play, selection and Remove. Copy card copies that row's information. Sorting, links, editable values and playlist totals remain available. Each table remembers its selection. In tools, Reset restores result tables and playlists to table mode. In Drum Machine History, View cycles through List, Cards, JSON and JavaScript. Reference keeps its existing table and Cards options.
+  </div>
+</div>
+
+<div class="feature-row border">
   <svg class="standard-image-help"><use href="/icons.svg#skip_right"></use></svg>
   <div class="justify">
     <h1>Skip <span class="object">button</span></h1>

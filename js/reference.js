@@ -637,6 +637,36 @@ const TABLES = {
   }
 };
 
+const COLUMN_ICONS = {
+  BPM: 'bpm',
+  Writing: 'text',
+  Parity: 'plus_minus',
+  Half: 'triangle_down',
+  Double: 'triangle_up',
+  Triplet: 'triplet',
+  Dotted: '1_4_dotted',
+  SPB: 'clock',
+  BPS: 'pulse',
+  Play: 'play',
+  Tempo: 'italy',
+  Note: 'tuner',
+  Octave: 'arrow_up_down',
+  Register: 'mic',
+  MIDI: 'midi',
+  Hz: 'wavelength',
+  'Wave cm': 'cm',
+  'Piano key': 'piano',
+  Scale: 'timeline',
+  Intervals: 'ruler',
+  Degrees: 'quantized_steps',
+  'C example': 'letter_c',
+  Count: 'table_rows',
+  Chord: 'value',
+  Formula: 'formula',
+  Semitones: 'piano',
+  Notes: 'table_rows'
+};
+
 const REFERENCE_HEADER_TOOLTIPS = {
   bpm: {
     BPM: 'Beats per minute',
@@ -771,9 +801,14 @@ function updateColumnButtons() {
     }
 
     button.hidden = false;
-  const buttonLabel = formatButtonLabel(columnLabel);
-  label.textContent = buttonLabel;
-  button.title = `Toggle ${buttonLabel} column`;
+    const buttonLabel = formatButtonLabel(columnLabel);
+    label.textContent = buttonLabel;
+    button.title = `Toggle ${buttonLabel} column`;
+    const icon = button.querySelector('use');
+    const iconHref = `/icons.svg#${COLUMN_ICONS[columnLabel]}`;
+    if (icon.getAttribute('href') !== iconHref) {
+      icon.setAttribute('href', iconHref);
+    }
     button.classList.toggle('button-on', visibility[i] !== false);
     button.setAttribute('aria-pressed', visibility[i] !== false ? 'true' : 'false');
   }

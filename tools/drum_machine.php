@@ -201,7 +201,7 @@
   <div id="playlist-container" class="container">
     <div class="module-body standard border">
       <div class="playlist-table scrollable">
-        <table class="recording-playlist-data">
+        <table class="recording-playlist-data" data-cards-key="drum_machine.playlist_table_view" data-cards-button="playlist-view-button" data-cards-heading="Recording">
           <thead>
             <tr>
               <th class="recording-col-index" title="Recording number">#</th>
@@ -229,6 +229,10 @@
       </div>
     </div>
     <div class="module-footer wrapper colored">
+      <button id="playlist-view-button" class="square" type="button" title="Switch to cards" aria-pressed="false" data-help-release="index" data-help-entry="Table view">
+        <svg class="icons"><use href="/icons.svg#view_list" /></svg>
+        <span class="button-text">View</span>
+      </button>
       <button id="playlist-previous-button" class="square" title="Previous recording" aria-label="Previous recording">
         <svg class="icons" role="img"><use href="/icons.svg#skip_left" /></svg>
         <span class="button-text">Previous</span>
@@ -256,7 +260,7 @@
   <div id="history-container" class="container">
     <div class="module-body module-history-body border">
       <div id="pattern-history-table" class="playlist-table scrollable" role="region" aria-label="Pattern edit history">
-        <table class="recording-playlist-data history-playlist-data">
+        <table class="recording-playlist-data history-playlist-data" data-cards-heading="Change">
           <thead>
             <tr>
               <th class="recording-col-index" title="Change number">#</th>

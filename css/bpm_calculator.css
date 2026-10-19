@@ -7,6 +7,77 @@
   min-width: 0;
 }
 
+#tool-container table.table-cards > tbody > tr {
+  display: grid;
+  grid-template-columns: var(--size1) minmax(0, 1fr) var(--size1);
+  align-content: start;
+  column-gap: 8px;
+  padding-bottom: 36px;
+}
+
+#tool-container table.table-cards > tbody > tr > td {
+  grid-column: 1 / -1;
+}
+
+#tool-container table.table-cards > tbody > tr > :is(.select-field, .play-field, .close-field, .table-card-actions) {
+  position: absolute;
+  grid-column: auto;
+  width: var(--size2);
+  height: var(--size2);
+  padding: 0;
+  justify-content: center;
+}
+
+#tool-container table.table-cards .play-field {
+  top: 4px;
+  left: 4px;
+}
+
+#tool-container table.table-cards .select-field {
+  bottom: 4px;
+  left: 4px;
+}
+
+#tool-container table.table-cards .close-field {
+  bottom: 4px;
+  right: 4px;
+}
+
+#tool-container table.table-cards :is(.select-field, .note-field, .value-field, .rest-field, .play-field, .close-field)::before {
+  content: none;
+}
+
+#tool-container table.table-cards :is(.play-field, .close-field, .table-card-actions) button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#tool-container table.table-cards :is(.play-field, .close-field, .table-card-actions) .icons,
+#tool-container table.table-cards .select-field input {
+  width: calc(var(--size2) / 2);
+  height: calc(var(--size2) / 2);
+  margin: 0;
+}
+
+#tool-container table.table-cards > tbody > tr > :is(.note-field, .value-field, .rest-field) {
+  grid-row: 1;
+  justify-content: center;
+  text-align: center;
+}
+
+#tool-container table.table-cards > tbody > tr > .note-field {
+  grid-column: 1;
+}
+
+#tool-container table.table-cards > tbody > tr > .value-field {
+  grid-column: 2;
+}
+
+#tool-container table.table-cards > tbody > tr > .rest-field {
+  grid-column: 3;
+}
+
 #tool-container.module-maximized .table-container {
   max-height: none;
   height: 100%;

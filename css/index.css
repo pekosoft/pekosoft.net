@@ -1867,7 +1867,7 @@ html.invert-colors .container:fullscreen {
   white-space: nowrap;
 }
 
-#updates-table .updates-col-title {
+#updates-table:not(.table-cards) .updates-col-title {
   text-align: left;
 }
 

@@ -11,6 +11,7 @@
       this.redoButton = options.redoButton || null;
       this.sortButton = options.sortButton || null;
       this.viewButton = options.viewButton || null;
+      this.tableCards = this.list?.closest("table") ? new window.TableCards(this.list.closest("table")) : null;
       this.restore = typeof options.restore === "function" ? options.restore : () => {};
       this.limit = Math.max(1, Number(options.limit) || 50);
       this.initialLabel = String(options.initialLabel || "Initial state");
@@ -20,7 +21,7 @@
       this.sortStorageKey = String(options.sortStorageKey || "");
       this.viewStorageKey = String(options.viewStorageKey || "");
       this.sortDirection = options.sortDirection === "asc" ? "asc" : "desc";
-      this.viewMode = ["list", "json", "javascript"].includes(options.viewMode) ? options.viewMode : "list";
+      this.viewMode = ["list", "cards", "json", "javascript"].includes(options.viewMode) ? options.viewMode : "list";
       this.entries = [];
       this.position = 0;
       this.hasTrimmed = false;
@@ -37,7 +38,7 @@
       if (this.viewStorageKey) {
         try {
           const savedView = localStorage.getItem(this.viewStorageKey);
-          if (["list", "json", "javascript"].includes(savedView)) this.viewMode = savedView;
+          if (["list", "cards", "json", "javascript"].includes(savedView)) this.viewMode = savedView;
         } catch (_) {
           // Storage may be unavailable in restricted browsing modes.
         }
@@ -119,7 +120,7 @@
     }
 
     toggleView() {
-      const modes = ["list", "json", "javascript"];
+      const modes = ["list", "cards", "json", "javascript"];
       this.viewMode = modes[(modes.indexOf(this.viewMode) + 1) % modes.length];
       if (this.viewStorageKey) {
         try {
@@ -229,9 +230,11 @@
         });
       }
 
-      if (this.listContainer) this.listContainer.hidden = this.viewMode !== "list";
+      const isTableView = this.viewMode === "list" || this.viewMode === "cards";
+      if (this.listContainer) this.listContainer.hidden = !isTableView;
+      this.tableCards?.setCards(this.viewMode === "cards", false);
       if (this.codeView) {
-        this.codeView.hidden = this.viewMode === "list";
+        this.codeView.hidden = isTableView;
         this.codeView.value = this.viewMode === "javascript" ? this.toJavaScript() : this.toJSON();
       }
 
@@ -247,6 +250,7 @@
         const iconUse = this.viewButton.querySelector("use");
         const config = {
           list: { icon: "view_list", title: "VIEW: List" },
+          cards: { icon: "view_grid", title: "VIEW: Cards" },
           json: { icon: "panel", title: "VIEW: JSON" },
           javascript: { icon: "js", title: "VIEW: JavaScript" }
         }[this.viewMode];

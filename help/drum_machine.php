@@ -413,7 +413,7 @@
     <use href="/icons.svg#js"></use>
   </svg>
   <div class="justify">
-    <h1>View <span class="object">button</span></h1>Changes History between the action list, JSON and JavaScript views. <span class="default">Default: List.</span>
+    <h1>View <span class="object">button</span></h1>Changes History between List, Cards, JSON and JavaScript. Cards include the same entry information and support returning to a pattern state. <span class="default">Default: List.</span>
   </div>
 </div>
 

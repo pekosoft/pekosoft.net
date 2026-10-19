@@ -413,7 +413,7 @@
         </button>
       </div>
       <div class="playlist-table scrollable">
-        <table class="playlist-data">
+        <table class="playlist-data" data-cards-key="player.playlist_table_view" data-cards-button="playlist-view-button" data-cards-heading="Name">
           <thead>
             <tr>
               <th class="col-index" title="Track number">#</th>
@@ -444,6 +444,10 @@
       </div>
     </div>
     <div class="module-footer wrapper colored">
+      <button id="playlist-view-button" class="square" type="button" title="Switch to cards" aria-pressed="false" data-help-release="index" data-help-entry="Table view">
+        <svg class="icons"><use href="/icons.svg#view_list" /></svg>
+        <span class="button-text">View</span>
+      </button>
       <button id="playlist-randomize-button" class="square" title="Randomize playlist order">
         <svg class="icons">
           <use href="/icons.svg#random" />

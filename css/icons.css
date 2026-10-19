@@ -318,6 +318,19 @@
   display: block;
 }
 
+.preview-stage.preview-bright-on .preview-grid-overlay .grid-line,
+.preview-stage.preview-bright-on .preview-guides .guide-circle {
+  stroke: var(--white);
+}
+
+.preview-stage.preview-bright-on .preview-rulers::after {
+  border-color: var(--white);
+}
+
+.preview-stage.preview-bright-on .preview-ruler {
+  color: var(--white);
+}
+
 #tool-container.module-maximized .preview-stage {
   --preview-size: round(
     down,

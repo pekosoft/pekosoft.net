@@ -220,7 +220,7 @@
   function clearBrightLocalOverrides() {
     for (let index = localStorage.length - 1; index >= 0; index -= 1) {
       const key = localStorage.key(index);
-      if (/^meters\..+\.bright$/.test(key || "") || key?.endsWith(".timeline_bright")) {
+      if (/^meters\..+\.bright$/.test(key || "") || key?.endsWith(".timeline_bright") || key === "icons.preview_bright") {
         localStorage.removeItem(key);
       }
     }

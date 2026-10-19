@@ -40,6 +40,13 @@
       </div>
     </div>
     <div class="module-footer wrapper colored">
+      <button id="preview-bright-button" class="square" title="Toggle bright preview guides and rulers" aria-pressed="false">
+        <svg class="icons">
+          <use href="/icons.svg#sun" />
+        </svg>
+        <span class="button-text">Bright</span>
+      </button>
+
       <button id="rulers-button" class="square" title="Toggle preview rulers">
         <svg class="icons">
           <use href="/icons.svg#ruler" />

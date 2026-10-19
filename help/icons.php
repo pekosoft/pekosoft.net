@@ -19,6 +19,15 @@
 </div>
 
 <div class="feature-row border"><svg class="standard-image-help">
+    <use href="/icons.svg#sun"></use>
+  </svg>
+  <div class="justify">
+    <h1>Bright <span class="object">button</span></h1>
+    Increases the visibility of preview grid lines, radius guides and rulers. Overrides the Settings Bright option for Instrument only. The choice is saved. <span class="default">Default: off.</span>
+  </div>
+</div>
+
+<div class="feature-row border"><svg class="standard-image-help">
     <use href="/icons.svg#ruler"></use>
   </svg>
   <div class="justify">

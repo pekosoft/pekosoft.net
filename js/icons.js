@@ -1494,7 +1494,23 @@ function filterIcons(searchTerm) {
   iconsField.value = filteredIds.length;
 }
 
+function getPreviewBright() {
+  const saved = localStorage.getItem("icons.preview_bright");
+  return saved === null
+    ? localStorage.getItem("global.bright_guides") === "true"
+    : saved === "true";
+}
+
+function applyPreviewBright() {
+  const enabled = getPreviewBright();
+  const button = document.getElementById("preview-bright-button");
+  previewStage?.classList.toggle("preview-bright-on", enabled);
+  button?.classList.toggle("button-on", enabled);
+  button?.setAttribute("aria-pressed", String(enabled));
+}
+
 function applyPreviewToggles() {
+  applyPreviewBright();
   const showGrid = localStorage.getItem(previewGridStorageKey) === "true";
   const showRadius = localStorage.getItem(previewRadiusStorageKey) === "true";
   const showRulers = localStorage.getItem(previewRulersStorageKey) === "true";
@@ -1646,6 +1662,18 @@ fetch("/icons.svg")
   });
 
 // EVENT LISTENERS
+
+document.getElementById("preview-bright-button")?.addEventListener("click", () => {
+  localStorage.setItem("icons.preview_bright", String(!getPreviewBright()));
+  applyPreviewBright();
+});
+
+window.addEventListener("pekosoft:bright-guides-global-change", applyPreviewBright);
+window.addEventListener("storage", (event) => {
+  if (event.key === "icons.preview_bright" || event.key === "global.bright_guides" || event.key === null) {
+    applyPreviewBright();
+  }
+});
 
 prevButton.addEventListener("click", () => {
   stopPlaying();

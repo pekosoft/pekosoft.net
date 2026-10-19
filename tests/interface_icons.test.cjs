@@ -16,6 +16,31 @@ test('updated interface icons remain unique standalone monochrome geometry', () 
   }
 });
 
+test('UK uses a centered cross and matching counterchanged flag halves', () => {
+  const icon = content('uk');
+  assert.match(icon, /M224 96h64v128h224v64H288v128h-64V288H0v-64h224Z/);
+  assert.match(icon, /transform="rotate\(180 256 256\)"/);
+  const paths = [...icon.matchAll(/\bd="([^"]+)"/g)].map(match => match[1]);
+  assert.equal(paths.length, 3);
+  assert.equal(paths[1], paths[2]);
+  assert.doesNotMatch(icon, /<(?:text|use|image)\b|\b(?:fill|stroke|style)=/);
+});
+
+test('Icons swaps the circle and triangle and points the triangle down', () => {
+  const icon = content('icons');
+  assert.match(icon, /M288 0h224L400 224Z/);
+  assert.match(icon, /M400,288a112,112 0 1,0 0,224a112,112 0 1,0 0,-224Z/);
+  assert.match(icon, /M0,0h224v224h-224v-224Z/);
+  assert.match(icon, /M112,288l26\.44,85\.56/);
+});
+
+test('Delete has two equal transparent vertical slots inside the trashcan', () => {
+  const icon = content('delete');
+  assert.match(icon, /fill-rule="evenodd"/);
+  assert.match(icon, /M200 192h24v192h-24ZM284 192h24v192h-24Z/);
+  assert.doesNotMatch(icon, /<(?:text|use|image)\b|\b(?:fill|stroke|style)=/);
+});
+
 test('Circle Of Fifths Signature button uses the standalone Hash icon', () => {
   const icon = content('hash');
   assert.match(icon, /transform="translate\(51\.2 51\.2\) scale\(0\.8\)"/);

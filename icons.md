@@ -41,6 +41,9 @@ Pekosoft uses a single SVG sprite file (`icons.svg`) for all interface icons. Ea
 - Circle Of Fifths follows BPM Circle's bold segmented bands, using twelve equal key sectors in each of two bands and no center triangles. Band radii are 256/198 and 186/134, with 12-unit gaps between bands and sectors.
 - BPM Curve trims its curve to 64-unit circular boundaries around the three 48-unit points, leaving transparent 16-unit gaps without masks or background-colored shapes.
 - `hash` is a standalone hash sign used by Circle Of Fifths' Signature button, scaled to 80% around the canvas center.
+- `delete` retains its trashcan silhouette with two equal transparent vertical slots in the body.
+- `icons` places a downward-pointing triangle above the circle, preserving the square and star on the left.
+- `uk` uses a centered 64-unit cross and straight counterchanged diagonal bands, with matching upper and lower geometry rotated around the canvas center.
 
 ## Letter and Number Icons
 

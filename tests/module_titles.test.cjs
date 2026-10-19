@@ -6,6 +6,7 @@ const vm = require('node:vm');
 
 const source = fs.readFileSync(path.join(__dirname, '..', 'js', 'modules.js'), 'utf8');
 const configSource = source.slice(source.indexOf('const moduleConfig ='), source.indexOf('function syncModuleMoreButtonState('));
+const panelSource = source.slice(source.indexOf('function createModuleIconPanel('), source.indexOf('function setupModuleTabSkipButtons('));
 const skipSource = source.slice(source.indexOf('function setupModuleTabSkipButtons('), source.indexOf('function setupModuleTabTitle('));
 const titleSource = source.slice(source.indexOf('function setupModuleTabTitle('), source.indexOf('function setupModuleHeader('));
 
@@ -120,6 +121,24 @@ test('tab-button labels name their content without Show or view', () => {
     }
   }
   tabIds.forEach(id => assert.ok(checkedIds.has(id), `${id} was not checked`));
+});
+
+test('every module More menu keeps its container without a decorative background icon', () => {
+  const document = {
+    createElement(tag) {
+      assert.equal(tag, 'div');
+      return { innerHTML: '' };
+    }
+  };
+  const context = vm.createContext({ document });
+  vm.runInContext(panelSource, context);
+  for (const id of ['tool', 'controls', 'timeline', 'playlist', 'history', 'panel', 'meters']) {
+    const panel = context.createModuleIconPanel(id);
+    assert.equal(panel.className, 'module-icon-panel');
+    assert.equal(panel.id, `${id}-icon-panel`);
+    assert.equal(panel.hidden, true);
+    assert.equal(panel.innerHTML, '');
+  }
 });
 
 test('saved selections are reflected when headers are created, not only after clicks', () => {

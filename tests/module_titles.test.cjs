@@ -33,6 +33,9 @@ const tabGroups = [
   ] },
   { file: 'tools\\bpm_curve.php', module: 'panel', title: 'Panel', tabs: [
     ['panel-curve-button', 'Curve'], ['panel-values-button', 'Values']
+  ] },
+  { file: 'tools\\audio_calculator.php', module: 'panel', title: 'Panel', tabs: [
+    ['info-display-selected-button', 'Selected'], ['info-display-all-button', 'All'], ['info-display-points-button', 'Points']
   ] }
 ];
 
@@ -170,9 +173,6 @@ const tabSections = [
   ...tabGroups,
   { file: 'tools\\player.php', module: 'playlist', tabs: [
     ['playlist-presets-button'], ['playlist-custom-button']
-  ] },
-  { file: 'tools\\audio_calculator.php', module: 'panel', tabs: [
-    ['info-display-selected-button'], ['info-display-all-button'], ['info-display-points-button']
   ] }
 ];
 

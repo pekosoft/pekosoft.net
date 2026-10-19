@@ -226,15 +226,15 @@
   <div id="panel-container" class="container">
     <div class="module-body standard border">
       <div class="controls-buttons wrapper module-tabs">
-        <button id="info-display-selected-button" class="square info-display-button button-on" type="button" title="Selected value" aria-label="Selected value" aria-pressed="true" data-panel-view="selected">
+        <button id="info-display-selected-button" class="square info-display-button button-on" type="button" title="Selected value" aria-label="Selected value" aria-pressed="true" data-panel-view="selected" data-module-tab="Selected">
           <svg class="icons"><use href="/icons.svg#selected" /></svg>
           <span class="button-text">Selected</span>
         </button>
-        <button id="info-display-all-button" class="square info-display-button" type="button" title="All values" aria-label="All values" aria-pressed="false" data-panel-view="all">
+        <button id="info-display-all-button" class="square info-display-button" type="button" title="All values" aria-label="All values" aria-pressed="false" data-panel-view="all" data-module-tab="All">
           <svg class="icons"><use href="/icons.svg#select_all" /></svg>
           <span class="button-text">All</span>
         </button>
-        <button id="info-display-points-button" class="square info-display-button" type="button" title="Sample points" aria-label="Sample points" aria-pressed="false" data-panel-view="points">
+        <button id="info-display-points-button" class="square info-display-button" type="button" title="Sample points" aria-label="Sample points" aria-pressed="false" data-panel-view="points" data-module-tab="Points">
           <svg class="icons"><use href="/icons.svg#circle" /></svg>
           <span class="button-text">Points</span>
         </button>

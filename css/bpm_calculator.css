@@ -7,6 +7,35 @@
   min-width: 0;
 }
 
+.table-card-value {
+  display: none;
+}
+
+.table-card-pair {
+  display: none;
+}
+
+#tool-container table.table-cards .table-card-pair-first .table-card-pair {
+  display: inline;
+}
+
+#tool-container table.table-cards .table-card-pair-first > :is(.table-card-value, .table-card-original),
+#tool-container table.table-cards > tbody > tr > .table-card-pair-second {
+  display: none;
+}
+
+#tool-container table.table-cards input[type="number"] {
+  display: none;
+}
+
+#tool-container table.table-cards .table-card-value {
+  display: inline;
+}
+
+#tool-container table.table-cards > tbody > tr > td[data-card-label]::before {
+  content: none;
+}
+
 #tool-container table.table-cards > tbody > tr {
   display: grid;
   grid-template-columns: var(--size1) minmax(0, 1fr) var(--size1);
@@ -17,6 +46,8 @@
 
 #tool-container table.table-cards > tbody > tr > td {
   grid-column: 1 / -1;
+  justify-content: center;
+  text-align: center;
 }
 
 #tool-container table.table-cards > tbody > tr > :is(.select-field, .play-field, .close-field, .table-card-actions) {

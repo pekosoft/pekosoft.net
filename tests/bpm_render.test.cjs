@@ -205,7 +205,7 @@ test('Instrument rows use accessible icon controls without changing selection or
   const value = {};
   const row = {
     classList: { add() {}, remove() {} },
-    querySelectorAll: () => [radio],
+    querySelectorAll: selector => selector === 'input[type="radio"]' ? [radio] : [],
     querySelector: selector => selector === '.play-toggle-button' ? play
       : selector === '.value-field' ? value : selector === 'input[type="radio"]' ? radio : null
   };
@@ -217,9 +217,11 @@ test('Instrument rows use accessible icon controls without changing selection or
     },
     document: { getElementById: () => rendered ? row : null, createElement: () => row },
     resultTable: { appendChild() { rendered = true; } },
-    noteData: { symbols: ['note_whole'], restSymbols: ['rest_whole'] },
+    noteData: { symbols: ['note_whole'], restSymbols: ['rest_whole'], uk: ['Semibreve'], usa: ['Whole'] },
     getSpeedOfSoundCmPerSec: () => 34300, getValueLabel: () => '8/1 straight',
     minBPM: 30, maxBPM: 320, activeRowPreviews: new Map(),
+    columnHeaders: {},
+    updateCardPair() {},
     bindRowBpmInput() {}, setSelectedNote: id => selected.push(id),
     toggleRowPreview: (...values) => previews.push(values)
   };
@@ -244,4 +246,34 @@ test('Instrument rows use accessible icon controls without changing selection or
   assert.equal(radio.checked, true);
   play.click();
   assert.deepEqual(previews[1], ['0-base', 8000]);
+});
+
+test('BPM card numbers remain synchronized plain text with explanatory tooltips', () => {
+  const span = { textContent: '' };
+  const cell = {
+    querySelector: () => null,
+    appendChild(element) { this.querySelector = () => element; }
+  };
+  const input = { value: '500.000', parentElement: cell };
+  const row = {
+    querySelectorAll: () => [input],
+    querySelector: () => cell
+  };
+  const start = source.indexOf('  row.querySelectorAll(\'input[type="number"]\').forEach');
+  const end = source.indexOf("  updateCardPair(row,", start);
+  assert.ok(start >= 0 && end > start);
+  const context = vm.createContext({
+    row, document: { createElement: () => span },
+    columnHeaders: { ms: { title: 'Delay time in milliseconds' } }
+  });
+  const synchronize = () => vm.runInContext(source.slice(start, end), context);
+  synchronize();
+  assert.equal(span.textContent, '500.000');
+  assert.equal(cell.title, 'Delay time in milliseconds');
+  input.value = '250.000';
+  synchronize();
+  assert.equal(span.textContent, '250.000');
+  const styles = fs.readFileSync(path.join(__dirname, '..', 'css', 'bpm_calculator.css'), 'utf8');
+  assert.match(styles, /table\.table-cards input\[type="number"\]\s*\{\s*display: none;/);
+  assert.match(styles, /td\[data-card-label\]::before\s*\{\s*content: none;/);
 });

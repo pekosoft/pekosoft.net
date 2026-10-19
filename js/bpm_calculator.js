@@ -664,7 +664,7 @@ function renderRow(note, i, multiplier, type) {
       ${state.columns.cm ? `<td class="right cm-field"><input type="number" class="cm-input" step="0.001" data-i="${i}" data-multiplier="${multiplier}" value="${wavelength.toFixed(3)}"></td>` : ''}
       ${state.columns.inches ? `<td class="right inches-field"><input type="number" class="inches-input" step="0.001" data-i="${i}" data-multiplier="${multiplier}" value="${(wavelength/2.54).toFixed(3)}"></td>` : ''}
       ${state.columns.usa ? `<td class="left usa-field" title="${noteData.usa[i]}"><a href="https://en.wikipedia.org/wiki/${noteData.wiki[i]}" target="_blank" rel="noopener noreferrer">${noteData.usa[i]}</a></td>` : ''}
-      ${state.columns.uk ? `<td class="left uk-field" title="${noteData.uk[i]}">${noteData.uk[i]}</td>` : ''}
+      ${state.columns.uk ? `<td class="left uk-field" title="${noteData.uk[i]}"><span class="table-card-original">${noteData.uk[i]}</span></td>` : ''}
       ${state.columns.bpm ? `<td class="right bpm-field"><input type="number" class="row-bpm-input" step="0.001" data-i="${i}" data-multiplier="${multiplier}" value="${(60000 / ms).toFixed(3)}"></td>` : ''}
       ${state.columns.diff ? `<td class="right diff-field"><input type="number" class="diff-input" step="0.001" readonly data-i="${i}" data-multiplier="${multiplier}" value="${((60000 / ms) - state.bpm).toFixed(3)}"></td>` : ''}
       ${state.columns.percent ? `<td class="right percent-field"><input type="number" class="percent-input" step="0.001" readonly data-i="${i}" data-multiplier="${multiplier}" value="${(Math.pow(2, 5 - i) * multiplier * 100).toFixed(3)}"></td>` : ''}
@@ -743,6 +743,22 @@ function renderRow(note, i, multiplier, type) {
     const radio = row.querySelector('input[type="radio"]');
     if (radio) radio.checked = state.selected === rowId;
   }
+  row.querySelectorAll('input[type="number"]').forEach(input => {
+    const cell = input.parentElement;
+    let value = cell.querySelector('.table-card-value');
+    if (!value) {
+      value = document.createElement('span');
+      value.className = 'table-card-value';
+      cell.appendChild(value);
+    }
+    if (value.textContent !== input.value) value.textContent = input.value;
+  });
+  Object.entries(columnHeaders).forEach(([key, header]) => {
+    const cell = row.querySelector(`.${key}-field`);
+    if (cell) cell.title = header.title;
+  });
+  updateCardPair(row, 'cm', 'inches', wavelength.toFixed(3), (wavelength / 2.54).toFixed(3));
+  updateCardPair(row, 'uk', 'usa', noteData.uk[i], noteData.usa[i]);
   const playButton = row.querySelector('.play-toggle-button');
   if (playButton) {
     playButton.dataset.ms = ms.toFixed(3);
@@ -757,6 +773,33 @@ function renderRow(note, i, multiplier, type) {
   } else {
     row.classList.remove('table-row-selected');
   }
+}
+
+function updateCardPair(row, firstKey, secondKey, firstValue, secondValue) {
+  const first = row.querySelector(`.${firstKey}-field`);
+  const second = row.querySelector(`.${secondKey}-field`);
+  if (!first || !second) return;
+  const enabled = state.columns[firstKey] && state.columns[secondKey];
+  first.classList.toggle('table-card-pair-first', enabled);
+  second.classList.toggle('table-card-pair-second', enabled);
+  if (!enabled) {
+    delete first.dataset.cardCopyValue;
+    return;
+  }
+  let pair = first.querySelector('.table-card-pair');
+  if (!pair) {
+    pair = document.createElement('span');
+    pair.className = 'table-card-pair';
+    const left = document.createElement('span');
+    left.title = columnHeaders[firstKey].title;
+    const right = second.querySelector('a')?.cloneNode(true) || document.createElement('span');
+    right.title = columnHeaders[secondKey].title;
+    pair.append(left, document.createTextNode(' / '), right);
+    first.appendChild(pair);
+  }
+  pair.firstElementChild.textContent = firstValue;
+  pair.lastElementChild.textContent = secondValue;
+  first.dataset.cardCopyValue = firstValue;
 }
 
 function getMultiplier(type) {

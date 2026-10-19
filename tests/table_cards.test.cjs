@@ -160,6 +160,16 @@ test('Cards headings omit field-label prefixes across shared Cards views', () =>
   assert.match(styles, /td\[data-card-label\]:not\(\[data-card-label=""\]\):not\(\[data-card-heading="true"\]\)::before/);
 });
 
+test('paired card presentation copies each original field once', () => {
+  const environment = createEnvironment();
+  const { table } = createTable(['UK', 'USA'], [['Semibreve Semibreve / Whole', 'Whole']]);
+  const cards = new environment.window.TableCards(table);
+  cards.setCards(true);
+  const row = table.tBodies[0].rows[0];
+  row.cells[0].dataset.cardCopyValue = 'Semibreve';
+  assert.equal(cards.getRowText(row), 'UK: Semibreve\nUSA: Whole');
+});
+
 test('Player last-row separators are restricted to table view', () => {
   const styles = fs.readFileSync(path.join(__dirname, '..', 'css', 'player.css'), 'utf8');
   assert.match(styles, /\.playlist-data:not\(\.table-cards\) tbody tr:last-child td\s*\{/);

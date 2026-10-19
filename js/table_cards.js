@@ -87,8 +87,8 @@
       return this.cells(row).map(cell => {
         const inputs = [...cell.querySelectorAll('input, select, textarea')]
           .filter(input => !['radio', 'checkbox'].includes(input.type) && !input.closest('[hidden], .hidden'));
-        const value = inputs.length ? inputs.map(input => input.value).join(' ')
-          : cell.querySelector('button') ? '' : cell.textContent.trim();
+        const value = cell.dataset.cardCopyValue ?? (inputs.length ? inputs.map(input => input.value).join(' ')
+          : cell.querySelector('button') ? '' : cell.textContent.trim());
         return value ? `${cell.dataset.cardLabel ? cell.dataset.cardLabel + ': ' : ''}${value}` : '';
       }).filter(Boolean).join('\n');
     }

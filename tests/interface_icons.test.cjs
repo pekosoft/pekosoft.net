@@ -11,9 +11,40 @@ function content(id) {
 }
 
 test('updated interface icons remain unique standalone monochrome geometry', () => {
-  for (const id of ['clock', 'release', 'help', 'bars', 'loop', 'beat', 'knob', 'arrow_up_down', 'center', 'asterisk', 'ip', 'external', 'pulse', 'cassette']) {
+  for (const id of ['clock', 'release', 'help', 'bars', 'loop', 'beat', 'knob', 'arrow_up_down', 'center', 'asterisk', 'ip', 'external', 'pulse', 'cassette', 'bitmeter']) {
     assert.doesNotMatch(content(id), /<(?:text|use|image)\b|\b(?:fill|stroke|style)\s*=|\bfont-/i, id);
   }
+});
+
+test('Bit meter uses a portrait two-column grid with four rows and outlined top cells', () => {
+  const icon = content('bitmeter');
+  const outlines = [...icon.matchAll(/<path fill-rule="evenodd" d="([^"]+)"\s*\/>/g)]
+    .map(([, data]) => data);
+  assert.deepEqual(outlines, [
+    'M64 0h160v80H64ZM80 16h128v48H80Z',
+    'M288 0h160v80H288ZM304 16h128v48H304Z'
+  ]);
+  const cells = [...icon.matchAll(/<rect x="(\d+)" y="(\d+)" width="(\d+)" height="(\d+)"\s*\/>/g)]
+    .map(([, x, y, width, height]) => [Number(x), Number(y), Number(width), Number(height)]);
+  assert.deepEqual(cells, [144, 288, 432].flatMap(y => [
+    [64, y, 160, 80], [288, y, 160, 80]
+  ]));
+  const width = cells[1][0] + cells[1][2] - cells[0][0];
+  const height = cells.at(-1)[1] + cells.at(-1)[3];
+  assert.equal(height, 512);
+  assert.ok(width < height, 'icon footprint must be portrait');
+  assert.equal(cells[0][0], (512 - width) / 2);
+  assert.ok(sprite.indexOf('<symbol id="beta"') < sprite.indexOf('<symbol id="bitmeter"'));
+  assert.ok(sprite.indexOf('<symbol id="bitmeter"') < sprite.indexOf('<symbol id="blink"'));
+});
+
+test('Bit meter tab and General Help use the dedicated Bit meter icon', () => {
+  const template = fs.readFileSync(path.join(__dirname, '..', 'meters.php'), 'utf8');
+  const button = template.match(/<button id="tool-bit-meter-button"[\s\S]*?<\/button>/)[0];
+  assert.match(button, /<use href="\/icons\.svg[^"]*#bitmeter"\s*\/>/);
+  assert.doesNotMatch(button, /#number_1/);
+  const help = fs.readFileSync(path.join(__dirname, '..', 'help', 'index.php'), 'utf8');
+  assert.match(help, /#bitmeter"><\/use><\/svg>\s*<div class="justify">\s*<h1>Bit /);
 });
 
 test('UK uses a centered cross and matching counterchanged flag halves', () => {

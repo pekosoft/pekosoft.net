@@ -279,6 +279,17 @@
     h257.518l-87.556-113.419h-82.406l-87.556,113.419ZM75.738,454.482h360.525l-154.511-206.989V57.518h-51.504v189.976l-154.511,206.989Z" />
 </symbol>
 
+<symbol id="bitmeter" viewBox="0 0 512 512">
+  <path fill-rule="evenodd" d="M64 0h160v80H64ZM80 16h128v48H80Z" />
+  <path fill-rule="evenodd" d="M288 0h160v80H288ZM304 16h128v48H304Z" />
+  <rect x="64" y="144" width="160" height="80" />
+  <rect x="288" y="144" width="160" height="80" />
+  <rect x="64" y="288" width="160" height="80" />
+  <rect x="288" y="288" width="160" height="80" />
+  <rect x="64" y="432" width="160" height="80" />
+  <rect x="288" y="432" width="160" height="80" />
+</symbol>
+
 <symbol id="blink" viewBox="0 0 512 512">
   <path d="M256 32c-88.4 0-160 71.6-160 160 0 48.6 23.3 91.7 56 120v48h208v-48c32.7-28.3 56-71.4 56-120 0-88.4-71.6-160-160-160zm-48 400v16c0 8.8 7.2 16 16 16h64c8.8 0 16-7.2 16-16v-16h-96zm0-32h96v-32h-96v32z" />
 </symbol>

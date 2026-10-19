@@ -31,6 +31,12 @@
         </svg>
         <span class="button-text">Phasescope</span>
       </button>
+      <button id="tool-bit-meter-button" class="square" title="Bit meter" data-module-tab="Bit meter" data-help-release="index" data-help-entry="Bit">
+        <svg class="icons">
+          <use href="/icons.svg?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/icons.svg'); ?>#bitmeter" />
+        </svg>
+        <span class="button-text">Bit</span>
+      </button>
       <button id="meters-next-button" class="square module-tab-skip-button" title="Next meter" data-help-release="index" data-help-entry="Next meter">
         <svg class="icons">
           <use href="/icons.svg#skip_right" />
@@ -54,6 +60,7 @@
         <canvas id="wavescope" class="meter-canvas" width="4096" height="256"></canvas>
         <canvas id="waveform" class="meter-canvas active" width="4096" height="256"></canvas>
         <canvas id="phasescope" class="meter-canvas" width="4096" height="256" role="img" aria-label="Stereo phasescope with phase correlation"></canvas>
+        <canvas id="bit-meter" class="meter-canvas" width="4096" height="512" role="img" aria-label="Bit activity in a 32-bit PCM representation of the audio signal"></canvas>
         <div class="meters-crosshair" hidden>
           <div id="meters-crosshair-tooltip" class="meters-crosshair-tooltip" role="tooltip"></div>
         </div>

@@ -12,7 +12,8 @@
     level: document.getElementById('volume-meter'),
     oscilloscope: document.getElementById('waveform'),
     wavescope: document.getElementById('wavescope'),
-    phasescope: document.getElementById('phasescope')
+    phasescope: document.getElementById('phasescope'),
+    bit_meter: document.getElementById('bit-meter')
   };
 
   const buttonByMode = {
@@ -20,7 +21,8 @@
     level: document.getElementById('tool-level-button'),
     oscilloscope: document.getElementById('tool-oscilloscope-button'),
     wavescope: document.getElementById('tool-wavescope-button'),
-    phasescope: document.getElementById('tool-phasescope-button')
+    phasescope: document.getElementById('tool-phasescope-button'),
+    bit_meter: document.getElementById('tool-bit-meter-button')
   };
 
   const guidesButton = document.getElementById('tool-guides-button');
@@ -182,6 +184,28 @@
   }
 
   function getMeterTicks(mode, width, height, source) {
+    if (mode === 'bit_meter') {
+      const { rowTop, rowHeight, channelWidth, rightStart, channels } = getBitMeterGeometry(width, height, source);
+      const labeledRows = getBitMeterRows(rowHeight);
+      return {
+        horizontal: [
+          { position: 1, label: '100%', labelPosition: 'after' },
+          { position: channelWidth, label: '0%', labelPosition: 'before' },
+          ...(channels > 1 ? [
+            { position: rightStart, label: '0%', labelPosition: 'after' },
+            { position: width - 1, label: '100%', labelPosition: 'before' }
+          ] : [])
+        ],
+        vertical: Array.from({ length: 34 }, (_, boundary) => ({
+          position: rowTop + boundary * rowHeight,
+          label: ''
+        })),
+        labels: labeledRows.map((row) => ({
+          position: rowTop + (row + 0.5) * rowHeight,
+          label: row === 0 ? 'Over' : `${row}`
+        }))
+      };
+    }
     if (mode === 'phasescope') {
       const { centerX, centerY, radius } = getPhasescopeGeometry(width, height);
       return {
@@ -311,14 +335,16 @@
     const ticks = getMeterTicks(activeMode, width, height, source);
     verticalRuler.setAttribute('aria-label', activeMode === 'level'
       ? 'Meter channel ruler'
+      : activeMode === 'bit_meter' ? 'Meter bit position ruler'
       : activeMode === 'phasescope' ? 'Meter mid amplitude ruler' : 'Meter decibel ruler');
     horizontalRuler.setAttribute('aria-label', activeMode === 'phasescope'
-      ? 'Meter side amplitude ruler' : 'Meter horizontal ruler');
+      ? 'Meter side amplitude ruler'
+      : activeMode === 'bit_meter' ? 'Meter bit occurrence ruler' : 'Meter horizontal ruler');
     timelineUtils.syncViewBox(verticalRuler, 48, height);
     timelineUtils.drawVerticalRuler(verticalRuler, {
       width: 48, height, ticks: ticks.vertical.map(tick => ({ ...tick, drawLine: tick.position > 0 })),
       labels: ticks.labels, color: guideColor, bright: brightGuides, sideBorders: true,
-      topBorder: false
+      topBorder: false, tickLength: activeMode === 'bit_meter' ? 5 : undefined
     });
     timelineUtils.syncViewBox(horizontalRuler, width, 24);
     timelineUtils.drawHorizontalRuler(horizontalRuler, {
@@ -341,7 +367,8 @@
     timelineUtils.syncViewBox(rulerCorner, 48, 24);
     timelineUtils.drawRulerCorner(rulerCorner, {
       width: 48, height: 24, color: guideColor, bright: brightGuides,
-      title: activeMode === 'level' ? '' : activeMode === 'phasescope' ? 'M/S' : 'dB', sideBorders: true
+      title: activeMode === 'level' ? '' : activeMode === 'phasescope' ? 'M/S'
+        : activeMode === 'bit_meter' ? 'Bit' : 'dB', sideBorders: true
     });
   }
 
@@ -378,6 +405,18 @@
     correlationMin: null,
     correlationMax: null,
     correlationHistory: [],
+    invalidSource: null
+  };
+
+  const bitMeterState = {
+    leftSamples: new Float32Array(0),
+    rightSamples: new Float32Array(0),
+    currentActivity: new Float32Array(33),
+    left: new Float32Array(33),
+    right: new Float32Array(33),
+    lastUpdateMs: 0,
+    ready: false,
+    channels: 1,
     invalidSource: null
   };
 
@@ -463,6 +502,10 @@
   let meterPalette = null;
   const meterReleaseMs = 350;
 
+  function getReleasedMeterValue(currentValue, previousValue, release) {
+    return currentValue >= previousValue ? currentValue : Math.max(currentValue, previousValue * release);
+  }
+
   function formatCrosshairAmplitude(amplitude) {
     const magnitude = Math.abs(amplitude);
     return magnitude > 0 ? `${(20 * Math.log10(magnitude)).toFixed(1)} dBFS` : '-∞ dBFS';
@@ -495,6 +538,21 @@
       const correlation = phasescopeState.ready && phasescopeState.correlation !== null
         ? phasescopeState.correlation.toFixed(2) : '-';
       return `Mid: ${mid.toFixed(3)} FS\nSide: ${side.toFixed(3)} FS\nL: ${(mid - side).toFixed(3)} FS  R: ${(mid + side).toFixed(3)} FS\nCorrelation: ${correlation}`;
+    }
+    if (activeMode === 'bit_meter') {
+      const { rowTop, rowHeight, channelWidth, rightStart, channels } = getBitMeterGeometry(width, height, source);
+      const row = Math.floor((y - rowTop) / rowHeight);
+      if (row < 0 || row > 32) return '32-bit PCM activity';
+      if (channels > 1 && x > channelWidth && x < rightStart) {
+        return row === 0 ? 'Over: samples beyond full scale' : `Bit: ${row}${row === 1 ? ' (sign)' : row === 32 ? ' (least significant)' : ''}`;
+      }
+      const right = channels > 1 && x >= rightStart;
+      const channel = channels > 1 ? (right ? 'R' : 'L') : 'M';
+      const ratio = right ? (x - rightStart) / channelWidth : (channelWidth - x) / channelWidth;
+      const value = (right ? bitMeterState.right : bitMeterState.left)[row];
+      const signal = source && bitMeterState.ready ? `${(value * 100).toFixed(1)}%` : '-';
+      const label = row === 0 ? 'Over' : `Bit ${row}${row === 1 ? ' (sign)' : row === 32 ? ' (least significant)' : ''}`;
+      return `Channel: ${channel}\n${label}\nCursor: ${(Math.max(0, Math.min(1, ratio)) * 100).toFixed(1)}%\n${row === 0 ? 'Displayed overload' : 'Displayed activity'}: ${signal}`;
     }
     const stereo = activeMode === 'wavescope' && (source?.channelCount || 1) > 1;
     const right = stereo && y >= height / 2;
@@ -759,6 +817,151 @@
     };
   }
 
+  function getBitMeterGeometry(width, height, source) {
+    const channels = (source?.channelCount || bitMeterState.channels) > 1 ? 2 : 1;
+    const rowTop = Math.min(24, height / 5);
+    const rowBottom = Math.min(20, height / 5);
+    const gap = channels > 1 ? Math.min(40, width / 3) : 0;
+    const channelWidth = (width - gap) / channels;
+    return {
+      channels,
+      rowTop,
+      rowHeight: Math.max(0, height - rowTop - rowBottom) / 33,
+      channelWidth,
+      rightStart: channelWidth + gap
+    };
+  }
+
+  function getBitMeterRows(rowHeight) {
+    const step = rowHeight >= 14 ? 1 : rowHeight >= 7 ? 2 : rowHeight >= 3.5 ? 4 : 8;
+    return [0, ...Array.from({ length: 32 }, (_, index) => index + 1)
+      .filter((bit) => bit % step === 0)];
+  }
+
+  function getBitActivity(samples, activity) {
+    activity.fill(0);
+    for (const sample of samples) {
+      if (sample > 1 || sample < -1) activity[0]++;
+      const pcm = Math.max(-2147483648, Math.min(2147483647, Math.round(sample * 2147483648)));
+      for (let bit = 0; bit < 32; bit++) {
+        activity[bit + 1] += (pcm >>> (31 - bit)) & 1;
+      }
+    }
+    if (samples.length) {
+      for (let row = 0; row < activity.length; row++) activity[row] /= samples.length;
+    }
+  }
+
+  function updateBitActivity(samples, activity, release) {
+    const currentActivity = bitMeterState.currentActivity;
+    getBitActivity(samples, currentActivity);
+    const hasActivity = currentActivity.some((value) => value > 0);
+    for (let row = 0; row < activity.length; row++) {
+      const value = hasActivity ? getReleasedMeterValue(currentActivity[row], activity[row], release) : 0;
+      activity[row] = currentActivity[row] === 0 && value < 0.001 ? 0 : value;
+    }
+  }
+
+  function drawBitMeterGuides(ctx, width, height, source) {
+    const { rowTop, rowHeight, channelWidth, rightStart, channels } = getBitMeterGeometry(width, height, source);
+    ctx.save();
+    ctx.strokeStyle = guideColor;
+    ctx.fillStyle = guideColor;
+    ctx.font = '12px Arial, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    setCrispGuideStroke(ctx);
+    ctx.fillText(channels > 1 ? 'L' : 'M', channelWidth / 2, rowTop / 2);
+    if (channels > 1) ctx.fillText('R', rightStart + channelWidth / 2, rowTop / 2);
+    ctx.beginPath();
+    for (let row = 0; row <= 33; row++) {
+      const y = snapGuideCoordinate(rowTop + row * rowHeight);
+      ctx.moveTo(0, y);
+      ctx.lineTo(channelWidth, y);
+      if (channels > 1) {
+        ctx.moveTo(rightStart, y);
+        ctx.lineTo(width, y);
+      }
+    }
+    [0, channelWidth, ...(channels > 1 ? [rightStart, width] : [])].forEach((value) => {
+      const x = snapGuideCoordinate(Math.min(width - 0.5, value));
+      ctx.moveTo(x, rowTop);
+      ctx.lineTo(x, rowTop + 33 * rowHeight);
+    });
+    ctx.stroke();
+    if (channels > 1) {
+      getBitMeterRows(rowHeight).forEach((row) => {
+        ctx.fillText(row === 0 ? 'Over' : `${row}`, width / 2, rowTop + (row + 0.5) * rowHeight);
+      });
+    }
+    ctx.restore();
+    drawBrightGuideBoundary(ctx, width, height);
+  }
+
+  function drawBitMeterFromData(ctx, width, height, source) {
+    ctx.clearRect(0, 0, width, height);
+    drawGuidesBehind('bit_meter', ctx, width, height, source);
+    const { rowTop, rowHeight, channelWidth, rightStart, channels } = getBitMeterGeometry(width, height, source);
+    const paletteSource = source || { palette: getMeterPalette() };
+    if (source && bitMeterState.ready) {
+      const gap = Math.min(1, rowHeight / 4);
+      for (let row = 0; row < 33; row++) {
+        ctx.fillStyle = getMeterColorStyle(paletteSource, row / 32);
+        const y = rowTop + row * rowHeight + gap;
+        const leftWidth = channelWidth * bitMeterState.left[row];
+        ctx.fillRect(channelWidth - leftWidth, y, leftWidth, Math.max(0, rowHeight - gap * 2));
+        if (channels > 1) {
+          ctx.fillRect(rightStart, y, channelWidth * bitMeterState.right[row], Math.max(0, rowHeight - gap * 2));
+        }
+      }
+    }
+    ctx.save();
+    ctx.fillStyle = getMeterColorStyle(paletteSource, 0);
+    ctx.font = '12px Arial, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    const label = source && bitMeterState.invalidSource ? 'Stereo unavailable' : '32-bit PCM activity';
+    ctx.fillText(label, width / 2, rowTop + 33 * rowHeight + (height - rowTop - 33 * rowHeight) / 2);
+    ctx.restore();
+  }
+
+  function renderBitMeter(ctx, canvas, source) {
+    resizeCanvasToDisplaySize(canvas, ctx);
+    const stereo = source.channelCount > 1;
+    const leftAnalyser = stereo ? source.analyserLeft : source.analyserLeft || source.analyser;
+    const rightAnalyser = stereo ? source.analyserRight : leftAnalyser;
+    if (!leftAnalyser || !rightAnalyser) {
+      if (bitMeterState.invalidSource !== source.analyser) {
+        console.error('Meters Bit meter requires separate left and right analysers for stereo audio.');
+      }
+      bitMeterState.invalidSource = source.analyser;
+      bitMeterState.ready = false;
+    } else {
+      const nowMs = performance.now();
+      const elapsedMs = bitMeterState.ready ? nowMs - bitMeterState.lastUpdateMs : 0;
+      const release = elapsedMs > 0 ? Math.exp(-elapsedMs / meterReleaseMs) : 0;
+      bitMeterState.invalidSource = null;
+      bitMeterState.channels = stereo ? 2 : 1;
+      if (bitMeterState.leftSamples.length !== leftAnalyser.fftSize) {
+        bitMeterState.leftSamples = new Float32Array(leftAnalyser.fftSize);
+      }
+      leftAnalyser.getFloatTimeDomainData(bitMeterState.leftSamples);
+      updateBitActivity(bitMeterState.leftSamples, bitMeterState.left, release);
+      if (stereo) {
+        if (bitMeterState.rightSamples.length !== rightAnalyser.fftSize) {
+          bitMeterState.rightSamples = new Float32Array(rightAnalyser.fftSize);
+        }
+        rightAnalyser.getFloatTimeDomainData(bitMeterState.rightSamples);
+        updateBitActivity(bitMeterState.rightSamples, bitMeterState.right, release);
+      } else {
+        bitMeterState.right.fill(0);
+      }
+      bitMeterState.lastUpdateMs = nowMs;
+      bitMeterState.ready = true;
+    }
+    drawBitMeterFromData(ctx, canvas.width / (window.devicePixelRatio || 1), canvas.height / (window.devicePixelRatio || 1), source);
+  }
+
   function getPhaseCorrelation(left, right) {
     const count = Math.min(left.length, right.length);
     const leftOffset = left.length - count;
@@ -996,7 +1199,7 @@
 
       const previousValue = spectrumDisplayState.levels[i];
       const value = shouldCache
-        ? (currentValue >= previousValue ? currentValue : Math.max(currentValue, previousValue * release))
+        ? getReleasedMeterValue(currentValue, previousValue, release)
         : previousValue;
       if (shouldCache) spectrumDisplayState.levels[i] = value < 0.001 ? 0 : value;
       const h = Math.round(value * height);
@@ -1235,8 +1438,8 @@
     const nowMs = performance.now();
     const elapsedMs = levelDisplayState.lastUpdateMs ? nowMs - levelDisplayState.lastUpdateMs : 0;
     const release = elapsedMs > 0 ? Math.exp(-elapsedMs / meterReleaseMs) : 0;
-    const left = currentLeft >= levelDisplayState.left ? currentLeft : Math.max(currentLeft, levelDisplayState.left * release);
-    const right = currentRight >= levelDisplayState.right ? currentRight : Math.max(currentRight, levelDisplayState.right * release);
+    const left = getReleasedMeterValue(currentLeft, levelDisplayState.left, release);
+    const right = getReleasedMeterValue(currentRight, levelDisplayState.right, release);
     levelDisplayState.left = left < 0.001 ? 0 : left;
     levelDisplayState.right = right < 0.001 ? 0 : right;
     levelDisplayState.lastUpdateMs = nowMs;
@@ -1249,6 +1452,15 @@
 
   function clearMeterFrame(modeToClear = activeMode) {
     if (frozen) return;
+    if (modeToClear === 'bit_meter') {
+      bitMeterState.ready = false;
+      bitMeterState.currentActivity.fill(0);
+      bitMeterState.left.fill(0);
+      bitMeterState.right.fill(0);
+      bitMeterState.lastUpdateMs = 0;
+      bitMeterState.invalidSource = null;
+      meterNeedsRedraw = true;
+    }
     if (modeToClear === 'phasescope') {
       phasescopeState.ready = false;
       updatePhaseCorrelation(null);
@@ -1279,6 +1491,11 @@
 
   function drawGuidesBehind(mode, ctx, width, height, source) {
     if (!guidesOn) {
+      return;
+    }
+
+    if (mode === 'bit_meter') {
+      drawBitMeterGuides(ctx, width, height, source);
       return;
     }
 
@@ -1336,6 +1553,16 @@
   }
 
   function drawIdleMeterFrame(canvas, ctx, source) {
+    if (activeMode === 'bit_meter') {
+      resizeCanvasToDisplaySize(canvas, ctx);
+      drawBitMeterFromData(
+        ctx,
+        canvas.width / (window.devicePixelRatio || 1),
+        canvas.height / (window.devicePixelRatio || 1),
+        source
+      );
+      return;
+    }
     if (activeMode === 'phasescope') {
       resizeCanvasToDisplaySize(canvas, ctx);
       drawPhasescopeFromData(
@@ -1425,7 +1652,7 @@
       (activeMode === 'spectroscope' && spectrumDisplayState.levels.some((value) => value > 0))
       || (activeMode === 'level' && (levelDisplayState.left > 0 || levelDisplayState.right > 0))
     ));
-    const meterIsActive = sourceIsActive || releaseIsActive;
+    const meterIsActive = sourceIsActive || releaseIsActive || Boolean(source && activeMode === 'bit_meter');
     const activityEnded = wasMeterActive && !meterIsActive;
     if (activityEnded) wavescopeState.lastPushMs = 0;
     const canvas = canvasByMode[activeMode];
@@ -1448,6 +1675,8 @@
             renderLevel(ctx, canvas, source);
           } else if (activeMode === 'phasescope') {
             renderPhasescope(ctx, canvas, source);
+          } else if (activeMode === 'bit_meter') {
+            renderBitMeter(ctx, canvas, source);
           }
           meterNeedsRedraw = false;
         }
@@ -1555,6 +1784,7 @@
       applyFreeze(false);
       clearMeterFrame('wavescope');
       clearMeterFrame('phasescope');
+      clearMeterFrame('bit_meter');
     });
   }
 

@@ -138,7 +138,7 @@
 
   function drawVerticalRuler(svg, options) {
     if (!svg) return;
-    const { width, height, title = '', titleY = 24, ticks = [], labels = [], color, bright = false, sideBorders = false, topBorder = false, bottomBorder = true } = options || {};
+    const { width, height, title = '', titleY = 24, ticks = [], labels = [], color, bright = false, sideBorders = false, topBorder = false, bottomBorder = true, tickLength = width } = options || {};
     const inset = sideBorders ? 0.5 : 0;
     const axisX = Math.max(0, width - inset);
     svg.replaceChildren();
@@ -203,7 +203,7 @@
       const y = Math.max(0.5, Math.min(height + 0.5, Math.floor(position) + 0.5));
       if (drawLine) {
         svg.appendChild(createRulerElement('line', {
-          x1: 0,
+          x1: Math.max(0, width - tickLength),
           y1: y,
           x2: width,
           y2: y,

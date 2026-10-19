@@ -104,3 +104,19 @@ test('direct horizontal ruler callers retain their existing border options', () 
   assert.equal(verticalLines(horizontalRuler).length, 1);
   assert.equal(verticalLines(horizontalRuler)[0].x1, '4095.5');
 });
+
+test('vertical rulers support short ticks without changing existing full-width ticks', () => {
+  const { horizontalRuler: ruler, timelineUtils } = createRulers();
+  const options = { width: 48, height: 256, color: '#fff', ticks: [{ position: 32, label: '' }] };
+  timelineUtils.drawVerticalRuler(ruler, options);
+  const tick = () => ruler.children.find(node =>
+    node.name === 'line' && node.attributes.y1 === node.attributes.y2
+  ).attributes;
+  assert.equal(tick().x1, '0');
+  assert.equal(tick().x2, '48');
+  timelineUtils.drawVerticalRuler(ruler, { ...options, tickLength: 5 });
+  assert.equal(tick().x1, '43');
+  assert.equal(tick().x2, '48');
+  assert.equal(tick().y1, '32.5');
+  assert.equal(tick()['shape-rendering'], 'crispEdges');
+});

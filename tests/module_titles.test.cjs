@@ -18,7 +18,7 @@ const tabGroups = [
   { file: 'meters.php', module: 'meters', title: 'Meters', tabs: [
     ['tool-spectroscope-button', 'Spectroscope'], ['tool-level-button', 'Level meter'],
     ['tool-oscilloscope-button', 'Oscilloscope'], ['tool-wavescope-button', 'Wavescope'],
-    ['tool-phasescope-button', 'Phasescope']
+    ['tool-phasescope-button', 'Phasescope'], ['tool-bit-meter-button', 'Bit meter']
   ] },
   { file: 'tools\\player.php', module: 'panel', title: 'Panel', tabs: [
     ['panel-meta-button', 'Meta'], ['panel-input-button', 'Input'], ['panel-playlist-button', 'Playlist']

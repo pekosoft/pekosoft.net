@@ -35,6 +35,7 @@ Pekosoft uses a single SVG sprite file (`icons.svg`) for all interface icons. Ea
 - Asterisk is scaled to 90% around the canvas center. IP retains the location pin and circular cutout without an interior rectangle.
 - External uses square frame corners, a sharp arrowhead and flat line ends.
 - Pulse's horizontal sections share exact top and bottom coordinates, avoiding accumulated rounding differences from relative path commands.
+- `bitmeter` uses two equal columns of four rectangular cells in a portrait layout. The top pair uses transparent cutouts to form outlines, and the lower six cells are filled.
 - `cassette` replaces `recorder` with a simple body, two reel cutouts, a central window and a lower tape opening, all in one standalone path.
 - Crosshair uses 32-unit lines and rim. Label L, Label S, Pivot and Jukebox share the 32-unit circular rim; Pivot's dot has radius 12.
 - Archive, Battery Full and RAM use single union silhouettes without overlapping interior shapes, preserving their filled appearance.

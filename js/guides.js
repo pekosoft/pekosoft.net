@@ -37,6 +37,7 @@
     "meters.visualizer.guides"
   ];
   const rulerStorageKeys = [
+    "circle_of_fifths.rulers",
     "audio_calculator.rulers",
     "bpm_calculator.rulers",
     "metronome.rulers",

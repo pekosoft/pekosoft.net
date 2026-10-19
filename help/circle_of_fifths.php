@@ -214,7 +214,7 @@
   </svg>
   <div class="justify">
     <h1>Timeline <span class="object">module</span></h1>
-    Displays recent events for played notes, triads and progressions on two-octave MIDI (Musical Instrument Digital Interface) note lanes with optional guides.
+    Displays recent events for played notes, triads and progressions on two-octave MIDI (Musical Instrument Digital Interface) note lanes with optional guides and note rulers.
   </div>
 </div>
 
@@ -224,7 +224,17 @@
   </svg>
   <div class="justify">
     <h1>Guides <span class="object">button</span></h1>
-    Toggles timeline guides. This local button overrides the Settings Guides option for Timeline only. <span class="default">Default: on.</span>
+    Toggles timeline guides independently of the note rulers. This local button overrides the Settings Guides option for Timeline only. <span class="default">Default: on.</span>
+  </div>
+</div>
+
+<div class="feature-row border">
+  <svg class="standard-image-help">
+    <use href="/icons.svg#ruler"></use>
+  </svg>
+  <div class="justify">
+    <h1>Rulers <span class="object">button</span></h1>
+    Toggles Timeline note labels independently of Guides. The choice is saved and overrides the Settings Rulers option for Timeline only. Reset turns Rulers on. <span class="default">Default: on.</span>
   </div>
 </div>
 

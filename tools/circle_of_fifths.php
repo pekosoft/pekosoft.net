@@ -161,6 +161,10 @@
         <svg class="icons" role="img"><use href="/icons.svg#sun" /></svg>
         <span class="button-text">Bright</span>
       </button>
+      <button id="timeline-rulers-button" class="square button-on" title="Toggle timeline rulers" aria-pressed="true">
+        <svg class="icons" role="img"><use href="/icons.svg#ruler" /></svg>
+        <span class="button-text">Rulers</span>
+      </button>
     </div>
   </div>
 

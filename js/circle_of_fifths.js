@@ -114,6 +114,7 @@
       this.timelineContext = this.timelineCanvas?.getContext("2d") || null;
       this.timelineGuidesButton = document.getElementById("timeline-guides-button");
       this.timelineBrightButton = document.getElementById("timeline-bright-button");
+      this.timelineRulersButton = document.getElementById("timeline-rulers-button");
       this.panelText = document.getElementById("panel-text");
       this.copyButton = document.getElementById("copy-button");
 
@@ -122,6 +123,9 @@
       this.showDim = true;
       this.showSignatures = false;
       this.guidesOn = true;
+      this.timelineRulers = localStorage.getItem("circle_of_fifths.rulers") === null
+        ? (window.PekoRulers?.getGlobal() ?? true)
+        : localStorage.getItem("circle_of_fifths.rulers") === "true";
       this.timelineBright = localStorage.getItem("circle_of_fifths.timeline_bright") === null
         ? (window.PekoBrightGuides?.getGlobal() || false)
         : localStorage.getItem("circle_of_fifths.timeline_bright") === "true";
@@ -289,6 +293,17 @@
         this.updateControls();
         this.drawTimeline();
       });
+      this.timelineRulersButton?.addEventListener("click", () => {
+        this.timelineRulers = !this.timelineRulers;
+        localStorage.setItem("circle_of_fifths.rulers", String(this.timelineRulers));
+        this.updateControls();
+        this.drawTimeline();
+      });
+      window.addEventListener("pekosoft:rulers-global-change", (event) => {
+        this.timelineRulers = !!event.detail?.enabled;
+        this.updateControls();
+        this.drawTimeline();
+      });
       window.addEventListener("pekosoft:bright-guides-global-change", (event) => {
         this.timelineBright = !!event.detail?.enabled;
         this.updateControls();
@@ -334,6 +349,8 @@
       this.showDim = true;
       this.showSignatures = false;
       this.guidesOn = true;
+      this.timelineRulers = true;
+      localStorage.setItem("circle_of_fifths.rulers", "true");
       this.soundEnabled = true;
       this.playbackSpeed = DEFAULT_PLAYBACK_SPEED;
       this.volume = 70;
@@ -554,6 +571,8 @@
       this.toggleSignatureButton?.classList.toggle("button-on", this.showSignatures);
       this.timelineGuidesButton?.classList.toggle("button-on", this.guidesOn);
       this.timelineBrightButton?.classList.toggle("button-on", this.timelineBright);
+      this.timelineRulersButton?.classList.toggle("button-on", this.timelineRulers);
+      this.timelineRulersButton?.setAttribute("aria-pressed", String(this.timelineRulers));
       this.arrowUpButton?.classList.toggle("button-on", this.selectedMode === "major");
       this.arrowDownButton?.classList.toggle("button-on", this.selectedMode === "minor");
     }
@@ -959,7 +978,7 @@
       const width = this.timelineDisplayWidth || canvas.width;
       const height = this.timelineDisplayHeight || canvas.height;
       const now = performance.now();
-      const labelGutter = 34;
+      const labelGutter = this.timelineRulers ? 34 : 0;
       const plotWidth = Math.max(1, width - labelGutter);
       const rowHeight = height / TIMELINE_ROW_COUNT;
       const colors = this.getRootColors();
@@ -993,6 +1012,9 @@
           ctx.closePath();
           ctx.stroke();
         }
+      }
+
+      if (this.timelineRulers) {
         ctx.fillStyle = this.timelineBright ? colors.white : colors.grey2;
         ctx.font = `${Math.max(8, Math.min(12, Math.floor(rowHeight - 2)))}px Arial`;
         ctx.textBaseline = "middle";

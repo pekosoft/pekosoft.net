@@ -3057,12 +3057,14 @@ body > #panel-container.module-maximized > .module-body {
   content: "";
   position: absolute;
   left: 50%;
-  top: 50%;
+  top: 2px;
   width: 2px;
-  height: 14px;
+  height: calc(50% - 1px);
+  border-radius: 0 0 1px 1px;
   background: var(--white);
-  transform: translate(-50%, -100%) rotate(var(--knob-angle));
-  transform-origin: 50% 100%;
+  clip-path: circle(calc(var(--size2) / 2 - 2px) at 50% calc(100% - 1px));
+  transform: translateX(-50%) rotate(var(--knob-angle));
+  transform-origin: 50% calc(100% - 1px);
 }
 
 @media (hover: hover) {

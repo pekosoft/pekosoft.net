@@ -173,6 +173,10 @@ Pekosoft favors:
 - Follow this rule for every new or renamed identifier. Preserve existing public names when compatibility requires them, and do not mass-rename unrelated legacy code.
 - Product text, attribution and user-facing download filenames may retain the Pekosoft brand. They are not internal code identifiers.
 
+## Cards heading convention
+
+- In every Cards view, show the card's name or title without a field-label prefix such as "Name:". Keep labels for the other card details.
+
 ## Guides text selection convention
 
 - Use "guides" when referring to plot reference lines collectively, not "grid" or "guide". Use Guides when referring to the named control.
@@ -234,6 +238,7 @@ Tooltip placement rule:
 ## Commit title convention
 
 - Use short, past-tense titles focused on user-facing changes.
+- **Never end a commit title with a period.** This is a strict rule for suggested titles and actual Git commit subjects.
 - Do not mention development Markdown, internal guidance updates or routine documentation maintenance in titles.
 - Cover all substantive user-facing changes without listing every implementation detail.
 

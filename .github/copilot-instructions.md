@@ -4,6 +4,8 @@
 
 Always write Git commit titles in the past tense, both when suggesting titles and when creating commits. Use "Fixed", "Added" or "Updated", not "Fix", "Add" or "Update".
 
+**Strict rule: never end a commit title with a period.** Apply this to suggested titles and actual Git commit subjects.
+
 ## Mandatory session startup
 
 Before any other task in every session:

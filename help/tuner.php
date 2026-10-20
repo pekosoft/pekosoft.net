@@ -4,7 +4,7 @@
   </svg>
   <div class="justify">
     <h1>General</h1>
-    Pekosoft Tuner is for instrument tuning with live microphone pitch detection and manual reference tone playback. Supports guitar, bass guitar and chromatic tuning profiles.
+    Pekosoft Tuner is for instrument tuning with live microphone pitch detection and manual reference tone playback. Supports guitar, bass guitar, ukulele, violin, viola, cello, mandolin and banjo, plus chromatic tuning.
   </div>
 </div>
 
@@ -114,7 +114,18 @@
   </svg>
   <div class="justify">
     <h1>Profile <span class="object">menu</span></h1>
-    Selects tuning profile. Chromatic uses 12 semitones with octave selection. Guitar uses E2 A2 D3 G3 B3 E4. Bass uses E1 A1 D2 G2. <span class="default">Default: Guitar.</span>
+    Selects the instrument's standard tuning, or Chromatic for 12 semitones with octave selection.
+    <ul>
+      <li>Guitar: E2 A2 D3 G3 B3 E4.</li>
+      <li>Bass: E1 A1 D2 G2.</li>
+      <li>Ukulele: G4 C4 E4 A4, using high-G tuning.</li>
+      <li>Violin: G3 D4 A4 E5.</li>
+      <li>Viola: C3 G3 D4 A4.</li>
+      <li>Cello: C2 G2 D3 A3.</li>
+      <li>Mandolin: G3 D4 A4 E5, with one target per paired string course.</li>
+      <li>Banjo: G4 D3 G3 B3 D4, using five-string open G tuning.</li>
+    </ul>
+    The selected profile is saved. Reset restores Guitar and clears the selected target for every profile. <span class="default">Default: Guitar.</span>
   </div>
 </div>
 

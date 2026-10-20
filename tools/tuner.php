@@ -9,7 +9,7 @@
   $releasePage = "";
   $availableModules = ["tool", "controls", "timeline", "panel", "meters"];
   ?>
-  <meta name="keywords" content="tuner, guitar tuner, bass tuner, chromatic tuner, reference tone, pitch detection">
+  <meta name="keywords" content="tuner, guitar tuner, bass tuner, ukulele tuner, violin tuner, viola tuner, cello tuner, mandolin tuner, banjo tuner, chromatic tuner, reference tone, pitch detection">
   <link rel="stylesheet" type="text/css" href="/css/<?php echo $release; ?>.css?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/css/' . $release . '.css'); ?>">
 </head>
 
@@ -104,6 +104,12 @@
           <select id="profile-select">
             <option value="guitar">Guitar</option>
             <option value="bass">Bass</option>
+            <option value="ukulele">Ukulele</option>
+            <option value="violin">Violin</option>
+            <option value="viola">Viola</option>
+            <option value="cello">Cello</option>
+            <option value="mandolin">Mandolin</option>
+            <option value="banjo">Banjo</option>
             <option value="chromatic">Chromatic</option>
           </select>
         </div>

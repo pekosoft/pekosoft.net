@@ -48,7 +48,13 @@ const CHROMATIC_NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', '
 const PROFILE_TEMPLATES = {
   chromatic: [],
   guitar: ['E2', 'A2', 'D3', 'G3', 'B3', 'E4'],
-  bass: ['E1', 'A1', 'D2', 'G2']
+  bass: ['E1', 'A1', 'D2', 'G2'],
+  ukulele: ['G4', 'C4', 'E4', 'A4'],
+  violin: ['G3', 'D4', 'A4', 'E5'],
+  viola: ['C3', 'G3', 'D4', 'A4'],
+  cello: ['C2', 'G2', 'D3', 'A3'],
+  mandolin: ['G3', 'D4', 'A4', 'E5'],
+  banjo: ['G4', 'D3', 'G3', 'B3', 'D4']
 };
 
 const STORAGE = {
@@ -77,10 +83,11 @@ const state = {
   cents: 0,
   chromaticOctave: 4,
   chromaticIndex: -1,
-  selectedIndex: {
-    guitar: -1,
-    bass: -1
-  },
+  selectedIndex: Object.fromEntries(
+    Object.keys(PROFILE_TEMPLATES)
+      .filter((profile) => profile !== 'chromatic')
+      .map((profile) => [profile, -1])
+  ),
   toneType: 'sine',
   volume: 30,
   soundOn: true,
@@ -227,7 +234,7 @@ function renderTargetButtons() {
     button.className = showButtonText ? 'tuner-target-button' : 'square tuner-target-button';
     button.title = `Set target to ${target.noteName}`;
 
-    button.innerHTML = `<svg class="icons"><use href="/icons.svg#asterisk" /></svg><span class="button-text">${target.noteName}</span>`;
+    button.innerHTML = `<svg class="icons"><use href="/icons.svg#letter_${target.noteName[0].toLowerCase()}" /></svg><span class="button-text">${target.noteName}</span>`;
     button.addEventListener('click', async () => {
       const isAlreadySelected = index === getCurrentSelectedIndex();
       setCurrentSelectedIndex(isAlreadySelected ? -1 : index);
@@ -993,8 +1000,9 @@ function resetAll() {
   state.cents = 0;
   state.chromaticOctave = 4;
   state.chromaticIndex = -1;
-  state.selectedIndex.guitar = -1;
-  state.selectedIndex.bass = -1;
+  Object.keys(state.selectedIndex).forEach((profile) => {
+    state.selectedIndex[profile] = -1;
+  });
   state.toneType = 'sine';
   state.volume = 30;
   state.soundOn = true;

@@ -56,6 +56,7 @@ Pekosoft uses a single SVG sprite file (`icons.svg`) for all interface icons. Ea
 ## Tuner Icons
 
 - Keep the `tuner` and `tuner_off` fork and shaft thickness and terminal circle size aligned. The normal tuner spans the full canvas height; the crossed-out variant keeps its fork inside the enclosing ring.
+- Target note buttons use the note's base-letter badge (`letter_a` through `letter_g`) across all instrument profiles and Chromatic. Keep the full note, including accidentals and octave, in each label and tooltip.
 
 ## Icons Tool Panel
 

@@ -1,6 +1,6 @@
 <?php
 $requestedRelease = isset($_GET['t']) ? basename((string) $_GET['t']) : '';
-if ($requestedRelease === 'settings') {
+if (in_array($requestedRelease, ['settings', 'contact'], true)) {
   require($_SERVER['DOCUMENT_ROOT'] . '/404.php');
   exit;
 }

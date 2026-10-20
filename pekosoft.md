@@ -420,7 +420,7 @@ Special page note:
 - `contact.php` is a standalone Contact page at `/contact`, linked from both the official and Beta TOCs and included in their Play sequences. It uses General, Bug report and Feature request categories and sends to `ole@peko.net`. Its implementation URL redirects with HTTP 308 to preserve form POSTs.
 - Contact uses PHP `mail()`. Production hosting must provide a working mail transport and authorize the sender `contact@pekosoft.net`. Visitor email addresses are used only in Reply-To, never as From.
 - Contact submissions use server-side validation, session tokens, a honeypot and a one-minute session send limit. Mail failures are logged and shown explicitly, with the submitted text preserved.
-- Contact hides the tool-specific Tool, Help, History and About navigation and has no separate Help file. The form has no introductory text or visible Message label. Keep the Message field accessible through its `aria-label`.
+- Contact hides the tool-specific Tool, Help, History and About navigation, has no separate Help or About page, and is excluded from page-swiping loops. It remains available through the TOCs and Play sequences. The form has no introductory text or visible Message label. Keep the Message field accessible through its `aria-label`.
 - Contact Reset clears all form fields and submission feedback and restores General. It does not clear sitewide settings or bypass the session send limit.
 
 ### Icons

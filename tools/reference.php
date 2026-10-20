@@ -9,7 +9,7 @@
   $releasePage = "";
   $availableModules = ["tool"];
   ?>
-  <meta name="keywords" content="bpm reference, Italian tempi, note frequency chart, scale reference, chord reference">
+  <meta name="keywords" content="bpm reference, Italian tempi, note frequency chart, scale reference, chord reference, metric prefixes, SI prefixes, powers of ten">
   <link rel="stylesheet" type="text/css" href="/css/<?php echo $release; ?>.css?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/css/' . $release . '.css'); ?>">
 </head>
 
@@ -54,6 +54,13 @@
             <use href="/icons.svg#value" />
           </svg>
           <span class="button-text">Chords</span>
+        </button>
+
+        <button id="table-prefixes-button" class="square" title="Metric prefixes" data-module-tab="Metric Prefixes">
+          <svg class="icons">
+            <use href="/icons.svg#formula" />
+          </svg>
+          <span class="button-text">Prefixes</span>
         </button>
       </div>
 

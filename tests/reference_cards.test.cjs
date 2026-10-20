@@ -14,7 +14,8 @@ const columnIcons = {
   tempi: ['italy', 'bpm', 'play'],
   notes: ['tuner', 'arrow_up_down', 'mic', 'midi', 'wavelength', 'cm', 'piano', 'play'],
   scales: ['timeline', 'ruler', 'quantized_steps', 'letter_c', 'table_rows', 'play'],
-  chords: ['value', 'formula', 'piano', 'letter_c', 'table_rows', 'play']
+  chords: ['value', 'formula', 'piano', 'letter_c', 'table_rows', 'play'],
+  prefixes: ['text', 'value', 'formula', 'value', 'text']
 };
 
 function createRenderer(mode, savedSettings = {}) {
@@ -76,7 +77,8 @@ function expectedCopy(mode, row, visibility) {
     tempi: [0, 1],
     notes: [0, 1, 2, 4, 5, 6, 3],
     scales: [0, 1, 2, 3, 4],
-    chords: [0, 1, 2, 3, 4]
+    chords: [0, 1, 2, 3, 4],
+    prefixes: [0, 1, 2, 3, 4]
   };
   const bpmLabels = { 3: 'Half', 4: 'Double', 5: 'Triplet', 6: 'Dotted', 7: 'SPB', 8: 'BPS' };
   return order[mode]
@@ -84,12 +86,13 @@ function expectedCopy(mode, row, visibility) {
     .map(index => {
       if (mode === 'bpm' && bpmLabels[index]) return `${bpmLabels[index]}: ${row[index].text}`;
       if (mode === 'tempi' && index === 1) return `BPM: ${row[index].text}`;
+      if (mode === 'prefixes' && index > 0) return `${['Prefix', 'Symbol', 'Power', 'Multiplier', 'Writing'][index]}: ${row[index].text}`;
       return row[index].text;
     })
     .join('\n');
 }
 
-for (const mode of ['bpm', 'tempi', 'notes', 'scales', 'chords']) {
+for (const mode of ['bpm', 'tempi', 'notes', 'scales', 'chords', 'prefixes']) {
   test(`${mode} toggles retain existing SVG references in both views`, () => {
     const { context, state, table, elements } = createRenderer(mode);
     context.updateColumnButtons();
@@ -130,7 +133,7 @@ for (const mode of ['bpm', 'tempi', 'notes', 'scales', 'chords']) {
     assert.equal(state.visibility[mode][1], false);
   });
 
-  test(`${mode} cards render and copy every table value with the matching Play payload`, () => {
+  test(`${mode} cards render and copy every table value with Play only where available`, () => {
     const { context, state, table, cards } = createRenderer(mode);
     context.renderCards();
     assert.equal(cards.children.length, table.rows.length);
@@ -140,12 +143,18 @@ for (const mode of ['bpm', 'tempi', 'notes', 'scales', 'chords']) {
       const heading = nodes.find(node => node.className === 'reference-card-title');
       assert.equal(heading.innerHTML, row[0].html || row[0].text);
       const values = nodes.filter(node => node.textContent !== undefined).map(node => node.textContent);
-      row.slice(1, -1).forEach(cell => {
-        assert.ok(values.some(value => value === cell.text || value.endsWith(`: ${cell.text}`)), `Missing ${cell.text}`);
+      const playColumnIndex = table.columns.indexOf('Play');
+      row.slice(1, playColumnIndex === -1 ? undefined : playColumnIndex).forEach(cell => {
+        const value = cell.html ? cell.html.replace(/<[^>]*>/g, '') : cell.text;
+        assert.ok(values.some(text => text === value || text.endsWith(`: ${value}`)), `Missing ${cell.text}`);
       });
       const copy = nodes.find(node => node.dataset.copyText !== undefined);
       assert.equal(copy.dataset.copyText, expectedCopy(mode, row, state.visibility[mode]));
       const play = nodes.find(node => node.dataset.playMode);
+      if (playColumnIndex === -1) {
+        assert.equal(play, undefined);
+        return;
+      }
       assert.equal(play.dataset.playMode, row.at(-1).playMode);
       Object.entries(row.at(-1).playPayload).forEach(([key, value]) => {
         assert.equal(play.dataset[`play${key[0].toUpperCase()}${key.slice(1)}`], String(value));
@@ -167,7 +176,8 @@ for (const mode of ['bpm', 'tempi', 'notes', 'scales', 'chords']) {
         expectedCopy(mode, table.rows[0], visibility)
       );
       assert.equal(nodes.some(node => node.className === 'reference-card-title'), column !== 0);
-      assert.equal(nodes.some(node => node.dataset.playMode), column !== table.columns.length - 1);
+      const playColumnIndex = table.columns.indexOf('Play');
+      assert.equal(nodes.some(node => node.dataset.playMode), playColumnIndex !== -1 && column !== playColumnIndex);
       if (column > 0 && column < table.columns.length - 1) {
         const title = context.getCardLabel(mode, table.columns[column]);
         assert.ok(!nodes.some(node => node.title === title), `Hidden ${title} still rendered`);
@@ -291,4 +301,134 @@ test('Tempi mode, view, sort and column settings survive reload and reset to exi
   assert.equal(restored.state.sort, 'asc');
   assert.deepEqual(Array.from(restored.state.visibility.tempi), [true, true, true]);
   assert.equal(restored.storage.get('reference.mode'), 'bpm');
+});
+
+test('Metric prefixes contain all 24 SI names and case-sensitive symbols plus the unprefixed unit', () => {
+  const { table } = createRenderer('prefixes');
+  const expected = [
+    ['quecto', 'q', -30], ['ronto', 'r', -27], ['yocto', 'y', -24],
+    ['zepto', 'z', -21], ['atto', 'a', -18], ['femto', 'f', -15],
+    ['pico', 'p', -12], ['nano', 'n', -9], ['micro', '\u00b5', -6],
+    ['milli', 'm', -3], ['centi', 'c', -2], ['deci', 'd', -1],
+    ['No prefix', '-', 0],
+    ['deca', 'da', 1], ['hecto', 'h', 2], ['kilo', 'k', 3],
+    ['mega', 'M', 6], ['giga', 'G', 9], ['tera', 'T', 12],
+    ['peta', 'P', 15], ['exa', 'E', 18], ['zetta', 'Z', 21],
+    ['yotta', 'Y', 24], ['ronna', 'R', 27], ['quetta', 'Q', 30]
+  ];
+  assert.equal(table.rows.length, expected.length);
+  table.rows.forEach((row, index) => {
+    const [name, symbol, exponent] = expected[index];
+    assert.equal(row[0].text, name);
+    assert.equal(row[1].text, symbol);
+    assert.equal(row[2].text, `10^${exponent}`);
+    assert.equal(row[2].html, `10<sup>${exponent}</sup>`);
+    const multiplier = row[3].text;
+    if (exponent < 0) {
+      assert.match(multiplier, /^0\.\d+$/);
+      assert.equal(multiplier.length, 2 - exponent);
+      assert.equal(BigInt(multiplier.replace('.', '')), 1n);
+    } else {
+      assert.equal(BigInt(multiplier), 10n ** BigInt(exponent));
+    }
+  });
+});
+
+test('all metric prefix names link to Wikipedia in tables and cards without linking the unprefixed unit', () => {
+  const { context, table, cards, elements } = createRenderer('prefixes');
+  const articles = [
+    'Quecto-', 'Ronto-', 'Yocto-', 'Zepto-', 'Atto-', 'Femto-', 'Pico-', 'Nano-',
+    'Micro-', 'Milli-', 'Centi-', 'Deci-', null, 'Deca-', 'Hecto-', 'Kilo-',
+    'Mega-', 'Giga-', 'Tera-', 'Peta-', 'Exa-', 'Zetta-', 'Yotta-', 'Ronna-', 'Quetta-'
+  ];
+  context.renderTable();
+  context.renderCards();
+  articles.forEach((article, index) => {
+    const cell = table.rows[index][0];
+    const tableCell = elements.get('resultTable').children[index].children[0];
+    const heading = descendants(cards.children[index]).find(node => node.className === 'reference-card-title');
+    if (article === null) {
+      assert.equal(cell.html, undefined);
+      assert.equal(tableCell.textContent, 'No prefix');
+      assert.equal(heading.innerHTML, 'No prefix');
+      return;
+    }
+    const expected = `<a href="https://en.wikipedia.org/wiki/${article}" target="wiki">${cell.text}</a>`;
+    assert.equal(cell.html, expected);
+    assert.equal(tableCell.innerHTML, expected);
+    assert.equal(heading.innerHTML, expected);
+    const copy = descendants(cards.children[index]).find(node => node.dataset.copyText !== undefined);
+    assert.ok(copy.dataset.copyText.startsWith(`${cell.text}\n`));
+    assert.doesNotMatch(copy.dataset.copyText, /<a|https:/);
+  });
+});
+
+test('existing saved settings enable every new prefix column without changing the active mode', () => {
+  const { context, state } = createRenderer('bpm', {
+    'reference.mode': 'notes',
+    'reference.column_visibility': JSON.stringify({ notes: [true, false] })
+  });
+  context.loadSettings();
+  assert.equal(state.activeMode, 'notes');
+  assert.equal(state.visibility.notes[1], false);
+  assert.deepEqual(Array.from(state.visibility.prefixes), [true, true, true, true, true]);
+});
+
+test('Metric text columns have readable default widths and preserve resized widths', () => {
+  const { context, elements } = createRenderer('prefixes');
+  context.renderTable();
+  const headers = elements.get('header-row');
+  const multiplier = headers.children.find(header => header.dataset.columnLabel === 'Multiplier');
+  assert.equal(multiplier.style.width, '36ch');
+  const writing = headers.children.find(header => header.dataset.columnLabel === 'Writing');
+  assert.equal(writing.style.width, '16ch');
+  multiplier.dataset.columnWidth = '480';
+  writing.dataset.columnWidth = '240';
+  context.renderTable();
+  assert.equal(headers.children.find(header => header.dataset.columnLabel === 'Multiplier').style.width, '480px');
+  assert.equal(headers.children.find(header => header.dataset.columnLabel === 'Writing').style.width, '240px');
+});
+
+test('Metric prefixes settings survive reload and reset with the other Reference modes', () => {
+  const { context, state, storage } = createRenderer('prefixes');
+  state.view = 'cards';
+  state.sort = 'desc';
+  state.visibility.prefixes[2] = false;
+  state.visibility.prefixes[4] = false;
+  context.saveSettings();
+  const restored = createRenderer('bpm', Object.fromEntries(storage));
+  restored.context.loadSettings();
+  assert.equal(restored.state.activeMode, 'prefixes');
+  assert.equal(restored.state.view, 'cards');
+  assert.equal(restored.state.sort, 'desc');
+  assert.deepEqual(Array.from(restored.state.visibility.prefixes), [true, true, false, true, false]);
+  restored.context.resetReference();
+  assert.equal(restored.state.activeMode, 'bpm');
+  assert.equal(restored.state.view, 'table');
+  assert.equal(restored.state.sort, 'asc');
+  assert.deepEqual(Array.from(restored.state.visibility.prefixes), [true, true, true, true, true]);
+});
+
+test('every metric multiplier has capitalized Writing in the English short scale including fractions and unity', () => {
+  const { table } = createRenderer('prefixes');
+  const expected = [
+    'Nonillionth', 'Octillionth', 'Septillionth', 'Sextillionth', 'Quintillionth',
+    'Quadrillionth', 'Trillionth', 'Billionth', 'Millionth', 'Thousandth',
+    'Hundredth', 'Tenth', 'One', 'Ten', 'Hundred', 'Thousand', 'Million',
+    'Billion', 'Trillion', 'Quadrillion', 'Quintillion', 'Sextillion',
+    'Septillion', 'Octillion', 'Nonillion'
+  ];
+  assert.equal(table.columns[4], 'Writing');
+  assert.equal(table.aligns[4], 'left');
+  assert.deepEqual(Array.from(table.rows, row => row[4].text), expected);
+});
+
+test('four-column prefix preferences enable Writing while preserving every existing column preference', () => {
+  const { context, state } = createRenderer('bpm', {
+    'reference.mode': 'prefixes',
+    'reference.column_visibility': JSON.stringify({ prefixes: [false, true, false, true] })
+  });
+  context.loadSettings();
+  assert.equal(state.activeMode, 'prefixes');
+  assert.deepEqual(Array.from(state.visibility.prefixes), [false, true, false, true, true]);
 });

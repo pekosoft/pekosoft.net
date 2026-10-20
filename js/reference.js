@@ -6,7 +6,8 @@ const modeButtons = {
   tempi: document.getElementById('table-tempi-button'),
   notes: document.getElementById('table-notes-button'),
   scales: document.getElementById('table-scales-button'),
-  chords: document.getElementById('table-chords-button')
+  chords: document.getElementById('table-chords-button'),
+  prefixes: document.getElementById('table-prefixes-button')
 };
 
 const resetButton = document.getElementById('reset-button');
@@ -96,7 +97,8 @@ const state = {
     tempi: [true, true, true],
     notes: [true, true, true, true, true, true, true, true],
     scales: [true, true, true, true, true, true],
-    chords: [true, true, true, true, true, true]
+    chords: [true, true, true, true, true, true],
+    prefixes: [true, true, true, true, true]
   }
 };
 
@@ -609,6 +611,45 @@ function makeChordsRows() {
   });
 }
 
+function makePrefixesRows() {
+  return [
+    ['quecto', 'q', -30, 'nonillionth'],
+    ['ronto', 'r', -27, 'octillionth'],
+    ['yocto', 'y', -24, 'septillionth'],
+    ['zepto', 'z', -21, 'sextillionth'],
+    ['atto', 'a', -18, 'quintillionth'],
+    ['femto', 'f', -15, 'quadrillionth'],
+    ['pico', 'p', -12, 'trillionth'],
+    ['nano', 'n', -9, 'billionth'],
+    ['micro', '\u00b5', -6, 'millionth'],
+    ['milli', 'm', -3, 'thousandth'],
+    ['centi', 'c', -2, 'hundredth'],
+    ['deci', 'd', -1, 'tenth'],
+    ['No prefix', '-', 0, 'one'],
+    ['deca', 'da', 1, 'ten'],
+    ['hecto', 'h', 2, 'hundred'],
+    ['kilo', 'k', 3, 'thousand'],
+    ['mega', 'M', 6, 'million'],
+    ['giga', 'G', 9, 'billion'],
+    ['tera', 'T', 12, 'trillion'],
+    ['peta', 'P', 15, 'quadrillion'],
+    ['exa', 'E', 18, 'quintillion'],
+    ['zetta', 'Z', 21, 'sextillion'],
+    ['yotta', 'Y', 24, 'septillion'],
+    ['ronna', 'R', 27, 'octillion'],
+    ['quetta', 'Q', 30, 'nonillion']
+  ].map(([name, symbol, exponent, writing]) => [
+    {
+      text: name,
+      html: exponent === 0 ? undefined : `<a href="https://en.wikipedia.org/wiki/${name[0].toUpperCase()}${name.slice(1)}-" target="wiki">${name}</a>`
+    },
+    { text: symbol },
+    { text: `10^${exponent}`, html: `10<sup>${exponent}</sup>` },
+    { text: exponent < 0 ? `0.${'0'.repeat(-exponent - 1)}1` : `1${'0'.repeat(exponent)}` },
+    { text: writing[0].toUpperCase() + writing.slice(1) }
+  ]);
+}
+
 const TABLES = {
   bpm: {
     columns: ['BPM', 'Writing', 'Parity', 'Half', 'Double', 'Triplet', 'Dotted', 'SPB', 'BPS', 'Play'],
@@ -634,6 +675,11 @@ const TABLES = {
     columns: ['Chord', 'Formula', 'Semitones', 'C example', 'Notes', 'Play'],
     aligns: ['left', 'left', 'left', 'left', 'right', 'center'],
     rows: makeChordsRows()
+  },
+  prefixes: {
+    columns: ['Prefix', 'Symbol', 'Power', 'Multiplier', 'Writing'],
+    aligns: ['left', 'left', 'right', 'right', 'left'],
+    rows: makePrefixesRows()
   }
 };
 
@@ -664,7 +710,11 @@ const COLUMN_ICONS = {
   Chord: 'value',
   Formula: 'formula',
   Semitones: 'piano',
-  Notes: 'table_rows'
+  Notes: 'table_rows',
+  Prefix: 'text',
+  Symbol: 'value',
+  Power: 'formula',
+  Multiplier: 'value'
 };
 
 const REFERENCE_HEADER_TOOLTIPS = {
@@ -710,6 +760,13 @@ const REFERENCE_HEADER_TOOLTIPS = {
     'C example': 'Example in C',
     Notes: 'Chord notes',
     Play: 'Play chord'
+  },
+  prefixes: {
+    Prefix: 'SI metric prefix name',
+    Symbol: 'Case-sensitive prefix symbol',
+    Power: 'Power of ten relative to the unprefixed unit',
+    Multiplier: 'Exact decimal multiplier',
+    Writing: 'English short-scale name for the multiplier (billion = 10^9)'
   }
 };
 
@@ -864,6 +921,10 @@ function renderTable() {
     if (width) {
       th.dataset.columnWidth = width;
       th.style.width = `${width}px`;
+    } else if (state.activeMode === 'prefixes' && columnLabel === 'Multiplier') {
+      th.style.width = '36ch';
+    } else if (state.activeMode === 'prefixes' && columnLabel === 'Writing') {
+      th.style.width = '16ch';
     }
 
     if (state.activeMode === 'bpm' && index === 0) {
@@ -1255,6 +1316,7 @@ modeButtons.tempi.addEventListener('click', () => setMode('tempi'));
 modeButtons.notes.addEventListener('click', () => setMode('notes'));
 modeButtons.scales.addEventListener('click', () => setMode('scales'));
 modeButtons.chords.addEventListener('click', () => setMode('chords'));
+modeButtons.prefixes.addEventListener('click', () => setMode('prefixes'));
 resetButton.addEventListener('click', resetReference);
 viewToggleButton.addEventListener('click', toggleView);
 sortToggleButton.addEventListener('click', toggleSort);

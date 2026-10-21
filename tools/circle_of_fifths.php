@@ -174,6 +174,16 @@
 
   <div id="panel-container" class="container">
     <div class="module-body standard border">
+      <div class="controls-buttons wrapper module-tabs">
+        <button id="info-display-selected-button" class="square button-on" title="Selected key" aria-label="Selected key" aria-pressed="true" data-module-tab="Selected">
+          <svg class="icons"><use href="/icons.svg#selected" /></svg>
+          <span class="button-text">Selected</span>
+        </button>
+        <button id="info-display-all-button" class="square" title="All keys" aria-label="All keys" aria-pressed="false" data-module-tab="All">
+          <svg class="icons"><use href="/icons.svg#select_all" /></svg>
+          <span class="button-text">All</span>
+        </button>
+      </div>
       <textarea id="panel-text" class="info-text"></textarea>
     </div>
     <div class="module-footer wrapper colored">

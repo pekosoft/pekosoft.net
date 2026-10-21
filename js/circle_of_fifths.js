@@ -118,10 +118,15 @@
       this.timelineBrightButton = document.getElementById("timeline-bright-button");
       this.timelineRulersButton = document.getElementById("timeline-rulers-button");
       this.panelText = document.getElementById("panel-text");
+      this.panelModeButtons = {
+        selected: document.getElementById("info-display-selected-button"),
+        all: document.getElementById("info-display-all-button")
+      };
       this.copyButton = document.getElementById("copy-button");
 
       this.selectedIndex = 0;
       this.selectedMode = "major";
+      this.panelMode = "selected";
       this.showDim = true;
       this.showSignatures = false;
       this.showArrows = true;
@@ -181,6 +186,7 @@
       if (saved && typeof saved === "object") {
         if (Number.isFinite(saved.selectedIndex)) this.selectedIndex = this.normalizeIndex(saved.selectedIndex);
         if (["major", "minor", "dim"].includes(saved.selectedMode)) this.selectedMode = saved.selectedMode;
+        if (["selected", "all"].includes(saved.panelMode)) this.panelMode = saved.panelMode;
         if (typeof saved.showDim === "boolean") this.showDim = saved.showDim;
         if (typeof saved.showSignatures === "boolean") this.showSignatures = saved.showSignatures;
         if (typeof saved.showArrows === "boolean") this.showArrows = saved.showArrows;
@@ -205,6 +211,7 @@
       const state = {
         selectedIndex: this.selectedIndex,
         selectedMode: this.selectedMode,
+        panelMode: this.panelMode,
         showDim: this.showDim,
         showSignatures: this.showSignatures,
         showArrows: this.showArrows,
@@ -321,6 +328,13 @@
       });
       window.addEventListener("pekosoft:alpha-change", () => this.drawTimeline());
       this.copyButton?.addEventListener("click", () => this.copyPanelText());
+      Object.entries(this.panelModeButtons).forEach(([mode, button]) => {
+        button?.addEventListener("click", () => {
+          this.panelMode = mode;
+          this.updatePanel();
+          this.saveSettings();
+        });
+      });
       window.addEventListener("resize", () => {
         this.resizeTimeline();
         this.drawTimeline();
@@ -356,6 +370,7 @@
       this.stopAllAudio(true);
       this.selectedIndex = 0;
       this.selectedMode = "major";
+      this.panelMode = "selected";
       this.showDim = true;
       this.showSignatures = false;
       this.guidesOn = true;
@@ -599,7 +614,29 @@
     }
 
     updatePanel() {
+      Object.entries(this.panelModeButtons).forEach(([mode, button]) => {
+        button?.classList.toggle("button-on", mode === this.panelMode);
+        button?.setAttribute("aria-pressed", String(mode === this.panelMode));
+      });
       if (!this.panelText) return;
+      if (this.panelMode === "all") {
+        const lines = ["// Circle Of Fifths - All Keys"];
+        KEYS.forEach((key, index) => {
+          const diatonic = this.getDiatonicChords(index).map((chord, degree) => `${ROMAN_NUMERALS[degree]} = ${this.formatDisplayLabel(chord.label)}`);
+          const progression = PROGRESSION_DEGREES.map((degree) => this.formatDisplayLabel(this.getDiatonicChord(index, degree).label)).join(" - ");
+          lines.push(
+            "",
+            `// ${this.formatDisplayLabel(key.major)} / ${this.formatDisplayLabel(key.minor)}`,
+            `Signature: ${this.formatDisplayLabel(key.signature)}`,
+            `Diminished: ${this.formatDisplayLabel(key.dim)}`,
+            `Scale: ${key.scale.map((note) => this.formatDisplayLabel(note)).join("  ")}`,
+            `Diatonic Chords: ${diatonic.join(", ")}`,
+            `I V vi IV: ${progression}`
+          );
+        });
+        this.panelText.value = lines.join("\n");
+        return;
+      }
       const key = KEYS[this.selectedIndex];
       const prev = KEYS[this.normalizeIndex(this.selectedIndex - 1)];
       const next = KEYS[this.normalizeIndex(this.selectedIndex + 1)];

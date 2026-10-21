@@ -265,7 +265,18 @@
   <div class="justify">
     <h1>Panel <span class="object">module</span></h1>
     Shows key analysis text including signatures, scale notes, diatonic chords and progression references.
+    The selected tab is saved and restored when you return. Reset returns to Selected.
   </div>
+</div>
+
+<div class="feature-row border">
+  <svg class="standard-image-help"><use href="/icons.svg#selected"></use></svg>
+  <div class="justify"><h1>Selected <span class="object">button</span></h1>Shows the current key analysis and related chords. Updates when you select a key or change focus. <span class="default">Default tab.</span></div>
+</div>
+
+<div class="feature-row border">
+  <svg class="standard-image-help"><use href="/icons.svg#select_all"></use></svg>
+  <div class="justify"><h1>All <span class="object">button</span></h1>Shows all 12 major and relative minor key pairs in circle order, with each signature, diminished chord, major scale, diatonic chords and I V vi IV progression. Panel actions use the text in the current tab.</div>
 </div>
 
 <div class="feature-row border">

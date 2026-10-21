@@ -6,6 +6,10 @@ Always write Git commit titles in the past tense, both when suggesting titles an
 
 **Strict rule: never end a commit title with a period.** Apply this to suggested titles and actual Git commit subjects.
 
+## Icon fallback
+
+When no suitable icon exists, use `/icons.svg#asterisk`. Never use `#field` as a placeholder or generic fallback. Reserve `#field` for controls that represent an actual field.
+
 ## Mandatory session startup
 
 Before any other task in every session:

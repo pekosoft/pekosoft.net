@@ -227,7 +227,10 @@ function disableMinimizeForTwoColumnLayout() {
       minimizeBtn.title = "Minimize";
     }
     syncModuleMoreButtonState(container);
-    localStorage.setItem("module_" + id + "_state", "normal");
+    const stateKey = "module_" + id + "_state";
+    if (localStorage.getItem(stateKey) === "minimized") {
+      localStorage.setItem(stateKey, "normal");
+    }
   });
 }
 

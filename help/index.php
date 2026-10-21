@@ -231,7 +231,7 @@
   </svg>
   <div class="justify">
     <h1>Modules</h1>
-    Each tool is organized into modules. Depending on the tool, these are Instrument, Controls, Timeline, Playlist, History, Panel and Meters. Modules with tabs include the selected tab in their header, such as Instrument: Notes or Meters: Spectroscope. Tab tooltips name their content directly, such as File metadata, Curve or Values. Modules can be toggled from Menu. Double click or double tap a module header to minimize or restore it when the two-module Layout is off.
+    Each tool is organized into modules. Depending on the tool, these are Instrument, Controls, Timeline, Playlist, History, Panel and Meters. Modules with tabs include the selected tab in their header, such as Instrument: Notes or Meters: Spectroscope. Tab tooltips name their content directly, such as File metadata, Curve or Values. Modules can be toggled from Menu. Double click or double tap a module header to minimize or restore it when the two-module Layout is off. A maximized module stays maximized when you refresh the page.
   </div>
 </div>
 

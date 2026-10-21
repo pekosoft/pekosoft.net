@@ -15,6 +15,7 @@
   --size1: 28px;
   --size2: 32px;
   --size3: 40px;
+  --toc-section-gap: 24px;
   --visual-viewport-height: 100dvh;
   --visual-viewport-offset-top: 0px;
   --visual-viewport-bottom-gap: 0px;
@@ -1569,11 +1570,11 @@ html.invert-colors .container:fullscreen {
 }
 
 .toc-column + .toc-column {
-  margin-top: 24px;
+  margin-top: var(--toc-section-gap);
 }
 
 .toc-break {
-  height: 24px;
+  height: var(--toc-section-gap);
 }
 
 .settings-panel {
@@ -1602,7 +1603,7 @@ html.invert-colors .container:fullscreen {
 .settings-panel-close {
   display: flex;
   flex: 0 0 auto;
-  margin-top: 24px;
+  margin-top: var(--toc-section-gap);
   align-items: center;
   justify-content: center;
   height: 48px;
@@ -1634,11 +1635,11 @@ html.invert-colors .container:fullscreen {
 }
 
 .settings-reset-row {
-  margin-bottom: 24px;
+  margin-bottom: var(--toc-section-gap);
 }
 
 .settings-controls-start {
-  margin-top: 24px;
+  margin-top: var(--toc-section-gap);
 }
 
 .settings-toggle-row > .toc-button {
@@ -1885,9 +1886,8 @@ html.invert-colors .container:fullscreen {
   margin-top: auto;
   align-items: flex-end;
   justify-content: center;
-  height: 56px;
   width: 100%;
-  padding: 0 0 16px;
+  padding: calc(var(--toc-section-gap) + 1px) 0 16px;
 }
 
 .toc-open {

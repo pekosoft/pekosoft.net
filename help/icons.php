@@ -23,7 +23,7 @@
   </svg>
   <div class="justify">
     <h1>Bright <span class="object">button</span></h1>
-    Increases the visibility of preview grid lines, radius guides and rulers. Overrides the Settings Bright option for Instrument only. The choice is saved. <span class="default">Default: off.</span>
+    Increases the visibility of preview grid lines, radius guides and rulers. Overrides the Settings Bright option for Instrument only. <span class="default">Default: off.</span>
   </div>
 </div>
 

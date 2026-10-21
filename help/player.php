@@ -170,7 +170,7 @@
     Selects the preferred format for new recordings. WAV records uncompressed 16-bit PCM without a lossy intermediate format.
     WebM (Opus), Ogg (Opus) and MP4 (AAC) are compressed alternatives, shown only when supported by the browser.
     Editing compressed recordings also requires browser decoding support.
-    The preference is saved and cannot be changed during capture. Changing it does not convert existing audio.
+    The format cannot be changed during capture. Changing it does not convert existing audio.
     Edited audio and test-tone downloads remain WAV. Recordings are kept in memory, with playlist metadata saved separately.
     Download recordings before reloading to keep their audio. WAV avoids codec compression, but input processing and sample-rate conversion can still affect the signal.
     <span class="default">Default: WAV (PCM).</span>
@@ -473,7 +473,7 @@
   </svg>
   <div class="justify">
     <h1>Playlist <span class="object">module</span></h1>
-    Manages queued tracks and per-row actions. Presets is the default view, and Custom holds your own playlist. The selected view is saved locally. Switching views does not interrupt playback. Previous and Next track follow the displayed playlist. Drag a column header edge to resize that column. On touchscreens, drag the right side of the header. Double-click or double-tap the edge to restore its default width.
+    Manages queued tracks and per-row actions. Presets is the default view, and Custom holds your own playlist. Switching views does not interrupt playback. Previous and Next track follow the displayed playlist. Drag a column header edge to resize that column. On touchscreens, drag the right side of the header. Double-click or double-tap the edge to restore its default width.
     Modified and Added show the date and local time down to seconds.
   </div>
 </div>

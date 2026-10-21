@@ -24,7 +24,7 @@
   </svg>
   <div class="justify">
     <h1>Arrows <span class="object">button</span></h1>
-    Shows or hides the wheel navigation controls for previous and next key and major and minor mode focus. The choice is saved. Reset turns Arrows on. <span class="default">Default: on.</span>
+    Shows or hides the wheel navigation controls for previous and next key and major and minor mode focus. <span class="default">Default: on.</span>
   </div>
 </div>
 
@@ -244,7 +244,7 @@
   </svg>
   <div class="justify">
     <h1>Rulers <span class="object">button</span></h1>
-    Toggles Timeline note labels independently of Guides. The choice is saved and overrides the Settings Rulers option for Timeline only. Reset turns Rulers on. <span class="default">Default: on.</span>
+    Toggles Timeline note labels independently of Guides. Overrides the Settings Rulers option for Timeline only. <span class="default">Default: on.</span>
   </div>
 </div>
 
@@ -265,7 +265,6 @@
   <div class="justify">
     <h1>Panel <span class="object">module</span></h1>
     Shows key analysis text including signatures, scale notes, diatonic chords and progression references.
-    The selected tab is saved and restored when you return. Reset returns to Selected.
   </div>
 </div>
 

@@ -125,7 +125,7 @@
       <li>Mandolin: G3 D4 A4 E5, with one target per paired string course.</li>
       <li>Banjo: G4 D3 G3 B3 D4, using five-string open G tuning.</li>
     </ul>
-    The selected profile is saved. Reset restores Guitar and clears the selected target for every profile. <span class="default">Default: Guitar.</span>
+    Reset clears the selected target for every profile. <span class="default">Default: Guitar.</span>
   </div>
 </div>
 

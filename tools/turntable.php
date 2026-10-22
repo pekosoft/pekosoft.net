@@ -19,7 +19,7 @@
   <!-- TOOL -->
 
   <div id="tool-container" class="container">
-    <div class="module-body standard record-player border no-swipe">
+    <div class="module-body standard record-player circular-instrument border no-swipe">
       <div class="turntable-wrapper">
         <div class="turntable">
           <div class="rotation-line"></div>

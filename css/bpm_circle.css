@@ -1,31 +1,12 @@
 /* Pekosoft BPM Circle */
 /* pekosoft.net/css/bpm_circle.css */
 
-#tool-container .circle-view {
-  height: 442px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
 #tool-container .module-header + .module-icon-panel + .circle-view {
   margin-top: 0;
 }
 
 #tool-container .circle-view svg {
-  width: min(100%, 402px);
-  height: min(100%, 402px);
   display: block;
-}
-
-#tool-container.module-maximized .circle-view {
-  padding: 24px;
-  --circle-size: min(92vw, calc(100vh - 170px), 980px);
-}
-
-#tool-container.module-maximized .circle-view svg {
-  width: var(--circle-size);
-  height: var(--circle-size);
 }
 
 #timeline-container .canvas-container {

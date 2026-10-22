@@ -173,6 +173,13 @@ Pekosoft favors:
 - Follow this rule for every new or renamed identifier. Preserve existing public names when compatibility requires them, and do not mass-rename unrelated legacy code.
 - Product text, attribution and user-facing download filenames may retain the Pekosoft brand. They are not internal code identifiers.
 
+## Circular instrument layout
+
+- Use the shared `circular-instrument` module-body class for a single circular instrument. It fits a square into the module's available content width and height with standard margins, including when maximized.
+- On phones, a non-maximized circular instrument fills the module width and the module grows to contain it. Do not add tool-specific diameter caps or viewport-based maximize calculations.
+- Visualizer's All mode keeps smaller meters so several can be shown together. Its Single mode uses the shared circular sizing.
+- Clock shares its Instrument with a calendar. The cards stack or sit side by side according to the Instrument's available width. Stacked cards fill their width. Side-by-side content also fits the available height, reserving room for the date and time. Preserve scrolling when both cannot fit vertically.
+
 ## Cards heading convention
 
 - In every Cards view, show the card's name or title without a field-label prefix such as "Name:". Keep labels for the other card details.

@@ -17,7 +17,7 @@
   <?php require($_SERVER['DOCUMENT_ROOT'] . "/elements/toc.php"); ?>
 
   <div id="tool-container" class="container">
-    <div class="module-body circle-view border">
+    <div class="module-body circle-view circular-instrument border">
       <svg viewBox="-150 -150 300 300" preserveAspectRatio="xMidYMid meet">
         <line class="beat-line" x1="0" y1="0" x2="0" y2="-147"></line>
 

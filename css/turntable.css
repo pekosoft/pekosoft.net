@@ -15,15 +15,8 @@
   overflow: auto;
 }
 
-#tool-container.module-maximized .record-player {
-  justify-content: center;
-  height: 100%;
-  padding: 24px;
-}
-
 .turntable {
   width: 100%;
-  max-width: 512px;
   aspect-ratio: 1 / 1;
   background: var(--grey1);
   border-radius: 50%;
@@ -119,25 +112,11 @@
 .turntable-wrapper {
   width: 100%;
   aspect-ratio: 1 / 1;
-  max-width: 512px;
   transform: translateZ(0);
   will-change: transform;
   contain: layout paint;
   overflow: hidden;
   position: relative;
-}
-
-#tool-container .turntable-wrapper {
-  max-width: min(100%, 360px);
-}
-
-#tool-container.module-maximized .turntable-wrapper {
-  width: min(100%, calc(100vh - 160px), 980px);
-  max-width: none;
-}
-
-#tool-container.module-maximized .turntable {
-  max-width: none;
 }
 
 .wrapper-inputs,

@@ -75,7 +75,6 @@ let crossEnabled = true;
 let titleEnabled = true;
 let toolViewMode = 'all';
 let singleMeterName = 'pulse';
-let toolBodyResizeObserver = null;
 
 // Keep ticker hidden until playback starts.
 tickerText.style.visibility = 'hidden';
@@ -388,35 +387,12 @@ function updateToolModeButtons() {
   });
 }
 
-function updateSingleMeterSize() {
+function updateToolSizing() {
   if (!toolContainer || !toolBody) return;
 
   const singleMode = toolViewMode === 'single';
   toolContainer.classList.toggle('visualizer-single-mode', singleMode);
-
-  if (!singleMode) {
-    toolContainer.style.removeProperty('--visualizer-single-meter-size');
-    return;
-  }
-
-  const styles = getComputedStyle(toolBody);
-  const horizontalPadding = (parseFloat(styles.paddingLeft) || 0) + (parseFloat(styles.paddingRight) || 0);
-  const verticalPadding = (parseFloat(styles.paddingTop) || 0) + (parseFloat(styles.paddingBottom) || 0);
-  const availableWidth = Math.max(0, toolBody.clientWidth - horizontalPadding);
-  const availableHeight = Math.max(0, toolBody.clientHeight - verticalPadding);
-  const fitSize = Math.max(0, Math.floor(Math.min(availableWidth, availableHeight)));
-
-  toolContainer.style.setProperty('--visualizer-single-meter-size', `${fitSize}px`);
-}
-
-function setupSingleModeResizeObserver() {
-  if (!toolBody || typeof ResizeObserver === 'undefined') return;
-  if (toolBodyResizeObserver) return;
-
-  toolBodyResizeObserver = new ResizeObserver(() => {
-    updateSingleMeterSize();
-  });
-  toolBodyResizeObserver.observe(toolBody);
+  toolBody.classList.toggle('circular-instrument', singleMode);
 }
 
 function renderToolMeters() {
@@ -437,7 +413,7 @@ function renderToolMeters() {
   });
 
   updateToolModeButtons();
-  updateSingleMeterSize();
+  updateToolSizing();
 }
 
 function setToolViewMode(mode, save = true) {
@@ -596,7 +572,6 @@ resetButton.addEventListener('click', () => {
 });
 
 window.addEventListener('resize', () => {
-  updateSingleMeterSize();
   if (isPaused) return;
   restartTickerOnNextUpdate = true;
   updateAnimation();
@@ -618,7 +593,6 @@ createClockDots();
 createSpeedometerLabels();
 updateStars(parseInt(bpmInput.value));
 buildLines(parseInt(bpmInput.value));
-setupSingleModeResizeObserver();
 renderToolMeters();
 
 // END OF FILE

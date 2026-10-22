@@ -61,23 +61,11 @@
   margin-top: 0;
 }
 
-#tool-container .standard.wrapper {
+#tool-container:not(.visualizer-single-mode) .standard.wrapper {
   flex-direction: row;
   justify-content: flex-start;
   align-items: flex-start;
   align-content: flex-start;
-}
-
-#tool-container.visualizer-single-mode .standard.wrapper {
-  justify-content: center;
-  align-items: center;
-  align-content: center;
-}
-
-#tool-container.visualizer-single-mode .meter {
-  flex: 0 0 auto;
-  width: var(--visualizer-single-meter-size, 220px);
-  max-width: none;
 }
 
 #tool-container.visualizer-single-mode .meter .label {

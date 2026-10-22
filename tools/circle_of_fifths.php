@@ -17,7 +17,7 @@
   <?php require($_SERVER['DOCUMENT_ROOT'] . "/elements/toc.php"); ?>
 
   <div id="tool-container" class="container">
-    <div class="module-body circle-fifths-view border">
+    <div class="module-body circle-fifths-view circular-instrument border">
       <div class="circle-wheel-wrap no-swipe">
         <svg id="circle-wheel" class="circle-wheel" viewBox="0 0 640 640" preserveAspectRatio="xMidYMid meet" aria-label="Circle of fifths">
           <g id="major-ring"></g>

@@ -2,8 +2,10 @@
 /* pekosoft.net/css/clock.css */
 
 #tool-container .clock-page {
+  container: clock-instrument / size;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
+  align-content: start;
 }
 
 .clock-hero {
@@ -13,6 +15,7 @@
   align-items: center;
   justify-content: center;
   gap: 16px;
+  width: 100%;
   max-width: 100%;
 }
 
@@ -48,6 +51,7 @@
 
 .clock-meta {
   display: flex;
+  flex-wrap: wrap;
   justify-content: center;
   gap: 16px;
   max-width: 100%;
@@ -55,8 +59,9 @@
 
 .clock-face {
   position: relative;
-  width: min(174px, 52vw);
-  height: min(174px, 52vw);
+  container-type: inline-size;
+  width: 100%;
+  aspect-ratio: 1;
   background: var(--grey1);
   border-radius: 50%;
 }
@@ -81,46 +86,45 @@
 }
 
 .clock-mark {
-  width: 11px;
-  height: 11px;
+  width: 6.32cqw;
+  height: 6.32cqw;
   background: var(--grey1);
-  border: 3px solid var(--black);
+  border: 1.72cqw solid var(--black);
   border-radius: 50%;
 }
 
 .clock-mark-12,
 .clock-mark-6 {
-  margin-left: -5.5px;
+  transform: translateX(-50%);
 }
 
 .clock-mark-12 {
-  top: 10px;
+  top: 5.75%;
 }
 
 .clock-mark-6 {
   top: auto;
-  bottom: 10px;
+  bottom: 5.75%;
 }
 
 .clock-mark-3,
 .clock-mark-9 {
-  margin-top: -5.5px;
+  transform: translateY(-50%);
 }
 
 .clock-mark-3 {
   left: auto;
-  right: 10px;
+  right: 5.75%;
 }
 
 .clock-mark-9 {
-  left: 10px;
+  left: 5.75%;
 }
 
 .clock-dot {
-  width: 6px;
-  height: 6px;
-  margin-left: -3px;
-  margin-top: -3px;
+  width: 3.45%;
+  height: 3.45%;
+  transform: translate(-50%, -50%);
   border-radius: 50%;
 }
 
@@ -139,45 +143,48 @@
 }
 
 .clock-hour {
-  height: 44px;
+  height: 25.287%;
   margin-left: -2px;
-  margin-top: -44px;
+  margin-top: -25.287%;
 }
 
 .clock-minute {
-  height: 59px;
+  height: 33.908%;
   margin-left: -2px;
-  margin-top: -59px;
+  margin-top: -33.908%;
 }
 
 .clock-second {
-  width: 1px;
-  height: 67px;
-  margin-left: -0.5px;
-  margin-top: -67px;
+  width: 2px;
+  height: 38.506%;
+  margin-left: -1px;
+  margin-top: -38.506%;
   background: var(--color1);
 }
 
 .clock-center {
-  width: 16px;
-  height: 16px;
-  margin-left: -8px;
-  margin-top: -8px;
+  width: 9.195%;
+  height: 9.195%;
+  margin-left: -4.5975%;
+  margin-top: -4.5975%;
   border-radius: 50%;
 }
 
 .calendar-month {
+  container-type: inline-size;
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 8px;
   justify-content: center;
-  width: min(288px, 100%);
+  width: 100%;
   color: var(--white);
   user-select: text;
 }
 
 .calendar-grid {
   display: grid;
-  grid-template-columns: 32px 0 repeat(7, 32px);
+  grid-template-columns: minmax(0, 0.8fr) 0 repeat(7, minmax(0, 1fr));
+  width: 100%;
   justify-content: center;
   gap: 4px;
   pointer-events: none;
@@ -186,14 +193,14 @@
 
 .calendar-corner,
 .calendar-weekday-label {
-  height: 32px;
+  aspect-ratio: 1;
 }
 
 .calendar-weekday-label {
   display: grid;
   place-items: center;
   color: var(--grey2);
-  font-size: 14px;
+  font-size: clamp(12px, 3.9cqw, 24px);
   line-height: 1;
 }
 
@@ -201,33 +208,30 @@
 .calendar-day {
   display: grid;
   place-items: center;
-  height: 32px;
+  aspect-ratio: 1;
   min-width: 0;
   border: 1px solid var(--grey1);
 }
 
 .calendar-week {
-  width: 32px;
   background: var(--black);
   color: var(--grey2);
-  font-size: 16px;
+  font-size: clamp(14px, 4.6cqw, 28px);
   line-height: 1;
 }
 
 .calendar-spacer {
   width: 0;
-  height: 32px;
   background: var(--black);
 }
 
 .calendar-day {
-  width: 32px;
   background: var(--grey1);
 }
 
 .calendar-daynum {
   color: var(--white);
-  font-size: 16px;
+  font-size: clamp(14px, 4.6cqw, 28px);
   line-height: 1;
 }
 
@@ -244,11 +248,7 @@
   color: var(--color1);
 }
 
-@media (min-width: 1200px) {
-  #tool-container .clock-page {
-    align-content: center;
-  }
-
+@container clock-instrument (min-width: 720px) {
   .clock-hero {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     align-items: stretch;
@@ -260,101 +260,8 @@
     grid-template-rows: minmax(0, 1fr) auto;
   }
 
-  .clock-face {
-    width: clamp(174px, 22vw, 360px);
-    height: clamp(174px, 22vw, 360px);
-  }
-
-  .clock-mark {
-    width: clamp(11px, 1.3vw, 22px);
-    height: clamp(11px, 1.3vw, 22px);
-    border-width: clamp(3px, 0.35vw, 6px);
-  }
-
-  .clock-mark-12,
-  .clock-mark-6 {
-    margin-left: 0;
-    transform: translateX(-50%);
-  }
-
-  .clock-mark-12 { top: clamp(10px, 1.2vw, 20px); }
-  .clock-mark-6 { bottom: clamp(10px, 1.2vw, 20px); }
-
-  .clock-mark-3,
-  .clock-mark-9 {
-    margin-top: 0;
-    transform: translateY(-50%);
-  }
-
-  .clock-mark-3 { right: clamp(10px, 1.2vw, 20px); }
-  .clock-mark-9 { left: clamp(10px, 1.2vw, 20px); }
-
-  .clock-dot {
-    width: 3.45%;
-    height: 3.45%;
-    margin: 0;
-    transform: translate(-50%, -50%);
-  }
-
-  .clock-hand {
-    width: 4px;
-    left: 50%;
-  }
-
-  .clock-hour {
-    height: 25.287%;
-    margin: -25.287% 0 0 -2px;
-  }
-
-  .clock-minute {
-    height: 33.908%;
-    margin: -33.908% 0 0 -2px;
-  }
-
-  .clock-second {
-    width: 1px;
-    left: 50%;
-    height: 38.506%;
-    margin: -38.506% 0 0 -0.5px;
-  }
-
-  .clock-center {
-    width: 9.195%;
-    height: 9.195%;
-    left: 45.403%;
-    top: 45.403%;
-    margin: 0;
-  }
-
+  .clock-face,
   .calendar-month {
-    grid-template-columns: minmax(0, 1fr);
-    width: min(512px, 100%);
-  }
-
-  .calendar-grid {
-    grid-template-columns: minmax(0, 1fr) 0 repeat(7, minmax(0, 1fr));
-    width: 100%;
-  }
-
-  .calendar-week,
-  .calendar-day {
-    width: auto;
-    height: auto;
-    aspect-ratio: 1;
-  }
-
-  .calendar-corner,
-  .calendar-weekday-label {
-    height: auto;
-  }
-
-  .calendar-spacer {
-    height: auto;
-  }
-
-  .calendar-week,
-  .calendar-weekday-label,
-  .calendar-daynum {
-    font-size: clamp(16px, 1.3vw, 24px);
+    width: min(100%, calc(100cqh - 80px));
   }
 }

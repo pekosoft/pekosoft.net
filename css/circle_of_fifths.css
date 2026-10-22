@@ -16,7 +16,7 @@
 
 .circle-wheel-wrap {
   position: relative;
-  width: min(100%, 370px);
+  width: 100%;
   aspect-ratio: 1 / 1;
   user-select: none;
   -webkit-user-select: none;
@@ -236,22 +236,7 @@
   min-height: 320px;
 }
 
-#tool-container.module-maximized .circle-fifths-view {
-  min-height: 0;
-  height: 100%;
-  padding: 16px;
-}
-
-#tool-container.module-maximized .circle-wheel-wrap {
-  width: min(92vw, calc(var(--visual-viewport-height, var(--module-viewport-height, 100dvh)) - 160px), 980px);
-  max-width: none;
-}
-
 @media (max-width: 960px) {
-  .circle-wheel-wrap {
-    width: min(100%, 370px);
-  }
-
   .wheel-label {
     font-size: 20px;
   }
@@ -263,14 +248,6 @@
 }
 
 @media (max-width: 768px) {
-  #tool-container .circle-fifths-view {
-    padding: 4px;
-  }
-
-  .circle-wheel-wrap {
-    width: min(100%, 340px);
-  }
-
   #piano {
     height: 130px;
   }

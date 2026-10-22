@@ -705,6 +705,37 @@ html.modules-page body:not(.layout-two-columns) {
   margin: 0;
 }
 
+#tool-container > .module-body.circular-instrument {
+  container-type: size;
+  padding: 8px;
+  align-items: center;
+  justify-content: center;
+}
+
+#tool-container > .module-body.circular-instrument > * {
+  flex: 0 0 auto;
+  width: min(100cqw, 100cqh);
+  height: min(100cqw, 100cqh);
+  max-width: none;
+  aspect-ratio: 1;
+}
+
+@media (max-width: 799px) {
+  #tool-container:not(.module-maximized):not(.module-minimized):has(> .circular-instrument) {
+    height: auto;
+  }
+
+  #tool-container:not(.module-maximized) > .module-body.circular-instrument {
+    container-type: inline-size;
+    flex: 0 0 auto;
+  }
+
+  #tool-container:not(.module-maximized) > .module-body.circular-instrument > * {
+    width: 100cqw;
+    height: 100cqw;
+  }
+}
+
 #controls-container .controls {
   flex: 1 1 auto;
   min-height: 0;

@@ -111,11 +111,13 @@ function getLocalToggleRegistry(storageKey, controlKeys, defaultEnabled) {
     const saved = JSON.parse(localStorage.getItem(storageKey) || '{}');
     if (saved && typeof saved === 'object') registry = saved;
   } catch (_) {
-    // A malformed registry is replaced with the current global default.
+    // A malformed registry is replaced with the current defaults.
   }
 
   controlKeys.forEach((key) => {
-    if (typeof registry[key] !== 'boolean') registry[key] = defaultEnabled;
+    if (typeof registry[key] !== 'boolean') {
+      registry[key] = typeof defaultEnabled === 'function' ? defaultEnabled(key) : defaultEnabled;
+    }
   });
   return registry;
 }
@@ -173,6 +175,10 @@ function getGlobalSound() {
   return localStorage.getItem('global.sound') !== 'false';
 }
 
+function getDefaultSoundControlState(key) {
+  return getGlobalSound() && (key !== 'clock:clock-sound-button' || localStorage.getItem('clock.sound_on') === 'true');
+}
+
 function syncGlobalSoundSetting() {
   const soundInput = document.getElementById('sound');
   const soundButton = document.querySelector('[data-setting-toggle="sound"]');
@@ -206,7 +212,7 @@ function syncToolSoundButtons(enabled) {
 }
 
 function restoreToolSoundButtons() {
-  const registry = getLocalToggleRegistry(SOUND_REGISTRY_KEY, SOUND_CONTROL_KEYS, getGlobalSound());
+  const registry = getLocalToggleRegistry(SOUND_REGISTRY_KEY, SOUND_CONTROL_KEYS, getDefaultSoundControlState);
   const buttons = getSoundButtons();
   isSyncingToolSoundButtons = true;
   try {
@@ -238,7 +244,7 @@ function syncGlobalSoundFromTools() {
   const anyEnabled = syncLocalToggleRegistryFromButtons(
     SOUND_REGISTRY_KEY,
     SOUND_CONTROL_KEYS,
-    getGlobalSound(),
+    getDefaultSoundControlState,
     buttons
   );
   updateGlobalSoundIndicator(anyEnabled);

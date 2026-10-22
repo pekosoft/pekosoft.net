@@ -194,6 +194,7 @@ resetButton?.addEventListener("click", () => {
   localStorage.removeItem("clock.sound_on");
   localStorage.removeItem("clock.haptic");
   syncFeedbackButtonState();
+  window.PekoSound?.syncFromTools();
   renderClock();
 });
 clockSoundButton?.addEventListener("click", () => {

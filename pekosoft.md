@@ -305,6 +305,8 @@ Sitewide reset is only allowed from the Settings page.
 
 Clearing local Guides, Bright, Rulers and Multicolor overrides restores their global defaults. Bright returns to off when the global Bright setting is off.
 
+Clock tick sound defaults to off even when global Sound initially defaults to on. Preserve stored control choices, and let explicit global Sound changes include Clock. Clock Reset must keep its sound off after reloading rather than restoring a stale shared Sound registry entry.
+
 ## Meters Freeze
 
 The shared Meters Freeze button holds meter samples without stopping audio or recording. Guides, Bright, Rulers, Color, mode changes and resizing redraw from cached samples or Wavescope history without sampling or advancing the held signal. Freeze is transient, starts off and is released by tool Reset or page reload. Document its shared behavior in General Help rather than individual tool Help files.

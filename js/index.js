@@ -156,6 +156,7 @@ const SOUND_CONTROL_KEYS = [
   'bpm_curve:sound-button',
   'bpm_curve:beat-sound-button',
   'circle_of_fifths:sound-master-button',
+  'clock:clock-sound-button',
   'drum_machine:toggle-sound-button',
   'metronome:toggle-sound-button',
   'piano:sound-master-button',
@@ -164,7 +165,7 @@ const SOUND_CONTROL_KEYS = [
 ];
 
 function getSoundButtons() {
-  return [...document.querySelectorAll('#toggle-sound-button, #sound-master-button, #sound-button, #beat-sound-button')]
+  return [...document.querySelectorAll('#toggle-sound-button, #sound-master-button, #sound-button, #beat-sound-button, #clock-sound-button')]
     .filter((button) => getCurrentToolControlKey(button) !== 'turntable:toggle-sound-button');
 }
 
@@ -267,6 +268,7 @@ function getGlobalHaptics() {
 const HAPTICS_REGISTRY_KEY = 'global.haptics.modules';
 const HAPTICS_CONTROL_KEYS = [
   'drum_machine:haptic-button',
+  'clock:clock-haptic-button',
   'metronome:haptic-button',
   'piano:haptic-button',
   'tap_pad:haptic-button',
@@ -285,7 +287,7 @@ function clearStoredHapticsField(storageKey, field) {
 }
 
 function clearHapticsLocalOverrides() {
-  ['metronome.haptic', 'tap_pad.haptic', 'turntable.haptic'].forEach((key) => localStorage.removeItem(key));
+  ['clock.haptic', 'metronome.haptic', 'tap_pad.haptic', 'turntable.haptic'].forEach((key) => localStorage.removeItem(key));
   clearStoredHapticsField('drum_machine.state', 'haptic');
   clearStoredHapticsField('piano.settings', 'hapticEnabled');
 }
@@ -310,7 +312,7 @@ function updateGlobalHapticsIndicator(enabled) {
 let isSyncingToolHapticsButtons = false;
 
 function syncToolHapticsButtons(enabled) {
-  const buttons = document.querySelectorAll('#haptic-button');
+  const buttons = document.querySelectorAll('#haptic-button, #clock-haptic-button');
   isSyncingToolHapticsButtons = true;
   try {
     buttons.forEach((button) => {
@@ -323,7 +325,7 @@ function syncToolHapticsButtons(enabled) {
 
 function restoreToolHapticsButtons() {
   const registry = getLocalToggleRegistry(HAPTICS_REGISTRY_KEY, HAPTICS_CONTROL_KEYS, getGlobalHaptics());
-  const buttons = document.querySelectorAll('#haptic-button');
+  const buttons = document.querySelectorAll('#haptic-button, #clock-haptic-button');
   isSyncingToolHapticsButtons = true;
   try {
     buttons.forEach((button) => {
@@ -344,7 +346,7 @@ function setGlobalHaptics(enabled) {
 }
 
 function syncGlobalHapticsFromTools() {
-  const buttons = [...document.querySelectorAll('#haptic-button')];
+  const buttons = [...document.querySelectorAll('#haptic-button, #clock-haptic-button')];
   if (!buttons.length) return;
   const anyEnabled = syncLocalToggleRegistryFromButtons(
     HAPTICS_REGISTRY_KEY,
@@ -369,14 +371,14 @@ function initializeGlobalHapticsSetting() {
 
 document.addEventListener('click', (event) => {
   if (isSyncingToolSoundButtons) return;
-  if (event.target.closest('#toggle-sound-button, #sound-master-button, #sound-button, #beat-sound-button')) {
+  if (event.target.closest('#toggle-sound-button, #sound-master-button, #sound-button, #beat-sound-button, #clock-sound-button')) {
     syncGlobalSoundFromTools();
   }
 });
 
 document.addEventListener('click', (event) => {
   if (isSyncingToolHapticsButtons) return;
-  if (event.target.closest('#haptic-button')) syncGlobalHapticsFromTools();
+  if (event.target.closest('#haptic-button, #clock-haptic-button')) syncGlobalHapticsFromTools();
 });
 
 function syncSidebarState() {

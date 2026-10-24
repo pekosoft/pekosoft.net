@@ -48,9 +48,12 @@ function createLayout(savedStates, options = {}) {
     const container = element(state === 'maximized' || state === 'minimized' ? [`module-${state}`] : []);
     container.minimize = element(state === 'minimized' ? ['button-on'] : []);
     container.more = element();
+    container.iconPanel = element();
+    container.iconPanel.childElementCount = options.emptyMore ? 0 : 1;
     container.querySelector = selector => ({
       '.module-minimize-btn': container.minimize,
-      '.module-more-btn': container.more
+      '.module-more-btn': container.more,
+      '.module-icon-panel': container.iconPanel
     })[selector] || null;
     containers.set(`${id}-container`, container);
   }
@@ -107,6 +110,17 @@ test('normal and unsaved module states remain unchanged', () => {
   assert.equal(storage.get('module_tool_state'), 'normal');
   assert.equal(storage.has('module_controls_state'), false);
   assert.deepEqual(writes, []);
+});
+
+test('empty More menus are greyed out and disabled', () => {
+  const { context, containers } = createLayout({ tool: 'normal' }, { emptyMore: true });
+  const more = containers.get('tool-container').more;
+  assert.equal(more.disabled, false);
+  assert.equal(more.classList.contains('grey'), false);
+  context.syncModuleMoreButtonState(containers.get('tool-container'));
+  assert.equal(more.disabled, true);
+  assert.equal(more.classList.contains('grey'), true);
+  assert.equal(more.attributes['aria-disabled'], 'true');
 });
 
 test('modules absent from the current page retain their saved states', () => {

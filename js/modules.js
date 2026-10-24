@@ -19,7 +19,8 @@ function syncModuleMoreButtonState(container) {
   const moreBtn = container?.querySelector(".module-more-btn");
   if (!moreBtn) return;
 
-  const disabled = container.classList.contains("module-minimized");
+  const iconPanel = container.querySelector(".module-icon-panel");
+  const disabled = container.classList.contains("module-minimized") || !iconPanel?.childElementCount;
   moreBtn.disabled = disabled;
   moreBtn.classList.toggle("grey", disabled);
   moreBtn.setAttribute("aria-disabled", String(disabled));
@@ -388,6 +389,8 @@ function setupModuleHeader(id) {
   setupModuleTabTitle(container);
   const iconPanel = createModuleIconPanel(id);
   header.insertAdjacentElement("afterend", iconPanel);
+  new MutationObserver(() => syncModuleMoreButtonState(container))
+    .observe(iconPanel, { childList: true });
 
   if (!isLockedModule(container) && typeof setupModuleDrag === "function") {
     setupModuleDrag(container, header, id);

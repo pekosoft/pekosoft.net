@@ -1724,14 +1724,32 @@ function releaseInputStream(stream) {
     }
 }
 
+function createMicrophoneConstraints(channelCount) {
+    return {
+        deviceId: selectedDeviceId ? { exact: selectedDeviceId } : undefined,
+        channelCount,
+        echoCancellation: false,
+        noiseSuppression: false,
+        autoGainControl: false
+    };
+}
+
+async function requestMicrophoneInput() {
+    try {
+        return await navigator.mediaDevices.getUserMedia({
+            audio: createMicrophoneConstraints({ exact: 2 })
+        });
+    } catch (error) {
+        if (error.name !== 'OverconstrainedError') throw error;
+        return navigator.mediaDevices.getUserMedia({
+            audio: createMicrophoneConstraints({ ideal: 2 })
+        });
+    }
+}
+
 async function requestSelectedInput() {
     if (selectedDeviceId !== SYSTEM_AUDIO_INPUT) {
-        return navigator.mediaDevices.getUserMedia({
-            audio: {
-                deviceId: selectedDeviceId ? { exact: selectedDeviceId } : undefined,
-                channelCount: { ideal: 2 }
-            }
-        });
+        return requestMicrophoneInput();
     }
     if (systemAudioStream?.active) return systemAudioStream;
     if (systemCaptureRequest) return systemCaptureRequest;
@@ -3971,7 +3989,7 @@ function updateAudioInfo() {
         return;
     }
     const deviceId = selectedDeviceId;
-    navigator.mediaDevices.getUserMedia({ audio: true })
+    requestMicrophoneInput()
         .then(stream => {
             if (selectedDeviceId !== deviceId) {
                 stream.getTracks().forEach(track => track.stop());

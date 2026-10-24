@@ -839,7 +839,7 @@
         VOICES.forEach(({ id, label }) => {
           const trigger = document.createElement("button");
           trigger.type = "button";
-          trigger.className = "voice-trigger bank-leading";
+          trigger.className = "voice-trigger pad bank-leading";
           trigger.dataset.voice = id;
           const iconId = VOICE_ICONS[id];
           trigger.innerHTML = iconId
@@ -851,7 +851,7 @@
 
           const mute = document.createElement("button");
           mute.type = "button";
-          mute.className = "voice-mute bank-leading";
+          mute.className = "voice-mute pad bank-leading";
           mute.dataset.voice = id;
           mute.title = `Toggle sound ${label.toLowerCase()}`;
           mute.setAttribute("aria-label", `Toggle sound ${label.toLowerCase()}`);
@@ -862,7 +862,7 @@
             const step = (bankIndex * 8) + localStep;
             const button = document.createElement("button");
             button.type = "button";
-            button.className = "step-button" + (step % 4 === 0 ? " beat-start" : "");
+            button.className = "step-button pad" + (step % 4 === 0 ? " beat-start" : "");
             button.dataset.voice = id;
             button.dataset.step = String(step);
             button.innerHTML = '<span class="step-mark" aria-hidden="true"></span>';

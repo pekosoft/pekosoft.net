@@ -944,7 +944,7 @@
     appendPianoKey(note, color, leftPercent, midi) {
       const button = document.createElement("button");
       button.type = "button";
-      button.className = `piano-key ${color}`;
+      button.className = `piano-key pad ${color}`;
       button.style.left = `${leftPercent}%`;
       button.dataset.note = note;
       button.dataset.midi = String(midi);

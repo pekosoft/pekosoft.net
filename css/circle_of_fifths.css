@@ -201,6 +201,10 @@
   height: 100%;
 }
 
+.show-button-text .piano-key.white {
+  background: transparent;
+}
+
 .piano-key.black {
   background: var(--black);
   color: var(--white);

@@ -1374,6 +1374,18 @@
   <polyline points="439.926 256 219.926 384 219.926 128" />
 </symbol>
 
+<symbol id="skull" viewBox="0 0 512 512">
+  <path fill-rule="evenodd" d="M256 0C128 0 48 80 48 208c0 88 32 136 96 160v112h32v32h48v-32h64v32h48v-32h32V368c64-24 96-72 96-160C464 80 384 0 256 0ZM160 168a56 56 0 1 0 0 112 56 56 0 1 0 0-112ZM352 168a56 56 0 1 0 0 112 56 56 0 1 0 0-112ZM256 288l-32 64h64Z" />
+</symbol>
+
+<symbol id="skull_auto" viewBox="0 0 512 512">
+  <clipPath id="skull_auto_letter_cutout">
+    <path fill-rule="evenodd" d="M0 0h512v512H0ZM400-8a120 120 0 1 0 0 240a120 120 0 1 0 0-240Z" />
+  </clipPath>
+  <path clip-path="url(#skull_auto_letter_cutout)" fill-rule="evenodd" d="M256 0C128 0 48 80 48 208c0 88 32 136 96 160v112h32v32h48v-32h64v32h48v-32h32V368c64-24 96-72 96-160C464 80 384 0 256 0ZM160 168a56 56 0 1 0 0 112 56 56 0 1 0 0-112ZM352 168a56 56 0 1 0 0 112 56 56 0 1 0 0-112ZM256 288l-32 64h64Z" />
+  <path transform="translate(288 0) scale(.4375)" d="M253.82,181.84l38.31,103.18h-75.87l37.55-103.18ZM512,256c0,141.38-114.62,256-256,256S0,397.38,0,256,114.62,0,256,0s256,114.62,256,256ZM395.5,395.03l-111.33-278.05h-59.37l-108.3,278.05h59.56l22.95-63.16h111.15l24.28,63.16h61.07Z" />
+</symbol>
+
 <symbol id="slider" viewBox="0 0 512 512">
   <rect x="128" y="200" width="256" height="112" />
   <path d="M400 200v112h112v-112h-112ZM432 288l-.202-64 64 31.848-63.798 32.152Z" />

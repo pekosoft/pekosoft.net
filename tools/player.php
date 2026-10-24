@@ -464,14 +464,14 @@
 
       <button id="playlist-clean-button" class="square" title="Clean dead files">
         <svg class="icons">
-          <use href="/icons.svg#delete" />
+          <use href="/icons.svg#skull" />
         </svg>
         <span class="button-text">Clean</span>
       </button>
 
       <button id="playlist-auto-clean-button" class="square" title="Auto clean dead files">
         <svg class="icons">
-          <use href="/icons.svg#asterisk" />
+          <use href="/icons.svg#skull_auto" />
         </svg>
         <span class="button-text">Auto</span>
       </button>

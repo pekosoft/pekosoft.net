@@ -72,6 +72,30 @@ test('Delete has two equal transparent vertical slots inside the trashcan', () =
   assert.doesNotMatch(icon, /<(?:text|use|image)\b|\b(?:fill|stroke|style)=/);
 });
 
+test('Player Clean dead files uses the dedicated monochrome Skull icon', () => {
+  const icon = content('skull');
+  assert.match(icon, /fill-rule="evenodd"/);
+  assert.doesNotMatch(icon, /<(?:text|use|image)\b|\b(?:fill|stroke|style)=/);
+  assert.ok(sprite.indexOf('<symbol id="skip_right"') < sprite.indexOf('<symbol id="skull"'));
+  assert.ok(sprite.indexOf('<symbol id="skull"') < sprite.indexOf('<symbol id="slider"'));
+  const template = fs.readFileSync(path.join(__dirname, '..', 'tools', 'player.php'), 'utf8');
+  const button = template.match(/<button id="playlist-clean-button"[\s\S]*?<\/button>/)[0];
+  assert.match(button, /title="Clean dead files"/);
+  assert.match(button, /href="\/icons\.svg#skull"/);
+  const clear = template.match(/<button id="playlist-clear-button"[\s\S]*?<\/button>/)[0];
+  assert.match(clear, /href="\/icons\.svg#delete"/);
+  const autoClean = template.match(/<button id="playlist-auto-clean-button"[\s\S]*?<\/button>/)[0];
+  assert.match(autoClean, /title="Auto clean dead files"/);
+  assert.match(autoClean, /href="\/icons\.svg#skull_auto"/);
+  const autoIcon = content('skull_auto');
+  assert.doesNotMatch(autoIcon, /<(?:text|use|image|circle)\b|\b(?:fill|stroke|style)=/);
+  assert.match(autoIcon, /<clipPath id="skull_auto_letter_cutout">/);
+  assert.match(autoIcon, /clip-path="url\(#skull_auto_letter_cutout\)"/);
+  assert.match(autoIcon, /M400-8a120 120 0 1 0 0 240a120 120 0 1 0 0-240Z/);
+  assert.doesNotMatch(autoIcon, /transform="translate\(-16 64\) scale\(\.875\)"/);
+  assert.match(autoIcon, /transform="translate\(288 0\) scale\(\.4375\)"/);
+});
+
 test('Circle Of Fifths Signature button uses the standalone Hash icon', () => {
   const icon = content('hash');
   assert.match(icon, /transform="translate\(51\.2 51\.2\) scale\(0\.8\)"/);

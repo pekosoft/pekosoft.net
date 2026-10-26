@@ -125,6 +125,32 @@ test('normal release pages, missing entries and standalone pages retain their re
   assert.equal(result.diagnostics, '');
 });
 
+test('front page omits the updates feed while retaining official tools and Updates navigation', () => {
+  const result = renderPhp('index.php', '', { setup: "$_SERVER['REQUEST_URI'] = '/';" });
+  assert.equal(result.status, 200);
+  assert.equal(result.diagnostics, '');
+  assert.doesNotMatch(result.body, /Latest updates|github-actions|index_page\.js/);
+  for (const slug of ['tap_pad', 'bpm_calculator', 'metronome', 'turntable']) {
+    assert.ok(result.body.includes(`href="/${slug}"`), slug);
+  }
+  assert.match(result.body, /data-href="\/updates"/);
+});
+
+test('Share occupies the final standalone TOC section on official and beta pages', () => {
+  for (const file of ['index.php', 'tools\\metronome.php', 'beta.php', 'tools\\player.php']) {
+    const result = renderPhp(file, '', {
+      setup: file === 'index.php' ? "$_SERVER['REQUEST_URI'] = '/';" : ''
+    });
+    assert.equal(result.status, 200, file);
+    assert.equal(result.diagnostics, '', file);
+    assert.match(result.body, /<div class="toc-column">\s*<button id="share-toc-button"[^>]*>.*?<\/button>\s*<\/div>\s*<div class="toc-close">/s, file);
+    const shareButton = result.body.match(/<button id="share-toc-button"[^>]*>/)[0];
+    assert.doesNotMatch(shareButton, /data-href=/, file);
+    assert.equal((result.body.match(/id="share-toc-button"/g) || []).length, 1, file);
+    assert.ok(result.body.indexOf('data-href="/updates"') < result.body.indexOf('id="share-toc-button"'), file);
+  }
+});
+
 test('failed About metadata reads are logged and return only the 500 page', t => {
   const documentRoot = createFixture(t);
   fs.mkdirSync(path.join(documentRoot, 'about'));

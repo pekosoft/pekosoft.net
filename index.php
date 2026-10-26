@@ -71,11 +71,6 @@ if (!in_array($requestPath, ['/', '/index.php'], true)) {
 
   </div>
 
-  <div id="github-actions" class="standard padded border" aria-live="polite">
-    <h1>Latest updates</h1>
-    <div id="github-actions-runs">Loading</div>
-  </div>
-
   <div class="index-site-info">
     <div class="index-socials">
       <a href="https://github.com/pekosoft" title="GitHub">
@@ -107,7 +102,6 @@ if (!in_array($requestPath, ['/', '/index.php'], true)) {
   </div>
 
   <?php require($_SERVER['DOCUMENT_ROOT'] . "/elements/footer.php"); ?>
-  <script src="/js/index_page.js?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/js/index_page.js'); ?>"></script>
 </body>
 
 </html>

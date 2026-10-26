@@ -145,6 +145,8 @@ The project sits in the space between music production, web tools, and mathemati
 
 ## User experience principles
 
+The front page focuses on the official tools without an updates feed. Updates remain available from the TOC. Share opens a sharing action rather than a page, so it has its own final TOC section.
+
 Pekosoft favors:
 
 - immediate access

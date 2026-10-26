@@ -1864,26 +1864,8 @@ html.invert-colors .container:fullscreen {
   margin-bottom: 16px;
 }
 
-#github-actions,
 #updates {
   text-align: left;
-}
-
-#github-actions > h1 {
-  margin-bottom: 8px;
-}
-
-.index-action-item {
-  margin-bottom: 8px;
-}
-
-.index-action-run {
-  display: inline;
-}
-
-.index-action-date {
-  color: var(--white);
-  margin-left: 8px;
 }
 
 #updates-pagination {

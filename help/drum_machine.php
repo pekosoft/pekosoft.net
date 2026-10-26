@@ -63,7 +63,7 @@
     <use href="/icons.svg#random"></use>
   </svg>
   <div class="justify">
-    <h1>Random <span class="object">button</span></h1>Creates a new weighted rhythm and preserves strong kick and snare anchors.
+    <h1>Random <span class="object">button</span></h1>Creates a new weighted rhythm and preserves strong kick and snare anchors. Available in Grid mode only.
   </div>
 </div>
 
@@ -72,7 +72,7 @@
     <use href="/icons.svg#close"></use>
   </svg>
   <div class="justify">
-    <h1>Clear <span class="object">button</span></h1>Switches off all steps. The change can be undone.
+    <h1>Clear <span class="object">button</span></h1>Switches off all steps. The change can be undone. Available in Grid mode only.
   </div>
 </div>
 

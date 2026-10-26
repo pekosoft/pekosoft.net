@@ -255,7 +255,7 @@ test('Space preserves native button activation and toggles transport elsewhere',
   assert.equal(prevented, 1);
 });
 
-test('Selecting drums leaves the Mode button unchanged; switching mode updates it', () => {
+test('Mode updates pattern control availability without changing the pattern or flickering on drum selection', () => {
   const { machine } = createMachine();
   const mutations = [];
   let iconHref = '/icons.svg#view_grid';
@@ -269,21 +269,28 @@ test('Selecting drums leaves the Mode button unchanged; switching mode updates i
   machine.elements = {
     grid: { classList: { toggle() {} }, setAttribute() {} },
     mode: {
+      title: 'Switch to pad',
       querySelector: () => icon,
       classList: { toggle: (...args) => mutations.push(args) },
       setAttribute: (...args) => mutations.push(args)
     },
-    voiceSelect: {}
+    voiceSelect: {},
+    random: {},
+    clear: {}
   };
   machine.updateVoiceFields = () => {};
   machine.updatePanel = () => {};
-  for (const mode of ['pad', 'grid']) {
+  const pattern = JSON.stringify(machine.state.pattern);
+  for (const mode of ['grid', 'pad', 'grid', 'pad']) {
     machine.state.mode = mode;
     machine.updateGrid();
+    assert.equal(machine.elements.random.disabled, mode === 'pad');
+    assert.equal(machine.elements.clear.disabled, mode === 'pad');
     assert.equal(iconHref, mode === 'pad' ? '/icons.svg#drum_machine' : '/icons.svg#view_grid');
     assert.equal(machine.elements.mode.title, mode === 'pad' ? 'Switch to grid' : 'Switch to pad');
     const count = mutations.length;
     for (const voice of ['kick', 'snare', 'hat', 'perc']) machine.selectVoice(voice);
     assert.equal(mutations.length, count);
+    assert.equal(JSON.stringify(machine.state.pattern), pattern);
   }
 });

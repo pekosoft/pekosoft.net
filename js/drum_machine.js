@@ -1777,6 +1777,8 @@
       const modeLabel = isPadMode ? "Switch to grid" : "Switch to pad";
       this.elements.grid.classList.toggle("pad-mode", isPadMode);
       this.elements.grid.setAttribute("aria-label", isPadMode ? "Four drum pads" : "16-step drum sequencer");
+      this.elements.random.disabled = isPadMode;
+      this.elements.clear.disabled = isPadMode;
       const modeIcon = this.elements.mode.querySelector("use");
       const modeIconHref = isPadMode ? "/icons.svg#drum_machine" : "/icons.svg#view_grid";
       if (modeIcon.getAttribute("href") !== modeIconHref) {

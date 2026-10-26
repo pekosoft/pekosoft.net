@@ -445,6 +445,8 @@
   fill: var(--color2);
 }
 
+#random-button:disabled,
+#clear-button:disabled,
 #playback-button:disabled,
 #playlist-previous-button:disabled,
 #playlist-next-button:disabled,
@@ -454,6 +456,8 @@
   cursor: default;
 }
 
+#random-button:disabled .icons,
+#clear-button:disabled .icons,
 #playback-button:disabled .icons,
 #playlist-previous-button:disabled .icons,
 #playlist-next-button:disabled .icons,

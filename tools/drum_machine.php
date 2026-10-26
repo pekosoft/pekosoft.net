@@ -22,6 +22,14 @@
       <div id="sequencer-grid" class="sequencer-grid" role="group" aria-label="16-step drum sequencer"></div>
     </div>
     <div class="module-footer wrapper colored">
+      <button id="mode-button" class="square" title="Switch to pad" aria-label="Mode" aria-pressed="false" aria-controls="sequencer-grid">
+        <svg class="icons" role="img"><use href="/icons.svg#view_grid" /></svg>
+        <span class="button-text">Mode</span>
+      </button>
+      <button id="blink-button" class="square" title="Toggle blink" aria-pressed="false">
+        <svg class="icons" role="img"><use href="/icons.svg#blink" /></svg>
+        <span class="button-text">Blink</span>
+      </button>
       <button id="random-button" class="square" title="Randomize pattern" aria-label="Randomize pattern">
         <svg class="icons" role="img"><use href="/icons.svg#random" /></svg>
         <span class="button-text">Random</span>

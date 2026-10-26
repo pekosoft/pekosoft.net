@@ -241,6 +241,9 @@ Tooltip copy must use singular verbs:
 
 This rule applies to button tooltips and any other hover text that describes a single action.
 
+- State the action directly. For a mode switch, use "Switch to pad" or "Switch to grid", not "Grid. Switch to Pad" or "Pad. Switch to Grid".
+- Do not prepend the control name or a current-state fragment to the tooltip. Keep the control name separate. For example, the name is "Mode", the tooltip is "Switch to pad" and the shared statusbar combines them as "Mode: Switch to pad".
+
 Tooltip placement rule:
 
 - Tooltips are allowed on labels.
@@ -253,6 +256,12 @@ Tooltip placement rule:
 
 ## Commit title convention
 
+**Mandatory: read this section before suggesting a title or creating a commit. Do not rely on memory or reuse a previous suggestion without checking it.**
+
+- **Describe the result from the user's point of view, not a list of implementation tasks.** Identify the main feature or behavior the user gained.
+- Consider the complete change being committed, including work already present when the current request began. Do not let the latest small adjustment replace the main feature in the title.
+- Supporting controls, shortcuts and fixes to defects introduced while implementing a feature belong in the commit body when useful, not as extra clauses in the title. A standalone fix may be the main user-facing change of its own commit.
+- Example: **Added drum pads to Drum Machine**. Do not use "Added Drum Machine Blink and keyboard shortcuts, and fixed Mode icon flicker" for that feature.
 - Use short, past-tense titles focused on user-facing changes.
 - **Never end a commit title with a period.** This is a strict rule for suggested titles and actual Git commit subjects.
 - Do not mention development Markdown, internal guidance updates or routine documentation maintenance in titles.

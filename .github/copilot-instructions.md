@@ -1,6 +1,18 @@
 # Project instructions
 
+## Mandatory project reading
+
+**Read the relevant project Markdown before acting. Do not rely on memory, previous replies or a summary of the rules.**
+
+- Before starting work, read these instructions and the relevant sections of [pekosoft.md](../pekosoft.md).
+- Before suggesting a commit title or creating a commit, read the [Commit title convention](../pekosoft.md#commit-title-convention) and consider the complete user-facing change, not just the latest implementation step.
+- Before changing tooltips or other user-facing text, read the [User-facing writing convention](../pekosoft.md#user-facing-writing-convention), [Tooltip grammar rule](../pekosoft.md#tooltip-grammar-rule) and [Canonical control names](../pekosoft.md#canonical-control-names).
+
 ## Commit titles
+
+**Describe what changed for the user, not the development work.** Adding drum pads is the feature. Blink, keyboard shortcuts and fixes made while implementing those pads are supporting details, not a list for the title.
+
+Use **Added drum pads to Drum Machine**, not "Added Drum Machine Blink and keyboard shortcuts, and fixed Mode icon flicker".
 
 Always write Git commit titles in the past tense, both when suggesting titles and when creating commits. Use "Fixed", "Added" or "Updated", not "Fix", "Add" or "Update".
 

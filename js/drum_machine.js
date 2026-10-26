@@ -10,10 +10,10 @@
   const TIMELINE_WINDOW_MS = 8000;
 
   const VOICES = [
-    { id: "kick", label: "KICK" },
-    { id: "snare", label: "SNARE" },
-    { id: "hat", label: "HI-HAT" },
-    { id: "perc", label: "PERC" }
+    { id: "kick", label: "KICK", key: "D" },
+    { id: "snare", label: "SNARE", key: "F" },
+    { id: "hat", label: "HI-HAT", key: "J" },
+    { id: "perc", label: "PERC", key: "K" }
   ];
 
   const VOICE_ICONS = {
@@ -135,6 +135,8 @@
   function createDefaultState() {
     const globalBpm = Number.parseFloat(localStorage.getItem("global.default_bpm"));
     return {
+      mode: "grid",
+      blink: false,
       bpm: Number.isFinite(globalBpm) ? clamp(globalBpm, 30, 320, 120) : 120,
       swing: 0,
       volume: 80,
@@ -165,6 +167,8 @@
     });
 
     return {
+      mode: raw.mode === "pad" ? "pad" : defaults.mode,
+      blink: raw.blink === undefined ? defaults.blink : !!raw.blink,
       bpm: useGlobalDefaults && Number.isFinite(globalBpm)
         ? clamp(globalBpm, 30, 320, defaults.bpm)
         : clamp(raw.bpm, 30, 320, defaults.bpm),
@@ -324,6 +328,8 @@
 
       this.elements = {
         grid: document.getElementById("sequencer-grid"),
+        mode: document.getElementById("mode-button"),
+        blink: document.getElementById("blink-button"),
         play: document.getElementById("play-button"),
         record: document.getElementById("record-button"),
         playback: document.getElementById("playback-button"),
@@ -836,7 +842,7 @@
           bank.appendChild(number);
         }
 
-        VOICES.forEach(({ id, label }) => {
+        VOICES.forEach(({ id, label, key }, index) => {
           const trigger = document.createElement("button");
           trigger.type = "button";
           trigger.className = "voice-trigger pad bank-leading";
@@ -845,8 +851,14 @@
           trigger.innerHTML = iconId
             ? `<svg class="voice-icon" viewBox="0 0 512 512" aria-hidden="true"><use href="/icons.svg#${iconId}" /></svg>`
             : label;
-          trigger.title = `Play ${label.toLowerCase()}`;
-          trigger.setAttribute("aria-label", `Play ${label.toLowerCase()}`);
+          const shortcut = document.createElement("kbd");
+          shortcut.className = "voice-shortcut";
+          shortcut.textContent = key;
+          shortcut.setAttribute("aria-hidden", "true");
+          trigger.appendChild(shortcut);
+          trigger.title = `Play ${label.toLowerCase()} (${key} / ${index + 1})`;
+          trigger.setAttribute("aria-label", trigger.title);
+          trigger.setAttribute("aria-keyshortcuts", `${key.toLowerCase()} ${index + 1}`);
           bank.appendChild(trigger);
 
           const mute = document.createElement("button");
@@ -875,6 +887,16 @@
     }
 
     bindEvents() {
+      this.elements.mode.addEventListener("click", () => {
+        this.state.mode = this.state.mode === "grid" ? "pad" : "grid";
+        this.saveAndRender();
+      });
+      this.elements.blink.addEventListener("click", () => {
+        this.state.blink = !this.state.blink;
+        this.saveState();
+        this.updateToggleButtons();
+        this.updatePanel();
+      });
       this.elements.grid.addEventListener("pointerdown", (event) => this.handleGridPointerDown(event));
       this.elements.grid.addEventListener("click", (event) => this.handleGridClick(event));
       this.elements.grid.addEventListener("keydown", (event) => this.handleGridKeyDown(event));
@@ -983,6 +1005,14 @@
     }
 
     handleGridPointerDown(event) {
+      const trigger = event.target.closest(".voice-trigger");
+      if (this.state.mode === "pad" && trigger && event.button === 0) {
+        event.preventDefault();
+        this.selectVoice(trigger.dataset.voice);
+        this.auditionVoice(trigger.dataset.voice);
+        return;
+      }
+
       const button = event.target.closest(".step-button");
       if (!button || button.disabled || event.button !== 0) return;
 
@@ -1030,6 +1060,7 @@
     handleGridClick(event) {
       const trigger = event.target.closest(".voice-trigger");
       if (trigger) {
+        if (this.state.mode === "pad" && event.detail !== 0) return;
         this.selectVoice(trigger.dataset.voice);
         this.auditionVoice(trigger.dataset.voice);
         return;
@@ -1060,22 +1091,26 @@
     handleGlobalKeyDown(event) {
       const target = event.target;
       const isEditing = target && (
-        ["INPUT", "SELECT", "TEXTAREA", "BUTTON"].includes(target.tagName) ||
+        ["INPUT", "SELECT", "TEXTAREA"].includes(target.tagName) ||
         target.isContentEditable
       );
-      if (isEditing || event.ctrlKey || event.metaKey || event.altKey) return;
+      if (isEditing || event.defaultPrevented || event.repeat || event.isComposing ||
+          event.ctrlKey || event.metaKey || event.altKey) return;
 
       if (event.code === "Space") {
+        if (target?.closest("button")) return;
         event.preventDefault();
         this.togglePlayback();
         return;
       }
 
-      const index = Number(event.key) - 1;
-      if (index >= 0 && index < VOICES.length) {
+      const voice = VOICES.find(({ key }, index) => (
+        event.key.toUpperCase() === key || event.key === String(index + 1)
+      ));
+      if (voice) {
         event.preventDefault();
-        this.selectVoice(VOICES[index].id);
-        this.auditionVoice(VOICES[index].id);
+        this.selectVoice(voice.id);
+        this.auditionVoice(voice.id);
       }
     }
 
@@ -1378,7 +1413,9 @@
     }
 
     flashVoice(voice, delayMs) {
+      if (!this.state.blink) return;
       this.scheduleVisual(() => {
+        if (!this.state.blink) return;
         const triggers = document.querySelectorAll(`.voice-trigger[data-voice="${voice}"]`);
         triggers.forEach((trigger) => trigger.classList.add("voice-hit"));
         this.scheduleVisual(() => {
@@ -1580,6 +1617,8 @@
       return {
         release: "drum_machine",
         version: 1,
+        mode: this.state.mode,
+        blink: this.state.blink,
         bpm: this.state.bpm,
         swing: this.state.swing,
         volume: this.state.volume,
@@ -1734,6 +1773,19 @@
     }
 
     updateGrid() {
+      const isPadMode = this.state.mode === "pad";
+      const modeLabel = isPadMode ? "Switch to grid" : "Switch to pad";
+      this.elements.grid.classList.toggle("pad-mode", isPadMode);
+      this.elements.grid.setAttribute("aria-label", isPadMode ? "Four drum pads" : "16-step drum sequencer");
+      const modeIcon = this.elements.mode.querySelector("use");
+      const modeIconHref = isPadMode ? "/icons.svg#drum_machine" : "/icons.svg#view_grid";
+      if (modeIcon.getAttribute("href") !== modeIconHref) {
+        this.elements.mode.classList.toggle("button-on", isPadMode);
+        this.elements.mode.setAttribute("aria-pressed", String(isPadMode));
+        this.elements.mode.title = modeLabel;
+        modeIcon.setAttribute("href", modeIconHref);
+      }
+
       document.querySelectorAll(".step-button").forEach((button) => {
         this.updateStepButton(button, button.dataset.voice, Number(button.dataset.step));
       });
@@ -1796,6 +1848,11 @@
     }
 
     updateToggleButtons() {
+      this.elements.blink.classList.toggle("button-on", this.state.blink);
+      this.elements.blink.setAttribute("aria-pressed", this.state.blink ? "true" : "false");
+      if (!this.state.blink) {
+        document.querySelectorAll(".voice-trigger.voice-hit").forEach((trigger) => trigger.classList.remove("voice-hit"));
+      }
       this.elements.play.classList.toggle("button-on", this.isPlaying);
       this.elements.play.setAttribute("aria-pressed", this.isPlaying ? "true" : "false");
       this.elements.sound.classList.toggle("button-on", this.state.sound);

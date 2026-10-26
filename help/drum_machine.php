@@ -14,7 +14,27 @@
   </svg>
   <div class="justify">
     <h1>Instrument <span class="object">module</span></h1>
-    The sequencer is split into steps 1-8 and 9-16. Each row controls one drum voice. Click or tap a step to cycle between off, normal and accent velocity. Drag across steps to paint the selected velocity.
+    Grid mode splits the sequencer into steps 1-8 and 9-16. Each row controls one drum voice. Click or tap a step to cycle between off, normal and accent velocity. Drag across steps to paint the selected velocity. Pad mode fills the Instrument with four drum pads for freeform playing.
+  </div>
+</div>
+
+<div class="feature-row border">
+  <svg class="standard-image-help">
+    <use href="/icons.svg#view_grid"></use>
+  </svg>
+  <div class="justify">
+    <h1>Mode <span class="object">button</span></h1>
+    Switches between Grid sequencing and Pad performance. Press a pad to play its voice, or use its assigned keyboard key. Record captures pad hits with their timing and voice settings. Switching modes preserves the pattern, voice settings and playback state. The selected mode is saved. <span class="default">Default: Grid.</span>
+  </div>
+</div>
+
+<div class="feature-row border">
+  <svg class="standard-image-help">
+    <use href="/icons.svg#blink"></use>
+  </svg>
+  <div class="justify">
+    <h1>Blink <span class="object">button</span></h1>
+    Toggles brief feedback on drum voice buttons when played manually, by the sequencer or during recording playback. Works in Grid and Pad modes. The setting is saved. <span class="default">Default: off.</span>
   </div>
 </div>
 
@@ -24,7 +44,7 @@
   </svg>
   <div class="justify">
     <h1>Voice <span class="object">buttons</span></h1>
-    KICK, SNARE, HI-HAT and PERC audition and select the corresponding voice. Number keys 1-4 provide the same audition shortcuts.
+    KICK, SNARE, HI-HAT and PERC audition and select the corresponding voice.     Use D or 1 for kick, F or 2 for snare, J or 3 for hi-hat, and K or 4 for percussion. Shortcuts work in Grid and Pad modes, including while a button has focus, but not while editing a field. Each key press plays one hit; holding a key does not repeat. Record captures keyboard hits in the same way as pad presses.
   </div>
 </div>
 

@@ -11,9 +11,22 @@ function content(id) {
 }
 
 test('updated interface icons remain unique standalone monochrome geometry', () => {
-  for (const id of ['clock', 'release', 'help', 'bars', 'loop', 'beat', 'knob', 'arrow_up_down', 'center', 'asterisk', 'ip', 'external', 'pulse', 'cassette', 'bitmeter']) {
+  for (const id of ['clock', 'release', 'help', 'bars', 'loop', 'beat', 'snare', 'hi_hat', 'maraca', 'tambourine', 'bongos', 'knob', 'arrow_up_down', 'center', 'asterisk', 'ip', 'external', 'pulse', 'cassette', 'bitmeter']) {
     assert.doesNotMatch(content(id), /<(?:text|use|image)\b|\b(?:fill|stroke|style)\s*=|\bfont-/i, id);
   }
+});
+
+test('sprite symbols are alphabetically ordered by ID', () => {
+  const ids = [...sprite.matchAll(/<symbol\b[^>]*\bid="([^"]+)"/g)].map(([, id]) => id);
+  assert.deepEqual(ids, [...ids].sort());
+});
+
+test('Drum Machine percussion uses the standalone Maraca icon', () => {
+  const script = fs.readFileSync(path.join(__dirname, '..', 'js', 'drum_machine.js'), 'utf8');
+  assert.match(script, /perc: "maraca"/);
+  assert.match(content('maraca'), /fill-rule="evenodd"/);
+  assert.ok(sprite.indexOf('<symbol id="male"') < sprite.indexOf('<symbol id="maraca"'));
+  assert.ok(sprite.indexOf('<symbol id="maraca"') < sprite.indexOf('<symbol id="mask"'));
 });
 
 test('Bit meter uses a portrait two-column grid with four rows and outlined top cells', () => {

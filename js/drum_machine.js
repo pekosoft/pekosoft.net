@@ -20,7 +20,7 @@
     kick: "beat",
     snare: "snare",
     hat: "hi_hat",
-    perc: "bongos"
+    perc: "maraca"
   };
 
   const VOICE_LIMITS = {

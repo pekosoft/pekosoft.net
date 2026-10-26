@@ -76,7 +76,7 @@ $sectionTitleMap = [
 	'about.php' => 'About',
 ];
 $sectionTitle = $sectionTitleMap[$currentScript] ?? '';
-$releaseSlug = isset($_GET['t']) ? basename((string) $_GET['t']) : '';
+$releaseSlug = isset($_GET['t']) && is_string($_GET['t']) ? basename($_GET['t']) : '';
 $releaseTitle = $releaseTitleMap[$releaseSlug] ?? $releaseTitleMap[$releaseSlug . '.php'] ?? '';
 $documentTitle = $sectionTitle && $releaseTitle
 	? ($releaseSlug === 'index' ? 'Pekosoft - ' . $sectionTitle : 'Pekosoft - ' . $sectionTitle . ' - ' . $releaseTitle)

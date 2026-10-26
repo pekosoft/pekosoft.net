@@ -1,5 +1,9 @@
 <?php
-$requestedRelease = isset($_GET['t']) ? basename((string) $_GET['t']) : '';
+if (isset($_GET['t']) && !is_string($_GET['t'])) {
+  http_response_code(400);
+  exit('Invalid release parameter.');
+}
+$requestedRelease = isset($_GET['t']) ? basename($_GET['t']) : '';
 if (in_array($requestedRelease, ['settings', 'contact'], true)) {
   require($_SERVER['DOCUMENT_ROOT'] . '/404.php');
   exit;
@@ -8,6 +12,24 @@ if ($requestedRelease !== '' && !is_file($_SERVER['DOCUMENT_ROOT'] . "/about/$re
   require($_SERVER['DOCUMENT_ROOT'] . '/404.php');
   exit;
 }
+$release = isset($_GET['t']) ? $requestedRelease : 'default';
+$textFile = $_SERVER['DOCUMENT_ROOT'] . "/about/$release.txt";
+$lines = [];
+if (file_exists($textFile)) {
+  set_error_handler(static function ($severity, $message) {
+    error_log('About: ' . $message);
+    return true;
+  }, E_WARNING);
+  try {
+    $lines = file($textFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+  } finally {
+    restore_error_handler();
+  }
+  if ($lines === false) {
+    require($_SERVER['DOCUMENT_ROOT'] . '/500.php');
+    exit;
+  }
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -15,11 +37,8 @@ if ($requestedRelease !== '' && !is_file($_SERVER['DOCUMENT_ROOT'] . "/about/$re
 <head>
   <?php require($_SERVER['DOCUMENT_ROOT'] . "/elements/head.php");
   require($_SERVER['DOCUMENT_ROOT'] . "/elements/release_type.php");
-  $release = isset($_GET['t']) ? basename($_GET['t']) : 'default';
   $releaseName = getReleaseTitle($release);
   $releasePage = "About";
-  $textFile = $_SERVER['DOCUMENT_ROOT'] . "/about/$release.txt";
-  $lines = file_exists($textFile) ? file($textFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) : [];
   $footerPath = isBetaRelease($release) ? "/elements/beta_footer.php" : "/elements/footer.php";
   $toolPages = ["tap_pad.php", "bpm_calculator.php", "metronome.php", "turntable.php", "bpm_circle.php", "bpm_curve.php", "circle_of_fifths.php", "drum_machine.php", "player.php", "piano.php", "audio_calculator.php", "icons.php", "tuner.php", "visualizer.php", "reference.php", "notepad.php"];
   $releaseFile = $release . ".php";

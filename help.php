@@ -1,5 +1,9 @@
 <?php
-$requestedRelease = isset($_GET['t']) ? basename((string) $_GET['t']) : '';
+if (isset($_GET['t']) && !is_string($_GET['t'])) {
+  http_response_code(400);
+  exit('Invalid release parameter.');
+}
+$requestedRelease = isset($_GET['t']) ? basename($_GET['t']) : '';
 if ($requestedRelease === 'contact') {
   header('Location: /help.php?t=index&e=contact&k=button', true, 302);
   exit;
@@ -19,7 +23,7 @@ if ($requestedRelease !== '' && !is_file($_SERVER['DOCUMENT_ROOT'] . "/help/$req
 <head>
   <?php require($_SERVER['DOCUMENT_ROOT'] . "/elements/head.php");
   require($_SERVER['DOCUMENT_ROOT'] . "/elements/release_type.php");
-  $release = isset($_GET['t']) ? basename($_GET['t']) : 'default';
+  $release = isset($_GET['t']) ? $requestedRelease : 'default';
   $filePath = $_SERVER['DOCUMENT_ROOT'] . "/help/" . $release . ".php";
   $hasHelpFile = file_exists($filePath);
   $releaseName = $hasHelpFile ? getReleaseTitle($release) : 'Help';

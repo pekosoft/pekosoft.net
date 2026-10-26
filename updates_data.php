@@ -13,10 +13,20 @@ if (!is_array($updates) || !isset($updates['workflow_runs']) || !is_array($updat
 
 $runs = $updates['workflow_runs'];
 $totalCount = count($runs);
-$runsPerPage = min(100, max(1, (int) ($_GET['per_page'] ?? 25)));
-$page = max(1, (int) ($_GET['page'] ?? 1));
+$runsPerPage = filter_var($_GET['per_page'] ?? 25, FILTER_VALIDATE_INT);
+$page = filter_var($_GET['page'] ?? 1, FILTER_VALIDATE_INT);
+if ($runsPerPage === false || $page === false) {
+  http_response_code(400);
+  echo json_encode(['error' => 'Pagination parameters must be integers.']);
+  exit;
+}
+$runsPerPage = min(100, max(1, $runsPerPage));
+$page = max(1, $page);
+$pageRuns = $page - 1 <= intdiv($totalCount, $runsPerPage)
+  ? array_slice($runs, ($page - 1) * $runsPerPage, $runsPerPage)
+  : [];
 
 echo json_encode([
-  'workflow_runs' => array_slice($runs, ($page - 1) * $runsPerPage, $runsPerPage),
+  'workflow_runs' => $pageRuns,
   'total_count' => $totalCount
 ]);

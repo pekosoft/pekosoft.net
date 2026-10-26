@@ -173,6 +173,13 @@ Pekosoft favors:
 - Follow this rule for every new or renamed identifier. Preserve existing public names when compatibility requires them, and do not mass-rename unrelated legacy code.
 - Product text, attribution and user-facing download filenames may retain the Pekosoft brand. They are not internal code identifiers.
 
+## PHP request handling
+
+- About, Help and History release parameters (`t`) must be strings. Array-valued parameters receive HTTP 400. Shared page metadata ignores non-string release parameters on standalone pages.
+- The updates feed accepts integer `page` and `per_page` parameters, defaulting to 1 and 25. Values below 1 are clamped to 1, and `per_page` is capped at 100. Invalid or out-of-range integers receive HTTP 400; pages beyond the available entries return an empty list with the unchanged total count.
+- Failed reads of existing About metadata are logged and return the HTTP 500 page before normal page output.
+- Run the PHP compatibility regression tests with `node --test tests/php_compatibility.test.cjs` using PHP on `PATH`.
+
 ## Circular instrument layout
 
 - Use the shared `circular-instrument` module-body class for a single circular instrument. It fits a square into the module's available content width and height with standard margins, including when maximized.

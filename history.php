@@ -1,5 +1,9 @@
 <?php
-$requestedRelease = isset($_GET['t']) ? basename((string) $_GET['t']) : '';
+if (isset($_GET['t']) && !is_string($_GET['t'])) {
+  http_response_code(400);
+  exit('Invalid release parameter.');
+}
+$requestedRelease = isset($_GET['t']) ? basename($_GET['t']) : '';
 if ($requestedRelease === 'settings') {
   require($_SERVER['DOCUMENT_ROOT'] . '/404.php');
   exit;
@@ -16,7 +20,7 @@ if ($requestedRelease !== '' && !is_file($_SERVER['DOCUMENT_ROOT'] . "/history/$
   <?php require($_SERVER['DOCUMENT_ROOT'] . "/elements/head.php"); ?>
   <?php
   require($_SERVER['DOCUMENT_ROOT'] . "/elements/release_type.php");
-  $release = isset($_GET['t']) ? basename($_GET['t']) : 'default'; // Fallback to 'default' if not provided
+  $release = isset($_GET['t']) ? $requestedRelease : 'default';
   $releaseName = getReleaseTitle($release);
   $releasePage = "History";
 

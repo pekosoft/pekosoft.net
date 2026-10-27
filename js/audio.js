@@ -236,29 +236,40 @@
       nodes.push(noise, highPass, bandPass, envelope);
       stopTime = startTime + duration;
     } else {
-      const baseFrequency = clampDrumValue(frequency, 120, 2400, 620);
+      const cutoff = clampDrumValue(frequency, 120, 2400, 620);
       const duration = clampDrumValue(decay, 0.025, 0.8, 0.14);
       const toneAmount = clampDrumValue(tone, 0, 1, 0.6);
-      const oscillator = audioContext.createOscillator();
+      const noise = audioContext.createBufferSource();
       const envelope = audioContext.createGain();
-      const filter = audioContext.createBiquadFilter();
+      const highPass = audioContext.createBiquadFilter();
+      const lowPass = audioContext.createBiquadFilter();
 
-      oscillator.type = toneAmount > 0.66 ? "square" : "triangle";
-      oscillator.frequency.setValueAtTime(baseFrequency * 1.35, startTime);
-      oscillator.frequency.exponentialRampToValueAtTime(baseFrequency, startTime + Math.min(0.06, duration * 0.5));
-      filter.type = "lowpass";
-      filter.frequency.setValueAtTime(1200 + (toneAmount * 9000), startTime);
-      envelope.gain.setValueAtTime(0.8, startTime);
+      noise.buffer = getDrumNoiseBuffer(audioContext);
+      noise.loop = true;
+      highPass.type = "highpass";
+      highPass.frequency.setValueAtTime(cutoff * 2, startTime);
+      highPass.Q.setValueAtTime(0.7, startTime);
+      lowPass.type = "lowpass";
+      lowPass.frequency.setValueAtTime(Math.min(4000 + (toneAmount * 10000), audioContext.sampleRate * 0.45), startTime);
+      lowPass.Q.setValueAtTime(0.7, startTime);
+      // Uneven bursts mimic seeds striking a shaker rather than a pitched drum.
+      envelope.gain.setValueAtTime(0.0001, startTime);
+      envelope.gain.linearRampToValueAtTime(0.8, startTime + duration * 0.08);
+      envelope.gain.linearRampToValueAtTime(0.25, startTime + duration * 0.18);
+      envelope.gain.linearRampToValueAtTime(0.65, startTime + duration * 0.24);
+      envelope.gain.linearRampToValueAtTime(0.2, startTime + duration * 0.36);
+      envelope.gain.linearRampToValueAtTime(0.45, startTime + duration * 0.42);
       envelope.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);
-      oscillator.connect(filter);
-      filter.connect(envelope);
+      noise.connect(highPass);
+      highPass.connect(lowPass);
+      lowPass.connect(envelope);
       envelope.connect(output.input);
-      oscillator.start(startTime);
-      oscillator.stop(startTime + duration + 0.01);
+      noise.start(startTime, Math.random() * noise.buffer.duration);
+      noise.stop(startTime + duration);
 
-      sources.push(oscillator);
-      nodes.push(oscillator, filter, envelope);
-      stopTime = startTime + duration + 0.01;
+      sources.push(noise);
+      nodes.push(noise, highPass, lowPass, envelope);
+      stopTime = startTime + duration;
     }
 
     releaseDrumNodes(sources, nodes);

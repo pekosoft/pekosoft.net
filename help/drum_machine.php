@@ -44,7 +44,7 @@
   </svg>
   <div class="justify">
     <h1>Voice <span class="object">buttons</span></h1>
-    KICK, SNARE, HI-HAT and PERC audition and select the corresponding voice.     Use D or 1 for kick, F or 2 for snare, J or 3 for hi-hat, and K or 4 for percussion. Shortcuts work in Grid and Pad modes, including while a button has focus, but not while editing a field. Each key press plays one hit; holding a key does not repeat. Record captures keyboard hits in the same way as pad presses.
+    KICK, SNARE, HI-HAT and PERC audition and select the corresponding voice. PERC produces a maraca-like noise rattle rather than a pitched tone. Use D or 1 for kick, F or 2 for snare, J or 3 for hi-hat, and K or 4 for percussion. Shortcuts work in Grid and Pad modes, including while a button has focus, but not while editing a field. Each key press plays one hit; holding a key does not repeat. Record captures keyboard hits in the same way as pad presses.
   </div>
 </div>
 
@@ -217,7 +217,7 @@
     <use href="/icons.svg#field"></use>
   </svg>
   <div class="justify">
-    <h1>Pitch <span class="object">field</span></h1>Sets the selected voice frequency in hertz. The supported range follows the selected voice.
+    <h1>Pitch <span class="object">field</span></h1>Sets the selected voice frequency in hertz. For PERC, it shifts the noise filtering rather than setting a musical pitch. The supported range follows the selected voice.
   </div>
 </div>
 

@@ -19,7 +19,7 @@ function createMachine(saved = {}) {
   };
   vm.createContext(context);
   vm.runInContext(source.replace('  document.addEventListener("DOMContentLoaded",', `
-    globalThis.api = { DrumMachine, createDefaultState, normalizeState, loadState };
+    globalThis.api = { DrumMachine, createDefaultState, normalizeState, loadState, normalizeRecording };
     document.addEventListener("DOMContentLoaded",
   `), context);
   const machine = Object.create(context.api.DrumMachine.prototype);
@@ -144,6 +144,48 @@ function createTransport() {
   }
   return { ...result, clicks, timers, handlers, advance };
 }
+
+test('Drum Machine matches Metronome beat timing and count at 120 BPM and other tempos', () => {
+  const metronomeSource = fs.readFileSync(path.join(__dirname, '..', 'js', 'metronome.js'), 'utf8');
+  const schedulerSource = metronomeSource.slice(
+    metronomeSource.indexOf('function playMetronome() {'),
+    metronomeSource.indexOf('function stopMetronome() {')
+  );
+  for (const bpm of [60, 120, 180]) {
+    const { machine, context, clicks, advance } = createTransport();
+    const beats = [];
+    machine.state.bpm = bpm;
+    machine.state.metronome = true;
+    machine.isPlaying = true;
+    Object.assign(context, {
+      audioContext: machine.audioContext,
+      getValidatedBPM: () => bpm,
+      tick: time => beats.push(time),
+      nextTickTime: 0,
+      setTimeout: context.window.setTimeout
+    });
+    vm.runInContext(`${schedulerSource}\nplayMetronome();`, context);
+    machine.startGuide();
+    advance(59.9);
+    assert.equal(beats.length, bpm);
+    assert.equal(clicks.length, bpm);
+    for (let index = 0; index < beats.length; index++) {
+      assert.ok(Math.abs((clicks[index].when - clicks[0].when) - (beats[index] - beats[0])) < 1e-9);
+      assert.equal(clicks[index].pitchRatio, index % 4 === 0 ? 1.5 : 1);
+    }
+    for (const swing of [0, 25, 50]) {
+      machine.state.swing = swing;
+      const barDuration = Array.from({ length: 16 }, (_, step) => machine.getStepDuration(step))
+        .reduce((sum, duration) => sum + duration, 0);
+      assert.ok(Math.abs(barDuration - 4 * 60 / bpm) < 1e-9);
+    }
+    if (bpm === 120) {
+      assert.equal(beats[1] - beats[0], 0.5);
+      assert.equal(clicks[1].when - clicks[0].when, 0.5);
+      assert.equal(machine.getStepDuration(0) + machine.getStepDuration(1), 0.25);
+    }
+  }
+});
 
 function createRecordingPlayback(durationMs = 437.25, timestamps = [17.125, 193.375]) {
   const result = createTransport();
@@ -390,7 +432,7 @@ test('Count-in uses four straight beats per bar, then records without lead-in or
     assert.equal(machine.isCountingIn, false);
     assert.equal(machine.isRecording, true);
     assert.ok(Math.abs(machine.recordingStartTime - boundary) < 0.000001);
-    assert.equal(machine.elements.recordingStatus.textContent, 'Recording');
+    assert.equal(machine.elements.recordingStatus.textContent, 'Recording: 4 steps');
     assert.equal(machine.recordingEvents.length, 0);
     assert.equal(machine.timelineEvents.length, 0);
     machine.queueRecordingEvent('snare', 2, boundary + 0.03, 100, machine.state.voices.snare);
@@ -398,7 +440,7 @@ test('Count-in uses four straight beats per bar, then records without lead-in or
     const recording = machine.finishRecording();
     assert.equal(recording.events.length, 1);
     assert.equal(recording.events[0].voice, 'snare');
-    assert.ok(recording.durationMs < 131);
+    assert.equal(recording.durationMs, 500);
     assert.equal(machine.elements.countIn.disabled, false);
     assert.equal(machine.elements.recordingStatus.textContent, 'Ready');
   }
@@ -411,12 +453,12 @@ test('Count-in Off records immediately and Metronome stays out of recorded event
   await machine.startRecording();
   assert.equal(machine.isRecording, true);
   assert.equal(machine.recordingStartTime, 0);
-  advance(2);
-  assert.equal(clicks.length, 5);
+  advance(1.9);
+  assert.equal(clicks.length, 4);
   assert.equal(machine.recordingEvents.length, 0);
   assert.equal(machine.timelineEvents.length, 0);
-  assert.equal(machine.finishRecording(), null);
-  assert.equal(machine.recordings.length, 0);
+  assert.equal(machine.finishRecording().durationMs, 2000);
+  assert.equal(machine.recordings.length, 1);
   assert.equal(machine.guideTimer, null);
   assert.ok(clicks.every(click => click.source.stopped));
 });
@@ -459,20 +501,305 @@ test('Stop while audio resumes cannot arm a delayed recording', async () => {
   assert.equal(machine.guideTimer, null);
 });
 
-test('BPM changes update Count-in intervals and the recording boundary', async () => {
+test('BPM and Length are frozen through Count-in and recording', async () => {
   const { machine, clicks, advance } = createTransport();
   machine.updatePanel = () => {};
   await machine.startRecording();
   advance(0.1);
   machine.setBpm(60);
-  advance(2.6);
-  [0.03, 0.53, 1.53, 2.53].forEach((time, index) => {
+  advance(1.6);
+  [0.03, 0.53, 1.03, 1.53].forEach((time, index) => {
     assert.ok(Math.abs(clicks[index].when - time) < 0.000001);
   });
   assert.equal(machine.isCountingIn, true);
-  advance(3.56);
-  assert.ok(Math.abs(machine.recordingStartTime - 3.53) < 0.000001);
+  advance(2.06);
+  assert.ok(Math.abs(machine.recordingStartTime - 2.03) < 0.000001);
   assert.equal(machine.isRecording, true);
+  assert.equal(machine.state.bpm, 120);
+  machine.setBpm(240);
+  assert.equal(machine.state.bpm, 120);
+  assert.equal(machine.elements.lengthSelect.disabled, true);
+  machine.finishRecording();
+  assert.equal(machine.elements.lengthSelect.disabled, false);
+});
+
+test('Every selected Length auto-finishes at its exact BPM-derived audio boundary', async () => {
+  for (const length of [4, 8, 12, 16]) {
+    for (const bpm of [60, 120, 237]) {
+      const { machine, advance } = createTransport();
+      Object.assign(machine.state, { countIn: 0, length, bpm, swing: 50 });
+      await machine.startRecording();
+      const duration = length * 60 / bpm / 4;
+      machine.queueRecordingEvent('kick', 2, 0.01, 100, machine.state.voices.kick);
+      machine.queueRecordingEvent('snare', 1, duration - 0.001, 1500, machine.state.voices.snare);
+      machine.queueRecordingEvent('perc', 1, duration, 100, machine.state.voices.perc);
+      machine.queueRecordingEvent('hat', 1, duration + 0.01, 100, machine.state.voices.hat);
+      advance(duration - 0.0001);
+      assert.equal(machine.isRecording, true);
+      advance(duration + 0.001);
+      assert.equal(machine.isRecording, false, `Length ${length}, BPM ${bpm}`);
+      assert.equal(machine.recordings.length, 1);
+      const recording = machine.recordings[0];
+      assert.ok(Math.abs(recording.durationMs - duration * 1000) < 1e-8);
+      assert.equal(recording.fixedDuration, true);
+      assert.deepEqual(Array.from(recording.events, event => event.voice), ['kick', 'snare']);
+      assert.equal(machine.recordingWindowTimer, null);
+      assert.equal(machine.recordingCaptureTimers.size, 0);
+    }
+  }
+});
+
+test('Loop overwrites silence across more than two passes and preserves the unvisited partial region', async () => {
+  const { machine, advance } = createTransport();
+  Object.assign(machine.state, { countIn: 0, length: 4, loop: true });
+  await machine.startRecording();
+  const hit = (time, voice) => {
+    advance(time);
+    machine.queueRecordingEvent(voice, 2, time, 900, machine.state.voices[voice]);
+  };
+  hit(0.1, 'kick');
+  hit(0.4, 'snare');
+  hit(0.6, 'hat');
+  hit(0.9, 'perc');
+  advance(1.05);
+  assert.equal(machine.recordings.length, 0);
+  hit(1.1, 'kick');
+  advance(1.3);
+  const recording = machine.finishRecording();
+  assert.equal(recording.durationMs, 500);
+  assert.deepEqual(Array.from(recording.events, event => event.voice), ['kick', 'perc']);
+  assert.deepEqual(Array.from(recording.events, event => Math.round(event.timestampMs)), [100, 400]);
+  advance(3);
+  assert.equal(machine.recordings.length, 1);
+  assert.equal(machine.recordingCaptureTimers.size, 0);
+});
+
+test('A silent overwrite pass erases all hits and remains a playable fixed-length take', async () => {
+  const { machine, advance } = createTransport();
+  Object.assign(machine.state, { countIn: 0, length: 4, loop: true });
+  await machine.startRecording();
+  machine.queueRecordingEvent('kick', 2, 0.1, 100, machine.state.voices.kick);
+  advance(1);
+  const recording = machine.finishRecording();
+  assert.equal(recording.events.length, 0);
+  assert.equal(recording.durationMs, 500);
+  await machine.startRecordingPlayback();
+  advance(2.1);
+  assert.equal(machine.isRecordingPlayback, true);
+  machine.stopAll(true);
+});
+
+test('Exact boundary belongs only to the next Loop pass and Loop off ends at the next boundary', async () => {
+  const { machine, advance } = createTransport();
+  machine.updatePanel = () => {};
+  Object.assign(machine.state, { countIn: 0, length: 4, loop: true });
+  await machine.startRecording();
+  machine.queueRecordingEvent('kick', 2, 0.5, 100, machine.state.voices.kick);
+  advance(0.55);
+  assert.equal(machine.recordingEvents.length, 1);
+  assert.equal(machine.recordingEvents[0].timestampMs, 0);
+  machine.toggleRecordingLoop();
+  assert.equal(machine.recordingEndTime, 1);
+  machine.queueRecordingEvent('snare', 1, 0.95, 1000, machine.state.voices.snare);
+  machine.queueRecordingEvent('hat', 1, 1, 100, machine.state.voices.hat);
+  advance(1.01);
+  assert.equal(machine.isRecording, false);
+  assert.equal(machine.recordings.length, 1);
+  assert.deepEqual(Array.from(machine.recordings[0].events, event => event.voice), ['kick', 'snare']);
+  assert.equal(machine.recordings[0].durationMs, 500);
+});
+
+test('Late callbacks finalize only the fixed first cycle and cannot resurrect overwritten earlier passes', async () => {
+  for (const loop of [false, true]) {
+    const { machine, timers } = createTransport();
+    Object.assign(machine.state, { countIn: 0, length: 4, loop });
+    await machine.startRecording();
+    machine.queueRecordingEvent('kick', 2, 0.1, 100, machine.state.voices.kick);
+    machine.queueRecordingEvent('snare', 2, 0.45, 1000, machine.state.voices.snare);
+    const callbacks = [...machine.recordingCaptureTimers.keys()].map(id => timers.get(id).callback);
+    machine.audioContext.currentTime = loop ? 1.2 : 0.8;
+    callbacks.forEach(callback => callback());
+    if (loop) {
+      machine.queueRecordingEvent('hat', 2, 1.2, 100, machine.state.voices.hat);
+      assert.deepEqual(Array.from(machine.recordingEvents, event => event.voice), ['hat']);
+    }
+    machine.scheduleRecordingWindow();
+    const recording = loop ? machine.finishRecording() : machine.recordings[0];
+    assert.equal(recording.durationMs, 500);
+    assert.deepEqual(Array.from(recording.events, event => event.voice), loop ? ['hat'] : ['kick', 'snare']);
+  }
+});
+
+test('Stopping just before a queued boundary hit excludes even sub-millisecond pending capture', async () => {
+  const { machine, advance } = createTransport();
+  Object.assign(machine.state, { countIn: 0, length: 4, loop: true });
+  await machine.startRecording();
+  advance(0.4995);
+  machine.queueRecordingEvent('kick', 2, 0.5, 100, machine.state.voices.kick);
+  const recording = machine.finishRecording();
+  assert.equal(recording.events.length, 0);
+  assert.equal(recording.durationMs, 500);
+  advance(1);
+  assert.equal(machine.recordingEvents.length, 0);
+});
+
+test('Fixed takes retain silence and crop out-of-window hits through normalization, persistence and import', async () => {
+  const { machine, api } = createTransport();
+  const events = [100, 499, 500, 700].map(timestampMs => ({
+    voice: 'kick', timestampMs, durationMs: 2000, settings: machine.state.voices.kick
+  }));
+  const fixed = api.normalizeRecording({ fixedDuration: true, durationMs: 500, events });
+  assert.equal(fixed.durationMs, 500);
+  assert.equal(fixed.events.length, 2);
+  assert.equal(api.normalizeRecording({ durationMs: 500, events }).durationMs, 2700);
+  assert.equal(api.normalizeRecording({ fixedDuration: true, durationMs: 500, events: [] }).durationMs, 500);
+  assert.equal(api.normalizeRecording({ fixedDuration: true, durationMs: Infinity, events: [] }), null);
+  machine.recordings = [fixed];
+  machine.selectedRecordingIndex = 0;
+  machine.saveRecordingPlaylist();
+  assert.equal(machine.loadRecordingPlaylist().recordings[0].durationMs, 500);
+  machine.elements.playlistFileInput.files = [{ text: async () => JSON.stringify({ recordings: [fixed] }) }];
+  await machine.importRecordingPlaylist();
+  assert.equal(machine.recordings[0].durationMs, 500);
+  assert.equal(machine.recordings[0].fixedDuration, true);
+});
+
+test('Stop in the first partial pass pads silence and reset, import and apply leave no capture callbacks', async () => {
+  for (const action of ['stop', 'reset', 'import', 'apply']) {
+    const { machine, advance } = createTransport();
+    Object.assign(machine.state, { countIn: 0, length: 4, loop: true });
+    await machine.startRecording();
+    machine.queueRecordingEvent('kick', 2, 0.1, 100, machine.state.voices.kick);
+    machine.queueRecordingEvent('snare', 2, 0.4, 100, machine.state.voices.snare);
+    advance(0.2);
+    if (action === 'stop') {
+      machine.stopAll(true);
+      assert.equal(machine.recordings[0].durationMs, 500);
+      assert.equal(machine.recordings[0].events.length, 1);
+    }
+    if (action === 'import') {
+      machine.elements.playlistFileInput.files = [{ text: async () => JSON.stringify({
+        recordings: [{ fixedDuration: true, durationMs: 800, events: [] }]
+      }) }];
+      await machine.importRecordingPlaylist();
+      assert.equal(machine.recordings.length, 1);
+      assert.equal(machine.recordings[0].durationMs, 800);
+    }
+    if (action === 'reset' || action === 'apply') {
+      machine.history = { clear() {} };
+      machine.applyMasterGain = machine.saveAndRender = machine.commitPatternChange = machine.showPanelSuccess = () => {};
+      if (action === 'reset') machine.reset();
+      else {
+        machine.elements.patternText.value = JSON.stringify(machine.getExportData());
+        machine.applyPatternText();
+      }
+    }
+    advance(3);
+    assert.equal(machine.isRecording, false, action);
+    assert.equal(machine.recordingCaptureTimers.size, 0, action);
+    assert.equal(machine.recordingWindowTimer, null, action);
+    assert.equal(machine.elements.lengthSelect.disabled, false, action);
+    if (action === 'reset') assert.equal(machine.recordings.length, 0);
+  }
+});
+
+test('Fixed recording playback schedules every voice tail to stop at each boundary', async () => {
+  const { machine, sounds, advance } = createRecordingPlayback(500, [100, 499]);
+  machine.recordings[0].fixedDuration = true;
+  machine.state.loop = true;
+  await machine.startRecordingPlayback();
+  advance(1.5);
+  sounds.forEach(sound => {
+    const cycle = Math.floor((sound.when - 0.03 + 1e-8) / 0.5);
+    assert.ok(sound.source.stoppedAt <= 0.03 + (cycle + 1) * 0.5 + 1e-8);
+  });
+  assert.equal(sounds[1].source.stoppedAt, 0.53);
+  machine.timelineEvents.forEach(event => {
+    const cycle = Math.floor((event.startTime / 1000 - 0.03 + 1e-8) / 0.5);
+    assert.ok(event.endTime / 1000 <= 0.03 + (cycle + 1) * 0.5 + 1e-8);
+  });
+});
+
+test('Selected fixed recording WAV exports the exact window without pattern hits or tail padding', async () => {
+  const { machine, context } = createTransport();
+  const renders = [];
+  const drums = [];
+  let wav;
+  context.OfflineAudioContext = context.window.OfflineAudioContext = class {
+    constructor(channels, frames, sampleRate) {
+      renders.push({ channels, frames, sampleRate });
+      Object.assign(this, { destination: {}, channels, frames, sampleRate });
+    }
+    async startRendering() {
+      return { numberOfChannels: this.channels, sampleRate: this.sampleRate, length: this.frames,
+        getChannelData: () => new Float32Array(this.frames) };
+    }
+  };
+  context.window.playDrumSound = options => drums.push(options);
+  context.window.playTransientSound = () => assert.fail('Guide must not be exported');
+  context.Blob = Blob;
+  context.URL = { createObjectURL: blob => { wav = blob; return 'blob:fixed'; }, revokeObjectURL() {} };
+  context.document.createElement = () => ({ click() {}, remove() {} });
+  context.document.body = { appendChild() {} };
+  machine.showPanelSuccess = () => {};
+  machine.recordings = [{ fixedDuration: true, durationMs: 500, events: [{
+    voice: 'snare', velocity: 2, timestampMs: 499, durationMs: 2000, settings: machine.state.voices.snare
+  }] }];
+  machine.selectedRecordingIndex = 0;
+  await machine.savePatternAsWav();
+  assert.equal(renders[0].frames, 22050);
+  assert.equal(drums.length, 1);
+  assert.equal(drums[0].when, 0.499);
+  assert.equal(drums[0].voice, 'snare');
+  const header = new DataView(await wav.arrayBuffer());
+  assert.equal(header.getUint32(40, true), 22050 * 2 * 2);
+});
+
+test('Live pads and scheduled sequencer drums share one fixed window while sequencer transport can continue', async () => {
+  const { machine, context, advance } = createTransport();
+  Object.assign(machine.state, { countIn: 0, length: 4 });
+  machine.state.pattern = { kick: [2, 0, 0, 0], snare: [0, 0, 0, 2], hat: [0, 0, 0, 0], perc: [0, 0, 0, 0] };
+  machine.updatePanel = () => {};
+  context.navigator = {};
+  context.window.playDrumSound = options => ({
+    sources: [{ stop() {} }], stopTime: options.when + 1
+  });
+  await machine.startRecording();
+  await machine.togglePlayback();
+  advance(0.1);
+  await machine.auditionVoice('perc');
+  advance(0.55);
+  assert.equal(machine.isRecording, false);
+  assert.equal(machine.isPlaying, true);
+  assert.deepEqual(Array.from(machine.recordings[0].events, event => event.voice), ['kick', 'perc', 'snare']);
+  assert.equal(machine.recordings[0].durationMs, 500);
+  machine.pausePlayback(true);
+});
+
+test('Loop Count-in occurs only once, and import cancels armed audio resumes', async () => {
+  const { machine, clicks, advance } = createTransport();
+  Object.assign(machine.state, { countIn: 1, length: 4, loop: true });
+  await machine.startRecording();
+  advance(3.7);
+  assert.equal(machine.isRecording, true);
+  assert.equal(clicks.length, 4);
+  assert.equal(machine.recordings.length, 0);
+  machine.stopAll(true);
+  assert.equal(machine.recordings[0].durationMs, 500);
+  let resume;
+  machine.ensureAudioReady = () => new Promise(resolve => { resume = resolve; });
+  const starting = machine.startRecording();
+  machine.elements.playlistFileInput.files = [{ text: async () => JSON.stringify({
+    recordings: [{ fixedDuration: true, durationMs: 1000, events: [] }]
+  }) }];
+  await machine.importRecordingPlaylist();
+  resume();
+  await starting;
+  advance(10);
+  assert.equal(machine.isCountingIn, false);
+  assert.equal(machine.isRecording, false);
+  assert.equal(machine.recordings.length, 1);
+  assert.equal(machine.recordings[0].durationMs, 1000);
 });
 
 test('Count-in boundary captures already-scheduled and just-started sequencer hits once', async () => {

@@ -90,7 +90,6 @@
         </button>
       </div>
 
-      <output id="recording-status" role="status" aria-live="polite">Ready</output>
       <div class="controls-values wrapper">
         <div class="pair">
           <label for="count-in-select" title="Count beats before recording">Count-in:</label>
@@ -131,7 +130,7 @@
           </select>
         </div>
         <div class="pair">
-          <label for="length-select" title="Pattern length">Length:</label>
+          <label for="length-select" title="Set pattern and recording length in steps">Length:</label>
           <select id="length-select">
             <option value="4">4</option>
             <option value="8">8</option>
@@ -205,6 +204,9 @@
           </div>
         </div>
       </div>
+    </div>
+    <div class="module-footer wrapper colored">
+      <output id="recording-status" role="status" aria-live="polite">Ready</output>
     </div>
   </div>
 

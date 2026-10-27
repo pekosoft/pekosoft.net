@@ -100,7 +100,7 @@
     <use href="/icons.svg#record"></use>
   </svg>
   <div class="justify">
-    <h1>Record <span class="object">button</span></h1>Starts the selected Count-in, then records sequencer hits and manually auditioned voices with their timing, velocity and voice settings. Record does not start the sequencer. Hits played during Count-in are not recorded. Press Record again to cancel Count-in or complete a take. A completed take containing hits is added to Playlist automatically. The recording starts at the end of Count-in, without including the lead-in in its duration. <span class="default">Default: off.</span>
+    <h1>Record <span class="object">button</span></h1>Starts the selected Count-in, then records sequencer hits and manually auditioned voices with their timing, velocity and voice settings for one Length cycle at the selected BPM. Record does not start the sequencer. Count-in happens only before the first pass and is excluded from the take. With Loop off, recording completes at the cycle boundary. Press Record again or Stop to finish early. The take keeps its full cycle duration, including leading and trailing silence, and is added to Playlist even when silent. Sound tails are cut at the cycle boundary during Playback and WAV export. The recording status shows the selected step count and whether Loop is overwriting. Length, BPM, Tempo and Tap are unavailable during Count-in and recording. <span class="default">Default: off.</span>
   </div>
 </div>
 
@@ -109,7 +109,7 @@
     <use href="/icons.svg#play"></use>
   </svg>
   <div class="justify">
-    <h1>Playback <span class="object">button</span></h1>Starts or stops the selected Playlist recording. If the active recording contains hits, Playback first completes the take and then plays it. Recording playback does not change the current pattern. <span class="default">Default: off.</span>
+    <h1>Playback <span class="object">button</span></h1>Starts or stops the selected Playlist recording. Playback first completes an active take and then plays it. Recording playback does not change the current pattern. <span class="default">Default: off.</span>
   </div>
 </div>
 
@@ -118,7 +118,7 @@
     <use href="/icons.svg#loop"></use>
   </svg>
   <div class="justify">
-    <h1>Loop <span class="object">button</span></h1>Repeats the selected Playlist recording during Playback so you can check whether the recorded beat makes a perfect loop. Each pass uses the recording's exact stored duration and hit timing, including leading and trailing silence, without snapping to beats or bars. You can enable Loop during playback. Turning it off finishes the current pass without starting another. Loop does not affect the sequencer or WAV exports. <span class="default">Default: off.</span>
+    <h1>Loop <span class="object">button</span></h1>During recording, repeats the same Length cycle and replaces previous hits as recording advances, including silence replacing old hits. This is overwrite recording, not overdubbing. Stopping partway through a pass keeps the previous pass in the region not yet overwritten. All passes form one Playlist take. Turning Loop off completes recording at the next cycle boundary. During Playback, Loop repeats the selected recording using its exact stored duration and hit timing, including leading and trailing silence. Turning it off finishes the current pass. Older freeform recordings retain their stored duration. Loop does not change sequencer playback or repeat WAV exports. <span class="default">Default: off.</span>
   </div>
 </div>
 
@@ -128,6 +128,15 @@
   </svg>
   <div class="justify">
     <h1>Stop <span class="object">button</span></h1>Stops sequencer and recording playback, cancels Count-in or completes an active recording, and returns the playhead to the beginning.
+  </div>
+</div>
+
+<div class="feature-row border">
+  <svg class="standard-image-help">
+    <use href="/icons.svg#download"></use>
+  </svg>
+  <div class="justify">
+    <h1>Save <span class="object">button</span></h1>Exports the selected Length-based Playlist recording as a WAV file with its exact cycle duration, recorded timing and voice settings. Leading and trailing silence are retained and tails beyond the end are cut. If no Length-based recording is selected, exports the current pattern with its sound tails. Volume applies to either export. Metronome and Count-in clicks are excluded.
   </div>
 </div>
 
@@ -147,7 +156,7 @@
   </svg>
   <div class="justify">
     <h1>Count-in <span class="object">menu</span></h1>
-    Selects Off, One bar, Two bars or Four bars before recording. Each bar contains four beats at the current BPM. Count-in clicks sound even when Metronome is off and follow Sound and Volume. BPM changes affect subsequent beat intervals. The recording status shows count-in progress and when recording begins. The menu is unavailable until Count-in or recording ends. Stop, Reset or starting Playlist playback cancels Count-in without creating a take. Applying pattern data also stops the transport. <span class="default">Default: One bar.</span>
+    Selects Off, One bar, Two bars or Four bars before recording. Each bar contains four beats at the selected BPM. Count-in clicks sound even when Metronome is off and follow Sound and Volume. The recording status shows count-in progress and when recording begins. The menu is unavailable until Count-in or recording ends. Stop, Reset or starting Playlist playback cancels Count-in without creating a take. Applying pattern data or importing Playlist recordings also stops the active take or Count-in. <span class="default">Default: One bar.</span>
   </div>
 </div>
 
@@ -228,7 +237,7 @@
     <use href="/icons.svg#menu"></use>
   </svg>
   <div class="justify">
-    <h1>Length <span class="object">menu</span></h1>Sets the looping pattern length to 4, 8, 12 or 16 steps. Steps beyond the selected length remain visible but disabled.
+    <h1>Length <span class="object">menu</span></h1>Sets the pattern and recording cycle length to 4, 8, 12 or 16 sixteenth-note steps, not bars. Sixteen steps equal one four-beat bar. At 120 BPM, 4 steps record 0.5 seconds and 16 steps record 2 seconds. Steps beyond the selected length remain visible but disabled. Length is unavailable during Count-in and recording.
   </div>
 </div>
 

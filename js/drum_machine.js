@@ -216,20 +216,23 @@
 
   function normalizeRecording(recording, index = 0) {
     if (!recording || typeof recording !== "object") return null;
+    const fixedDuration = recording.fixedDuration === true && Number.isFinite(recording.durationMs) && recording.durationMs > 0;
     const events = (Array.isArray(recording.events) ? recording.events : [])
       .map(normalizeRecordingEvent)
       .filter(Boolean)
+      .filter((event) => !fixedDuration || event.timestampMs < recording.durationMs)
       .sort((left, right) => left.timestampMs - right.timestampMs);
-    if (!events.length) return null;
+    if (!events.length && !fixedDuration) return null;
 
-    const eventEnd = Math.max(...events.map((event) => event.timestampMs + event.durationMs));
+    const eventEnd = Math.max(0, ...events.map((event) => event.timestampMs + event.durationMs));
     const createdAt = Number.isFinite(Number(recording.createdAt)) ? Number(recording.createdAt) : Date.now();
     const fallbackId = `${createdAt}-${index}`;
     return {
       id: String(recording.id || fallbackId),
       name: String(recording.name || `Recording ${index + 1}`).trim() || `Recording ${index + 1}`,
       createdAt,
-      durationMs: Math.max(eventEnd, Number(recording.durationMs) || 0),
+      durationMs: fixedDuration ? recording.durationMs : Math.max(eventEnd, Number(recording.durationMs) || 0),
+      ...(fixedDuration ? { fixedDuration: true } : {}),
       bpm: Math.round(clamp(recording.bpm, 30, 320, 120)),
       swing: Math.round(clamp(recording.swing, 0, 50, 0)),
       events
@@ -325,6 +328,7 @@
       this.recordingEvents = [];
       this.recordingSessionId = 0;
       this.recordingCaptureTimers = new Map();
+      this.recordingWindowTimer = null;
       this.recordingPlaybackTimer = null;
       this.recordingPlayback = null;
       this.transportSessionId = 0;
@@ -664,6 +668,7 @@
           if (!Array.isArray(source)) throw new Error("Recordings array is missing");
           const imported = source.map(normalizeRecording).filter(Boolean);
           if (!imported.length) throw new Error("No valid recordings found");
+          this.finishRecording();
           this.stopRecordingPlayback();
           this.recordings = imported;
           this.selectedRecordingIndex = 0;
@@ -826,9 +831,9 @@
       });
     }
 
-    recordTimelineHit(voice, velocity, when, stopTime, settings) {
+    recordTimelineHit(voice, velocity, when, stopTime, settings, minimumDurationMs = 40) {
       const delayMs = Math.max(0, (when - this.audioContext.currentTime) * 1000);
-      const durationMs = Math.max(40, (stopTime - when) * 1000);
+      const durationMs = Math.max(minimumDurationMs, (stopTime - when) * 1000);
       const startTime = performance.now() + delayMs;
       this.timelineEvents.push({
         voice,
@@ -1006,6 +1011,7 @@
         }
       });
       this.elements.lengthSelect.addEventListener("change", () => {
+        if (this.isRecording || this.isCountingIn) return;
         this.state.length = Number(this.elements.lengthSelect.value);
         if (this.currentStep >= this.state.length) this.setCurrentStep(-1);
         if (this.nextStep >= this.state.length) this.nextStep = 0;
@@ -1203,6 +1209,8 @@
       this.recordingStartTime = when;
       this.recordingStartedAt = Date.now();
       this.isRecording = true;
+      this.recordingDuration = this.state.length * 60 / this.state.bpm / 4;
+      this.recordingEndTime = this.state.loop ? Infinity : when + this.recordingDuration;
 
       if (this.timelineEvents.length) {
         const performanceNow = performance.now();
@@ -1223,6 +1231,33 @@
           });
       }
       this.updateRecordingControls();
+      this.scheduleRecordingWindow();
+    }
+
+    sweepRecording(when) {
+      const elapsed = Math.max(0, Math.min(when, this.recordingEndTime) - this.recordingStartTime);
+      const duration = this.recordingDuration;
+      this.recordingEvents = this.recordingEvents.filter((event) => {
+        const position = event.timestampMs / 1000;
+        // The position at the cursor is still part of the unswept region.
+        const lastPass = Math.ceil((elapsed - position) / duration - 1e-9) - 1;
+        return event.recordedTime >= lastPass * duration + position - 1e-9;
+      });
+    }
+
+    scheduleRecordingWindow() {
+      if (!this.isRecording) return;
+      const now = this.audioContext.currentTime;
+      if (now >= this.recordingEndTime) {
+        this.finishRecording();
+        return;
+      }
+      this.sweepRecording(now);
+      this.updateRecordingControls();
+      this.recordingWindowTimer = window.setTimeout(
+        () => this.scheduleRecordingWindow(),
+        Math.min(SCHEDULER_DELAY_MS, Math.max(0, (this.recordingEndTime - now) * 1000))
+      );
     }
 
     startGuide() {
@@ -1281,13 +1316,22 @@
 
     commitRecordedEvent(pending) {
       if (!this.isRecording || pending.sessionId !== this.recordingSessionId ||
-          pending.when < this.recordingStartTime - 0.000001) return;
-      const timestampMs = Math.max(0, (pending.when - this.recordingStartTime) * 1000);
+          pending.when < this.recordingStartTime - 0.000001 ||
+          pending.when >= this.recordingEndTime) return;
+      const recordedTime = Math.max(0, pending.when - this.recordingStartTime);
+      const duration = this.recordingDuration;
+      const position = recordedTime - Math.floor((recordedTime + 1e-9) / duration) * duration;
+      const timestampMs = Math.max(0, position * 1000);
+      this.sweepRecording(this.audioContext.currentTime);
+      const elapsed = Math.min(this.audioContext.currentTime, this.recordingEndTime) - this.recordingStartTime;
+      const lastPass = Math.ceil((elapsed - timestampMs / 1000) / duration - 1e-9) - 1;
+      if (recordedTime < lastPass * duration + timestampMs / 1000 - 1e-9) return;
       this.recordingEvents.push({
         voice: pending.voice,
         velocity: pending.velocity,
         timestampMs,
         durationMs: pending.durationMs,
+        recordedTime,
         settings: { ...pending.settings }
       });
       this.updateRecordingControls();
@@ -1304,7 +1348,7 @@
         settings: { ...settings }
       };
       const delayMs = Math.max(0, (when - this.audioContext.currentTime) * 1000);
-      if (delayMs <= 2) {
+      if (delayMs === 0) {
         this.commitRecordedEvent(pending);
         return;
       }
@@ -1333,27 +1377,24 @@
         return null;
       }
       if (!this.isRecording) return null;
-      const audioNow = this.audioContext.currentTime;
+      const audioNow = Math.min(this.audioContext.currentTime, this.recordingEndTime);
+      window.clearTimeout(this.recordingWindowTimer);
+      this.recordingWindowTimer = null;
       this.recordingCaptureTimers.forEach((pending, timer) => {
         window.clearTimeout(timer);
-        if (pending.when <= audioNow + 0.002) this.commitRecordedEvent(pending);
+        if (pending.when <= audioNow) this.commitRecordedEvent(pending);
       });
       this.recordingCaptureTimers.clear();
+      this.sweepRecording(audioNow);
       this.isRecording = false;
       if (!this.isPlaying) this.stopGuide();
 
-      if (!this.recordingEvents.length) {
-        this.updateRecordingControls();
-        return null;
-      }
-
-      const eventEnd = Math.max(...this.recordingEvents.map((event) => event.timestampMs + event.durationMs));
-      const elapsedMs = Math.max(0, (audioNow - this.recordingStartTime) * 1000);
       const recording = normalizeRecording({
         id: `${this.recordingStartedAt}-${Math.random().toString(36).slice(2, 8)}`,
         name: this.getNextRecordingName(),
         createdAt: this.recordingStartedAt,
-        durationMs: Math.max(elapsedMs, eventEnd),
+        durationMs: this.recordingDuration * 1000,
+        fixedDuration: true,
         bpm: this.state.bpm,
         swing: this.state.swing,
         events: this.recordingEvents
@@ -1420,7 +1461,15 @@
     }
 
     toggleRecordingLoop() {
+      if (this.isRecording && this.audioContext.currentTime >= this.recordingEndTime) this.finishRecording();
       this.state.loop = !this.state.loop;
+      if (this.isRecording) {
+        const elapsed = Math.max(0, this.audioContext.currentTime - this.recordingStartTime);
+        this.recordingEndTime = this.state.loop ? Infinity : this.recordingStartTime +
+          (Math.floor(elapsed / this.recordingDuration) + 1) * this.recordingDuration;
+        window.clearTimeout(this.recordingWindowTimer);
+        this.scheduleRecordingWindow();
+      }
       const playback = this.recordingPlayback;
       if (playback) {
         const now = this.audioContext.currentTime;
@@ -1475,12 +1524,14 @@
         playback.eventIndex = 0;
       }
       const events = playback.recording.events;
-      while (playback.cycle < playback.endCycle) {
+      while (events.length && playback.cycle < playback.endCycle) {
         const event = events[playback.eventIndex];
         const when = playback.startTime + playback.cycle * playback.duration + event.timestampMs / 1000;
         if (when >= now + SCHEDULE_AHEAD_SEC) break;
         if (when >= now - 0.000001) {
-          const result = this.playVoice(event.voice, event.velocity, when, event.settings, false);
+          const boundary = playback.recording.fixedDuration
+            ? playback.startTime + (playback.cycle + 1) * playback.duration : null;
+          const result = this.playVoice(event.voice, event.velocity, when, event.settings, false, boundary);
           const visualTimer = this.flashVoice(event.voice, Math.max(0, (when - now) * 1000));
           playback.pending.push({ cycle: playback.cycle, when, sources: result?.sources || [], visualTimer });
         }
@@ -1526,7 +1577,7 @@
       this.stopRecordingPlayback();
     }
 
-    playVoice(voice, velocity, when, settingsOverride = null, captureEvent = true) {
+    playVoice(voice, velocity, when, settingsOverride = null, captureEvent = true, stopAt = null) {
       const settings = settingsOverride || this.state.voices[voice];
       const result = window.playDrumSound({
         audioContext: this.audioContext,
@@ -1543,10 +1594,14 @@
       });
 
       if (!result) return;
+      if (stopAt !== null) {
+        result.stopTime = Math.min(result.stopTime, stopAt);
+        result.sources.forEach((source) => source.stop(result.stopTime));
+      }
       if (captureEvent) {
         this.queueRecordingEvent(voice, velocity, when, Math.max(8, (result.stopTime - when) * 1000), settings);
       }
-      this.recordTimelineHit(voice, velocity, when, result.stopTime, settings);
+      this.recordTimelineHit(voice, velocity, when, result.stopTime, settings, stopAt === null ? 40 : 0);
       this.lastMetersActivitySec = Math.max(this.lastMetersActivitySec, result.stopTime);
       result.sources.forEach((source) => this.activeSources.add(source));
       const cleanupDelay = Math.max(0, (result.stopTime - this.audioContext.currentTime) * 1000) + 100;
@@ -1676,6 +1731,7 @@
     }
 
     tapTempo() {
+      if (this.isRecording || this.isCountingIn) return;
       const now = performance.now();
       if (this.tapTimes.length && now - this.tapTimes[this.tapTimes.length - 1] > 2000) {
         this.tapTimes = [];
@@ -1695,6 +1751,7 @@
     }
 
     setBpm(value) {
+      if (this.isRecording || this.isCountingIn) return;
       this.state.bpm = Math.round(clamp(value, 30, 320, this.state.bpm));
       this.elements.bpmInput.value = String(this.state.bpm);
       this.elements.bpmSlider.value = String(this.state.bpm);
@@ -1894,6 +1951,8 @@
       }
 
       const sampleRate = 44100;
+      const selected = this.recordings[this.selectedRecordingIndex];
+      const recording = selected?.fixedDuration ? selected : null;
       const stepStartTimes = [];
       let totalDuration = 0;
 
@@ -1906,36 +1965,39 @@
         const decay = Number(this.state.voices[id]?.decay) || 0;
         return Math.max(max, decay);
       }, 0);
-      const renderDuration = Math.max(1, totalDuration + longestDecay + 0.35);
+      const renderDuration = recording ? recording.durationMs / 1000 : Math.max(1, totalDuration + longestDecay + 0.35);
       const offlineContext = new OfflineAudioContext(2, Math.ceil(renderDuration * sampleRate), sampleRate);
 
-      for (let step = 0; step < this.state.length; step++) {
-        const when = stepStartTimes[step] + 0.02;
-        VOICES.forEach(({ id }) => {
-          const velocity = this.state.pattern[id][step];
-          if (!velocity || this.state.mutes[id]) return;
-          const settings = this.state.voices[id];
-          window.playDrumSound({
-            audioContext: offlineContext,
-            destinationNode: offlineContext.destination,
-            voice: id,
-            when,
-            velocity: velocity === 2 ? 1 : 0.68,
-            level: (settings.level || 0) * (this.state.volume / 100),
-            pan: settings.pan,
-            frequency: settings.frequency,
-            decay: settings.decay,
-            tone: settings.tone,
-            snap: settings.tone
-          });
+      const events = recording ? recording.events : stepStartTimes.flatMap((time, step) =>
+        VOICES.filter(({ id }) => this.state.pattern[id][step] && !this.state.mutes[id]).map(({ id }) => ({
+          voice: id,
+          velocity: this.state.pattern[id][step],
+          timestampMs: (time + 0.02) * 1000,
+          settings: this.state.voices[id]
+        }))
+      );
+      events.forEach((event) => {
+        const settings = event.settings;
+        window.playDrumSound({
+          audioContext: offlineContext,
+          destinationNode: offlineContext.destination,
+          voice: event.voice,
+          when: event.timestampMs / 1000,
+          velocity: event.velocity === 2 ? 1 : 0.68,
+          level: (settings.level || 0) * (this.state.volume / 100),
+          pan: settings.pan,
+          frequency: settings.frequency,
+          decay: settings.decay,
+          tone: settings.tone,
+          snap: settings.tone
         });
-      }
+      });
 
       const audioBuffer = await offlineContext.startRendering();
       const blob = encodeAudioBufferToWavBlob(audioBuffer);
       const objectUrl = URL.createObjectURL(blob);
       const link = document.createElement("a");
-      const filename = `drum_machine_pattern_${formatPekosoftTimestamp()}.wav`;
+      const filename = `drum_machine_${recording ? "recording" : "pattern"}_${formatPekosoftTimestamp()}.wav`;
 
       link.href = objectUrl;
       link.download = typeof window.ensurePekosoftFilename === "function"
@@ -2082,15 +2144,18 @@
 
     updateRecordingControls() {
       const hasRecording = this.selectedRecordingIndex >= 0 && this.selectedRecordingIndex < this.recordings.length;
-      const canFinalizeAndPlay = this.isRecording && this.recordingEvents.length > 0;
+      const canFinalizeAndPlay = this.isRecording;
       const armed = this.isRecording || this.isCountingIn;
       this.elements.record.classList.toggle("recording", armed);
       this.elements.record.setAttribute("aria-pressed", armed ? "true" : "false");
       this.elements.record.title = this.isCountingIn ? "Cancel count-in" : this.isRecording ? "Stop recording" : "Start recording";
       this.elements.countIn.disabled = armed;
+      [this.elements.lengthSelect, this.elements.bpmInput, this.elements.bpmSlider, this.elements.tap,
+        document.getElementById("tempo-decrease-button"), document.getElementById("tempo-increase-button")]
+        .filter(Boolean).forEach((element) => { element.disabled = armed; });
       const status = this.isCountingIn
         ? `Count-in: ${this.countInTotalBeats - this.countInBeatsRemaining} / ${this.countInTotalBeats} beats`
-        : this.isRecording ? "Recording" : "Ready";
+        : this.isRecording ? `Recording: ${this.state.length} steps${this.state.loop ? " · Overwrite" : ""}` : "Ready";
       if (this.elements.recordingStatus.textContent !== status) this.elements.recordingStatus.textContent = status;
       this.elements.playback.classList.toggle("button-on", this.isRecordingPlayback);
       this.elements.playback.setAttribute("aria-pressed", this.isRecordingPlayback ? "true" : "false");

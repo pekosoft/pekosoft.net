@@ -254,11 +254,11 @@
       lowPass.Q.setValueAtTime(0.7, startTime);
       // Uneven bursts mimic seeds striking a shaker rather than a pitched drum.
       envelope.gain.setValueAtTime(0.0001, startTime);
-      envelope.gain.linearRampToValueAtTime(0.8, startTime + duration * 0.08);
-      envelope.gain.linearRampToValueAtTime(0.25, startTime + duration * 0.18);
-      envelope.gain.linearRampToValueAtTime(0.65, startTime + duration * 0.24);
-      envelope.gain.linearRampToValueAtTime(0.2, startTime + duration * 0.36);
-      envelope.gain.linearRampToValueAtTime(0.45, startTime + duration * 0.42);
+      envelope.gain.linearRampToValueAtTime(0.8, startTime + duration * 0.02);
+      envelope.gain.linearRampToValueAtTime(0.25, startTime + duration * 0.045);
+      envelope.gain.linearRampToValueAtTime(0.65, startTime + duration * 0.06);
+      envelope.gain.linearRampToValueAtTime(0.2, startTime + duration * 0.09);
+      envelope.gain.linearRampToValueAtTime(0.45, startTime + duration * 0.12);
       envelope.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);
       noise.connect(highPass);
       highPass.connect(lowPass);

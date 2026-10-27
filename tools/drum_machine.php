@@ -56,6 +56,10 @@
           <svg class="icons"><use href="/icons.svg#play" /></svg>
           <span class="button-text">Playback</span>
         </button>
+        <button id="loop-button" class="square" title="Toggle recording loop" aria-pressed="false">
+          <svg class="icons"><use href="/icons.svg#loop" /></svg>
+          <span class="button-text">Loop</span>
+        </button>
         <button id="stop-button" class="square" title="Stop playback">
           <svg class="icons"><use href="/icons.svg#stop" /></svg>
           <span class="button-text">Stop</span>
@@ -67,6 +71,10 @@
         <button id="tap-button" class="square" title="Tap tempo">
           <svg class="icons"><use href="/icons.svg#tap_pad" /></svg>
           <span class="button-text">Tap</span>
+        </button>
+        <button id="metronome-button" class="square" title="Toggle metronome" aria-pressed="false">
+          <svg class="icons"><use href="/icons.svg#metronome" /></svg>
+          <span class="button-text">Metronome</span>
         </button>
         <button id="toggle-sound-button" class="square" title="Toggle sound">
           <svg class="icons"><use href="/icons.svg#sound" /></svg>
@@ -82,7 +90,17 @@
         </button>
       </div>
 
+      <output id="recording-status" role="status" aria-live="polite">Ready</output>
       <div class="controls-values wrapper">
+        <div class="pair">
+          <label for="count-in-select" title="Count beats before recording">Count-in:</label>
+          <select id="count-in-select">
+            <option value="0">Off</option>
+            <option value="1" selected>One bar</option>
+            <option value="2">Two bars</option>
+            <option value="4">Four bars</option>
+          </select>
+        </div>
         <div class="pair">
           <label for="bpm-input" title="Beats per minute">BPM:</label>
           <input type="number" id="bpm-input" min="30" max="320" step="1" value="120">

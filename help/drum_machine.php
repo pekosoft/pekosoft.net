@@ -44,7 +44,7 @@
   </svg>
   <div class="justify">
     <h1>Voice <span class="object">buttons</span></h1>
-    KICK, SNARE, HI-HAT and PERC audition and select the corresponding voice. PERC produces a maraca-like noise rattle rather than a pitched tone. Use D or 1 for kick, F or 2 for snare, J or 3 for hi-hat, and K or 4 for percussion. Shortcuts work in Grid and Pad modes, including while a button has focus, but not while editing a field. Each key press plays one hit; holding a key does not repeat. Record captures keyboard hits in the same way as pad presses.
+    KICK, SNARE, HI-HAT and PERC audition and select the corresponding voice. PERC produces a short maraca-like noise rattle rather than a pitched tone. Use D or 1 for kick, F or 2 for snare, J or 3 for hi-hat, and K or 4 for percussion. Shortcuts work in Grid and Pad modes, including while a button has focus, but not while editing a field. Each key press plays one hit; holding a key does not repeat. Record captures keyboard hits in the same way as pad presses.
   </div>
 </div>
 
@@ -100,7 +100,7 @@
     <use href="/icons.svg#record"></use>
   </svg>
   <div class="justify">
-    <h1>Record <span class="object">button</span></h1>Starts or stops performance recording. Captures audible sequencer hits and manually auditioned voices with their timing, velocity and voice settings. A completed take is added to Playlist automatically. <span class="default">Default: off.</span>
+    <h1>Record <span class="object">button</span></h1>Starts the selected Count-in, then records sequencer hits and manually auditioned voices with their timing, velocity and voice settings. Record does not start the sequencer. Hits played during Count-in are not recorded. Press Record again to cancel Count-in or complete a take. A completed take containing hits is added to Playlist automatically. The recording starts at the end of Count-in, without including the lead-in in its duration. <span class="default">Default: off.</span>
   </div>
 </div>
 
@@ -115,10 +115,39 @@
 
 <div class="feature-row border">
   <svg class="standard-image-help">
+    <use href="/icons.svg#loop"></use>
+  </svg>
+  <div class="justify">
+    <h1>Loop <span class="object">button</span></h1>Repeats the selected Playlist recording during Playback so you can check whether the recorded beat makes a perfect loop. Each pass uses the recording's exact stored duration and hit timing, including leading and trailing silence, without snapping to beats or bars. You can enable Loop during playback. Turning it off finishes the current pass without starting another. Loop does not affect the sequencer or WAV exports. <span class="default">Default: off.</span>
+  </div>
+</div>
+
+<div class="feature-row border">
+  <svg class="standard-image-help">
     <use href="/icons.svg#stop"></use>
   </svg>
   <div class="justify">
-    <h1>Stop <span class="object">button</span></h1>Stops sequencer and recording playback, completes an active recording, and returns the playhead to the beginning.
+    <h1>Stop <span class="object">button</span></h1>Stops sequencer and recording playback, cancels Count-in or completes an active recording, and returns the playhead to the beginning.
+  </div>
+</div>
+
+<div class="feature-row border">
+  <svg class="standard-image-help">
+    <use href="/icons.svg#metronome"></use>
+  </svg>
+  <div class="justify">
+    <h1>Metronome <span class="object">button</span></h1>
+    Toggles a timing click during sequencer playback and performance recording. Each bar has four beats at the current BPM, with an accent on the first beat. Swing and Length do not change the click. The click follows Sound and Volume but never adds hits to Timeline, recordings or WAV exports. It does not accompany Playlist playback. <span class="default">Default: off.</span>
+  </div>
+</div>
+
+<div class="feature-row border">
+  <svg class="standard-image-help">
+    <use href="/icons.svg#metronome"></use>
+  </svg>
+  <div class="justify">
+    <h1>Count-in <span class="object">menu</span></h1>
+    Selects Off, One bar, Two bars or Four bars before recording. Each bar contains four beats at the current BPM. Count-in clicks sound even when Metronome is off and follow Sound and Volume. BPM changes affect subsequent beat intervals. The recording status shows count-in progress and when recording begins. The menu is unavailable until Count-in or recording ends. Stop, Reset or starting Playlist playback cancels Count-in without creating a take. Applying pattern data also stops the transport. <span class="default">Default: One bar.</span>
   </div>
 </div>
 

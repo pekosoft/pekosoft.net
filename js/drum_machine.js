@@ -137,6 +137,9 @@
     return {
       mode: "grid",
       blink: false,
+      loop: false,
+      metronome: false,
+      countIn: 1,
       bpm: Number.isFinite(globalBpm) ? clamp(globalBpm, 30, 320, 120) : 120,
       swing: 0,
       volume: 80,
@@ -169,6 +172,9 @@
     return {
       mode: raw.mode === "pad" ? "pad" : defaults.mode,
       blink: raw.blink === undefined ? defaults.blink : !!raw.blink,
+      loop: raw.loop === undefined ? defaults.loop : !!raw.loop,
+      metronome: raw.metronome === undefined ? defaults.metronome : !!raw.metronome,
+      countIn: [0, 1, 2, 4].includes(raw.countIn) ? raw.countIn : defaults.countIn,
       bpm: useGlobalDefaults && Number.isFinite(globalBpm)
         ? clamp(globalBpm, 30, 320, defaults.bpm)
         : clamp(raw.bpm, 30, 320, defaults.bpm),
@@ -305,6 +311,13 @@
       this.selectedRecordingIndex = savedPlaylist.selectedRecordingIndex;
       this.isPlaying = false;
       this.isRecording = false;
+      this.isCountingIn = false;
+      this.countInBeatsRemaining = 0;
+      this.countInTotalBeats = 0;
+      this.guideBeat = 0;
+      this.nextGuideTime = 0;
+      this.guideTimer = null;
+      this.guideSources = new Set();
       this.isRecordingPlayback = false;
       this.playingRecordingIndex = -1;
       this.recordingStartTime = 0;
@@ -312,7 +325,9 @@
       this.recordingEvents = [];
       this.recordingSessionId = 0;
       this.recordingCaptureTimers = new Map();
-      this.recordingPlaybackEndTimer = null;
+      this.recordingPlaybackTimer = null;
+      this.recordingPlayback = null;
+      this.transportSessionId = 0;
       this.currentStep = -1;
       this.nextStep = 0;
       this.nextStepTime = 0;
@@ -332,7 +347,11 @@
         blink: document.getElementById("blink-button"),
         play: document.getElementById("play-button"),
         record: document.getElementById("record-button"),
+        metronome: document.getElementById("metronome-button"),
+        countIn: document.getElementById("count-in-select"),
+        recordingStatus: document.getElementById("recording-status"),
         playback: document.getElementById("playback-button"),
+        loop: document.getElementById("loop-button"),
         stop: document.getElementById("stop-button"),
         saveWav: document.getElementById("save-wav-button"),
         tap: document.getElementById("tap-button"),
@@ -580,7 +599,8 @@
 
       selectRecording(index) {
         if (index < 0 || index >= this.recordings.length) return;
-        if (this.isRecordingPlayback && index !== this.playingRecordingIndex) {
+        if (index !== this.selectedRecordingIndex ||
+            (this.isRecordingPlayback && index !== this.playingRecordingIndex)) {
           this.stopRecordingPlayback();
         }
         this.selectedRecordingIndex = index;
@@ -590,7 +610,7 @@
 
       removeRecording(index) {
         if (index < 0 || index >= this.recordings.length) return;
-        if (index === this.playingRecordingIndex) this.stopRecordingPlayback();
+        if (index === this.playingRecordingIndex || !this.isRecordingPlayback) this.stopRecordingPlayback();
         this.recordings.splice(index, 1);
         if (index < this.playingRecordingIndex) this.playingRecordingIndex--;
         if (!this.recordings.length) {
@@ -681,6 +701,9 @@
       this.analyser.connect(this.compressor);
       this.compressor.connect(this.masterGain);
       this.masterGain.connect(this.audioContext.destination);
+      this.guideGain = this.audioContext.createGain();
+      this.guideGain.gain.value = 0.4;
+      this.guideGain.connect(this.masterGain);
       this.applyMasterGain();
       window.addEventListener('pekosoft:global-sound-change', () => this.applyMasterGain());
 
@@ -906,7 +929,22 @@
 
       this.elements.play.addEventListener("click", () => this.togglePlayback());
       this.elements.record.addEventListener("click", () => this.toggleRecording());
+      this.elements.metronome.addEventListener("click", () => {
+        this.state.metronome = !this.state.metronome;
+        if (!this.state.metronome && !this.isCountingIn) this.stopGuide();
+        this.startGuide();
+        this.saveState();
+        this.updateToggleButtons();
+        this.updatePanel();
+      });
+      this.elements.countIn.addEventListener("change", () => {
+        const bars = Number(this.elements.countIn.value);
+        this.state.countIn = [0, 1, 2, 4].includes(bars) ? bars : 1;
+        this.saveState();
+        this.updatePanel();
+      });
       this.elements.playback.addEventListener("click", () => this.toggleRecordingPlayback());
+      this.elements.loop.addEventListener("click", () => this.toggleRecordingLoop());
       this.elements.stop.addEventListener("click", () => this.stopAll(true));
       this.elements.saveWav.addEventListener("click", () => this.savePatternAsWav());
       this.elements.tap.addEventListener("click", () => this.tapTempo());
@@ -1131,7 +1169,7 @@
     }
 
     async toggleRecording() {
-      if (this.isRecording) {
+      if (this.isRecording || this.isCountingIn) {
         this.finishRecording();
         return;
       }
@@ -1139,21 +1177,40 @@
     }
 
     async startRecording() {
+      if (this.isRecording || this.isCountingIn) return;
       this.stopRecordingPlayback();
+      const sessionId = ++this.recordingSessionId;
+      this.isCountingIn = true;
+      this.countInTotalBeats = this.state.countIn * 4;
+      this.countInBeatsRemaining = this.countInTotalBeats;
+      this.updateRecordingControls();
       await this.ensureAudioReady();
-      this.recordingSessionId++;
+      if (!this.isCountingIn || sessionId !== this.recordingSessionId) return;
       this.recordingCaptureTimers.forEach((pending, timer) => window.clearTimeout(timer));
       this.recordingCaptureTimers.clear();
       this.recordingEvents = [];
-      this.recordingStartTime = this.audioContext.currentTime;
+      if (!this.countInTotalBeats) {
+        this.beginRecording(this.audioContext.currentTime);
+        this.startGuide();
+        return;
+      }
+      this.stopGuide();
+      this.startGuide();
+    }
+
+    beginRecording(when) {
+      this.isCountingIn = false;
+      this.recordingStartTime = when;
       this.recordingStartedAt = Date.now();
       this.isRecording = true;
 
-      if (this.isPlaying) {
+      if (this.timelineEvents.length) {
         const performanceNow = performance.now();
         const audioNow = this.audioContext.currentTime;
+        const performanceStart = performanceNow + ((when - audioNow) * 1000);
+        // Include hits at the boundary even if the scheduler wakes slightly late.
         this.timelineEvents
-          .filter((event) => event.startTime >= performanceNow)
+          .filter((event) => event.startTime >= performanceStart - 0.001)
           .forEach((event) => {
             const when = audioNow + ((event.startTime - performanceNow) / 1000);
             this.queueRecordingEvent(
@@ -1168,8 +1225,63 @@
       this.updateRecordingControls();
     }
 
+    startGuide() {
+      if (this.guideTimer !== null) return;
+      if (!this.isCountingIn && !(this.state.metronome && (this.isPlaying || this.isRecording))) return;
+      this.guideBeat = 0;
+      this.nextGuideTime = this.audioContext.currentTime + 0.03;
+      this.scheduleGuide();
+    }
+
+    scheduleGuide() {
+      const now = this.audioContext.currentTime;
+      while (this.nextGuideTime < now + SCHEDULE_AHEAD_SEC) {
+        if (this.isCountingIn && this.countInBeatsRemaining === 0) {
+          if (this.nextGuideTime > now) break;
+          this.beginRecording(this.nextGuideTime);
+        }
+        if (!this.isCountingIn && !(this.state.metronome && (this.isPlaying || this.isRecording))) {
+          this.stopGuide();
+          return;
+        }
+        const result = window.playTransientSound({
+          audioContext: this.audioContext,
+          destinationNode: this.guideGain,
+          tone: "click",
+          when: this.nextGuideTime,
+          pitchRatio: this.guideBeat % 4 === 0 ? 1.5 : 1,
+          gain: 1
+        });
+        if (result) {
+          this.guideSources.add(result.stopNode);
+          result.stopNode.addEventListener("ended", () => this.guideSources.delete(result.stopNode), { once: true });
+        }
+        if (this.isCountingIn) {
+          this.countInBeatsRemaining--;
+          this.updateRecordingControls();
+        }
+        this.guideBeat++;
+        this.nextGuideTime += 60 / this.state.bpm;
+      }
+      this.guideTimer = window.setTimeout(() => this.scheduleGuide(), SCHEDULER_DELAY_MS);
+    }
+
+    stopGuide() {
+      window.clearTimeout(this.guideTimer);
+      this.guideTimer = null;
+      this.guideSources.forEach((source) => {
+        try {
+          source.stop(this.audioContext.currentTime);
+        } catch (_) {
+          // Source may already have ended.
+        }
+      });
+      this.guideSources.clear();
+    }
+
     commitRecordedEvent(pending) {
-      if (!this.isRecording || pending.sessionId !== this.recordingSessionId) return;
+      if (!this.isRecording || pending.sessionId !== this.recordingSessionId ||
+          pending.when < this.recordingStartTime - 0.000001) return;
       const timestampMs = Math.max(0, (pending.when - this.recordingStartTime) * 1000);
       this.recordingEvents.push({
         voice: pending.voice,
@@ -1182,7 +1294,7 @@
     }
 
     queueRecordingEvent(voice, velocity, when, durationMs, settings) {
-      if (!this.isRecording) return;
+      if (!this.isRecording || when < this.recordingStartTime - 0.000001) return;
       const pending = {
         sessionId: this.recordingSessionId,
         voice,
@@ -1212,6 +1324,14 @@
     }
 
     finishRecording() {
+      if (this.isCountingIn) {
+        this.isCountingIn = false;
+        this.recordingSessionId++;
+        this.stopGuide();
+        this.startGuide();
+        this.updateRecordingControls();
+        return null;
+      }
       if (!this.isRecording) return null;
       const audioNow = this.audioContext.currentTime;
       this.recordingCaptureTimers.forEach((pending, timer) => {
@@ -1220,6 +1340,7 @@
       });
       this.recordingCaptureTimers.clear();
       this.isRecording = false;
+      if (!this.isPlaying) this.stopGuide();
 
       if (!this.recordingEvents.length) {
         this.updateRecordingControls();
@@ -1261,6 +1382,7 @@
     }
 
     async startRecordingPlayback(index = null) {
+      if (this.isCountingIn) this.finishRecording();
       if (this.isRecording) {
         const completed = this.finishRecording();
         if (index === null && completed) index = this.selectedRecordingIndex;
@@ -1271,7 +1393,9 @@
       if (!recordingId) return;
       this.stopRecordingPlayback();
       this.pausePlayback(true);
+      const sessionId = this.transportSessionId;
       await this.ensureAudioReady();
+      if (sessionId !== this.transportSessionId) return;
 
       index = this.recordings.findIndex((recording) => recording.id === recordingId);
       if (index < 0) return;
@@ -1279,26 +1403,104 @@
       this.selectedRecordingIndex = index;
       this.playingRecordingIndex = index;
       this.isRecordingPlayback = true;
-      const startTime = this.audioContext.currentTime + 0.03;
-
-      recording.events.forEach((event) => {
-        const when = startTime + (event.timestampMs / 1000);
-        this.playVoice(event.voice, event.velocity, when, event.settings, false);
-        this.flashVoice(event.voice, Math.max(0, (when - this.audioContext.currentTime) * 1000));
-      });
-
-      this.recordingPlaybackEndTimer = window.setTimeout(() => {
-        this.stopRecordingPlayback();
-      }, recording.durationMs + 80);
+      this.recordingPlayback = {
+        recording,
+        startTime: this.audioContext.currentTime + 0.03,
+        duration: Math.max(8, recording.durationMs) / 1000,
+        cycle: 0,
+        eventIndex: 0,
+        endCycle: this.state.loop ? Infinity : 1,
+        pending: []
+      };
+      this.scheduleRecordingPlayback();
 
       this.saveRecordingPlaylist();
       this.renderRecordingPlaylist();
       this.updateToggleButtons();
     }
 
+    toggleRecordingLoop() {
+      this.state.loop = !this.state.loop;
+      const playback = this.recordingPlayback;
+      if (playback) {
+        const now = this.audioContext.currentTime;
+        const currentCycle = Math.max(0, Math.floor((now - playback.startTime) / playback.duration));
+        playback.endCycle = this.state.loop ? Infinity : currentCycle + 1;
+        if (!this.state.loop) {
+          // Lookahead may already include the next pass, especially for short takes.
+          playback.pending = playback.pending.filter((hit) => {
+            if (hit.cycle < playback.endCycle) return true;
+            hit.sources.forEach((source) => {
+              try {
+                source.stop(now);
+              } catch (_) {
+                // Source may already have ended.
+              }
+              this.activeSources.delete(source);
+            });
+            window.clearTimeout(hit.visualTimer);
+            this.visualTimers.delete(hit.visualTimer);
+            return false;
+          });
+          const endTime = playback.startTime + playback.endCycle * playback.duration;
+          const timelineEnd = performance.now() + (endTime - now) * 1000;
+          this.timelineEvents = this.timelineEvents.filter((event) => event.startTime < timelineEnd);
+          if (playback.cycle >= playback.endCycle) {
+            playback.cycle = playback.endCycle;
+            playback.eventIndex = 0;
+          }
+        }
+        window.clearTimeout(this.recordingPlaybackTimer);
+        this.scheduleRecordingPlayback();
+      }
+      this.saveState();
+      this.updateToggleButtons();
+      this.updatePanel();
+    }
+
+    scheduleRecordingPlayback() {
+      const playback = this.recordingPlayback;
+      if (!this.isRecordingPlayback || !playback) return;
+      const now = this.audioContext.currentTime;
+      const endTime = playback.startTime + playback.endCycle * playback.duration;
+      if (now >= endTime) {
+        this.stopRecordingPlayback();
+        return;
+      }
+      playback.pending = playback.pending.filter((hit) => hit.when >= now);
+      // Skip missed passes after a delayed callback instead of replaying a burst.
+      const currentCycle = Math.max(0, Math.floor((now - playback.startTime) / playback.duration));
+      if (playback.cycle < currentCycle) {
+        playback.cycle = currentCycle;
+        playback.eventIndex = 0;
+      }
+      const events = playback.recording.events;
+      while (playback.cycle < playback.endCycle) {
+        const event = events[playback.eventIndex];
+        const when = playback.startTime + playback.cycle * playback.duration + event.timestampMs / 1000;
+        if (when >= now + SCHEDULE_AHEAD_SEC) break;
+        if (when >= now - 0.000001) {
+          const result = this.playVoice(event.voice, event.velocity, when, event.settings, false);
+          const visualTimer = this.flashVoice(event.voice, Math.max(0, (when - now) * 1000));
+          playback.pending.push({ cycle: playback.cycle, when, sources: result?.sources || [], visualTimer });
+        }
+        playback.eventIndex++;
+        if (playback.eventIndex === events.length) {
+          playback.eventIndex = 0;
+          playback.cycle++;
+        }
+      }
+      this.recordingPlaybackTimer = window.setTimeout(
+        () => this.scheduleRecordingPlayback(),
+        Math.min(SCHEDULER_DELAY_MS, Math.max(1, (endTime - now) * 1000))
+      );
+    }
+
     stopRecordingPlayback() {
-      window.clearTimeout(this.recordingPlaybackEndTimer);
-      this.recordingPlaybackEndTimer = null;
+      this.transportSessionId = (this.transportSessionId || 0) + 1;
+      window.clearTimeout(this.recordingPlaybackTimer);
+      this.recordingPlaybackTimer = null;
+      this.recordingPlayback = null;
       if (!this.isRecordingPlayback && this.playingRecordingIndex < 0) return;
       this.isRecordingPlayback = false;
       this.playingRecordingIndex = -1;
@@ -1361,12 +1563,15 @@
       }
 
       this.stopRecordingPlayback();
+      const sessionId = this.transportSessionId;
       await this.ensureAudioReady();
+      if (sessionId !== this.transportSessionId) return;
       this.isPlaying = true;
       this.nextStep = this.currentStep >= 0 ? (this.currentStep + 1) % this.state.length : 0;
       this.nextStepTime = this.audioContext.currentTime + 0.03;
       this.updateToggleButtons();
       this.scheduler();
+      this.startGuide();
     }
 
     scheduler() {
@@ -1410,11 +1615,12 @@
         callback();
       }, delayMs);
       this.visualTimers.add(timer);
+      return timer;
     }
 
     flashVoice(voice, delayMs) {
       if (!this.state.blink) return;
-      this.scheduleVisual(() => {
+      return this.scheduleVisual(() => {
         if (!this.state.blink) return;
         const triggers = document.querySelectorAll(`.voice-trigger[data-voice="${voice}"]`);
         triggers.forEach((trigger) => trigger.classList.add("voice-hit"));
@@ -1426,6 +1632,7 @@
 
     pausePlayback(resetPlayhead) {
       this.isPlaying = false;
+      if (!this.isRecording && !this.isCountingIn) this.stopGuide();
       window.clearTimeout(this.schedulerTimer);
       this.schedulerTimer = null;
       this.visualTimers.forEach((timer) => window.clearTimeout(timer));
@@ -1619,6 +1826,9 @@
         version: 1,
         mode: this.state.mode,
         blink: this.state.blink,
+        loop: this.state.loop,
+        metronome: this.state.metronome,
+        countIn: this.state.countIn,
         bpm: this.state.bpm,
         swing: this.state.swing,
         volume: this.state.volume,
@@ -1647,6 +1857,7 @@
         const data = JSON.parse(this.elements.patternText.value);
         if (!data || typeof data.pattern !== "object") throw new Error("Pattern data is missing");
         const before = this.patternSnapshot();
+        this.stopAll(false);
         this.state = normalizeState({ ...this.state, ...data }, false);
         this.applyMasterGain();
         this.commitPatternChange(before, false, "Applied pattern data", "check");
@@ -1831,6 +2042,7 @@
       this.elements.kitSelect.value = this.state.kitName;
       this.elements.lengthSelect.value = String(this.state.length);
       this.elements.voiceSelect.value = this.state.selectedVoice;
+      this.elements.countIn.value = String(this.state.countIn);
       this.updateVoiceFields();
     }
 
@@ -1852,6 +2064,10 @@
     updateToggleButtons() {
       this.elements.blink.classList.toggle("button-on", this.state.blink);
       this.elements.blink.setAttribute("aria-pressed", this.state.blink ? "true" : "false");
+      this.elements.loop.classList.toggle("button-on", this.state.loop);
+      this.elements.loop.setAttribute("aria-pressed", String(this.state.loop));
+      this.elements.metronome.classList.toggle("button-on", this.state.metronome);
+      this.elements.metronome.setAttribute("aria-pressed", String(this.state.metronome));
       if (!this.state.blink) {
         document.querySelectorAll(".voice-trigger.voice-hit").forEach((trigger) => trigger.classList.remove("voice-hit"));
       }
@@ -1867,9 +2083,15 @@
     updateRecordingControls() {
       const hasRecording = this.selectedRecordingIndex >= 0 && this.selectedRecordingIndex < this.recordings.length;
       const canFinalizeAndPlay = this.isRecording && this.recordingEvents.length > 0;
-      this.elements.record.classList.toggle("recording", this.isRecording);
-      this.elements.record.setAttribute("aria-pressed", this.isRecording ? "true" : "false");
-      this.elements.record.title = this.isRecording ? "Stop recording" : "Start recording";
+      const armed = this.isRecording || this.isCountingIn;
+      this.elements.record.classList.toggle("recording", armed);
+      this.elements.record.setAttribute("aria-pressed", armed ? "true" : "false");
+      this.elements.record.title = this.isCountingIn ? "Cancel count-in" : this.isRecording ? "Stop recording" : "Start recording";
+      this.elements.countIn.disabled = armed;
+      const status = this.isCountingIn
+        ? `Count-in: ${this.countInTotalBeats - this.countInBeatsRemaining} / ${this.countInTotalBeats} beats`
+        : this.isRecording ? "Recording" : "Ready";
+      if (this.elements.recordingStatus.textContent !== status) this.elements.recordingStatus.textContent = status;
       this.elements.playback.classList.toggle("button-on", this.isRecordingPlayback);
       this.elements.playback.setAttribute("aria-pressed", this.isRecordingPlayback ? "true" : "false");
       this.elements.playback.disabled = !hasRecording && !canFinalizeAndPlay;

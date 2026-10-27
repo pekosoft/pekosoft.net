@@ -80,6 +80,10 @@ test('default PERC is filtered noise with a multi-burst shaker envelope, not an 
   assert.deepEqual(filters[0].connections, [filters[1]]);
   const envelope = filters[1].connections[0];
   assert.deepEqual(envelope.gain.events.map(event => event[1]), [0.0001, 0.8, 0.25, 0.65, 0.2, 0.45, 0.0001]);
+  assert.deepEqual(envelope.gain.events.map(event => event[2]), [
+    2, 2 + 0.14 * 0.02, 2 + 0.14 * 0.045, 2 + 0.14 * 0.06,
+    2 + 0.14 * 0.09, 2 + 0.14 * 0.12, 2.14
+  ]);
   assert.ok(envelope.gain.events.every((event, index, events) => index === 0 || event[2] > events[index - 1][2]));
   assert.deepEqual(envelope.gain.events.at(-1), ['exponential', 0.0001, hit.stopTime]);
   const output = envelope.connections[0];

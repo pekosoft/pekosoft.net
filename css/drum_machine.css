@@ -262,6 +262,12 @@
   grid-column: 1 / -1;
 }
 
+#recording-status {
+  display: block;
+  padding: 4px;
+  text-align: center;
+}
+
 #timeline-container #drum-roll {
   display: block;
   width: 100%;

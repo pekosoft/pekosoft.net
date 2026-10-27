@@ -474,14 +474,14 @@
         return `${day}-${month}-${year} ${hours}:${minutes}:${seconds}`;
       }
 
-      drawRecordingPreview(canvas, recording, isActive) {
+      drawRecordingPreview(canvas, recording) {
         const context = canvas.getContext("2d");
         const width = canvas.width;
         const height = canvas.height;
         const rowHeight = height / VOICES.length;
         const styles = getComputedStyle(document.documentElement);
         context.clearRect(0, 0, width, height);
-        context.fillStyle = styles.getPropertyValue(isActive ? "--black" : "--color1").trim();
+        context.fillStyle = styles.getPropertyValue("--color1").trim();
 
         recording.events.forEach((event) => {
           const row = VOICES.findIndex((item) => item.id === event.voice);
@@ -523,7 +523,7 @@
           preview.width = 160;
           preview.height = 24;
           preview.setAttribute("aria-label", `${recording.name} preview`);
-          this.drawRecordingPreview(preview, recording, index === this.selectedRecordingIndex);
+          this.drawRecordingPreview(preview, recording);
           previewCell.appendChild(preview);
 
           const durationCell = document.createElement("td");

@@ -40,6 +40,66 @@ test('Blink defaults off and survives save, reload, export and import', () => {
   assert.equal(api.createDefaultState().blink, false);
 });
 
+test('Playlist previews keep their pattern color when recording selection changes', () => {
+  const { machine, context } = createMachine();
+  const previews = [];
+  function createElement(tag) {
+    const element = {
+      dataset: {},
+      classList: { toggle() {} },
+      addEventListener() {},
+      setAttribute() {},
+      append() {},
+      appendChild() {}
+    };
+    if (tag === 'canvas') {
+      const drawing = {
+        fillStyle: '',
+        blocks: [],
+        clearRect() { this.blocks = []; },
+        fillRect(...bounds) { this.blocks.push({ color: this.fillStyle, bounds }); }
+      };
+      element.getContext = () => drawing;
+      previews.push(drawing);
+    }
+    return element;
+  }
+  context.document.createElement = createElement;
+  context.getComputedStyle = () => ({
+    getPropertyValue: name => ({ '--black': '#000', '--color1': '#0080ff' })[name]
+  });
+  machine.elements = {
+    playlistItems: createElement('tbody'),
+    playlistCount: {},
+    playlistDuration: {},
+    playlistHits: {}
+  };
+  machine.updateRecordingControls = () => {};
+  const events = [
+    { voice: 'kick', timestampMs: 0, velocity: 1 },
+    { voice: 'snare', timestampMs: 500, velocity: 2 },
+    { voice: 'perc', timestampMs: 1000, velocity: 1 }
+  ];
+  machine.recordings = [0, 1].map(index => ({
+    name: `Recording ${index + 1}`,
+    durationMs: 1000,
+    createdAt: 0,
+    bpm: 120,
+    events
+  }));
+  for (const selectedIndex of [0, 1, -1]) {
+    machine.selectedRecordingIndex = selectedIndex;
+    previews.length = 0;
+    machine.renderRecordingPlaylist();
+    assert.equal(previews.length, 2);
+    for (const preview of previews) {
+      assert.equal(preview.blocks.length, events.length);
+      assert.ok(preview.blocks.every(block => block.color === '#0080ff'));
+      assert.deepEqual(preview.blocks.map(block => block.bounds[0]), [0, 80, 159]);
+    }
+  }
+});
+
 test('Blink toggles and clears active feedback without changing transport or pattern', () => {
   const { machine, storage, context } = createMachine();
   const handlers = {};

@@ -2948,8 +2948,6 @@ body > #panel-container.module-maximized > .module-body {
 
   .module-history-time {
     grid-column: 3;
-    font-size: 12px;
-    line-height: 16px;
   }
 }
 

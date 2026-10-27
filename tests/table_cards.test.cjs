@@ -160,6 +160,16 @@ test('Cards headings omit field-label prefixes across shared Cards views', () =>
   assert.match(styles, /td\[data-card-label\]:not\(\[data-card-label=""\]\):not\(\[data-card-heading="true"\]\)::before/);
 });
 
+test('Undo History timestamps inherit the normal cell text size at every viewport width', () => {
+  const styles = fs.readFileSync(path.join(__dirname, '..', 'css', 'index.css'), 'utf8');
+  const timeRules = [...styles.matchAll(/([^{}]+)\{([^{}]*)\}/g)]
+    .filter(([, selectors]) => /(?:^|[\s,])\.module-history-time\b/.test(selectors));
+  assert.ok(timeRules.length > 0);
+  for (const [, selectors, declarations] of timeRules) {
+    assert.doesNotMatch(declarations, /\b(?:font-size|line-height)\s*:/, selectors.trim());
+  }
+});
+
 test('paired card presentation copies each original field once', () => {
   const environment = createEnvironment();
   const { table } = createTable(['UK', 'USA'], [['Semibreve Semibreve / Whole', 'Whole']]);

@@ -87,6 +87,98 @@ function createLayout(savedStates, options = {}) {
   return { context, storage, writes, containers };
 }
 
+test('More closes only on its own button and survives outside, module and fullscreen actions', async () => {
+  function element() {
+    const classes = new Set();
+    return {
+      hidden: false, attributes: {}, handlers: {},
+      classList: {
+        add: name => classes.add(name),
+        remove: (...names) => names.forEach(name => classes.delete(name)),
+        contains: name => classes.has(name),
+        toggle(name, enabled = !classes.has(name)) {
+          if (enabled) classes.add(name);
+          else classes.delete(name);
+          return enabled;
+        }
+      },
+      setAttribute(name, value) { this.attributes[name] = value; },
+      addEventListener(name, callback) { this.handlers[name] = callback; }
+    };
+  }
+  const container = element();
+  container.contains = target => target === container;
+  const iconPanel = element();
+  iconPanel.hidden = true;
+  const controls = Object.fromEntries(
+    ['actions', 'titleEl', 'iconBtn', 'moreBtn', 'minimizeBtn', 'maximizeBtn', 'fullscreenBtn', 'closeBtn', 'header']
+      .map(name => [name, element()])
+  );
+  const documentHandlers = {};
+  const context = vm.createContext({
+    ...controls, container, iconPanel, id: 'controls',
+    Node: class {},
+    document: {
+      fullscreenElement: null,
+      addEventListener(name, callback) { documentHandlers[name] = callback; },
+      async exitFullscreen() { this.fullscreenElement = null; }
+    },
+    window: { addEventListener() {} },
+    localStorage: { setItem() {} },
+    updateIconPanelInset() {},
+    updateMinimizeButtonState() {},
+    isLockedModule: () => false,
+    isTwoColumnLayoutActive: () => false,
+    syncModuleMoreButtonState() {},
+    syncMaximizedModuleState() {},
+    toggleModule: () => container.classList.toggle('hidden')
+  });
+  container.requestFullscreen = async () => { context.document.fullscreenElement = container; };
+  vm.runInContext(extractSource('  function collapseMore() {', '  const body = container.querySelector'), context);
+  const assertOpen = () => {
+    assert.equal(iconPanel.hidden, false);
+    assert.equal(controls.moreBtn.attributes['aria-expanded'], 'true');
+    assert.equal(controls.moreBtn.classList.contains('button-on'), true);
+    assert.equal(container.classList.contains('module-icon-panel-open'), true);
+  };
+  controls.moreBtn.handlers.click();
+  assertOpen();
+  documentHandlers.pointerdown({ target: new context.Node() });
+  assertOpen();
+  controls.iconBtn.handlers.click();
+  assertOpen();
+  for (const name of ['minimizeBtn', 'maximizeBtn', 'fullscreenBtn', 'closeBtn']) {
+    await controls[name].handlers.click();
+    assertOpen();
+    await controls[name].handlers.click();
+    assertOpen();
+  }
+  documentHandlers.fullscreenchange();
+  assertOpen();
+  controls.moreBtn.handlers.click();
+  assert.equal(iconPanel.hidden, true);
+  assert.equal(controls.moreBtn.attributes['aria-expanded'], 'false');
+  assert.equal(controls.moreBtn.classList.contains('button-on'), false);
+});
+
+test('Layout reset preserves an open More mode', () => {
+  const { context, containers } = createLayout({ controls: 'maximized' });
+  const container = containers.get('controls-container');
+  container.classList.add('module-icon-panel-open');
+  container.more.classList.add('button-on');
+  container.more.setAttribute('aria-expanded', 'true');
+  context.document.querySelectorAll = () => [container];
+  container.id = 'controls-container';
+  context.syncFirstModule = () => {};
+  context.syncMaximizedModuleState = () => {};
+  vm.runInContext(extractSource('function resetModuleLayout() {', 'window.resetModuleLayout'), context);
+  context.resetModuleLayout();
+  assert.equal(container.classList.contains('module-icon-panel-open'), true);
+  assert.equal(container.more.classList.contains('button-on'), true);
+  assert.equal(container.more.attributes['aria-expanded'], 'true');
+  assert.equal(container.iconPanel.attributes.hidden, undefined);
+});
+
 for (const id of ['tool', 'controls', 'timeline', 'playlist', 'history', 'panel', 'meters']) {
   test(`two-column setup preserves the saved maximized ${id} module across repeated initialization`, () => {
     const { context, storage, writes, containers } = createLayout({ [id]: 'maximized' });

@@ -34,16 +34,13 @@ function resetModuleLayout() {
     const pageButton = document.getElementById(id + "-toggle");
     const tocButton = document.getElementById(id + "-toggle-toc-button");
 
-    container.classList.remove("hidden", "module-minimized", "module-maximized", "module-icon-panel-open");
+    container.classList.remove("hidden", "module-minimized", "module-maximized");
     container.querySelector(".module-minimize-btn")?.classList.remove("button-on");
     container.querySelector(".module-maximize-btn")?.classList.remove("button-on");
     container.querySelector(".module-icon-btn")?.classList.remove("button-on");
     container.querySelector(".module-icon-btn")?.setAttribute("aria-expanded", "false");
-    container.querySelector(".module-more-btn")?.classList.remove("button-on");
-    container.querySelector(".module-more-btn")?.setAttribute("aria-expanded", "false");
     container.querySelector(".module-header-actions")?.setAttribute("hidden", "");
     container.querySelector(".module-title")?.removeAttribute("hidden");
-    container.querySelector(".module-icon-panel")?.setAttribute("hidden", "");
     pageButton?.classList.add("button-on");
     tocButton?.classList.add("button-on");
     syncModuleMoreButtonState(container);
@@ -497,7 +494,6 @@ function setupModuleHeader(id) {
     if (!(target instanceof Node)) return;
     if (container.contains(target)) return;
 
-    collapseIconPanel();
     collapseMore();
   });
 
@@ -507,7 +503,6 @@ function setupModuleHeader(id) {
     container.classList.remove("module-maximized");
     minimizeBtn.classList.toggle("button-on", isMinimized);
     maximizeBtn.classList.remove("button-on");
-    collapseIconPanel();
     localStorage.setItem("module_" + id + "_state", isMinimized ? "minimized" : "normal");
     collapseMore();
     syncModuleMoreButtonState(container);
@@ -519,7 +514,6 @@ function setupModuleHeader(id) {
     container.classList.remove("module-minimized");
     maximizeBtn.classList.toggle("button-on", isMaximized);
     minimizeBtn.classList.remove("button-on");
-    collapseIconPanel();
     localStorage.setItem("module_" + id + "_state", isMaximized ? "maximized" : "normal");
     collapseMore();
     syncModuleMoreButtonState(container);
@@ -548,7 +542,6 @@ function setupModuleHeader(id) {
   closeBtn.addEventListener("click", () => {
     if (isLockedModule(container)) return;
     toggleModule(id);
-    collapseIconPanel();
     collapseMore();
   });
 
@@ -556,6 +549,13 @@ function setupModuleHeader(id) {
     updateMinimizeButtonState();
     if (!iconPanel.hidden) updateIconPanelInset();
   });
+
+  const body = container.querySelector(":scope > .module-body");
+  if (body) {
+    new ResizeObserver(() => {
+      if (!iconPanel.hidden) updateIconPanelInset();
+    }).observe(body);
+  }
 
   const savedState = localStorage.getItem("module_" + id + "_state");
   if (savedState === "minimized" && !isLockedModule(container) && !isTwoColumnLayoutActive()) {

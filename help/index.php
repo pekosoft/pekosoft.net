@@ -256,8 +256,8 @@
     <use href="/icons.svg#more"></use>
   </svg>
   <div class="justify">
-    <h1>Module options <span class="object">button</span></h1>
-    Opens module-specific options. Unavailable while the module is minimized.
+    <h1>More / Module options <span class="object">button</span></h1>
+    Shows or hides module-specific options. Options stay open until More is activated again, including when interacting elsewhere or changing the module layout. Unavailable while the module is minimized.
   </div>
 </div>
 

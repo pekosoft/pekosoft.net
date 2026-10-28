@@ -74,17 +74,11 @@ document.addEventListener("DOMContentLoaded", () => {
         const id = container.id ? container.id.replace("-container", "") : null;
         if (id) localStorage.setItem("module_" + id + "_state", "normal");
       });
-      document.querySelectorAll(".module-icon-panel").forEach(panel => {
-        panel.hidden = true;
-        panel.closest(".container")?.classList.remove("module-icon-panel-open");
-      });
       document.querySelectorAll(".module-icon-btn").forEach(button => {
         button.classList.remove("button-on");
         button.setAttribute("aria-expanded", "false");
       });
       document.querySelectorAll(".module-more-btn").forEach(button => {
-        button.classList.remove("button-on");
-        button.setAttribute("aria-expanded", "false");
         window.syncModuleMoreButtonState?.(button.closest(".container"));
       });
       document.querySelectorAll(".module-header-actions").forEach(actions => {

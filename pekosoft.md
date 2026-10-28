@@ -158,7 +158,7 @@ Pekosoft favors:
 - minimal distraction
 - real utility over feature bloat
 
-More menus use the same control layout and spacing as the regular module view. The More control indicates when its menu is open.
+More menus use the same control layout and spacing as the regular module view. The More control indicates when its menu is open. More stays open until the user activates that module's More control again. Outside interactions and changes to module layout or visibility must preserve this mode.
 
 ## User-facing writing convention
 

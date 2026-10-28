@@ -139,6 +139,7 @@
         <div class="pair">
           <label for="length-select" title="Set pattern and recording length in steps">Length:</label>
           <select id="length-select">
+            <option value="custom" hidden disabled>Recorded length</option>
             <option value="4">4</option>
             <option value="8">8</option>
             <option value="12">12</option>

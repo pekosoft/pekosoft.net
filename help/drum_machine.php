@@ -14,7 +14,7 @@
   </svg>
   <div class="justify">
     <h1>Instrument <span class="object">module</span></h1>
-    Grid mode shows sequencer hits or the selected Playlist recording. Each row controls one drum voice, with eight steps per bank. Longer recordings use additional banks; scroll Instrument to reach them. Click or tap an empty position to add a hit. Click a hit to change normal velocity to accent, then remove it. Drag a hit to change its timing or move it to another voice row. Arrow keys move a focused hit; Delete removes it. Adding, painting, changing, moving, removing and clearing hits keeps playback running without restarting its timing. Changes can be undone and redone during playback. Hit editing is unavailable during Count-in and recording. Pad mode fills the Instrument with four drum pads for freeform playing.
+    Grid mode shows sequencer hits or the selected Playlist recording. While recording, the playhead follows the recording position from the first step, and captured hits appear as they are played with their exact timing. Recording starts after Count-in, or immediately when Count-in is Off; waiting before the first hit leaves that time empty. During loop recording, overwritten hits disappear as the recording cursor passes them. Each row controls one drum voice, with eight steps per bank. Longer recordings use additional banks; scroll Instrument to reach them. Click or tap an empty position to add a hit. Click a hit to change normal velocity to accent, then remove it. Drag a hit to change its timing or move it to another voice row. Arrow keys move a focused hit; Delete removes it. Adding, painting, changing, moving, removing and clearing hits keeps playback running without restarting its timing. Changes can be undone and redone during playback. Hit editing is unavailable during Count-in and recording. Pad mode fills the Instrument with four drum pads for freeform playing.
   </div>
 </div>
 
@@ -34,7 +34,7 @@
   </svg>
   <div class="justify">
     <h1>Source <span class="object">button</span></h1>
-    Switches Grid between the sequencer pattern and the selected Playlist recording. Play and Save use the current Source. Selecting, recording, importing or playing a Playlist recording shows its hits in Grid without quantizing them. Recording edits update that Playlist recording and its preview, preserving the recording window and the settings of hits moved within a voice. Moving a hit to another voice uses that voice's current settings. Choosing a pattern preset shows the sequencer pattern again. Unavailable when Playlist is empty.
+    Selects the rhythm edited by Instrument and Controls: the working pattern or the selected Playlist recording. Length, BPM, Swing, Pattern, Random, Clear, Kit and voice settings all apply to this Source, as do Play, Panel and Save. Switching Source stops playback and restores that source's settings without changing either rhythm. The choice is saved. Selecting, recording, importing or playing a Playlist recording selects it without quantizing its hits. Moving a hit within a voice preserves its settings; moving it to another voice uses that source's voice settings. Unavailable when Playlist is empty, during Count-in and while recording.
   </div>
 </div>
 
@@ -54,7 +54,7 @@
   </svg>
   <div class="justify">
     <h1>Blink <span class="object">button</span></h1>
-    Toggles brief feedback on drum voice buttons when played manually, by the sequencer or during recording playback. Works in Grid and Pad modes. The setting is saved. <span class="default">Default: off.</span>
+    Toggles brief feedback on drum voice buttons when played manually, by the sequencer or during recording playback. Works in Grid and Pad modes, including the selected voice. Repeated hits keep feedback active until the last hit's feedback ends. The setting is saved. <span class="default">Default: off.</span>
   </div>
 </div>
 
@@ -83,7 +83,7 @@
     <use href="/icons.svg#random"></use>
   </svg>
   <div class="justify">
-    <h1>Random <span class="object">button</span></h1>Creates a new weighted rhythm and preserves strong kick and snare anchors. Available for the sequencer pattern in Grid mode only.
+    <h1>Random <span class="object">button</span></h1>Replaces the current Source's hits with a weighted rhythm and strong kick and snare anchors, keeping its length and voice settings. The change can be undone. Available in Grid mode, outside Count-in and recording.
   </div>
 </div>
 
@@ -111,7 +111,7 @@
     <use href="/icons.svg#play"></use>
   </svg>
   <div class="justify">
-    <h1>Play <span class="object">button</span></h1>Plays the current Source. For the sequencer pattern, starts or pauses playback. With Loop off, plays one Length cycle and returns the playhead to the beginning. With Loop on, repeats the pattern. Pausing manually keeps the current position for resuming. Changing Length during playback restarts from the beginning with the selected length. For a Playlist recording, starts or stops playback using its stored duration and hit timing without changing the pattern. Play first completes an active take when the recording source is selected. Space provides the same shortcut when no field or button has focus. <span class="default">Default: off.</span>
+    <h1>Play <span class="object">button</span></h1>Plays the current Source. With Loop off, plays one cycle and returns the playhead to the beginning. With Loop on, repeats it. Length changes restart playback from the beginning with the new duration. Changing a recording's BPM or Swing also restarts its playback with the new timing. Manually pausing the working pattern keeps its current position; stopping a recording returns to its beginning. Play first completes an active take when the recording source is selected. Space provides the same shortcut when no field or button has focus. <span class="default">Default: off.</span>
   </div>
 </div>
 
@@ -120,7 +120,7 @@
     <use href="/icons.svg#record"></use>
   </svg>
   <div class="justify">
-    <h1>Record <span class="object">button</span></h1>Starts the selected Count-in, then records sequencer hits and manually auditioned voices with their timing, velocity and voice settings for one Length cycle at the selected BPM. Record does not start the sequencer. Count-in happens only before the first pass and is excluded from the take. With Loop off, recording completes at the cycle boundary. Press Record again or Stop to finish early. The take keeps its full cycle duration, including leading and trailing silence, and is added to Playlist even when silent. Sound tails are cut at the cycle boundary during recording playback and WAV export. The recording status shows the selected step count and whether Loop is overwriting. Length, BPM, Tempo and Tap are unavailable during Count-in and recording. <span class="default">Default: off.</span>
+    <h1>Record <span class="object">button</span></h1>Starts the selected Count-in, then captures manually played voices and any running pattern with their timing, velocity and voice settings. The new take uses the current Source's duration, BPM and Swing. Record does not start playback of that source. Count-in happens only before the first pass and is excluded from the take. With Loop off, recording completes at the cycle boundary. Press Record again or Stop to finish early. The take keeps its full cycle duration, including leading and trailing silence, and is added to Playlist even when silent. Completing a take stops pattern playback and selects the new recording. Sound tails are cut at the cycle boundary during recording playback and WAV export. Length, BPM, Swing, Pattern, Tempo and Tap are unavailable during Count-in and recording. <span class="default">Default: off.</span>
   </div>
 </div>
 
@@ -212,7 +212,7 @@
     <use href="/icons.svg#field"></use>
   </svg>
   <div class="justify">
-    <h1>BPM <span class="object">field</span></h1>Sets tempo in beats per minute within the supported range. The global default BPM is used when available.
+    <h1>BPM <span class="object">field</span></h1>Sets the current Source's tempo in beats per minute. Recorded hits retain their musical positions, including timing between steps, while their timestamps and the recording duration follow the new tempo. The metronome uses the current Source's BPM. The global default BPM initializes the working pattern.
   </div>
 </div>
 
@@ -221,7 +221,7 @@
     <use href="/icons.svg#field"></use>
   </svg>
   <div class="justify">
-    <h1>Swing <span class="object">field</span></h1>Delays alternating sixteenth-note steps while preserving each two-step duration. <span class="default">Default: straight.</span>
+    <h1>Swing <span class="object">field</span></h1>Delays alternating sixteenth-note steps in the current Source while preserving each two-step duration. Recorded hits keep their musical positions, including timing between steps. Unavailable during Count-in and recording. <span class="default">Default: straight.</span>
   </div>
 </div>
 
@@ -230,7 +230,7 @@
     <use href="/icons.svg#menu"></use>
   </svg>
   <div class="justify">
-    <h1>Pattern <span class="object">menu</span></h1>Loads Basic, Four On Floor, Breakbeat, Electro or Empty patterns. Edited patterns are marked Custom.
+    <h1>Pattern <span class="object">menu</span></h1>Replaces the current Source's hits with Basic, Four On Floor, Breakbeat, Electro or Empty, without switching Source. Presets repeat across recordings longer than sixteen steps. Length and voice settings are preserved. Replacing hits also clears hits outside the current length. Edited rhythms are marked Custom. Changes can be undone.
   </div>
 </div>
 
@@ -239,7 +239,7 @@
     <use href="/icons.svg#menu"></use>
   </svg>
   <div class="justify">
-    <h1>Kit <span class="object">menu</span></h1>Loads Classic, Deep, Tight or Bright voice settings. Kick and snare are panned to the center in every kit. Edited voice settings are marked Custom.
+    <h1>Kit <span class="object">menu</span></h1>Loads Classic, Deep, Tight or Bright voice settings into the current Source, including its recorded hits. Kick and snare are panned to the center in every kit. Pitch, Decay, Tone, Level and Pan edit that source's selected voice and the corresponding property on its existing hits; other per-hit properties are preserved. Sound changes can be undone and apply to playback, pad auditioning and WAV export. Edited voice settings are marked Custom.
   </div>
 </div>
 
@@ -248,7 +248,7 @@
     <use href="/icons.svg#menu"></use>
   </svg>
   <div class="justify">
-    <h1>Length <span class="object">menu</span></h1>Sets the pattern and recording cycle length to 4, 8, 12 or 16 sixteenth-note steps, not bars. Sixteen steps equal one four-beat bar. At 120 BPM, 4 steps record 0.5 seconds and 16 steps record 2 seconds. Steps beyond the selected length remain visible but disabled. Length is unavailable during Count-in and recording.
+    <h1>Length <span class="object">menu</span></h1>Sets the current Source's cycle length to 4, 8, 12 or 16 sixteenth-note steps, before or after recording. Sixteen steps equal one four-beat bar. At 120 BPM, 4 steps last 0.5 seconds and 16 steps last 2 seconds. Shortening keeps later hits outside the playback window; increasing Length restores them, including after saving and reloading. Playback, Loop, Playlist duration and WAV export follow the new window. Changes can be undone. Recordings with another duration show their recorded length until a new Length is chosen. Length is unavailable during Count-in and recording.
   </div>
 </div>
 
@@ -455,7 +455,7 @@
     <use href="/icons.svg#undo"></use>
   </svg>
   <div class="justify">
-    <h1>History <span class="object">module</span></h1>Shows the current session's labeled pattern-edit history. Drag a column header edge to resize that column. On touchscreens, drag the right side of the header. Double-click or double-tap the edge to restore its default width. The highlighted row is the current pattern state.
+    <h1>History <span class="object">module</span></h1>Shows the current session's hit, timing and sound edits for both the working pattern and Playlist recordings. Returning to an entry selects the source that was edited. Drag a column header edge to resize that column. On touchscreens, drag the right side of the header. Double-click or double-tap the edge to restore its default width. The highlighted row is the current history state.
   </div>
 </div>
 
@@ -464,7 +464,7 @@
     <use href="/icons.svg#undo"></use>
   </svg>
   <div class="justify">
-    <h1>History <span class="object">entries</span></h1>Each entry shows its position, action icon, label and time. Click an entry to undo or redo directly to that pattern state. A new edit after Undo replaces the future branch.
+    <h1>History <span class="object">entries</span></h1>Each entry shows its position, action icon, label and time. Click an entry to undo or redo directly to that state. A new edit after Undo replaces the future branch.
   </div>
 </div>
 
@@ -482,7 +482,7 @@
     <use href="/icons.svg#js"></use>
   </svg>
   <div class="justify">
-    <h1>View <span class="object">button</span></h1>Changes History between List, Cards, JSON and JavaScript. Cards include the same entry information and support returning to a pattern state. <span class="default">Default: List.</span>
+    <h1>View <span class="object">button</span></h1>Changes History between List, Cards, JSON and JavaScript. Cards include the same entry information and support returning to an edit state. <span class="default">Default: List.</span>
   </div>
 </div>
 
@@ -491,7 +491,7 @@
     <use href="/icons.svg#undo"></use>
   </svg>
   <div class="justify">
-    <h1>Undo <span class="object">button</span></h1>Restores the previous hit edit without stopping playback.
+    <h1>Undo <span class="object">button</span></h1>Restores the previous edit. Hit and sound edits keep playback running; restoring Length, BPM or Swing restarts playback with the restored duration and timing.
   </div>
 </div>
 
@@ -500,7 +500,7 @@
     <use href="/icons.svg#redo"></use>
   </svg>
   <div class="justify">
-    <h1>Redo <span class="object">button</span></h1>Restores the next hit edit after Undo without stopping playback.
+    <h1>Redo <span class="object">button</span></h1>Restores the next edit after Undo, using the same playback behavior.
   </div>
 </div>
 
@@ -509,7 +509,7 @@
     <use href="/icons.svg#panel"></use>
   </svg>
   <div class="justify">
-    <h1>Panel <span class="object">module</span></h1>Shows editable JSON containing the current pattern, tempo, voice settings, mutes and other Drum Machine settings.
+    <h1>Panel <span class="object">module</span></h1>Shows editable JSON for the current Source, its timing and voice settings, along with shared Drum Machine settings. Recording data includes exact hit timestamps and hits kept outside a shortened Length.
   </div>
 </div>
 
@@ -528,7 +528,7 @@
     <use href="/icons.svg#open"></use>
   </svg>
   <div class="justify">
-    <h1>Open <span class="object">button</span></h1>Opens Drum Machine JSON or text pattern data and applies valid content.
+    <h1>Open <span class="object">button</span></h1>Opens Drum Machine JSON or text data and applies valid content to the current Source. Opening recording data while the working pattern is selected adds a Playlist recording.
   </div>
 </div>
 
@@ -537,7 +537,7 @@
     <use href="/icons.svg#download"></use>
   </svg>
   <div class="justify">
-    <h1>Save <span class="object">button</span></h1>Saves the current Panel JSON as a pattern file.
+    <h1>Save <span class="object">button</span></h1>Saves the current Source's Panel JSON as a file.
   </div>
 </div>
 
@@ -546,7 +546,7 @@
     <use href="/icons.svg#check"></use>
   </svg>
   <div class="justify">
-    <h1>Apply <span class="object">button</span></h1>Validates and applies JSON edited in Panel. Invalid JSON is marked without changing the current pattern.
+    <h1>Apply <span class="object">button</span></h1>Validates and applies JSON edited in Panel to the current Source. Applying pattern data to a recording replaces its hits and timing without switching Source. Invalid JSON is marked without changing the current rhythm.
   </div>
 </div>
 
@@ -555,7 +555,7 @@
     <use href="/icons.svg#copy"></use>
   </svg>
   <div class="justify">
-    <h1>Copy <span class="object">button</span></h1>Copies the current pattern JSON.
+    <h1>Copy <span class="object">button</span></h1>Copies the current Source's JSON.
   </div>
 </div>
 

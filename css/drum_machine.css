@@ -143,12 +143,6 @@
   fill: currentColor;
 }
 
-.voice-trigger.voice-hit,
-.voice-trigger.voice-hit:hover {
-  color: var(--black);
-  background: var(--color1);
-}
-
 .voice-trigger.selected-voice {
   color: var(--white);
   background: var(--black);
@@ -272,6 +266,11 @@
   color: var(--grey1);
 }
 
+.voice-trigger.voice-hit,
+.voice-trigger.voice-hit:hover,
+.voice-trigger.selected-voice.voice-hit,
+.voice-trigger.muted-step.voice-hit,
+.voice-trigger.selected-voice.muted-step.voice-hit,
 .pad-mode .voice-trigger.voice-hit,
 .pad-mode .voice-trigger.voice-hit:hover {
   color: var(--black);

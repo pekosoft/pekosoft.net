@@ -259,6 +259,10 @@
       .filter(Boolean)
       .filter((event) => !fixedDuration || event.timestampMs < recording.durationMs)
       .sort((left, right) => left.timestampMs - right.timestampMs);
+    const hiddenEvents = (Array.isArray(recording.hiddenEvents) ? recording.hiddenEvents : [])
+      .map(normalizeRecordingEvent).filter(Boolean)
+      .filter((event) => fixedDuration && event.timestampMs >= recording.durationMs)
+      .sort((left, right) => left.timestampMs - right.timestampMs);
     if (!events.length && !fixedDuration) return null;
 
     const eventEnd = Math.max(0, ...events.map((event) => event.timestampMs + event.durationMs));
@@ -272,6 +276,11 @@
       ...(fixedDuration ? { fixedDuration: true } : {}),
       bpm: Math.round(clamp(recording.bpm, 30, 320, 120)),
       swing: Math.round(clamp(recording.swing, 0, 50, 0)),
+      voices: normalizeVoices(recording.voices ||
+        Object.fromEntries([...hiddenEvents, ...events].map((event) => [event.voice, event.settings]))),
+      kitName: Object.hasOwn(KIT_PRESETS, recording.kitName) ? recording.kitName : "custom",
+      patternName: Object.hasOwn(PATTERN_PRESETS, recording.patternName) ? recording.patternName : "custom",
+      hiddenEvents,
       events
     };
   }
@@ -349,7 +358,7 @@
       const savedPlaylist = this.loadRecordingPlaylist();
       this.recordings = savedPlaylist.recordings;
       this.selectedRecordingIndex = savedPlaylist.selectedRecordingIndex;
-      this.gridSource = this.selectedRecordingIndex >= 0 ? "recording" : "pattern";
+      this.gridSource = savedPlaylist.gridSource;
       this.hitGesture = null;
       this.isPlaying = false;
       this.isRecording = false;
@@ -377,6 +386,7 @@
       this.schedulerTimer = null;
       this.sequencerPlayback = null;
       this.visualTimers = new Set();
+      this.voiceFlashTimers = new Map();
       this.activeSources = new Set();
       this.lastMetersActivitySec = 0;
       this.paintGesture = null;
@@ -497,11 +507,12 @@
           const selectedIndex = recordings.findIndex((recording) => recording.id === selectedId);
           return {
             recordings,
+            gridSource: recordings.length && saved?.source !== "pattern" ? "recording" : "pattern",
             selectedRecordingIndex: selectedIndex >= 0 ? selectedIndex : (recordings.length ? recordings.length - 1 : -1)
           };
         } catch (error) {
           console.warn("Drum Machine recordings could not be loaded:", error);
-          return { recordings: [], selectedRecordingIndex: -1 };
+          return { recordings: [], selectedRecordingIndex: -1, gridSource: "pattern" };
         }
       }
 
@@ -509,6 +520,7 @@
         const selected = this.recordings[this.selectedRecordingIndex] || null;
         const data = {
           version: 1,
+          source: this.gridSource,
           selectedId: selected?.id || null,
           recordings: this.recordings
         };
@@ -649,7 +661,9 @@
       }
 
       selectRecording(index) {
+        if (this.isRecording || this.isCountingIn) return;
         if (index < 0 || index >= this.recordings.length) return;
+        if (this.gridSource === "pattern" || this.isPlaying) this.pausePlayback(true);
         if (index !== this.selectedRecordingIndex ||
             (this.isRecordingPlayback && index !== this.playingRecordingIndex)) {
           this.stopRecordingPlayback();
@@ -916,6 +930,23 @@
       return this.gridSource === "pattern" ? null : this.recordings?.[this.selectedRecordingIndex] || null;
     }
 
+    getSourceSettings() {
+      return this.getGridRecording() || this.state;
+    }
+
+    getSourceVoices() {
+      return this.getSourceSettings().voices || this.state.voices;
+    }
+
+    setRecordingWindow(recording, durationMs) {
+      const events = [...recording.events, ...(recording.hiddenEvents || [])]
+        .sort((left, right) => left.timestampMs - right.timestampMs);
+      recording.durationMs = durationMs;
+      recording.fixedDuration = true;
+      recording.events = events.filter((event) => event.timestampMs < durationMs);
+      recording.hiddenEvents = events.filter((event) => event.timestampMs >= durationMs);
+    }
+
     getGridLength() {
       const recording = this.getGridRecording();
       return recording
@@ -933,6 +964,10 @@
     }
 
     getGridHits() {
+      if (this.isRecording) return this.recordingEvents.map((event, index) => ({
+        key: `capture:${index}`, voice: event.voice, velocity: event.velocity,
+        step: stepAtTime(event.timestampMs / 1000, this.recordingSettings.bpm, this.recordingSettings.swing)
+      }));
       const recording = this.getGridRecording();
       return recording ? recording.events.map((event, index) => ({
         key: `recording:${index}`, voice: event.voice, velocity: event.velocity,
@@ -987,7 +1022,7 @@
         mark.className = "step-mark";
         mark.setAttribute("aria-hidden", "true");
         button.appendChild(mark);
-        const recording = this.getGridRecording();
+        const recording = this.isRecording ? this.recordingSettings : this.getGridRecording();
         const time = timeAtStep(hit.step, recording?.bpm || this.state.bpm, recording?.swing ?? this.state.swing);
         const label = `${hit.voice}, ${(time * 1000).toFixed(3)} ms, ${hit.velocity === 2 ? "accent" : "normal"}`;
         button.title = label;
@@ -1038,7 +1073,7 @@
       if (recording) {
         const index = key === null ? -1 : Number(key.split(":")[1]);
         const existing = recording.events[index];
-        const settings = existing?.voice === voice ? existing.settings : { ...this.state.voices[voice] };
+        const settings = existing?.voice === voice ? existing.settings : { ...this.getSourceVoices()[voice] };
         if (index >= 0) recording.events.splice(index, 1);
         if (velocity) recording.events.push({
           ...existing,
@@ -1088,6 +1123,7 @@
       const playback = this.recordingPlayback;
       if (recording && playback?.recording.id === recording.id) {
         playback.recording = recording;
+        playback.duration = Math.max(8, recording.durationMs) / 1000;
         playback.pending = playback.pending.filter((hit) => {
           if (hit.when <= now) return true;
           this.cancelScheduledHit(hit);
@@ -1121,6 +1157,16 @@
     restoreGridSnapshot(snapshot) {
       const data = JSON.parse(snapshot);
       if (this.isRecording || this.isCountingIn) this.stopAll(false);
+      const current = this.getSourceSettings();
+      const target = data.recording || data;
+      const timingChanged = target.id !== current.id ||
+        ["bpm", "swing", data.recording ? "durationMs" : "length"]
+          .some((property) => target[property] !== undefined && target[property] !== current[property]);
+      const wasPlaying = this.isPlaying || this.isRecordingPlayback;
+      if (timingChanged) {
+        this.pausePlayback(true);
+        this.stopRecordingPlayback();
+      }
       if (data.recording) {
         const index = this.recordings.findIndex((recording) => recording.id === data.recording.id);
         if (index < 0) {
@@ -1136,12 +1182,15 @@
         this.gridSource = "pattern";
         this.state.pattern = normalizePattern(data.pattern || data);
         this.state.freeHits = normalizeFreeHits(data.freeHits);
-        this.state.patternName = "custom";
+        for (const property of ["length", "bpm", "swing", "voices", "kitName", "patternName"]) {
+          if (data[property] !== undefined) this.state[property] = data[property];
+        }
         this.saveState();
       }
       this.refreshScheduledHits();
       this.refreshGrid();
       this.renderRecordingPlaylist();
+      if (timingChanged && wasPlaying) return this.togglePlayback();
     }
 
     buildGrid() {
@@ -1234,8 +1283,12 @@
         this.updatePanel();
       });
       this.elements.gridSource.addEventListener("click", () => {
+        if (this.isRecording || this.isCountingIn) return;
+        this.pausePlayback(true);
+        this.stopRecordingPlayback();
         this.gridSource = this.getGridRecording() ? "pattern" : "recording";
         this.setCurrentStep(-1);
+        this.saveRecordingPlaylist();
         this.refreshGrid();
       });
       this.elements.grid.addEventListener("pointerdown", (event) => this.handleGridPointerDown(event));
@@ -1322,16 +1375,7 @@
           this.loadKitPreset(this.elements.kitSelect.value);
         }
       });
-      this.elements.lengthSelect.addEventListener("change", () => {
-        if (this.isRecording || this.isCountingIn) return;
-        const wasPlaying = this.isPlaying;
-        this.pausePlayback(true);
-        this.state.length = Number(this.elements.lengthSelect.value);
-        if (this.currentStep >= this.state.length) this.setCurrentStep(-1);
-        if (this.nextStep >= this.state.length) this.nextStep = 0;
-        this.saveAndRender();
-        if (wasPlaying) return this.togglePlayback();
-      });
+      this.elements.lengthSelect.addEventListener("change", () => this.setLength(this.elements.lengthSelect.value));
       this.elements.voiceSelect.addEventListener("change", () => {
         this.state.selectedVoice = this.elements.voiceSelect.value;
         this.saveState();
@@ -1595,8 +1639,15 @@
       this.recordingStartTime = when;
       this.recordingStartedAt = Date.now();
       this.isRecording = true;
-      this.recordingDuration = this.state.length * 60 / this.state.bpm / 4;
+      const source = this.getSourceSettings();
+      this.recordingSettings = {
+        bpm: source.bpm, swing: source.swing, voices: clone(this.getSourceVoices()),
+        kitName: source.kitName, patternName: source.patternName
+      };
+      this.recordingDuration = this.getGridRecording()
+        ? source.durationMs / 1000 : timeAtStep(source.length, source.bpm, source.swing);
       this.recordingEndTime = this.state.loop ? Infinity : when + this.recordingDuration;
+      this.updateGrid();
 
       if (this.timelineEvents.length) {
         const performanceNow = performance.now();
@@ -1612,7 +1663,7 @@
               event.velocity,
               when,
               event.endTime - event.startTime,
-              event.settings || this.state.voices[event.voice],
+              event.settings || this.getSourceVoices()[event.voice],
               event
             );
           });
@@ -1624,12 +1675,14 @@
     sweepRecording(when) {
       const elapsed = Math.max(0, Math.min(when, this.recordingEndTime) - this.recordingStartTime);
       const duration = this.recordingDuration;
+      const count = this.recordingEvents.length;
       this.recordingEvents = this.recordingEvents.filter((event) => {
         const position = event.timestampMs / 1000;
         // The position at the cursor is still part of the unswept region.
         const lastPass = Math.ceil((elapsed - position) / duration - 1e-9) - 1;
         return event.recordedTime >= lastPass * duration + position - 1e-9;
       });
+      if (this.recordingEvents.length !== count) this.renderGridHits();
     }
 
     scheduleRecordingWindow() {
@@ -1640,6 +1693,11 @@
         return;
       }
       this.sweepRecording(now);
+      const elapsed = Math.max(0, now - this.recordingStartTime);
+      const position = elapsed % this.recordingDuration;
+      const step = Math.min(this.getGridLength() - 1,
+        Math.floor(stepAtTime(position, this.recordingSettings.bpm, this.recordingSettings.swing)));
+      if (step !== this.currentStep) this.setCurrentStep(step);
       this.updateRecordingControls();
       this.recordingWindowTimer = window.setTimeout(
         () => this.scheduleRecordingWindow(),
@@ -1683,7 +1741,7 @@
           this.updateRecordingControls();
         }
         this.guideBeat++;
-        this.nextGuideTime += 60 / this.state.bpm;
+        this.nextGuideTime += 60 / this.getSourceSettings().bpm;
       }
       this.guideTimer = window.setTimeout(() => this.scheduleGuide(), SCHEDULER_DELAY_MS);
     }
@@ -1721,6 +1779,7 @@
         recordedTime,
         settings: { ...pending.settings }
       });
+      this.renderGridHits();
       this.updateRecordingControls();
     }
 
@@ -1785,8 +1844,9 @@
         createdAt: this.recordingStartedAt,
         durationMs: this.recordingDuration * 1000,
         fixedDuration: true,
-        bpm: this.state.bpm,
-        swing: this.state.swing,
+        ...this.recordingSettings,
+        voices: clone(this.getSourceVoices()),
+        kitName: this.getSourceSettings().kitName,
         events: this.recordingEvents
       }, this.recordings.length);
 
@@ -1797,6 +1857,7 @@
       }
 
       this.recordings.push(recording);
+      if (this.isPlaying) this.pausePlayback(true);
       this.selectedRecordingIndex = this.recordings.length - 1;
       this.gridSource = "recording";
       this.refreshGrid();
@@ -2009,6 +2070,7 @@
       if (!this.isPlaying) this.setCurrentStep(-1);
       this.visualTimers.forEach((timer) => window.clearTimeout(timer));
       this.visualTimers.clear();
+      this.voiceFlashTimers.clear();
       this.activeSources.forEach((source) => {
         try {
           source.stop(this.audioContext.currentTime);
@@ -2030,7 +2092,7 @@
     }
 
     playVoice(voice, velocity, when, settingsOverride = null, captureEvent = true, stopAt = null) {
-      const settings = settingsOverride || this.state.voices[voice];
+      const settings = settingsOverride || this.getSourceVoices()[voice];
       const result = window.playDrumSound({
         audioContext: this.audioContext,
         destinationNode: this.analyser,
@@ -2082,7 +2144,8 @@
       await this.ensureAudioReady();
       if (sessionId !== this.transportSessionId) return;
       this.isPlaying = true;
-      this.nextStep = this.currentStep >= 0 ? (this.currentStep + 1) % this.state.length : 0;
+      this.nextStep = !this.isRecording && this.currentStep >= 0
+        ? (this.currentStep + 1) % this.state.length : 0;
       this.nextStepTime = this.audioContext.currentTime + 0.03;
       this.sequencerPlayback = {
         cycle: 0,
@@ -2154,7 +2217,7 @@
       };
       const delayMs = Math.max(0, (when - this.audioContext.currentTime) * 1000);
       pending.visualTimers.push(this.scheduleVisual(() => {
-        if (this.isPlaying && playback === this.sequencerPlayback && !this.getGridRecording()) this.setCurrentStep(step);
+        if (this.isPlaying && !this.isRecording && playback === this.sequencerPlayback && !this.getGridRecording()) this.setCurrentStep(step);
       }, delayMs));
 
       VOICES.forEach(({ id }) => {
@@ -2214,10 +2277,15 @@
       return this.scheduleVisual(() => {
         if (!this.state.blink) return;
         const triggers = document.querySelectorAll(`.voice-trigger[data-voice="${voice}"]`);
+        const previous = this.voiceFlashTimers.get(voice);
+        window.clearTimeout(previous);
+        this.visualTimers.delete(previous);
         triggers.forEach((trigger) => trigger.classList.add("voice-hit"));
-        this.scheduleVisual(() => {
+        const timer = this.scheduleVisual(() => {
           triggers.forEach((trigger) => trigger.classList.remove("voice-hit"));
+          this.voiceFlashTimers.delete(voice);
         }, 80);
+        this.voiceFlashTimers.set(voice, timer);
       }, delayMs);
     }
 
@@ -2242,6 +2310,7 @@
       this.schedulerTimer = null;
       this.visualTimers.forEach((timer) => window.clearTimeout(timer));
       this.visualTimers.clear();
+      this.voiceFlashTimers.clear();
       this.activeSources.forEach((source) => {
         try {
           source.stop(this.audioContext.currentTime);
@@ -2301,22 +2370,62 @@
     }
 
     setBpm(value) {
-      if (this.isRecording || this.isCountingIn) return;
-      this.state.bpm = Math.round(clamp(value, 30, 320, this.state.bpm));
-      this.elements.bpmInput.value = String(this.state.bpm);
-      this.elements.bpmSlider.value = String(this.state.bpm);
-      this.saveState();
-      this.renderGridHits();
-      this.updatePanel();
+      return this.setSourceTiming("bpm", Math.round(clamp(value, 30, 320, this.getSourceSettings().bpm)));
     }
 
     setSwing(value) {
-      this.state.swing = Math.round(clamp(value, 0, 50, this.state.swing));
-      this.elements.swingInput.value = String(this.state.swing);
-      this.elements.swingSlider.value = String(this.state.swing);
-      this.saveState();
-      this.renderGridHits();
-      this.updatePanel();
+      return this.setSourceTiming("swing", Math.round(clamp(value, 0, 50, this.getSourceSettings().swing)));
+    }
+
+    setLength(value) {
+      const length = Number(value);
+      if (![4, 8, 12, 16].includes(length)) {
+        console.warn("Drum Machine Length must be 4, 8, 12 or 16 steps:", value);
+        this.updateControls();
+        return;
+      }
+      return this.setSourceTiming("length", length);
+    }
+
+    setSourceTiming(property, value) {
+      if (this.isRecording || this.isCountingIn) return;
+      const source = this.getSourceSettings();
+      const recording = this.getGridRecording();
+      if (property !== "length" && source[property] === value) return;
+      const before = this.patternSnapshot();
+      const wasPlaying = (recording ? this.isRecordingPlayback : this.isPlaying) ||
+        (Number.isInteger(this.timingRestartSessionId) && this.timingRestartSessionId === this.transportSessionId);
+      const restart = property === "length" || !!recording;
+      if (restart) {
+        this.pausePlayback(true);
+        this.stopRecordingPlayback();
+      }
+      if (recording) {
+        const oldBpm = recording.bpm;
+        const oldSwing = recording.swing;
+        const steps = stepAtTime(recording.durationMs / 1000, oldBpm, oldSwing);
+        if (property !== "length") {
+          recording[property] = value;
+          [...recording.events, ...(recording.hiddenEvents || [])].forEach((event) => {
+            const step = stepAtTime(event.timestampMs / 1000, oldBpm, oldSwing);
+            event.timestampMs = timeAtStep(step, recording.bpm, recording.swing) * 1000;
+          });
+        }
+        this.setRecordingWindow(recording,
+          timeAtStep(property === "length" ? value : steps, recording.bpm, recording.swing) * 1000);
+      } else {
+        source[property] = value;
+        if (property === "length") this.nextStep = 0;
+      }
+      this.commitPatternChange(before, false, `Changed ${property === "bpm" ? "BPM" : property}`, "pen");
+      if (restart && wasPlaying) {
+        const pending = this.togglePlayback();
+        const sessionId = this.transportSessionId;
+        this.timingRestartSessionId = sessionId;
+        return pending.finally(() => {
+          if (this.timingRestartSessionId === sessionId) this.timingRestartSessionId = null;
+        });
+      }
     }
 
     setVolume(value) {
@@ -2328,9 +2437,12 @@
     }
 
     setVoiceParameter(property, value) {
+      const before = this.patternSnapshot();
       const voice = this.state.selectedVoice;
       const limits = VOICE_LIMITS[voice];
-      const settings = this.state.voices[voice];
+      const source = this.getSourceSettings();
+      source.voices = clone(this.getSourceVoices());
+      const settings = source.voices[voice];
 
       if (property === "frequency") {
         settings.frequency = clamp(value, limits.frequency[0], limits.frequency[1], settings.frequency);
@@ -2342,62 +2454,113 @@
         settings[property] = clamp(value, 0, 1, settings[property]);
       }
 
-      this.state.kitName = "custom";
-      this.saveState();
-      this.updateControls();
-      this.updatePanel();
+      source.kitName = "custom";
+      const recording = this.getGridRecording();
+      if (recording) [...recording.events, ...(recording.hiddenEvents || [])]
+        .filter((event) => event.voice === voice).forEach((event) => {
+          event.settings[property] = settings[property];
+          if (property === "decay") event.durationMs = settings.decay * 1000;
+        });
+      this.commitPatternChange(before, false, `Changed ${voice} ${property}`, "pen");
     }
 
     loadPatternPreset(name) {
-      this.gridSource = "pattern";
+      if (this.isRecording || this.isCountingIn) return;
       const before = this.patternSnapshot();
-      this.state.pattern = clone(PATTERN_PRESETS[name]);
-      this.state.freeHits = [];
-      this.state.patternName = name;
+      const recording = this.getGridRecording();
+      const source = this.getSourceSettings();
+      if (recording) {
+        recording.events = [];
+        recording.hiddenEvents = [];
+        recording.fixedDuration = true;
+        for (let step = 0; step < this.getGridLength(); step++) {
+          VOICES.forEach(({ id }) => {
+            const velocity = PATTERN_PRESETS[name][id][step % STEP_COUNT];
+            if (velocity) recording.events.push(this.createRecordingHit(id, step, velocity));
+          });
+        }
+        recording.events = recording.events.filter((event) => event.timestampMs < recording.durationMs);
+      } else {
+        this.state.pattern = clone(PATTERN_PRESETS[name]);
+        this.state.freeHits = [];
+      }
+      source.patternName = name;
       if (before === this.patternSnapshot()) {
         this.saveState();
         this.refreshGrid();
         return;
       }
-      const label = this.elements.patternSelect.selectedOptions[0]?.textContent || name;
+      const label = this.elements.patternSelect.selectedOptions?.[0]?.textContent || name;
       this.commitPatternChange(before, false, `Loaded ${label} pattern`, "open");
     }
 
     loadKitPreset(name) {
-      this.state.voices = clone(KIT_PRESETS[name]);
-      this.state.kitName = name;
-      this.saveAndRender();
+      const before = this.patternSnapshot();
+      const source = this.getSourceSettings();
+      source.voices = clone(KIT_PRESETS[name]);
+      source.kitName = name;
+      const recording = this.getGridRecording();
+      if (recording) [...recording.events, ...(recording.hiddenEvents || [])].forEach((event) => {
+        event.settings = { ...source.voices[event.voice] };
+        event.durationMs = event.settings.decay * 1000;
+      });
+      this.commitPatternChange(before, false, `Loaded ${name} kit`, "open");
       this.auditionVoice(this.state.selectedVoice);
     }
 
+    createRecordingHit(voice, step, velocity) {
+      const recording = this.getGridRecording();
+      const settings = { ...this.getSourceVoices()[voice] };
+      return {
+        voice, velocity, settings, durationMs: settings.decay * 1000,
+        timestampMs: timeAtStep(step, recording.bpm, recording.swing) * 1000
+      };
+    }
+
     randomizePattern() {
-      this.gridSource = "pattern";
+      if (this.isRecording || this.isCountingIn) return;
       const before = this.patternSnapshot();
-      this.state.freeHits = [];
+      const recording = this.getGridRecording();
+      const length = this.getGridLength();
+      if (recording) {
+        recording.events = [];
+        recording.hiddenEvents = [];
+        recording.fixedDuration = true;
+      } else {
+        this.state.freeHits = [];
+      }
       const probabilities = { kick: 0.3, snare: 0.2, hat: 0.68, perc: 0.16 };
 
       VOICES.forEach(({ id }) => {
-        for (let step = 0; step < STEP_COUNT; step++) {
-          if (step >= this.state.length) {
+        for (let step = 0; step < (recording ? length : STEP_COUNT); step++) {
+          if (step >= length) {
             this.state.pattern[id][step] = 0;
             continue;
           }
           const active = Math.random() < probabilities[id];
-          this.state.pattern[id][step] = active ? (Math.random() < 0.2 ? 2 : 1) : 0;
+          let velocity = active ? (Math.random() < 0.2 ? 2 : 1) : 0;
+          if ((id === "kick" && step % STEP_COUNT === 0) ||
+              (id === "snare" && step % 8 === 4)) velocity = 2;
+          if (recording) {
+            if (velocity) recording.events.push(this.createRecordingHit(id, step, velocity));
+          } else this.state.pattern[id][step] = velocity;
         }
       });
 
-      this.state.pattern.kick[0] = 2;
-      if (this.state.length > 4) this.state.pattern.snare[4] = 2;
-      if (this.state.length > 12) this.state.pattern.snare[12] = 2;
+      if (recording) {
+        recording.events = recording.events.filter((event) => event.timestampMs < recording.durationMs)
+          .sort((left, right) => left.timestampMs - right.timestampMs);
+      }
       this.commitPatternChange(before, true, "Randomized pattern", "random");
     }
 
     clearPattern() {
+      if (this.isRecording || this.isCountingIn) return;
       const before = this.patternSnapshot();
       const recording = this.getGridRecording();
       if (recording) {
         recording.events = [];
+        recording.hiddenEvents = [];
         recording.fixedDuration = true;
       } else {
         VOICES.forEach(({ id }) => this.state.pattern[id].fill(0));
@@ -2408,14 +2571,18 @@
 
     patternSnapshot() {
       const recording = this.getGridRecording();
-      return JSON.stringify(recording ? { recording } : { pattern: this.state.pattern, freeHits: this.state.freeHits });
+      return JSON.stringify(recording ? { recording } : {
+        pattern: this.state.pattern, freeHits: this.state.freeHits,
+        bpm: this.state.bpm, swing: this.state.swing, length: this.state.length,
+        voices: this.state.voices, kitName: this.state.kitName, patternName: this.state.patternName
+      });
     }
 
     commitPatternChange(before, markCustom, label = "Changed pattern", icon = "undo") {
+      if (before === this.patternSnapshot()) return;
+      if (markCustom) this.getSourceSettings().patternName = "custom";
       const after = this.patternSnapshot();
-      if (before === after) return;
       this.refreshScheduledHits();
-      if (markCustom && !this.getGridRecording()) this.state.patternName = "custom";
       this.history.record(label, before, after, { icon });
       this.saveRecordingPlaylist();
       this.saveState();
@@ -2449,7 +2616,8 @@
     }
 
     getExportData() {
-      return {
+      const source = this.getSourceSettings();
+      const data = {
         release: "drum_machine",
         version: 1,
         mode: this.state.mode,
@@ -2458,21 +2626,29 @@
         loop: this.state.loop,
         metronome: this.state.metronome,
         countIn: this.state.countIn,
-        bpm: this.state.bpm,
-        swing: this.state.swing,
+        bpm: source.bpm,
+        swing: source.swing,
         volume: this.state.volume,
         sound: this.state.sound,
         haptic: this.state.haptic,
         timelineGuides: this.state.timelineGuides,
-        length: this.state.length,
-        patternName: this.state.patternName,
-        kitName: this.state.kitName,
+        length: this.getGridLength(),
+        patternName: source.patternName || "custom",
+        kitName: source.kitName || "custom",
         selectedVoice: this.state.selectedVoice,
         pattern: clone(this.state.pattern),
         freeHits: clone(this.state.freeHits),
-        voices: clone(this.state.voices),
+        voices: clone(this.getSourceVoices()),
         mutes: clone(this.state.mutes)
       };
+      const recording = this.getGridRecording();
+      if (recording) {
+        for (const property of ["pattern", "freeHits", "bpm", "swing", "length", "patternName", "kitName", "voices"]) {
+          delete data[property];
+        }
+        data.recording = clone(recording);
+      }
+      return data;
     }
 
     updatePanel() {
@@ -2485,11 +2661,53 @@
     applyPatternText() {
       try {
         const data = JSON.parse(this.elements.patternText.value);
-        if (!data || typeof data.pattern !== "object") throw new Error("Pattern data is missing");
-        this.gridSource = "pattern";
+        const imported = data?.recording ? normalizeRecording(data.recording) : null;
+        if (data?.recording && !imported) throw new Error("Recording data is invalid");
+        if (!data || (!imported && (!data.pattern || typeof data.pattern !== "object"))) {
+          throw new Error("Pattern or recording data is missing");
+        }
+        const recording = this.getGridRecording();
         const before = this.patternSnapshot();
         this.stopAll(false);
-        this.state = normalizeState({ ...this.state, ...data, freeHits: data.freeHits || [] }, false);
+        this.gridSource = recording ? "recording" : "pattern";
+        if (recording) this.selectedRecordingIndex = this.recordings.indexOf(recording);
+        const shared = normalizeState({ ...this.state, ...data }, false);
+        for (const property of ["mode", "blink", "snap", "loop", "metronome", "countIn",
+          "volume", "sound", "haptic", "timelineGuides", "selectedVoice", "mutes"]) {
+          this.state[property] = shared[property];
+        }
+        if (recording) {
+          const identity = { id: recording.id, name: recording.name, createdAt: recording.createdAt };
+          if (imported) Object.assign(recording, imported, identity);
+          else {
+            const settings = normalizeState({ ...this.state, ...data, freeHits: data.freeHits || [] }, false);
+            Object.assign(recording, {
+              bpm: settings.bpm, swing: settings.swing, voices: settings.voices,
+              patternName: settings.patternName, kitName: settings.kitName, events: [], hiddenEvents: []
+            });
+            recording.durationMs = timeAtStep(settings.length, settings.bpm, settings.swing) * 1000;
+            recording.fixedDuration = true;
+            VOICES.forEach(({ id }) => settings.pattern[id].forEach((velocity, step) => {
+              if (!velocity) return;
+              const event = this.createRecordingHit(id, step, velocity);
+              (step < settings.length ? recording.events : recording.hiddenEvents).push(event);
+            }));
+            settings.freeHits.forEach((hit) => {
+              const event = this.createRecordingHit(hit.voice, hit.step, hit.velocity);
+              (hit.step < settings.length ? recording.events : recording.hiddenEvents).push(event);
+            });
+            recording.events.sort((left, right) => left.timestampMs - right.timestampMs);
+          }
+        } else if (imported) {
+          if (this.recordings.some((item) => item.id === imported.id)) {
+            imported.id = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+          }
+          this.recordings.push(imported);
+          this.selectedRecordingIndex = this.recordings.length - 1;
+          this.gridSource = "recording";
+        } else {
+          this.state = normalizeState({ ...this.state, ...data, freeHits: data.freeHits || [] }, false);
+        }
         this.applyMasterGain();
         this.commitPatternChange(before, false, "Applied pattern data", "check");
         this.saveAndRender();
@@ -2510,7 +2728,7 @@
       const link = document.createElement("a");
       const objectUrl = URL.createObjectURL(blob);
       link.href = objectUrl;
-      link.download = window.ensurePekosoftFilename("drum_machine_pattern.json");
+      link.download = window.ensurePekosoftFilename(`drum_machine_${this.getGridRecording() ? "recording" : "pattern"}.json`);
       document.body.appendChild(link);
       link.click();
       link.remove();
@@ -2618,7 +2836,7 @@
       this.elements.grid.classList.toggle("hit-grid", true);
       const recording = this.getGridRecording();
       this.elements.grid.setAttribute("aria-label", isPadMode ? "Four drum pads" : recording ? `${recording.name} hit editor` : "16-step drum sequencer");
-      this.elements.random.disabled = isPadMode || !!recording || this.isRecording || this.isCountingIn;
+      this.elements.random.disabled = isPadMode || this.isRecording || this.isCountingIn;
       this.elements.clear.disabled = isPadMode || this.isRecording || this.isCountingIn;
       this.elements.gridSource.disabled = !this.recordings?.length || this.isRecording || this.isCountingIn;
       this.elements.gridSource.classList.toggle("button-on", !!recording);
@@ -2653,7 +2871,7 @@
     }
 
     updateStepButton(button, voice, step) {
-      const velocity = this.getGridRecording() ? 0 : this.state.pattern[voice][step];
+      const velocity = this.isRecording || this.getGridRecording() ? 0 : this.state.pattern[voice][step];
       const disabled = step >= this.getGridLength() || this.isRecording || this.isCountingIn;
       const muted = this.state.mutes[voice];
       const voiceLabel = VOICES.find((item) => item.id === voice).label;
@@ -2669,14 +2887,24 @@
     }
 
     updateControls() {
-      this.elements.bpmInput.value = String(this.state.bpm);
-      this.elements.bpmSlider.value = String(this.state.bpm);
-      this.elements.swingInput.value = String(this.state.swing);
-      this.elements.swingSlider.value = String(this.state.swing);
+      const source = this.getSourceSettings();
+      this.elements.bpmInput.value = String(source.bpm);
+      this.elements.bpmSlider.value = String(source.bpm);
+      this.elements.swingInput.value = String(source.swing);
+      this.elements.swingSlider.value = String(source.swing);
       this.elements.volumeSlider.value = String(this.state.volume);
-      this.elements.patternSelect.value = this.state.patternName;
-      this.elements.kitSelect.value = this.state.kitName;
-      this.elements.lengthSelect.value = String(this.state.length);
+      this.elements.patternSelect.value = source.patternName || "custom";
+      this.elements.kitSelect.value = source.kitName || "custom";
+      const length = this.getGridLength();
+      const exactSteps = this.getGridRecording()
+        ? stepAtTime(source.durationMs / 1000, source.bpm, source.swing) : length;
+      const standardLength = [4, 8, 12, 16].find((steps) => Math.abs(steps - exactSteps) < 1e-8);
+      const custom = this.elements.lengthSelect.querySelector?.('option[value="custom"]');
+      if (custom) {
+        custom.hidden = !!standardLength;
+        custom.textContent = `${Number(exactSteps.toFixed(3))} (recorded)`;
+      }
+      this.elements.lengthSelect.value = standardLength ? String(standardLength) : "custom";
       this.elements.voiceSelect.value = this.state.selectedVoice;
       this.elements.countIn.value = String(this.state.countIn);
       this.updateVoiceFields();
@@ -2684,7 +2912,7 @@
 
     updateVoiceFields() {
       const voice = this.state.selectedVoice;
-      const settings = this.state.voices[voice];
+      const settings = this.getSourceVoices()[voice];
       const limits = VOICE_LIMITS[voice];
       this.elements.pitchInput.min = String(limits.frequency[0]);
       this.elements.pitchInput.max = String(limits.frequency[1]);
@@ -2721,6 +2949,11 @@
       this.elements.metronome.classList.toggle("button-on", this.state.metronome);
       this.elements.metronome.setAttribute("aria-pressed", String(this.state.metronome));
       if (!this.state.blink) {
+        this.voiceFlashTimers.forEach((timer) => {
+          window.clearTimeout(timer);
+          this.visualTimers.delete(timer);
+        });
+        this.voiceFlashTimers.clear();
         document.querySelectorAll(".voice-trigger.voice-hit").forEach((trigger) => trigger.classList.remove("voice-hit"));
       }
       this.elements.sound.classList.toggle("button-on", this.state.sound);
@@ -2743,11 +2976,13 @@
       this.elements.record.title = this.isCountingIn ? "Cancel count-in" : this.isRecording ? "Stop recording" : "Start recording";
       this.elements.countIn.disabled = armed;
       [this.elements.lengthSelect, this.elements.bpmInput, this.elements.bpmSlider, this.elements.tap,
+        this.elements.swingInput, this.elements.swingSlider, this.elements.patternSelect,
+        document.getElementById("swing-decrease-button"), document.getElementById("swing-increase-button"),
         document.getElementById("tempo-decrease-button"), document.getElementById("tempo-increase-button")]
         .filter(Boolean).forEach((element) => { element.disabled = armed; });
       const status = this.isCountingIn
         ? `Count-in: ${this.countInTotalBeats - this.countInBeatsRemaining} / ${this.countInTotalBeats} beats`
-        : this.isRecording ? `Recording: ${this.state.length} steps${this.state.loop ? " · Overwrite" : ""}` : "Ready";
+        : this.isRecording ? `Recording: ${this.getGridLength()} steps${this.state.loop ? " · Overwrite" : ""}` : "Ready";
       if (this.elements.recordingStatus.textContent !== status) this.elements.recordingStatus.textContent = status;
       this.elements.play.classList.toggle("button-on", playing);
       this.elements.play.setAttribute("aria-pressed", String(playing));

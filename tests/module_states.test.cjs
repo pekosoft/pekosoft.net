@@ -6,6 +6,23 @@ const vm = require('node:vm');
 
 const source = fs.readFileSync(path.join(__dirname, '..', 'js', 'modules.js'), 'utf8');
 
+test('More uses regular control spacing and borders and indicates its open state', () => {
+  const styles = fs.readFileSync(path.join(__dirname, '..', 'css', 'index.css'), 'utf8');
+  const rule = selector => {
+    const start = styles.indexOf(`${selector} {`);
+    assert.ok(start >= 0, selector);
+    return styles.slice(start, styles.indexOf('}', start));
+  };
+  const menu = rule('.module-panel-menu:has(> .controls-values)');
+  assert.match(menu, /gap:\s*0;/);
+  assert.match(menu, /padding:\s*0;/);
+  for (const selector of ['.module-panel-menu-label', '.module-panel-menu select']) {
+    assert.match(rule(selector), /border:\s*1px solid var\(--grey1\)/);
+  }
+  assert.match(rule('.module-more-btn.button-on'), /color:\s*var\(--color1\)/);
+  assert.match(rule('.module-more-btn.button-on .icons'), /fill:\s*var\(--color1\)/);
+});
+
 function extractSource(startMarker, endMarker) {
   const start = source.indexOf(startMarker);
   const end = source.indexOf(endMarker, start);

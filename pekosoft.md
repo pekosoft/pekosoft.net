@@ -158,6 +158,8 @@ Pekosoft favors:
 - minimal distraction
 - real utility over feature bloat
 
+More menus use the same control layout and spacing as the regular module view. The More control indicates when its menu is open.
+
 ## User-facing writing convention
 
 - **Describe function and behavior, not cosmetic styling. This rule is mandatory across the entire site**, including General and tool-specific Help, tooltips, accessibility descriptions, About and History text.

@@ -2662,7 +2662,7 @@ body.module-order-dragging .module-maximized .module-header {
   right: var(--module-panel-right, 4px);
   bottom: var(--module-panel-bottom, 4px);
   left: var(--module-panel-left, 4px);
-  background: var(--grey1);
+  background: var(--black);
 }
 
 .module-icon-panel[hidden] {
@@ -2687,6 +2687,11 @@ body.module-order-dragging .module-maximized .module-header {
 
 .module-panel-menu[hidden] {
   display: none;
+}
+
+.module-panel-menu:has(> .controls-values) {
+  gap: 0;
+  padding: 0;
 }
 
 .module-panel-menu-row {
@@ -2715,7 +2720,7 @@ body.module-order-dragging .module-maximized .module-header {
   padding: 8px;
   overflow: hidden;
   background-color: var(--field-background);
-  border: 1px solid var(--white);
+  border: 1px solid var(--grey1);
   color: var(--white);
   font-size: var(--font-size);
   line-height: 16px;
@@ -2734,7 +2739,7 @@ body.module-order-dragging .module-maximized .module-header {
 }
 
 .module-panel-menu select {
-  border: 1px solid var(--white);
+  border: 1px solid var(--grey1);
 }
 
 body.hide-module-headers .module-header {
@@ -2749,13 +2754,12 @@ body.hide-module-footers .module-footer {
   display: none;
 }
 
-/* Keep More button neutral even when actions are open */
 .module-more-btn.button-on {
-  color: var(--white);
+  color: var(--color1);
 }
 
 .module-more-btn.button-on .icons {
-  fill: var(--white);
+  fill: var(--color1);
 }
 
 /* Minimized: hide everything except the header */

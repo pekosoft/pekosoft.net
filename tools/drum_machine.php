@@ -60,10 +60,6 @@
           <svg class="icons"><use href="/icons.svg#record" /></svg>
           <span class="button-text">Record</span>
         </button>
-        <button id="playback-button" class="square" title="Toggle recording playback">
-          <svg class="icons"><use href="/icons.svg#play" /></svg>
-          <span class="button-text">Playback</span>
-        </button>
         <button id="loop-button" class="square" title="Toggle loop" aria-pressed="false">
           <svg class="icons"><use href="/icons.svg#loop" /></svg>
           <span class="button-text">Loop</span>

@@ -388,7 +388,6 @@
         metronome: document.getElementById("metronome-button"),
         countIn: document.getElementById("count-in-select"),
         recordingStatus: document.getElementById("recording-status"),
-        playback: document.getElementById("playback-button"),
         loop: document.getElementById("loop-button"),
         stop: document.getElementById("stop-button"),
         saveWav: document.getElementById("save-wav-button"),
@@ -1236,7 +1235,6 @@
         this.saveState();
         this.updatePanel();
       });
-      this.elements.playback.addEventListener("click", () => this.toggleRecordingPlayback());
       this.elements.loop.addEventListener("click", () => this.toggleRecordingLoop());
       this.elements.stop.addEventListener("click", () => this.stopAll(true));
       this.elements.saveWav.addEventListener("click", () => this.savePatternAsWav());
@@ -2037,6 +2035,10 @@
     }
 
     async togglePlayback() {
+      if (this.getGridRecording()) {
+        await this.toggleRecordingPlayback();
+        return;
+      }
       if (this.isPlaying) {
         this.pausePlayback(false);
         return;
@@ -2676,8 +2678,6 @@
       if (!this.state.blink) {
         document.querySelectorAll(".voice-trigger.voice-hit").forEach((trigger) => trigger.classList.remove("voice-hit"));
       }
-      this.elements.play.classList.toggle("button-on", this.isPlaying);
-      this.elements.play.setAttribute("aria-pressed", this.isPlaying ? "true" : "false");
       this.elements.sound.classList.toggle("button-on", this.state.sound);
       this.elements.sound.setAttribute("aria-pressed", this.state.sound ? "true" : "false");
       this.elements.haptic.classList.toggle("button-on", this.state.haptic);
@@ -2686,9 +2686,8 @@
     }
 
     updateRecordingControls() {
-      const hasRecording = this.selectedRecordingIndex >= 0 && this.selectedRecordingIndex < this.recordings.length;
-      const canFinalizeAndPlay = this.isRecording;
       const armed = this.isRecording || this.isCountingIn;
+      const playing = this.isPlaying || this.isRecordingPlayback;
       if (this.gridArmed !== armed) {
         this.gridArmed = armed;
         this.hitGesture = null;
@@ -2705,9 +2704,8 @@
         ? `Count-in: ${this.countInTotalBeats - this.countInBeatsRemaining} / ${this.countInTotalBeats} beats`
         : this.isRecording ? `Recording: ${this.state.length} steps${this.state.loop ? " · Overwrite" : ""}` : "Ready";
       if (this.elements.recordingStatus.textContent !== status) this.elements.recordingStatus.textContent = status;
-      this.elements.playback.classList.toggle("button-on", this.isRecordingPlayback);
-      this.elements.playback.setAttribute("aria-pressed", this.isRecordingPlayback ? "true" : "false");
-      this.elements.playback.disabled = !hasRecording && !canFinalizeAndPlay;
+      this.elements.play.classList.toggle("button-on", playing);
+      this.elements.play.setAttribute("aria-pressed", String(playing));
       this.elements.playlistPrevious.disabled = this.recordings.length < 2;
       this.elements.playlistNext.disabled = this.recordings.length < 2;
       this.elements.playlistClear.disabled = this.recordings.length === 0;

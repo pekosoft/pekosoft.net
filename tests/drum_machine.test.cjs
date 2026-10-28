@@ -452,7 +452,7 @@ test('Stop, selection, removal, import, pattern apply and Reset cancel all pendi
 });
 
 test('Pending audio resumes and repeated transport actions cannot restart canceled Playlist playback', async () => {
-  for (const action of ['stop', 'selection', 'removal', 'reset', 'record', 'play', 'repeat']) {
+  for (const action of ['stop', 'selection', 'removal', 'reset', 'record', 'play', 'source-play', 'repeat']) {
     const { machine, sounds } = createRecordingPlayback();
     machine.state.loop = true;
     const resumes = [];
@@ -473,15 +473,21 @@ test('Pending audio resumes and repeated transport actions cannot restart cancel
     }
     if (action === 'record') second = machine.startRecording();
     if (action === 'play') {
+      machine.gridSource = 'pattern';
       machine.scheduler = () => {};
+      second = machine.togglePlayback();
+    }
+    if (action === 'source-play') {
+      machine.gridSource = 'recording';
       second = machine.togglePlayback();
     }
     if (action === 'repeat') second = machine.startRecordingPlayback();
     resumes.forEach(resolve => resolve());
     await starting;
     if (second) await second;
-    assert.equal(machine.isRecordingPlayback, action === 'repeat', action);
-    assert.equal(sounds.length, action === 'repeat' ? 1 : 0, action);
+    const playsRecording = action === 'repeat' || action === 'source-play';
+    assert.equal(machine.isRecordingPlayback, playsRecording, action);
+    assert.equal(sounds.length, playsRecording ? 1 : 0, action);
   }
 });
 
@@ -874,7 +880,54 @@ function createSequencer(options = {}) {
   return { ...result, sounds };
 }
 
+test('Controls contains only one Play button and no separate recording playback control', () => {
+  const markup = fs.readFileSync(path.join(__dirname, '..', 'tools', 'drum_machine.php'), 'utf8');
+  const controls = markup.match(/class="controls-buttons wrapper">([\s\S]*?)<\/div>/)[1];
+  assert.equal((controls.match(/\/icons\.svg#play"/g) || []).length, 1);
+  assert.match(controls, /id="play-button"/);
+  assert.doesNotMatch(markup, /id="playback-button"/);
+  assert.doesNotMatch(source, /elements\.playback\b|document\.getElementById\("playback-button"\)/);
+});
 
+test('The single Play button follows Source and reflects either transport including natural completion', async () => {
+  const { machine, api, handlers, advance } = createSequencer();
+  machine.recordings = [api.normalizeRecording({
+    id: 'play-source', durationMs: 400, fixedDuration: true,
+    events: [{ voice: 'snare', velocity: 1, timestampMs: 100, settings: machine.state.voices.snare }]
+  })];
+  machine.selectedRecordingIndex = 0;
+  machine.gridSource = 'pattern';
+  machine.bindEvents();
+  assert.equal(handlers['playback:click'], undefined);
+  const pattern = JSON.stringify(machine.state.pattern);
+  const play = handlers['play:click'];
+  await play();
+  assert.equal(machine.isPlaying, true);
+  assert.equal(machine.isRecordingPlayback, false);
+  assert.equal(machine.elements.play['aria-pressed'], 'true');
+  machine.gridSource = 'recording';
+  await play();
+  assert.equal(machine.isPlaying, false);
+  assert.equal(machine.isRecordingPlayback, true);
+  assert.equal(machine.elements.play['aria-pressed'], 'true');
+  machine.gridSource = 'pattern';
+  await play();
+  assert.equal(machine.isPlaying, true);
+  assert.equal(machine.isRecordingPlayback, false);
+  await play();
+  assert.equal(machine.isPlaying, false);
+  assert.equal(machine.elements.play['aria-pressed'], 'false');
+  machine.gridSource = 'recording';
+  await play();
+  await play();
+  assert.equal(machine.isRecordingPlayback, false);
+  assert.equal(machine.elements.play['aria-pressed'], 'false');
+  await play();
+  advance(0.431);
+  assert.equal(machine.isRecordingPlayback, false);
+  assert.equal(machine.elements.play['aria-pressed'], 'false');
+  assert.equal(JSON.stringify(machine.state.pattern), pattern);
+});
 
 test('Sequencer Loop off plays exactly one selected Length cycle through its audio-clock boundary', async () => {
   for (const length of [4, 8, 12, 16]) {

@@ -34,7 +34,7 @@
   </svg>
   <div class="justify">
     <h1>Source <span class="object">button</span></h1>
-    Switches Grid between the sequencer pattern and the selected Playlist recording. Save uses the current Source. Selecting, recording, importing or playing a Playlist recording shows its hits in Grid without quantizing them. Recording edits update that Playlist recording and its preview, preserving the recording window and the settings of hits moved within a voice. Moving a hit to another voice uses that voice's current settings. Choosing a pattern preset shows the sequencer pattern again. Unavailable when Playlist is empty.
+    Switches Grid between the sequencer pattern and the selected Playlist recording. Play and Save use the current Source. Selecting, recording, importing or playing a Playlist recording shows its hits in Grid without quantizing them. Recording edits update that Playlist recording and its preview, preserving the recording window and the settings of hits moved within a voice. Moving a hit to another voice uses that voice's current settings. Choosing a pattern preset shows the sequencer pattern again. Unavailable when Playlist is empty.
   </div>
 </div>
 
@@ -111,7 +111,7 @@
     <use href="/icons.svg#play"></use>
   </svg>
   <div class="justify">
-    <h1>Play <span class="object">button</span></h1>Starts or pauses sequencer playback. With Loop off, plays one Length cycle and returns the playhead to the beginning. With Loop on, repeats the pattern. Pausing manually keeps the current position for resuming. Changing Length during playback restarts from the beginning with the selected length. Space provides the same shortcut when no field or button has focus. <span class="default">Default: off.</span>
+    <h1>Play <span class="object">button</span></h1>Plays the current Source. For the sequencer pattern, starts or pauses playback. With Loop off, plays one Length cycle and returns the playhead to the beginning. With Loop on, repeats the pattern. Pausing manually keeps the current position for resuming. Changing Length during playback restarts from the beginning with the selected length. For a Playlist recording, starts or stops playback using its stored duration and hit timing without changing the pattern. Play first completes an active take when the recording source is selected. Space provides the same shortcut when no field or button has focus. <span class="default">Default: off.</span>
   </div>
 </div>
 
@@ -121,15 +121,6 @@
   </svg>
   <div class="justify">
     <h1>Record <span class="object">button</span></h1>Starts the selected Count-in, then records sequencer hits and manually auditioned voices with their timing, velocity and voice settings for one Length cycle at the selected BPM. Record does not start the sequencer. Count-in happens only before the first pass and is excluded from the take. With Loop off, recording completes at the cycle boundary. Press Record again or Stop to finish early. The take keeps its full cycle duration, including leading and trailing silence, and is added to Playlist even when silent. Sound tails are cut at the cycle boundary during recording playback and WAV export. The recording status shows the selected step count and whether Loop is overwriting. Length, BPM, Tempo and Tap are unavailable during Count-in and recording. <span class="default">Default: off.</span>
-  </div>
-</div>
-
-<div class="feature-row border">
-  <svg class="standard-image-help">
-    <use href="/icons.svg#play"></use>
-  </svg>
-  <div class="justify">
-    <h1>Playback <span class="object">button</span></h1>Starts or stops the selected Playlist recording. Playback first completes an active take and then plays it. Recording playback does not change the current pattern. <span class="default">Default: off.</span>
   </div>
 </div>
 

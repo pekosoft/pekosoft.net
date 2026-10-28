@@ -34,6 +34,10 @@ concurrency:
   group: deploy-production
   cancel-in-progress: false
 
+permissions:
+  contents: read
+  actions: read
+
 jobs:
   deploy:
     name: Upload via SFTP
@@ -95,9 +99,34 @@ jobs:
           test -n "$SFTP_PASSWORD" || { echo "Missing secret: SFTP_PASSWORD"; exit 1; }
           test -n "$SFTP_REMOTE_DIR" || { echo "Missing variable: SFTP_REMOTE_DIR"; exit 1; }
 
+      - name: Find last successful deployment
+        id: baseline
+        if: env.DEPLOY_MODE != 'full'
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const runs = await github.paginate(github.rest.actions.listWorkflowRuns, {
+              ...context.repo,
+              workflow_id: 'deploy.yml',
+              branch: context.ref.replace(/^refs\/heads\//, ''),
+              status: 'success',
+              per_page: 100
+            });
+            const previous = runs
+              .filter(run => run.id !== context.runId)
+              .sort((left, right) => Date.parse(right.updated_at) - Date.parse(left.updated_at))[0];
+            if (previous) {
+              core.info(`Using successful deployment ${previous.id} at ${previous.head_sha}`);
+              core.setOutput('sha', previous.head_sha);
+            } else {
+              core.info('No successful deployment found; a full sync is required.');
+            }
+
       - name: Prepare deployment plan
         id: plan
         shell: bash
+        env:
+          DEPLOY_BASE_SHA: ${{ steps.baseline.outputs.sha }}
         run: |
           : > "$DEPLOY_UPLOAD_LIST"
           : > "$DEPLOY_DELETE_LIST"
@@ -115,14 +144,15 @@ jobs:
             exit 0
           fi
 
-          if ! base_commit=$(git rev-parse HEAD^ 2>/dev/null); then
+          base_commit="$DEPLOY_BASE_SHA"
+          if [[ -z "$base_commit" ]] || ! git merge-base --is-ancestor "$base_commit" "$GITHUB_SHA"; then
             {
               echo "mode=full"
               echo "has_changes=true"
               echo "upload_count=full"
               echo "delete_count=0"
             } >> "$GITHUB_OUTPUT"
-            echo "No parent commit found; falling back to full sync."
+            echo "No usable deployed ancestor found; falling back to full sync."
             exit 0
           fi
 
@@ -246,10 +276,11 @@ jobs:
           done < "$DEPLOY_UPLOAD_LIST"
 
           sshpass -p "$SFTP_PASSWORD" sftp \
+            -b "$DEPLOY_SFTP_BATCH" \
             -P "$SFTP_PORT" \
             -o BatchMode=no \
             -o StrictHostKeyChecking=yes \
-            "$SFTP_USERNAME@$SFTP_HOST" < "$DEPLOY_SFTP_BATCH"
+            "$SFTP_USERNAME@$SFTP_HOST"
 
       - name: Full sync website files
         if: steps.plan.outputs.mode == 'full' && steps.plan.outputs.has_changes == 'true'

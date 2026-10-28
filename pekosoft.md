@@ -160,6 +160,14 @@ Pekosoft favors:
 
 More menus use the same control layout and spacing as the regular module view. The More control indicates when its menu is open. More stays open until the user activates that module's More control again. Outside interactions and changes to module layout or visibility must preserve this mode.
 
+## Production deployment
+
+The Deploy site workflow uploads only runtime files. Repository-only tooling, tests, configuration and documentation must remain excluded from incremental uploads, full sync and `.ftpignore`.
+
+Incremental deployment compares the checked-out revision with the most recently completed successful deployment of the same branch. This includes every commit in a push and changes left undeployed by failed or cancelled runs. Missing or non-ancestor deployment baselines require a full sync. GitHub API errors fail the run rather than selecting an assumed baseline, and SFTP upload errors must fail the deployment.
+
+To recover from an incomplete deployment, run Deploy site manually on `main` with mode `full`, then verify the affected production assets and pages. Rerunning the old workflow in changed mode does not repair files skipped by its former single-commit comparison.
+
 ## User-facing writing convention
 
 - **Describe function and behavior, not cosmetic styling. This rule is mandatory across the entire site**, including General and tool-specific Help, tooltips, accessibility descriptions, About and History text.

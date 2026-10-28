@@ -455,7 +455,7 @@
     <use href="/icons.svg#undo"></use>
   </svg>
   <div class="justify">
-    <h1>History <span class="object">module</span></h1>Shows the current session's hit, timing and sound edits for both the working pattern and Playlist recordings. Returning to an entry displays the pattern or recording that was edited. Drag a column header edge to resize that column. On touchscreens, drag the right side of the header. Double-click or double-tap the edge to restore its default width. The highlighted row is the current history state.
+    <h1>History <span class="object">module</span></h1>Shows the current session's hit, timing and sound edits for both the working pattern and Playlist recordings. Knob and slider adjustments take effect while dragging and add one entry on release. Held adjustment keys also add one entry on release; typed field edits add an entry when confirmed with Enter or by leaving the field. Returning to an entry displays the pattern or recording that was edited. Drag a column header edge to resize that column. On touchscreens, drag the right side of the header. Double-click or double-tap the edge to restore its default width. The highlighted row is the current history state.
   </div>
 </div>
 

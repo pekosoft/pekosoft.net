@@ -1783,6 +1783,113 @@ function createEditor() {
   return { ...result, edits };
 }
 
+test('Timing controls update live but record only the complete pointer or keyboard adjustment', () => {
+  for (const recorded of [false, true]) {
+    const { machine, context, handlers, edits, api } = createEditor();
+    if (recorded) {
+      machine.recordings = [api.normalizeRecording({
+        id: 'control-edit', durationMs: 2000, bpm: 120, swing: 0,
+        events: [{ voice: 'kick', timestampMs: 500, velocity: 1 }]
+      })];
+      machine.selectedRecordingIndex = 0;
+      machine.gridSource = 'recording';
+    }
+    const documentHandlers = {};
+    context.document.addEventListener = (name, callback, capture) => {
+      if (!capture) documentHandlers[name] = callback;
+    };
+    machine.bindEvents();
+    for (const [control, property, values] of [
+      ['bpmSlider', 'bpm', [130, 140, 150]],
+      ['swingSlider', 'swing', [10, 20, 30]],
+      ['bpmInput', 'bpm', [160, 170, 180]],
+      ['swingInput', 'swing', [35, 40, 45]]
+    ]) {
+      const before = machine.patternSnapshot();
+      const count = edits.length;
+      const field = control.endsWith('Input');
+      handlers[`${control}:${field ? 'keydown' : 'pointerdown'}`](
+        field ? { key: 'ArrowUp' } : { button: 0, isPrimary: true });
+      for (const value of values) {
+        machine.elements[control].value = String(value);
+        handlers[`${control}:${field ? 'change' : 'input'}`]();
+        assert.equal(machine.getSourceSettings()[property], value);
+        assert.equal(edits.length, count);
+      }
+      if (field) handlers[`${control}:keyup`]({ key: 'ArrowUp' });
+      else documentHandlers.pointerup();
+      assert.equal(edits.length, count + 1);
+      assert.equal(edits.at(-1).before, before);
+      assert.equal(edits.at(-1).after, machine.patternSnapshot());
+      documentHandlers.pointerup();
+      assert.equal(edits.length, count + 1);
+    }
+  }
+});
+
+test('Voice knob gestures and range-button holds commit once and clean up on interrupted release', () => {
+  const { machine, context, handlers, edits } = createEditor();
+  for (const name of ['pitch', 'decay', 'tone', 'level', 'pan']) {
+    Object.assign(machine.elements[`${name}Input`], { min: name === 'pan' ? '-100' : '0', max: '100', step: '1' });
+  }
+  const bindings = new Map();
+  context.bindKnobControl = (knob, callbacks) => bindings.set(knob, callbacks);
+  const buttons = new Map();
+  context.document.getElementById = id => {
+    if (!buttons.has(id)) buttons.set(id, {
+      addEventListener(name, callback) { handlers[`${id}:${name}`] = callback; }
+    });
+    return buttons.get(id);
+  };
+  machine.bindEvents();
+  for (const [name, finish] of [
+    ['pitch', 'lostpointercapture'], ['decay', 'pointercancel'],
+    ['tone', 'blur'], ['level', 'lostpointercapture'], ['pan', 'blur']
+  ]) {
+    const before = machine.patternSnapshot();
+    const count = edits.length;
+    const callbacks = bindings.get(machine.elements[`${name}Knob`]);
+    handlers[`${name}Knob:pointerdown`]({ button: 0, isPrimary: true });
+    callbacks.home();
+    callbacks.nudge(1);
+    assert.equal(edits.length, count);
+    handlers[`${name}Knob:${finish}`]();
+    assert.equal(edits.length, count + 1);
+    assert.equal(edits.at(-1).before, before);
+    assert.equal(edits.at(-1).after, machine.patternSnapshot());
+  }
+  handlers['tempo-increase-button:pointerdown']({ button: 0 });
+  const count = edits.length;
+  for (const bpm of [130, 140, 150]) machine.setBpm(bpm);
+  assert.equal(edits.length, count);
+  handlers['tempo-increase-button:lostpointercapture']();
+  assert.equal(edits.length, count + 1);
+  assert.equal(JSON.parse(edits.at(-1).before).bpm, 120);
+  assert.equal(JSON.parse(edits.at(-1).after).bpm, 150);
+});
+
+test('Unchanged gestures leave history intact and typed fields commit normally', () => {
+  const { machine, handlers, edits } = createEditor();
+  machine.bindEvents();
+  handlers['bpmSlider:pointerdown']({ button: 0 });
+  machine.setBpm(150);
+  machine.setBpm(120);
+  handlers['bpmSlider:blur']();
+  assert.equal(edits.length, 0);
+  handlers['bpmSlider:pointerdown']({ button: 0 });
+  handlers['bpmSlider:blur']();
+  assert.equal(edits.length, 0);
+  machine.elements.bpmInput.value = '145';
+  handlers['bpmInput:change']();
+  assert.equal(edits.length, 1);
+  machine.history.undo = () => assert.equal(edits.length, 2);
+  handlers['bpmSlider:keydown']({ key: 'ArrowRight' });
+  machine.setBpm(160);
+  machine.undo();
+  assert.equal(edits.length, 2);
+  assert.equal(machine.controlEdit, null);
+});
+
 test('Hit edits retain existing banks, cells and hit elements instead of rebuilding Grid', () => {
   const { machine, context } = createEditor();
   const banks = [{}, {}];

@@ -1306,6 +1306,9 @@
       document.addEventListener("pointermove", (event) => this.handlePaintMove(event), { passive: false });
       document.addEventListener("pointerup", (event) => this.endPaintGesture(event), true);
       document.addEventListener("pointercancel", (event) => this.endPaintGesture(event), true);
+      document.addEventListener("pointerup", () => this.finishControlEdit());
+      document.addEventListener("pointercancel", () => this.finishControlEdit());
+      window.addEventListener("blur", () => this.finishControlEdit());
 
       this.elements.play.addEventListener("click", () => this.togglePlayback());
       this.elements.record.addEventListener("click", () => this.toggleRecording());
@@ -1358,6 +1361,13 @@
       this.elements.swingSlider.addEventListener("input", () => this.setSwing(this.elements.swingSlider.value));
       this.elements.volumeSlider.addEventListener("input", () => this.setVolume(this.elements.volumeSlider.value));
 
+      [this.elements.bpmInput, this.elements.bpmSlider,
+        this.elements.swingInput, this.elements.swingSlider].forEach((control) => this.bindControlHistory(control));
+      ["tempo-decrease-button", "tempo-increase-button",
+        "swing-decrease-button", "swing-increase-button"].forEach((id) => {
+        this.bindControlHistory(document.getElementById(id));
+      });
+
       window.bindPekosoftRangeButtons(
         this.elements.bpmSlider,
         document.getElementById("tempo-decrease-button"),
@@ -1396,6 +1406,8 @@
       VOICE_PARAMETERS.forEach(([name, property, scale]) => {
         const input = this.elements[`${name}Input`];
         const knob = this.elements[`${name}Knob`];
+        this.bindControlHistory(input);
+        this.bindControlHistory(knob);
         const set = (value) => this.setVoiceParameter(property, value * scale);
         input.addEventListener("change", () => this.setVoiceParameter(property, Number(input.value) * scale));
         bindKnobControl(knob, {
@@ -1419,6 +1431,37 @@
 
       document.addEventListener("keydown", (event) => this.handleGlobalKeyDown(event));
       window.addEventListener("pagehide", () => this.stopAll(false));
+    }
+
+    bindControlHistory(control) {
+      if (!control) return;
+      const adjustmentKeys = ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Home", "End", "PageUp", "PageDown"];
+      const begin = () => {
+        if (this.controlEdit?.control === control) return;
+        this.finishControlEdit();
+        this.controlEdit = { control, before: this.patternSnapshot() };
+      };
+      const finish = () => {
+        if (this.controlEdit?.control === control) this.finishControlEdit();
+      };
+      control.addEventListener("pointerdown", (event) => {
+        if (event.button === 0 && event.isPrimary !== false) begin();
+      });
+      control.addEventListener("keydown", (event) => {
+        if (adjustmentKeys.includes(event.key)) begin();
+      });
+      control.addEventListener("keyup", (event) => {
+        if (adjustmentKeys.includes(event.key)) finish();
+      });
+      ["blur", "pointercancel", "lostpointercapture"].forEach((name) => control.addEventListener(name, finish));
+    }
+
+    finishControlEdit() {
+      const edit = this.controlEdit;
+      if (!edit) return;
+      this.controlEdit = null;
+      const after = this.patternSnapshot();
+      if (edit?.label && edit.before !== after) this.history.record(edit.label, edit.before, after, { icon: edit.icon });
     }
 
     handleGridPointerDown(event) {
@@ -2592,7 +2635,12 @@
       if (markCustom) this.getSourceSettings().patternName = "custom";
       const after = this.patternSnapshot();
       this.refreshScheduledHits();
-      this.history.record(label, before, after, { icon });
+      if (this.controlEdit) {
+        this.controlEdit.label = label;
+        this.controlEdit.icon = icon;
+      } else {
+        this.history.record(label, before, after, { icon });
+      }
       this.saveRecordingPlaylist();
       this.saveState();
       this.refreshGrid();
@@ -2600,10 +2648,12 @@
     }
 
     undo() {
+      this.finishControlEdit();
       this.history.undo();
     }
 
     redo() {
+      this.finishControlEdit();
       this.history.redo();
     }
 

@@ -1910,7 +1910,26 @@ function createStepButton(voice, step) {
   };
 }
 
+test('Grid banks reserve their intrinsic height instead of covering the following step heading', () => {
+  const styles = fs.readFileSync(path.join(__dirname, '..', 'css', 'drum_machine.css'), 'utf8');
+  const grid = styles.match(/\.sequencer-grid\s*\{([^}]+)\}/)[1];
+  assert.match(grid, /grid-auto-rows:\s*minmax\(min-content,\s*1fr\)/);
+  const bank = styles.match(/\.sequence-bank\s*\{([^}]+)\}/)[1];
+  assert.match(bank, /grid-template-rows:\s*20px repeat\(4,\s*minmax\(0,\s*1fr\)\)/);
+});
 
+test('Muted hits use opaque grey2 while empty and disabled cells remain opaque black', () => {
+  const styles = fs.readFileSync(path.join(__dirname, '..', 'css', 'drum_machine.css'), 'utf8');
+  const hit = styles.match(/\.grid-hit\.muted-hit\s*\{([^}]+)\}/)[1];
+  const cell = styles.match(/\.step-button\.muted-step\s*\{([^}]+)\}/)[1];
+  const disabled = styles.match(/\.step-button:disabled\s*\{([^}]+)\}/)[1];
+  assert.match(hit, /background:\s*var\(--grey2\)/);
+  assert.match(cell, /background:\s*var\(--black\)/);
+  assert.match(disabled, /background:\s*var\(--black\)/);
+  for (const rule of [hit, cell, disabled]) {
+    assert.doesNotMatch(rule, /opacity\s*:|rgba?\([^)]*\/|rgba\(|hsla\(/);
+  }
+});
 
 test('Adding and painting snapped steps updates a running loop without stopping or resetting it', async () => {
   const { machine, sounds, advance, context } = createSequencer({ bpm: 120, loop: true });

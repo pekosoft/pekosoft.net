@@ -140,7 +140,9 @@ test('Incremental plans cover an entire push and changes since the last successf
 
 test('SFTP uploads use batch mode so failed puts cannot produce a successful deployment', () => {
   const script = stepScript('Upload changed website files', 'run');
-  assert.match(script, /sftp \\\s+-b "\$DEPLOY_SFTP_BATCH"/);
-  assert.match(script, /-o BatchMode=no/);
+  assert.match(script, /sftp \\/);
+  assert.ok(script.indexOf('-o BatchMode=no') < script.indexOf('-b "$DEPLOY_SFTP_BATCH"'),
+    'Password authentication must be configured before -b adds its BatchMode=yes default');
+  assert.match(script, /-b "\$DEPLOY_SFTP_BATCH"/);
   assert.doesNotMatch(script, /< "\$DEPLOY_SFTP_BATCH"/);
 });

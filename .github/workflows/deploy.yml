@@ -276,10 +276,10 @@ jobs:
           done < "$DEPLOY_UPLOAD_LIST"
 
           sshpass -p "$SFTP_PASSWORD" sftp \
-            -b "$DEPLOY_SFTP_BATCH" \
             -P "$SFTP_PORT" \
             -o BatchMode=no \
             -o StrictHostKeyChecking=yes \
+            -b "$DEPLOY_SFTP_BATCH" \
             "$SFTP_USERNAME@$SFTP_HOST"
 
       - name: Full sync website files

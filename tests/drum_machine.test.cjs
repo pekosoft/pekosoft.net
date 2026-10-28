@@ -1783,6 +1783,54 @@ function createEditor() {
   return { ...result, edits };
 }
 
+test('Hit edits retain existing banks, cells and hit elements instead of rebuilding Grid', () => {
+  const { machine, context } = createEditor();
+  const banks = [{}, {}];
+  const buttons = [];
+  let resets = 0;
+  const grid = {
+    querySelectorAll: selector => selector === '.sequence-bank' ? banks : buttons,
+    set textContent(value) { resets++; }
+  };
+  machine.elements.grid = grid;
+  machine.buildGrid();
+  assert.equal(resets, 0);
+  context.document.createElement = () => ({
+    dataset: {}, classList: { toggle() {} }, children: [],
+    appendChild(child) { this.children.push(child); },
+    setAttribute() {},
+    remove() { buttons.splice(buttons.indexOf(this), 1); }
+  });
+  machine.positionGridHit = button => {
+    if (!buttons.includes(button)) buttons.push(button);
+  };
+  machine.renderGridHits = context.api.DrumMachine.prototype.renderGridHits;
+  machine.renderGridHits();
+  const kick = buttons.find(button => button.dataset.hit === 'step:kick:0');
+  assert.ok(kick);
+  const mark = kick.children[0];
+  machine.state.pattern.kick[0] = 1;
+  machine.state.pattern.perc[7] = 2;
+  machine.renderGridHits();
+  assert.equal(buttons.find(button => button.dataset.hit === 'step:kick:0'), kick);
+  assert.equal(kick.children[0], mark);
+  assert.match(kick.className, /velocity-1/);
+  machine.state.pattern.kick[0] = 0;
+  machine.renderGridHits();
+  assert.equal(buttons.includes(kick), false);
+  assert.ok(buttons.some(button => button.dataset.hit === 'step:perc:7'));
+  machine.state.mode = 'pad';
+  machine.renderGridHits();
+  assert.equal(buttons.length, 0);
+  banks.push({});
+  context.document.createElement = () => ({
+    dataset: {}, classList: { toggle() {} }, setAttribute() {}, appendChild() {}
+  });
+  grid.appendChild = () => {};
+  machine.buildGrid();
+  assert.equal(resets, 1, 'Bank count changes still rebuild the grid structure');
+});
+
 test('Grid fills with captured hits at audio time rather than waiting for recording completion', async () => {
   const { machine, advance, api } = createSequencer({ countIn: 0, bpm: 120, swing: 25, length: 16 });
   const original = JSON.stringify(machine.state.pattern);

@@ -997,7 +997,7 @@
       if (!bounds.width || !bounds.height) return;
       const bankBounds = bank.getBoundingClientRect();
       const pitch = second.getBoundingClientRect().left - bounds.left;
-      bank.appendChild(button);
+      if (button.parentElement !== bank) bank.appendChild(button);
       const left = bounds.left - bankBounds.left + (hit.step % 8) * pitch;
       button.style.left = `${Math.min(bankBounds.width - bounds.width, left)}px`;
       button.style.top = `${bounds.top - bankBounds.top}px`;
@@ -1008,20 +1008,28 @@
     renderGridHits() {
       if (this.hitGesture) return;
       const focusedKey = document.activeElement?.dataset.hit;
-      this.elements.grid.querySelectorAll(".grid-hit").forEach((hit) => hit.remove());
-      if (this.state.mode === "pad") return;
-      this.getGridHits().forEach((hit) => {
-        const button = document.createElement("button");
-        button.type = "button";
+      const existing = new Map([...this.elements.grid.querySelectorAll(".grid-hit")]
+        .map((button) => [button.dataset.hit, button]));
+      const hits = this.state.mode === "pad" ? [] : this.getGridHits();
+      const keys = new Set(hits.map((hit) => hit.key));
+      existing.forEach((button, key) => {
+        if (!keys.has(key)) button.remove();
+      });
+      hits.forEach((hit) => {
+        let button = existing.get(hit.key);
+        if (!button) {
+          button = document.createElement("button");
+          button.type = "button";
+          const mark = document.createElement("span");
+          mark.className = "step-mark";
+          mark.setAttribute("aria-hidden", "true");
+          button.appendChild(mark);
+        }
         button.className = `grid-hit square velocity-${hit.velocity}`;
         button.dataset.hit = hit.key;
         button.dataset.step = String(Math.floor(hit.step));
         button.classList.toggle("current-step", Math.floor(hit.step) === this.currentStep);
         button.classList.toggle("muted-hit", this.state.mutes[hit.voice]);
-        const mark = document.createElement("span");
-        mark.className = "step-mark";
-        mark.setAttribute("aria-hidden", "true");
-        button.appendChild(mark);
         const recording = this.isRecording ? this.recordingSettings : this.getGridRecording();
         const time = timeAtStep(hit.step, recording?.bpm || this.state.bpm, recording?.swing ?? this.state.swing);
         const label = `${hit.voice}, ${(time * 1000).toFixed(3)} ms, ${hit.velocity === 2 ? "accent" : "normal"}`;
@@ -1194,10 +1202,11 @@
     }
 
     buildGrid() {
-      this.elements.grid.textContent = "";
-
       const length = this.getGridLength();
-      for (let bankIndex = 0; bankIndex < Math.max(2, Math.ceil(length / 8)); bankIndex++) {
+      const bankCount = Math.max(2, Math.ceil(length / 8));
+      if (this.elements.grid.querySelectorAll(".sequence-bank").length === bankCount) return;
+      this.elements.grid.textContent = "";
+      for (let bankIndex = 0; bankIndex < bankCount; bankIndex++) {
         const bank = document.createElement("div");
         bank.className = "sequence-bank";
         bank.dataset.bank = String(bankIndex);

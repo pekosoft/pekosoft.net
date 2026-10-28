@@ -336,6 +336,7 @@
       this.nextStep = 0;
       this.nextStepTime = 0;
       this.schedulerTimer = null;
+      this.sequencerPlayback = null;
       this.visualTimers = new Set();
       this.activeSources = new Set();
       this.lastMetersActivitySec = 0;
@@ -668,8 +669,7 @@
           if (!Array.isArray(source)) throw new Error("Recordings array is missing");
           const imported = source.map(normalizeRecording).filter(Boolean);
           if (!imported.length) throw new Error("No valid recordings found");
-          this.finishRecording();
-          this.stopRecordingPlayback();
+          this.stopAll(true);
           this.recordings = imported;
           this.selectedRecordingIndex = 0;
           this.saveRecordingPlaylist();
@@ -835,13 +835,15 @@
       const delayMs = Math.max(0, (when - this.audioContext.currentTime) * 1000);
       const durationMs = Math.max(minimumDurationMs, (stopTime - when) * 1000);
       const startTime = performance.now() + delayMs;
-      this.timelineEvents.push({
+      const event = {
         voice,
         velocity,
         startTime,
         endTime: startTime + durationMs,
         settings: { ...settings }
-      });
+      };
+      this.timelineEvents.push(event);
+      return event;
     }
 
     buildGrid() {
@@ -1012,10 +1014,13 @@
       });
       this.elements.lengthSelect.addEventListener("change", () => {
         if (this.isRecording || this.isCountingIn) return;
+        const wasPlaying = this.isPlaying;
+        this.pausePlayback(true);
         this.state.length = Number(this.elements.lengthSelect.value);
         if (this.currentStep >= this.state.length) this.setCurrentStep(-1);
         if (this.nextStep >= this.state.length) this.nextStep = 0;
         this.saveAndRender();
+        if (wasPlaying) return this.togglePlayback();
       });
       this.elements.voiceSelect.addEventListener("change", () => {
         this.state.selectedVoice = this.elements.voiceSelect.value;
@@ -1226,7 +1231,8 @@
               event.velocity,
               when,
               event.endTime - event.startTime,
-              event.settings || this.state.voices[event.voice]
+              event.settings || this.state.voices[event.voice],
+              event
             );
           });
       }
@@ -1337,7 +1343,7 @@
       this.updateRecordingControls();
     }
 
-    queueRecordingEvent(voice, velocity, when, durationMs, settings) {
+    queueRecordingEvent(voice, velocity, when, durationMs, settings, timelineEvent = null) {
       if (!this.isRecording || when < this.recordingStartTime - 0.000001) return;
       const pending = {
         sessionId: this.recordingSessionId,
@@ -1345,6 +1351,7 @@
         velocity,
         when,
         durationMs,
+        timelineEvent,
         settings: { ...settings }
       };
       const delayMs = Math.max(0, (when - this.audioContext.currentTime) * 1000);
@@ -1354,10 +1361,12 @@
       }
 
       const timer = window.setTimeout(() => {
+        if (!this.recordingCaptureTimers.has(timer)) return;
         this.recordingCaptureTimers.delete(timer);
         this.commitRecordedEvent(pending);
       }, delayMs);
       this.recordingCaptureTimers.set(timer, pending);
+      return timer;
     }
 
     getNextRecordingName() {
@@ -1462,7 +1471,54 @@
 
     toggleRecordingLoop() {
       if (this.isRecording && this.audioContext.currentTime >= this.recordingEndTime) this.finishRecording();
+      if (this.sequencerPlayback && this.audioContext.currentTime >= this.sequencerPlayback.endTime) {
+        this.finishSequencerPlayback();
+      }
       this.state.loop = !this.state.loop;
+      const sequencer = this.sequencerPlayback;
+      if (sequencer) {
+        const now = this.audioContext.currentTime;
+        const currentCycle = sequencer.cycles.find((cycle) => cycle.endTime > now) ||
+          { index: sequencer.cycle, endTime: Infinity };
+        sequencer.endCycle = this.state.loop ? Infinity : currentCycle.index + 1;
+        sequencer.endTime = this.state.loop ? Infinity : currentCycle.endTime;
+        if (!this.state.loop) {
+          sequencer.pending = sequencer.pending.filter((step) => {
+            if (step.cycle < sequencer.endCycle) return true;
+            step.sources.forEach((source) => {
+              try {
+                source.stop(now);
+              } catch (_) {
+                // Source may already have ended.
+              }
+              this.activeSources.delete(source);
+            });
+            step.visualTimers.forEach((timer) => {
+              window.clearTimeout(timer);
+              this.visualTimers.delete(timer);
+            });
+            step.captureTimers.forEach((timer) => {
+              window.clearTimeout(timer);
+              this.recordingCaptureTimers.delete(timer);
+            });
+            this.recordingCaptureTimers.forEach((pending, timer) => {
+              if (!step.timelineEvents.includes(pending.timelineEvent)) return;
+              window.clearTimeout(timer);
+              this.recordingCaptureTimers.delete(timer);
+            });
+            this.timelineEvents = this.timelineEvents.filter((event) => !step.timelineEvents.includes(event));
+            return false;
+          });
+          if (sequencer.cycle >= sequencer.endCycle) {
+            sequencer.cycle = sequencer.endCycle;
+            this.nextStep = 0;
+            this.nextStepTime = currentCycle.endTime;
+            sequencer.cycles = sequencer.cycles.filter((cycle) => cycle.index < sequencer.endCycle);
+          }
+        }
+        window.clearTimeout(this.schedulerTimer);
+        this.scheduler(sequencer);
+      }
       if (this.isRecording) {
         const elapsed = Math.max(0, this.audioContext.currentTime - this.recordingStartTime);
         this.recordingEndTime = this.state.loop ? Infinity : this.recordingStartTime +
@@ -1598,10 +1654,12 @@
         result.stopTime = Math.min(result.stopTime, stopAt);
         result.sources.forEach((source) => source.stop(result.stopTime));
       }
+      result.timelineEvent = this.recordTimelineHit(voice, velocity, when, result.stopTime, settings, stopAt === null ? 40 : 0);
       if (captureEvent) {
-        this.queueRecordingEvent(voice, velocity, when, Math.max(8, (result.stopTime - when) * 1000), settings);
+        result.captureTimer = this.queueRecordingEvent(
+          voice, velocity, when, Math.max(8, (result.stopTime - when) * 1000), settings, result.timelineEvent
+        );
       }
-      this.recordTimelineHit(voice, velocity, when, result.stopTime, settings, stopAt === null ? 40 : 0);
       this.lastMetersActivitySec = Math.max(this.lastMetersActivitySec, result.stopTime);
       result.sources.forEach((source) => this.activeSources.add(source));
       const cleanupDelay = Math.max(0, (result.stopTime - this.audioContext.currentTime) * 1000) + 100;
@@ -1624,21 +1682,56 @@
       this.isPlaying = true;
       this.nextStep = this.currentStep >= 0 ? (this.currentStep + 1) % this.state.length : 0;
       this.nextStepTime = this.audioContext.currentTime + 0.03;
+      this.sequencerPlayback = {
+        cycle: 0,
+        endCycle: this.state.loop ? Infinity : 1,
+        endTime: Infinity,
+        cycles: [{ index: 0, endTime: Infinity }],
+        pending: []
+      };
       this.updateToggleButtons();
       this.scheduler();
       this.startGuide();
     }
 
-    scheduler() {
-      if (!this.isPlaying) return;
+    scheduler(playback = this.sequencerPlayback) {
+      if (!this.isPlaying || !playback || playback !== this.sequencerPlayback) return;
+      const now = this.audioContext.currentTime;
+      if (now >= playback.endTime) {
+        this.finishSequencerPlayback();
+        return;
+      }
+      playback.pending = playback.pending.filter((step) => step.when >= now);
+      playback.cycles = playback.cycles.filter((cycle) => cycle.endTime > now);
 
-      while (this.nextStepTime < this.audioContext.currentTime + SCHEDULE_AHEAD_SEC) {
-        this.scheduleStep(this.nextStep, this.nextStepTime);
+      while (playback.cycle < playback.endCycle && this.nextStepTime < now + SCHEDULE_AHEAD_SEC) {
+        if (!playback.cycles.some((cycle) => cycle.index === playback.cycle)) {
+          playback.cycles.push({ index: playback.cycle, endTime: Infinity });
+        }
+        playback.pending.push(this.scheduleStep(this.nextStep, this.nextStepTime));
         this.nextStepTime += this.getStepDuration(this.nextStep);
         this.nextStep = (this.nextStep + 1) % this.state.length;
+        if (this.nextStep === 0) {
+          playback.cycles.find((cycle) => cycle.index === playback.cycle).endTime = this.nextStepTime;
+          playback.cycle++;
+          if (playback.cycle === playback.endCycle) playback.endTime = this.nextStepTime;
+        }
       }
 
-      this.schedulerTimer = window.setTimeout(() => this.scheduler(), SCHEDULER_DELAY_MS);
+      this.schedulerTimer = window.setTimeout(
+        () => this.scheduler(playback),
+        Math.min(SCHEDULER_DELAY_MS, Math.max(0, (playback.endTime - now) * 1000))
+      );
+    }
+
+    finishSequencerPlayback() {
+      window.clearTimeout(this.schedulerTimer);
+      this.schedulerTimer = null;
+      this.sequencerPlayback = null;
+      this.isPlaying = false;
+      if (!this.isRecording && !this.isCountingIn) this.stopGuide();
+      this.setCurrentStep(-1);
+      this.updateToggleButtons();
     }
 
     getStepDuration(step) {
@@ -1648,24 +1741,37 @@
     }
 
     scheduleStep(step, when) {
+      const playback = this.sequencerPlayback;
+      const pending = {
+        cycle: playback.cycle, when, sources: [], visualTimers: [], captureTimers: [], timelineEvents: []
+      };
       const delayMs = Math.max(0, (when - this.audioContext.currentTime) * 1000);
-      this.scheduleVisual(() => {
-        if (this.isPlaying) this.setCurrentStep(step);
-      }, delayMs);
+      pending.visualTimers.push(this.scheduleVisual(() => {
+        if (this.isPlaying && playback === this.sequencerPlayback) this.setCurrentStep(step);
+      }, delayMs));
 
       VOICES.forEach(({ id }) => {
         const velocity = this.state.pattern[id][step];
         if (!velocity || this.state.mutes[id]) return;
-        this.playVoice(id, velocity, when);
-        this.flashVoice(id, delayMs);
+        const result = this.playVoice(id, velocity, when);
+        if (result) {
+          pending.sources.push(...result.sources);
+          pending.captureTimers.push(result.captureTimer);
+          pending.timelineEvents.push(result.timelineEvent);
+        }
+        pending.visualTimers.push(this.flashVoice(id, delayMs));
         if (id === "kick") {
-          this.scheduleVisual(() => this.vibrate(8), delayMs);
+          pending.visualTimers.push(this.scheduleVisual(() => {
+            if (playback === this.sequencerPlayback) this.vibrate(8);
+          }, delayMs));
         }
       });
+      return pending;
     }
 
     scheduleVisual(callback, delayMs) {
       const timer = window.setTimeout(() => {
+        if (!this.visualTimers.has(timer)) return;
         this.visualTimers.delete(timer);
         callback();
       }, delayMs);
@@ -1686,6 +1792,20 @@
     }
 
     pausePlayback(resetPlayhead) {
+      this.transportSessionId = (this.transportSessionId || 0) + 1;
+      const playback = this.sequencerPlayback;
+      this.sequencerPlayback = null;
+      playback?.pending.forEach((step) => step.captureTimers.forEach((timer) => {
+        window.clearTimeout(timer);
+        this.recordingCaptureTimers.delete(timer);
+      }));
+      if (playback) {
+        this.recordingCaptureTimers.forEach((pending, timer) => {
+          if (!playback.pending.some((step) => step.timelineEvents.includes(pending.timelineEvent))) return;
+          window.clearTimeout(timer);
+          this.recordingCaptureTimers.delete(timer);
+        });
+      }
       this.isPlaying = false;
       if (!this.isRecording && !this.isCountingIn) this.stopGuide();
       window.clearTimeout(this.schedulerTimer);

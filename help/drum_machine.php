@@ -91,7 +91,7 @@
     <use href="/icons.svg#play"></use>
   </svg>
   <div class="justify">
-    <h1>Play <span class="object">button</span></h1>Starts or pauses sequencer playback. Space provides the same shortcut when no field or button has focus. <span class="default">Default: off.</span>
+    <h1>Play <span class="object">button</span></h1>Starts or pauses sequencer playback. With Loop off, plays one Length cycle and returns the playhead to the beginning. With Loop on, repeats the pattern. Pausing manually keeps the current position for resuming. Changing Length during playback restarts from the beginning with the selected length. Space provides the same shortcut when no field or button has focus. <span class="default">Default: off.</span>
   </div>
 </div>
 
@@ -118,7 +118,7 @@
     <use href="/icons.svg#loop"></use>
   </svg>
   <div class="justify">
-    <h1>Loop <span class="object">button</span></h1>During recording, repeats the same Length cycle and replaces previous hits as recording advances, including silence replacing old hits. This is overwrite recording, not overdubbing. Stopping partway through a pass keeps the previous pass in the region not yet overwritten. All passes form one Playlist take. Turning Loop off completes recording at the next cycle boundary. During Playback, Loop repeats the selected recording using its exact stored duration and hit timing, including leading and trailing silence. Turning it off finishes the current pass. Older freeform recordings retain their stored duration. Loop does not change sequencer playback or repeat WAV exports. <span class="default">Default: off.</span>
+    <h1>Loop <span class="object">button</span></h1>During Play, repeats the sequencer's selected Length cycle. Turning it off finishes the current cycle. During recording, repeats the same Length cycle and replaces previous hits as recording advances, including silence replacing old hits. This is overwrite recording, not overdubbing. Stopping partway through a pass keeps the previous pass in the region not yet overwritten. All passes form one Playlist take. Turning Loop off completes recording at the next cycle boundary. During Playback, Loop repeats the selected recording using its exact stored duration and hit timing, including leading and trailing silence. Turning it off finishes the current pass. Older freeform recordings retain their stored duration. Loop does not repeat WAV exports. <span class="default">Default: off.</span>
   </div>
 </div>
 
@@ -426,7 +426,7 @@
     <use href="/icons.svg#open"></use>
   </svg>
   <div class="justify">
-    <h1>Open <span class="object">button</span></h1>Replaces Playlist with valid recordings imported from a Drum Machine recordings JSON (JavaScript Object Notation) file.
+    <h1>Open <span class="object">button</span></h1>Stops playback and recording, then replaces Playlist with valid recordings imported from a Drum Machine recordings JSON (JavaScript Object Notation) file.
   </div>
 </div>
 

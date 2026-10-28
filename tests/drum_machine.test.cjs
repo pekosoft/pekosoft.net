@@ -755,7 +755,7 @@ test('Selected fixed recording WAV exports the exact window without pattern hits
   assert.equal(header.getUint32(40, true), 22050 * 2 * 2);
 });
 
-test('Live pads and scheduled sequencer drums share one fixed window while sequencer transport can continue', async () => {
+test('Live pads and scheduled sequencer drums share one fixed window and complete independently', async () => {
   const { machine, context, advance } = createTransport();
   Object.assign(machine.state, { countIn: 0, length: 4 });
   machine.state.pattern = { kick: [2, 0, 0, 0], snare: [0, 0, 0, 2], hat: [0, 0, 0, 0], perc: [0, 0, 0, 0] };
@@ -770,10 +770,260 @@ test('Live pads and scheduled sequencer drums share one fixed window while seque
   await machine.auditionVoice('perc');
   advance(0.55);
   assert.equal(machine.isRecording, false);
-  assert.equal(machine.isPlaying, true);
+  assert.equal(machine.isPlaying, false);
   assert.deepEqual(Array.from(machine.recordings[0].events, event => event.voice), ['kick', 'perc', 'snare']);
   assert.equal(machine.recordings[0].durationMs, 500);
   machine.pausePlayback(true);
+});
+
+function createSequencer(options = {}) {
+  const result = createTransport();
+  const { machine, context } = result;
+  const sounds = [];
+  Object.assign(machine.state, { length: 4, bpm: 320, ...options });
+  machine.currentStep = -1;
+  machine.updatePanel = () => {};
+  context.navigator = {};
+  machine.state.pattern = {
+    kick: Array(16).fill(2), snare: Array(16).fill(0),
+    hat: Array(16).fill(0), perc: Array(16).fill(0)
+  };
+  context.window.playDrumSound = options => {
+    const source = { stop(when) { this.stoppedAt = when; } };
+    sounds.push({ ...options, source });
+    return { sources: [source], stopTime: options.when + 0.1 };
+  };
+  return { ...result, sounds };
+}
+
+test('Sequencer Loop off plays exactly one selected Length cycle through its audio-clock boundary', async () => {
+  for (const length of [4, 8, 12, 16]) {
+    for (const swing of [0, 25, 50]) {
+      const { machine, sounds, advance } = createSequencer({ length, swing });
+      await machine.togglePlayback();
+      const end = 0.03 + length * 60 / 320 / 4;
+      advance(end - 0.00001);
+      assert.equal(machine.isPlaying, true);
+      assert.equal(machine.currentStep, length - 1);
+      assert.equal(sounds.length, length);
+      let when = 0.03;
+      sounds.forEach((sound, step) => {
+        assert.ok(Math.abs(sound.when - when) < 1e-12);
+        when += machine.getStepDuration(step);
+      });
+      advance(end + 1e-12);
+      assert.equal(machine.isPlaying, false);
+      assert.equal(machine.currentStep, -1);
+      assert.equal(machine.schedulerTimer, null);
+      advance(end + 2);
+      assert.equal(sounds.length, length);
+      await machine.togglePlayback();
+      advance(end + 2.031);
+      assert.equal(machine.currentStep, 0);
+    }
+  }
+});
+
+test('Sequencer Loop on repeats and late off cancels queued next-cycle sound, feedback and capture', async () => {
+  for (const swing of [0, 50]) {
+    const { machine, sounds, advance, timers } = createSequencer({ loop: true, swing, blink: true });
+    machine.state.countIn = 0;
+    await machine.startRecording();
+    await machine.togglePlayback();
+    advance(0.2);
+    const end = 0.2175;
+    const future = sounds.filter(sound => sound.when >= end);
+    assert.ok(future.length > 0);
+    const stale = [...timers.values()].map(timer => timer.callback);
+    const captures = machine.recordingEvents.length;
+    machine.toggleRecordingLoop();
+    assert.equal(machine.sequencerPlayback.endTime, end);
+    assert.ok(future.every(sound => sound.source.stoppedAt === 0.2));
+    assert.ok([...machine.recordingCaptureTimers.values()].every(hit => hit.when < end));
+    assert.ok(machine.timelineEvents.every(hit => hit.startTime < end * 1000));
+    advance(end + 1e-12);
+    assert.equal(machine.isPlaying, false);
+    assert.equal(machine.currentStep, -1);
+    assert.equal(machine.recordingEvents.length, captures);
+    advance(1);
+    const count = sounds.length;
+    stale.forEach(callback => callback());
+    assert.equal(sounds.length, count);
+    assert.equal(machine.isPlaying, false);
+  }
+});
+
+test('Late Loop on continues seamlessly and off-on restores canceled next-cycle hits exactly once', async () => {
+  for (const initiallyOn of [false, true]) {
+    const { machine, sounds, advance } = createSequencer({ loop: initiallyOn });
+    await machine.togglePlayback();
+    advance(0.2);
+    if (initiallyOn) machine.toggleRecordingLoop();
+    machine.toggleRecordingLoop();
+    advance(0.6);
+    assert.equal(machine.isPlaying, true);
+    const audible = sounds.filter(sound => sound.source.stoppedAt === undefined);
+    assert.ok(audible.length >= 12);
+    audible.forEach((sound, index) => {
+      assert.ok(Math.abs(sound.when - (0.03 + index * 0.046875)) < 1e-12);
+    });
+    machine.toggleRecordingLoop();
+    advance(0.5925 + 0.1875 + 1e-12);
+    assert.equal(machine.isPlaying, false);
+  }
+});
+
+test('Loop off after repeated passes finishes the current audible cycle rather than the scheduled one', async () => {
+  const { machine, sounds, advance } = createSequencer({ loop: true });
+  await machine.togglePlayback();
+  advance(0.58);
+  machine.toggleRecordingLoop();
+  advance(0.5925 - 1e-6);
+  assert.equal(machine.isPlaying, true);
+  advance(0.5925 + 1e-12);
+  assert.equal(machine.isPlaying, false);
+  assert.equal(sounds.filter(sound => sound.source.stoppedAt === undefined).length, 12);
+});
+
+test('Manual sequencer pause resumes the next step but natural completion resets for replay', async () => {
+  const { machine, advance } = createSequencer();
+  await machine.togglePlayback();
+  advance(0.09);
+  assert.equal(machine.currentStep, 1);
+  await machine.togglePlayback();
+  assert.equal(machine.currentStep, 1);
+  await machine.togglePlayback();
+  advance(0.121);
+  assert.equal(machine.currentStep, 2);
+  advance(0.21375 + 1e-12);
+  assert.equal(machine.isPlaying, false);
+  assert.equal(machine.currentStep, -1);
+});
+
+test('Stop, Reset, import, pattern apply and Length changes invalidate sequencer callbacks and queued hits', async () => {
+  for (const action of ['stop', 'reset', 'import', 'apply', 'length']) {
+    const { machine, advance, timers, sounds, handlers } = createSequencer({ loop: true });
+    machine.applyMasterGain = () => {};
+    machine.saveAndRender = () => {};
+    machine.commitPatternChange = () => {};
+    machine.showPanelSuccess = () => {};
+    machine.history = { clear() {} };
+    machine.bindEvents();
+    await machine.togglePlayback();
+    advance(0.02);
+    const stale = [...timers.values()].map(timer => timer.callback);
+    const oldSounds = [...sounds];
+    if (action === 'stop') machine.stopAll(true);
+    if (action === 'reset') machine.reset();
+    if (action === 'import') {
+      machine.elements.playlistFileInput.files = [{ text: async () => JSON.stringify({
+        recordings: [{ fixedDuration: true, durationMs: 500, events: [] }]
+      }) }];
+      await machine.importRecordingPlaylist();
+    }
+    if (action === 'apply') {
+      machine.elements.patternText.value = JSON.stringify(machine.getExportData());
+      machine.applyPatternText();
+    }
+    if (action === 'length') {
+      machine.elements.lengthSelect.value = '8';
+      await handlers['lengthSelect:change']();
+    }
+    await Promise.resolve();
+    const count = sounds.length;
+    stale.forEach(callback => callback());
+    assert.equal(sounds.length, count, action);
+    assert.ok(oldSounds.every(sound => sound.source.stoppedAt === 0.02), action);
+    advance(0.06);
+    assert.equal(machine.isPlaying, action === 'length', action);
+    if (action === 'length') {
+      assert.equal(machine.currentStep, 0);
+      assert.equal(machine.state.length, 8);
+    }
+  }
+});
+
+test('Stop and Length changes cancel pending asynchronous sequencer audio resumes', async () => {
+  for (const action of ['stop', 'length', 'reset']) {
+    const { machine, sounds, handlers } = createSequencer();
+    machine.saveAndRender = () => {};
+    machine.applyMasterGain = () => {};
+    machine.history = { clear() {} };
+    machine.bindEvents();
+    let resume;
+    machine.ensureAudioReady = () => new Promise(resolve => { resume = resolve; });
+    const start = machine.togglePlayback();
+    if (action === 'stop') machine.stopAll(true);
+    if (action === 'reset') machine.reset();
+    if (action === 'length') {
+      machine.elements.lengthSelect.value = '8';
+      handlers['lengthSelect:change']();
+    }
+    resume();
+    await start;
+    assert.equal(machine.isPlaying, false, action);
+    assert.equal(sounds.length, 0, action);
+  }
+});
+
+test('Natural sequencer completion leaves independently active recording and its guide running', async () => {
+  const { machine, advance } = createSequencer({ countIn: 0, metronome: true });
+  await machine.togglePlayback();
+  advance(0.1);
+  await machine.startRecording();
+  advance(0.2175 + 1e-12);
+  assert.equal(machine.isPlaying, false);
+  assert.equal(machine.isRecording, true);
+  assert.notEqual(machine.guideTimer, null);
+  advance(0.2875 + 1e-12);
+  assert.equal(machine.isRecording, false);
+  assert.equal(machine.recordings.length, 1);
+});
+
+test('Loop cancellation also removes capture queued when recording starts after sequencer lookahead', async () => {
+  const { machine, sounds, advance } = createSequencer({ loop: true, countIn: 0 });
+  await machine.togglePlayback();
+  advance(0.2);
+  await machine.startRecording();
+  assert.ok([...machine.recordingCaptureTimers.values()].some(hit => hit.when >= 0.2175));
+  machine.toggleRecordingLoop();
+  assert.ok([...machine.recordingCaptureTimers.values()].every(hit => hit.when < 0.2175));
+  advance(0.3875 + 1e-12);
+  assert.equal(machine.isRecording, false);
+  assert.equal(machine.recordings[0].events.length, 0);
+  assert.ok(sounds.filter(hit => hit.when >= 0.2175).every(hit => hit.source.stoppedAt === 0.2));
+});
+
+test('Sequencer timers recheck the audio clock and stale callbacks cannot affect a later session', async () => {
+  const { machine, sounds, advance, timers } = createSequencer();
+  await machine.togglePlayback();
+  advance(0.2);
+  const callback = timers.get(machine.schedulerTimer).callback;
+  callback();
+  assert.equal(machine.isPlaying, true);
+  assert.equal(machine.currentStep, 3);
+  machine.stopAll(true);
+  await machine.togglePlayback();
+  const playback = machine.sequencerPlayback;
+  const count = sounds.length;
+  callback();
+  assert.equal(machine.sequencerPlayback, playback);
+  assert.equal(sounds.length, count);
+  advance(0.25);
+  assert.equal(machine.currentStep, 0);
+});
+
+test('Repeating a short swung sequencer keeps only bounded lookahead state and timers', async () => {
+  const { machine, timers, advance } = createSequencer({ loop: true, swing: 50, blink: true });
+  await machine.togglePlayback();
+  advance(30);
+  assert.equal(machine.isPlaying, true);
+  assert.ok(machine.sequencerPlayback.cycles.length <= 2);
+  assert.ok(machine.sequencerPlayback.pending.length <= 3);
+  assert.ok(timers.size < 30);
+  machine.stopAll(true);
+  advance(31);
+  assert.equal(timers.size, 0);
 });
 
 test('Loop Count-in occurs only once, and import cancels armed audio resumes', async () => {

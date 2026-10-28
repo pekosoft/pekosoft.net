@@ -30,16 +30,6 @@
 
 <div class="feature-row border">
   <svg class="standard-image-help">
-    <use href="/icons.svg#cassette"></use>
-  </svg>
-  <div class="justify">
-    <h1>Pattern / Recording <span class="object">button</span></h1>
-    Switches between the working pattern and the selected Playlist recording. Instrument, Controls and Panel follow the displayed pattern or recording, including playback and export. Switching stops playback and restores the corresponding settings without changing either rhythm. Selecting, recording, importing or playing a Playlist recording displays its hits without quantizing them. Moving a hit within a voice preserves its settings; moving it to another voice uses that voice's current settings. Unavailable when Playlist is empty, during Count-in and while recording.
-  </div>
-</div>
-
-<div class="feature-row border">
-  <svg class="standard-image-help">
     <use href="/icons.svg#view_grid"></use>
   </svg>
   <div class="justify">
@@ -139,6 +129,15 @@
   </svg>
   <div class="justify">
     <h1>Stop <span class="object">button</span></h1>Stops sequencer and recording playback, cancels Count-in or completes an active recording, and returns the playhead to the beginning.
+  </div>
+</div>
+
+<div class="feature-row border">
+  <svg class="standard-image-help">
+    <use href="/icons.svg#plus"></use>
+  </svg>
+  <div class="justify">
+    <h1>Add to Playlist <span class="object">button</span></h1>Adds a copy of the displayed pattern or recording to Playlist without stopping playback or changing the rhythm being edited. Keeps its cycle length, BPM, Swing, hit timing, accents and voice settings. Muted voices are excluded. Silent patterns keep their full cycle duration. Later edits do not change the added copy. Unavailable during Count-in and recording.
   </div>
 </div>
 

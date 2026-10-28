@@ -1748,7 +1748,6 @@ test('Mode updates pattern control availability without changing the pattern or 
       setAttribute: (...args) => mutations.push(args)
     },
     voiceSelect: {},
-    gridSource: { classList: { toggle() {} }, setAttribute() {} },
     random: {},
     clear: {}
   };
@@ -1782,6 +1781,82 @@ function createEditor() {
   machine.updatePanel = () => {};
   return { ...result, edits };
 }
+
+test('Add to Playlist stores an independent cycle with exact swung and free-hit timing', () => {
+  const { machine, api, storage, handlers } = createEditor();
+  machine.showPanelSuccess = () => {};
+  machine.bindEvents();
+  machine.state.bpm = 137;
+  machine.state.swing = 35;
+  machine.state.length = 8;
+  machine.state.pattern.kick.fill(0);
+  machine.state.pattern.snare.fill(0);
+  machine.state.pattern.hat.fill(0);
+  machine.state.pattern.perc.fill(0);
+  machine.state.pattern.kick[1] = 2;
+  machine.state.pattern.snare[3] = 1;
+  machine.state.pattern.kick[9] = 1;
+  machine.state.freeHits = [{ id: 'free', voice: 'hat', step: 2.4, velocity: 1 }];
+  machine.state.mutes.snare = true;
+  const before = machine.patternSnapshot();
+  machine.isPlaying = true;
+  handlers['addToPlaylist:click']();
+  const added = machine.recordings[0];
+  assert.equal(added.durationMs, api.timeAtStep(8, 137, 35) * 1000);
+  assert.equal(added.events.length, 2);
+  assert.equal(added.events[0].timestampMs, api.timeAtStep(1, 137, 35) * 1000);
+  assert.equal(added.events[0].velocity, 2);
+  assert.equal(added.events[1].timestampMs, api.timeAtStep(2.4, 137, 35) * 1000);
+  assert.equal(added.bpm, 137);
+  assert.equal(added.swing, 35);
+  assert.equal(added.fixedDuration, true);
+  assert.equal(machine.gridSource, 'pattern');
+  assert.equal(machine.isPlaying, true);
+  assert.equal(machine.patternSnapshot(), before);
+  const saved = storage.get('drum_machine.playlist');
+  assert.ok(saved.includes(added.id));
+  const frequency = added.events[0].settings.frequency;
+  machine.state.voices.kick.frequency++;
+  assert.equal(added.events[0].settings.frequency, frequency);
+  machine.addPatternToPlaylist();
+  assert.equal(machine.recordings.length, 2);
+  assert.notEqual(machine.recordings[0].id, machine.recordings[1].id);
+  assert.notEqual(machine.recordings[0].name, machine.recordings[1].name);
+});
+
+test('Add to Playlist preserves silent cycles, copies the displayed recording and guards capture', () => {
+  const { machine, api } = createEditor();
+  machine.showPanelSuccess = () => {};
+  machine.state.mutes = { kick: true, snare: true, hat: true, perc: true };
+  const silent = machine.addPatternToPlaylist();
+  assert.equal(silent.events.length, 0);
+  assert.equal(silent.durationMs, 2000);
+  machine.gridSource = 'recording';
+  machine.state.mutes.kick = false;
+  silent.durationMs = 1234;
+  silent.events = [{
+    voice: 'kick', velocity: 2, timestampMs: 17.125, durationMs: 300,
+    settings: { ...machine.state.voices.kick }
+  }];
+  const before = machine.patternSnapshot();
+  const copy = machine.addPatternToPlaylist();
+  assert.equal(copy.durationMs, 1234);
+  assert.equal(copy.events[0].timestampMs, 17.125);
+  assert.notEqual(copy.events[0], silent.events[0]);
+  assert.equal(machine.patternSnapshot(), before);
+  machine.isRecording = true;
+  assert.equal(machine.addPatternToPlaylist(), undefined);
+  machine.updateRecordingControls();
+  assert.equal(machine.elements.addToPlaylist.disabled, true);
+  machine.isRecording = false;
+  machine.isCountingIn = true;
+  assert.equal(machine.addPatternToPlaylist(), undefined);
+  machine.isCountingIn = false;
+  machine.updateRecordingControls();
+  assert.equal(machine.elements.addToPlaylist.disabled, false);
+  assert.equal(machine.recordings.length, 2);
+  assert.ok(api.normalizeRecording(copy));
+});
 
 test('Timing controls update live but record only the complete pointer or keyboard adjustment', () => {
   for (const recorded of [false, true]) {
@@ -2161,7 +2236,7 @@ test('BPM and Swing retime fractional and hidden hits by musical position withou
   assert.equal(JSON.stringify(machine.state), original);
 });
 
-test('Recording controls reflect legacy timing and sounds and source switching restores separate saved settings', () => {
+test('Recording controls reflect legacy timing and sounds without a separate Source control', () => {
   const result = createEditor();
   const { machine, handlers } = result;
   const recording = selectEditableTake(result, { durationMs: 3550, bpm: 93, swing: 37 });
@@ -2177,11 +2252,7 @@ test('Recording controls reflect legacy timing and sounds and source switching r
   machine.state.selectedVoice = 'kick';
   machine.updateVoiceFields();
   assert.equal(machine.elements.pitchInput.value, recording.voices.kick.frequency.toFixed(3));
-  handlers['gridSource:click']();
-  assert.equal(machine.elements.bpmInput.value, '120');
-  assert.equal(machine.elements.lengthSelect.value, '16');
-  assert.equal(machine.loadRecordingPlaylist().gridSource, 'pattern');
-  handlers['gridSource:click']();
+  assert.equal(handlers['gridSource:click'], undefined);
   assert.equal(machine.elements.bpmInput.value, '93');
   assert.equal(machine.loadRecordingPlaylist().gridSource, 'recording');
   assert.equal(recording.durationMs, 3550);
@@ -2463,23 +2534,22 @@ test('Recording edits preserve the exact window, per-hit settings and unsnapped 
   assert.equal(machine.recordings[0].durationMs, 2000);
 });
 
-test('Source switching keeps both models and shows every bank of a long legacy recording', () => {
+test('Selected recordings show every bank without changing the stored working pattern', () => {
   const { machine, handlers } = createEditor();
   machine.recordings = [{ id: 'long', durationMs: 16651, bpm: 120, swing: 0, events: [
     { voice: 'hat', velocity: 1, timestampMs: 16501 }
   ] }];
   machine.selectedRecordingIndex = 0;
   machine.bindEvents();
-  const pattern = machine.patternSnapshot();
-  handlers['gridSource:click']();
+  const pattern = JSON.stringify(machine.state.pattern);
+  machine.selectRecording(0);
   assert.equal(machine.gridSource, 'recording');
   assert.equal(machine.getGridLength(), 134);
   assert.equal(machine.getGridHits()[0].step, 132.008);
   machine.state.snap = false;
   assert.ok(machine.constrainHitStep(200) < 133.208);
-  handlers['gridSource:click']();
-  assert.equal(machine.patternSnapshot(), pattern);
-  assert.equal(machine.getGridLength(), 16);
+  assert.equal(JSON.stringify(machine.state.pattern), pattern);
+  assert.equal(handlers['gridSource:click'], undefined);
   const styles = fs.readFileSync(path.join(__dirname, '..', 'css', 'drum_machine.css'), 'utf8');
   assert.match(styles, /\.pad-mode \.sequence-bank:not\(\[data-bank="0"\]\)/);
 });

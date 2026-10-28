@@ -400,7 +400,6 @@
         mode: document.getElementById("mode-button"),
         blink: document.getElementById("blink-button"),
         snap: document.getElementById("snap-button"),
-        gridSource: document.getElementById("grid-source-button"),
         play: document.getElementById("play-button"),
         record: document.getElementById("record-button"),
         metronome: document.getElementById("metronome-button"),
@@ -409,6 +408,7 @@
         loop: document.getElementById("loop-button"),
         stop: document.getElementById("stop-button"),
         saveWav: document.getElementById("save-wav-button"),
+        addToPlaylist: document.getElementById("add-to-playlist-button"),
         tap: document.getElementById("tap-button"),
         sound: document.getElementById("toggle-sound-button"),
         haptic: document.getElementById("haptic-button"),
@@ -1291,15 +1291,6 @@
         this.updateToggleButtons();
         this.updatePanel();
       });
-      this.elements.gridSource.addEventListener("click", () => {
-        if (this.isRecording || this.isCountingIn) return;
-        this.pausePlayback(true);
-        this.stopRecordingPlayback();
-        this.gridSource = this.getGridRecording() ? "pattern" : "recording";
-        this.setCurrentStep(-1);
-        this.saveRecordingPlaylist();
-        this.refreshGrid();
-      });
       this.elements.grid.addEventListener("pointerdown", (event) => this.handleGridPointerDown(event));
       this.elements.grid.addEventListener("click", (event) => this.handleGridClick(event));
       this.elements.grid.addEventListener("keydown", (event) => this.handleGridKeyDown(event));
@@ -1329,6 +1320,7 @@
       this.elements.loop.addEventListener("click", () => this.toggleRecordingLoop());
       this.elements.stop.addEventListener("click", () => this.stopAll(true));
       this.elements.saveWav.addEventListener("click", () => this.savePatternAsWav());
+      this.elements.addToPlaylist.addEventListener("click", () => this.addPatternToPlaylist());
       this.elements.tap.addEventListener("click", () => this.tapTempo());
       this.elements.sound.addEventListener("click", () => {
         this.state.sound = !this.state.sound;
@@ -1866,6 +1858,47 @@
       let number = 1;
       while (names.has(`Recording ${number}`)) number++;
       return `Recording ${number}`;
+    }
+
+    addPatternToPlaylist() {
+      if (this.isRecording || this.isCountingIn) return;
+      this.finishControlEdit();
+      const source = this.getSourceSettings();
+      const current = this.getGridRecording();
+      const createdAt = Date.now();
+      const events = current ? current.events : this.getPatternHits()
+        .filter((hit) => hit.step < this.state.length)
+        .map((hit) => ({
+          voice: hit.voice,
+          velocity: hit.velocity,
+          timestampMs: timeAtStep(hit.step, source.bpm, source.swing) * 1000,
+          durationMs: source.voices[hit.voice].decay * 1000,
+          settings: source.voices[hit.voice]
+        }));
+      const recording = normalizeRecording({
+        id: `${createdAt}-${Math.random().toString(36).slice(2, 8)}`,
+        name: this.getNextRecordingName(),
+        createdAt,
+        durationMs: current ? current.durationMs : timeAtStep(this.state.length, source.bpm, source.swing) * 1000,
+        fixedDuration: true,
+        bpm: source.bpm,
+        swing: source.swing,
+        voices: clone(this.getSourceVoices()),
+        kitName: source.kitName,
+        patternName: source.patternName,
+        events: clone(events.filter((event) => !this.state.mutes[event.voice]))
+      }, this.recordings.length);
+      if (!recording) {
+        console.error("Drum Machine could not add the current pattern to Playlist.");
+        return;
+      }
+      this.recordings.push(recording);
+      if (this.selectedRecordingIndex < 0) this.selectedRecordingIndex = this.recordings.length - 1;
+      this.saveRecordingPlaylist();
+      this.renderRecordingPlaylist();
+      this.updateGrid();
+      this.showPanelSuccess(this.elements.addToPlaylist);
+      return recording;
     }
 
     finishRecording() {
@@ -2897,10 +2930,6 @@
       this.elements.grid.setAttribute("aria-label", isPadMode ? "Four drum pads" : recording ? `${recording.name} hit editor` : "16-step drum sequencer");
       this.elements.random.disabled = isPadMode || this.isRecording || this.isCountingIn;
       this.elements.clear.disabled = isPadMode || this.isRecording || this.isCountingIn;
-      this.elements.gridSource.disabled = !this.recordings?.length || this.isRecording || this.isCountingIn;
-      this.elements.gridSource.classList.toggle("button-on", !!recording);
-      this.elements.gridSource.setAttribute("aria-pressed", String(!!recording));
-      this.elements.gridSource.title = recording ? "Show sequencer pattern" : "Show selected recording";
       const modeIcon = this.elements.mode.querySelector("use");
       const modeIconHref = isPadMode ? "/icons.svg#drum_machine" : "/icons.svg#view_grid";
       if (modeIcon.getAttribute("href") !== modeIconHref) {
@@ -3034,7 +3063,7 @@
       this.elements.record.setAttribute("aria-pressed", armed ? "true" : "false");
       this.elements.record.title = this.isCountingIn ? "Cancel count-in" : this.isRecording ? "Stop recording" : "Start recording";
       this.elements.countIn.disabled = armed;
-      [this.elements.lengthSelect, this.elements.bpmInput, this.elements.bpmSlider, this.elements.tap,
+      [this.elements.addToPlaylist, this.elements.lengthSelect, this.elements.bpmInput, this.elements.bpmSlider, this.elements.tap,
         this.elements.swingInput, this.elements.swingSlider, this.elements.patternSelect,
         document.getElementById("swing-decrease-button"), document.getElementById("swing-increase-button"),
         document.getElementById("tempo-decrease-button"), document.getElementById("tempo-increase-button")]

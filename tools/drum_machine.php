@@ -34,10 +34,6 @@
         <svg class="icons" role="img"><use href="/icons.svg#snap" /></svg>
         <span class="button-text">Snap</span>
       </button>
-      <button id="grid-source-button" class="square" title="Show selected recording" aria-label="Source" aria-pressed="false">
-        <svg class="icons" role="img"><use href="/icons.svg#cassette" /></svg>
-        <span class="button-text">Source</span>
-      </button>
       <button id="random-button" class="square" title="Randomize pattern" aria-label="Randomize pattern">
         <svg class="icons" role="img"><use href="/icons.svg#random" /></svg>
         <span class="button-text">Random</span>
@@ -70,6 +66,10 @@
         <button id="stop-button" class="square" title="Stop playback">
           <svg class="icons"><use href="/icons.svg#stop" /></svg>
           <span class="button-text">Stop</span>
+        </button>
+        <button id="add-to-playlist-button" class="square" title="Add current pattern to Playlist" aria-label="Add to Playlist">
+          <svg class="icons"><use href="/icons.svg#plus" /></svg>
+          <span class="button-text">Add to Playlist</span>
         </button>
         <button id="save-wav-button" class="square" title="Save WAV" aria-label="Save WAV">
           <svg class="icons"><use href="/icons.svg#download" /></svg>

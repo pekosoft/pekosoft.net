@@ -73,26 +73,26 @@
 
   const KIT_PRESETS = {
     classic: {
-      kick:  { frequency: 55, decay: 0.35, tone: 0.48, level: 0.9, pan: -0.04 },
-      snare: { frequency: 180, decay: 0.2, tone: 0.72, level: 0.78, pan: 0.04 },
+      kick:  { frequency: 55, decay: 0.35, tone: 0.48, level: 0.9, pan: 0 },
+      snare: { frequency: 180, decay: 0.2, tone: 0.72, level: 0.78, pan: 0 },
       hat:   { frequency: 8000, decay: 0.06, tone: 0.78, level: 0.58, pan: 0.16 },
       perc:  { frequency: 620, decay: 0.14, tone: 0.6, level: 0.62, pan: -0.16 }
     },
     deep: {
       kick:  { frequency: 42, decay: 0.62, tone: 0.28, level: 0.94, pan: 0 },
-      snare: { frequency: 145, decay: 0.3, tone: 0.52, level: 0.78, pan: 0.05 },
+      snare: { frequency: 145, decay: 0.3, tone: 0.52, level: 0.78, pan: 0 },
       hat:   { frequency: 6500, decay: 0.1, tone: 0.56, level: 0.52, pan: 0.2 },
       perc:  { frequency: 360, decay: 0.24, tone: 0.42, level: 0.66, pan: -0.18 }
     },
     tight: {
-      kick:  { frequency: 68, decay: 0.18, tone: 0.7, level: 0.86, pan: -0.03 },
-      snare: { frequency: 210, decay: 0.1, tone: 0.84, level: 0.74, pan: 0.03 },
+      kick:  { frequency: 68, decay: 0.18, tone: 0.7, level: 0.86, pan: 0 },
+      snare: { frequency: 210, decay: 0.1, tone: 0.84, level: 0.74, pan: 0 },
       hat:   { frequency: 9600, decay: 0.035, tone: 0.88, level: 0.52, pan: 0.12 },
       perc:  { frequency: 920, decay: 0.07, tone: 0.78, level: 0.58, pan: -0.12 }
     },
     bright: {
-      kick:  { frequency: 74, decay: 0.3, tone: 0.72, level: 0.86, pan: -0.06 },
-      snare: { frequency: 230, decay: 0.23, tone: 0.9, level: 0.8, pan: 0.06 },
+      kick:  { frequency: 74, decay: 0.3, tone: 0.72, level: 0.86, pan: 0 },
+      snare: { frequency: 230, decay: 0.23, tone: 0.9, level: 0.8, pan: 0 },
       hat:   { frequency: 11200, decay: 0.075, tone: 0.94, level: 0.6, pan: 0.22 },
       perc:  { frequency: 1380, decay: 0.12, tone: 0.86, level: 0.6, pan: -0.22 }
     }

@@ -28,6 +28,26 @@ function createMachine(saved = {}) {
   return { machine, storage, api: context.api, context };
 }
 
+test('Every kit centers kick and snare while retaining hi-hat and percussion panning', () => {
+  const { machine, api } = createMachine();
+  machine.saveAndRender = () => {};
+  machine.auditionVoice = () => {};
+  assert.equal(api.createDefaultState().voices.kick.pan, 0);
+  assert.equal(api.createDefaultState().voices.snare.pan, 0);
+  for (const [kit, hat, perc] of [
+    ['classic', 0.16, -0.16], ['deep', 0.2, -0.18],
+    ['tight', 0.12, -0.12], ['bright', 0.22, -0.22]
+  ]) {
+    machine.loadKitPreset(kit);
+    assert.equal(machine.state.voices.kick.pan, 0, kit);
+    assert.equal(machine.state.voices.snare.pan, 0, kit);
+    assert.equal(machine.state.voices.hat.pan, hat, kit);
+    assert.equal(machine.state.voices.perc.pan, perc, kit);
+    const restored = api.normalizeState(machine.getExportData(), false);
+    assert.equal(restored.voices.kick.pan, 0);
+    assert.equal(restored.voices.snare.pan, 0);
+  }
+});
 
 test('Blink defaults off and survives save, reload, export and import', () => {
   const { machine, storage, api } = createMachine();

@@ -239,7 +239,7 @@
     <use href="/icons.svg#menu"></use>
   </svg>
   <div class="justify">
-    <h1>Kit <span class="object">menu</span></h1>Loads Classic, Deep, Tight or Bright voice settings. Edited voice settings are marked Custom.
+    <h1>Kit <span class="object">menu</span></h1>Loads Classic, Deep, Tight or Bright voice settings. Kick and snare are panned to the center in every kit. Edited voice settings are marked Custom.
   </div>
 </div>
 

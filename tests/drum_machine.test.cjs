@@ -2106,6 +2106,60 @@ function selectEditableTake(result, options = {}) {
   return recording;
 }
 
+test('Half and Double BPM follow the displayed rhythm, timing limits and capture guards', () => {
+  for (const recorded of [false, true]) {
+    const result = createEditor();
+    const { machine, handlers, edits } = result;
+    const recording = recorded ? selectEditableTake(result) : null;
+    machine.bindEvents();
+    const original = machine.patternSnapshot();
+    handlers['half:click']();
+    assert.equal(machine.getSourceSettings().bpm, 60);
+    assert.equal(machine.elements.bpmInput.value, '60');
+    assert.equal(machine.elements.bpmSlider.value, '60');
+    assert.equal(edits.length, 1);
+    assert.equal(edits[0].before, original);
+    if (recording) {
+      assert.equal(recording.durationMs, 4000);
+      assert.equal(recording.events[1].timestampMs, 750);
+      assert.equal(machine.state.bpm, 120);
+    }
+    handlers['double:click']();
+    assert.equal(machine.getSourceSettings().bpm, 120);
+    assert.equal(edits.length, 2);
+    if (recording) assert.equal(recording.durationMs, 2000);
+    machine.setBpm(31);
+    handlers['half:click']();
+    assert.equal(machine.getSourceSettings().bpm, 30);
+    const atMinimum = edits.length;
+    handlers['half:click']();
+    assert.equal(edits.length, atMinimum);
+    machine.setBpm(121);
+    handlers['half:click']();
+    assert.equal(machine.getSourceSettings().bpm, 61);
+    machine.setBpm(200);
+    handlers['double:click']();
+    assert.equal(machine.getSourceSettings().bpm, 320);
+    const atMaximum = edits.length;
+    handlers['double:click']();
+    assert.equal(edits.length, atMaximum);
+    for (const flag of ['isCountingIn', 'isRecording']) {
+      machine[flag] = true;
+      machine.updateRecordingControls();
+      assert.equal(machine.elements.half.disabled, true);
+      assert.equal(machine.elements.double.disabled, true);
+      handlers['half:click']();
+      handlers['double:click']();
+      assert.equal(machine.getSourceSettings().bpm, 320);
+      assert.equal(edits.length, atMaximum);
+      machine[flag] = false;
+    }
+    machine.updateRecordingControls();
+    assert.equal(machine.elements.half.disabled, false);
+    assert.equal(machine.elements.double.disabled, false);
+  }
+});
+
 test('Length edits every recorded window and restores hidden hits through persistence and history', () => {
   for (const length of [4, 8, 12, 16]) {
     const result = createEditor();

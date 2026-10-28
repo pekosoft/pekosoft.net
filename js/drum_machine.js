@@ -408,6 +408,8 @@
         loop: document.getElementById("loop-button"),
         stop: document.getElementById("stop-button"),
         saveWav: document.getElementById("save-wav-button"),
+        half: document.getElementById("half-button"),
+        double: document.getElementById("double-button"),
         addToPlaylist: document.getElementById("add-to-playlist-button"),
         tap: document.getElementById("tap-button"),
         sound: document.getElementById("toggle-sound-button"),
@@ -1322,6 +1324,8 @@
       this.elements.saveWav.addEventListener("click", () => this.savePatternAsWav());
       this.elements.addToPlaylist.addEventListener("click", () => this.addPatternToPlaylist());
       this.elements.tap.addEventListener("click", () => this.tapTempo());
+      this.elements.half.addEventListener("click", () => this.setBpm(this.getSourceSettings().bpm / 2));
+      this.elements.double.addEventListener("click", () => this.setBpm(this.getSourceSettings().bpm * 2));
       this.elements.sound.addEventListener("click", () => {
         this.state.sound = !this.state.sound;
         this.applyMasterGain();
@@ -3063,7 +3067,8 @@
       this.elements.record.setAttribute("aria-pressed", armed ? "true" : "false");
       this.elements.record.title = this.isCountingIn ? "Cancel count-in" : this.isRecording ? "Stop recording" : "Start recording";
       this.elements.countIn.disabled = armed;
-      [this.elements.addToPlaylist, this.elements.lengthSelect, this.elements.bpmInput, this.elements.bpmSlider, this.elements.tap,
+      [this.elements.half, this.elements.double,
+        this.elements.addToPlaylist, this.elements.lengthSelect, this.elements.bpmInput, this.elements.bpmSlider, this.elements.tap,
         this.elements.swingInput, this.elements.swingSlider, this.elements.patternSelect,
         document.getElementById("swing-decrease-button"), document.getElementById("swing-increase-button"),
         document.getElementById("tempo-decrease-button"), document.getElementById("tempo-increase-button")]

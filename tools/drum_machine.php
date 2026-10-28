@@ -79,6 +79,14 @@
           <svg class="icons"><use href="/icons.svg#tap_pad" /></svg>
           <span class="button-text">Tap</span>
         </button>
+        <button id="half-button" class="square" title="Halve the BPM">
+          <svg class="icons"><use href="/icons.svg#triangle_down" /></svg>
+          <span class="button-text">Half</span>
+        </button>
+        <button id="double-button" class="square" title="Double the BPM">
+          <svg class="icons"><use href="/icons.svg#triangle_up" /></svg>
+          <span class="button-text">Double</span>
+        </button>
         <button id="metronome-button" class="square" title="Toggle metronome" aria-pressed="false">
           <svg class="icons"><use href="/icons.svg#metronome" /></svg>
           <span class="button-text">Metronome</span>

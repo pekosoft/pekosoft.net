@@ -226,6 +226,24 @@
 
 <div class="feature-row border">
   <svg class="standard-image-help">
+    <use href="/icons.svg#triangle_down"></use>
+  </svg>
+  <div class="justify">
+    <h1>Half <span class="object">button</span></h1>Halves the BPM of the displayed pattern or recording, rounded to the nearest whole BPM with a minimum of 30. Uses the same timing and Undo behavior as the BPM field. Unavailable during Count-in and recording.
+  </div>
+</div>
+
+<div class="feature-row border">
+  <svg class="standard-image-help">
+    <use href="/icons.svg#triangle_up"></use>
+  </svg>
+  <div class="justify">
+    <h1>Double <span class="object">button</span></h1>Doubles the BPM of the displayed pattern or recording, up to 320. Uses the same timing and Undo behavior as the BPM field. Unavailable during Count-in and recording.
+  </div>
+</div>
+
+<div class="feature-row border">
+  <svg class="standard-image-help">
     <use href="/icons.svg#menu"></use>
   </svg>
   <div class="justify">

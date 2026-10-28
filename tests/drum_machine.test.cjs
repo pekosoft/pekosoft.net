@@ -1066,15 +1066,11 @@ test('Count-in boundary captures already-scheduled and just-started sequencer hi
   assert.deepEqual(Array.from(machine.recordingEvents, event => Math.round(event.timestampMs)), [0, 10, 70]);
 });
 
-test('Metronome runs for sequencer playback but not when idle or during Playlist playback', () => {
+test('Metronome runs for sequencer playback but not when idle', () => {
   const { machine, clicks, advance } = createTransport();
   machine.state.metronome = true;
   machine.startGuide();
   assert.equal(clicks.length, 0);
-  machine.isRecordingPlayback = true;
-  machine.startGuide();
-  assert.equal(clicks.length, 0);
-  machine.isRecordingPlayback = false;
   machine.isPlaying = true;
   machine.startGuide();
   advance(1);
@@ -1475,4 +1471,70 @@ test('Mode updates pattern control availability without changing the pattern or 
     assert.equal(mutations.length, count);
     assert.equal(JSON.stringify(machine.state.pattern), pattern);
   }
+});
+
+test('Playlist Metronome keeps straight beats and bar accents across recording loops without Count-in or capture', async () => {
+  const { machine, sounds, clicks, advance } = createRecordingPlayback();
+  Object.assign(machine.state, { metronome: true, countIn: 4, loop: true, bpm: 120, swing: 50, length: 4 });
+  const recording = JSON.stringify(machine.recordings[0]);
+  machine.queueRecordingEvent = () => assert.fail('Playlist Metronome must never capture events');
+  await machine.startRecordingPlayback();
+  assert.equal(machine.isCountingIn, false);
+  assert.equal(machine.recordingPlayback.startTime, 0.03);
+  advance(4.8);
+  assert.equal(clicks.length, 10);
+  clicks.forEach((click, index) => {
+    assert.ok(Math.abs(click.when - (0.03 + index * 0.5)) < 1e-9);
+    assert.equal(click.pitchRatio, index % 4 === 0 ? 1.5 : 1);
+    assert.equal(click.destinationNode, machine.guideGain);
+  });
+  assert.ok(sounds.length > clicks.length);
+  assert.ok(machine.timelineEvents.every(event => ['kick', 'snare'].includes(event.voice)));
+  assert.equal(machine.recordingEvents.length, 0);
+  assert.equal(JSON.stringify(machine.recordings[0]), recording);
+  machine.stopAll(true);
+  const count = clicks.length;
+  advance(10);
+  assert.equal(clicks.length, count);
+  assert.equal(machine.guideTimer, null);
+  assert.ok(clicks.every(click => click.source.stopped));
+});
+
+test('Metronome toggles during Playlist playback without stopping or retiming the recording', async () => {
+  const { machine, handlers, clicks, advance } = createRecordingPlayback();
+  machine.state.loop = true;
+  await machine.startRecordingPlayback();
+  const playback = machine.recordingPlayback;
+  advance(0.2);
+  assert.equal(clicks.length, 0);
+  handlers['metronome:click']();
+  advance(0.85);
+  assert.equal(clicks.length, 2);
+  assert.ok(Math.abs(clicks[0].when - 0.23) < 1e-9);
+  handlers['metronome:click']();
+  advance(1.1);
+  assert.equal(clicks.length, 2);
+  assert.equal(machine.guideTimer, null);
+  assert.ok(clicks.every(click => click.source.stopped));
+  handlers['metronome:click']();
+  advance(1.7);
+  assert.equal(clicks.length, 4);
+  assert.ok(Math.abs(clicks[2].when - 1.13) < 1e-9);
+  assert.equal(machine.isRecordingPlayback, true);
+  assert.equal(machine.recordingPlayback, playback);
+  assert.equal(playback.startTime, 0.03);
+  assert.equal(playback.duration, 0.43725);
+});
+
+test('Playlist Metronome stops at the end of one-shot playback', async () => {
+  const { machine, clicks, advance } = createRecordingPlayback(600, [0]);
+  machine.state.metronome = true;
+  await machine.startRecordingPlayback();
+  advance(0.7);
+  assert.equal(clicks.length, 2);
+  assert.equal(machine.isRecordingPlayback, false);
+  assert.equal(machine.guideTimer, null);
+  assert.ok(clicks.every(click => click.source.stopped));
+  advance(10);
+  assert.equal(clicks.length, 2);
 });

@@ -146,7 +146,7 @@
   </svg>
   <div class="justify">
     <h1>Metronome <span class="object">button</span></h1>
-    Toggles a timing click during sequencer playback and performance recording. Each bar has four beats at the current BPM, with an accent on the first beat. Swing and Length do not change the click. The click follows Sound and Volume but never adds hits to Timeline, recordings or WAV exports. It does not accompany Playlist playback. <span class="default">Default: off.</span>
+    Toggles a timing click during sequencer playback, performance recording and Playlist playback. Each bar has four beats at the current BPM, with an accent on the first beat. Swing and Length do not change the click. The click continues across Playlist loops and stops when playback stops. The click follows Sound and Volume but never adds hits to Timeline, recordings or WAV exports. <span class="default">Default: off.</span>
   </div>
 </div>
 

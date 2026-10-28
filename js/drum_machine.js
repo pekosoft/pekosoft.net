@@ -1268,7 +1268,7 @@
 
     startGuide() {
       if (this.guideTimer !== null) return;
-      if (!this.isCountingIn && !(this.state.metronome && (this.isPlaying || this.isRecording))) return;
+      if (!this.isCountingIn && !(this.state.metronome && (this.isPlaying || this.isRecording || this.isRecordingPlayback))) return;
       this.guideBeat = 0;
       this.nextGuideTime = this.audioContext.currentTime + 0.03;
       this.scheduleGuide();
@@ -1281,7 +1281,7 @@
           if (this.nextGuideTime > now) break;
           this.beginRecording(this.nextGuideTime);
         }
-        if (!this.isCountingIn && !(this.state.metronome && (this.isPlaying || this.isRecording))) {
+        if (!this.isCountingIn && !(this.state.metronome && (this.isPlaying || this.isRecording || this.isRecordingPlayback))) {
           this.stopGuide();
           return;
         }
@@ -1463,6 +1463,7 @@
         pending: []
       };
       this.scheduleRecordingPlayback();
+      this.startGuide();
 
       this.saveRecordingPlaylist();
       this.renderRecordingPlaylist();
@@ -1611,6 +1612,7 @@
       if (!this.isRecordingPlayback && this.playingRecordingIndex < 0) return;
       this.isRecordingPlayback = false;
       this.playingRecordingIndex = -1;
+      if (!this.isPlaying && !this.isRecording && !this.isCountingIn) this.stopGuide();
       this.visualTimers.forEach((timer) => window.clearTimeout(timer));
       this.visualTimers.clear();
       this.activeSources.forEach((source) => {

@@ -14,7 +14,27 @@
   </svg>
   <div class="justify">
     <h1>Instrument <span class="object">module</span></h1>
-    Grid mode splits the sequencer into steps 1-8 and 9-16. Each row controls one drum voice. Click or tap a step to cycle between off, normal and accent velocity. Drag across steps to paint the selected velocity. Pad mode fills the Instrument with four drum pads for freeform playing.
+    Grid mode shows sequencer hits or the selected Playlist recording. Each row controls one drum voice, with eight steps per bank. Longer recordings use additional banks; scroll Instrument to reach them. Click or tap an empty position to add a hit. Click a hit to change normal velocity to accent, then remove it. Drag a hit to change its timing or move it to another voice row. Arrow keys move a focused hit; Delete removes it. Adding, painting, changing, moving, removing and clearing hits keeps playback running without restarting its timing. Changes can be undone and redone during playback. Hit editing is unavailable during Count-in and recording. Pad mode fills the Instrument with four drum pads for freeform playing.
+  </div>
+</div>
+
+<div class="feature-row border">
+  <svg class="standard-image-help">
+    <use href="/icons.svg#snap"></use>
+  </svg>
+  <div class="justify">
+    <h1>Snap <span class="object">button</span></h1>
+    Snaps added and moved hits to the nearest step. Turn Snap off to place hits between steps. Toggling Snap does not move existing hits or change recorded timing. With Snap off, Left and Right move a focused hit by one tenth of a step. The setting is saved with pattern data. <span class="default">Default: on.</span>
+  </div>
+</div>
+
+<div class="feature-row border">
+  <svg class="standard-image-help">
+    <use href="/icons.svg#cassette"></use>
+  </svg>
+  <div class="justify">
+    <h1>Source <span class="object">button</span></h1>
+    Switches Grid between the sequencer pattern and the selected Playlist recording. Save uses the current Source. Selecting, recording, importing or playing a Playlist recording shows its hits in Grid without quantizing them. Recording edits update that Playlist recording and its preview, preserving the recording window and the settings of hits moved within a voice. Moving a hit to another voice uses that voice's current settings. Choosing a pattern preset shows the sequencer pattern again. Unavailable when Playlist is empty.
   </div>
 </div>
 
@@ -54,7 +74,7 @@
   </svg>
   <div class="justify">
     <h1>Mute <span class="object">buttons</span></h1>
-    Toggle playback mute for each voice. Muted steps stay visible and remain in saved pattern data. <span class="default">Default: all voices audible.</span>
+    Toggle playback mute for each voice in sequencer patterns and Playlist recordings, including WAV export. Muted hits stay visible and remain in saved data. <span class="default">Default: all voices audible.</span>
   </div>
 </div>
 
@@ -63,7 +83,7 @@
     <use href="/icons.svg#random"></use>
   </svg>
   <div class="justify">
-    <h1>Random <span class="object">button</span></h1>Creates a new weighted rhythm and preserves strong kick and snare anchors. Available in Grid mode only.
+    <h1>Random <span class="object">button</span></h1>Creates a new weighted rhythm and preserves strong kick and snare anchors. Available for the sequencer pattern in Grid mode only.
   </div>
 </div>
 
@@ -72,7 +92,7 @@
     <use href="/icons.svg#close"></use>
   </svg>
   <div class="justify">
-    <h1>Clear <span class="object">button</span></h1>Switches off all steps. The change can be undone. Available in Grid mode only.
+    <h1>Clear <span class="object">button</span></h1>Removes hits from the displayed sequencer pattern or Playlist recording. The change can be undone. Available in Grid mode only, outside Count-in and recording.
   </div>
 </div>
 
@@ -100,7 +120,7 @@
     <use href="/icons.svg#record"></use>
   </svg>
   <div class="justify">
-    <h1>Record <span class="object">button</span></h1>Starts the selected Count-in, then records sequencer hits and manually auditioned voices with their timing, velocity and voice settings for one Length cycle at the selected BPM. Record does not start the sequencer. Count-in happens only before the first pass and is excluded from the take. With Loop off, recording completes at the cycle boundary. Press Record again or Stop to finish early. The take keeps its full cycle duration, including leading and trailing silence, and is added to Playlist even when silent. Sound tails are cut at the cycle boundary during Playback and WAV export. The recording status shows the selected step count and whether Loop is overwriting. Length, BPM, Tempo and Tap are unavailable during Count-in and recording. <span class="default">Default: off.</span>
+    <h1>Record <span class="object">button</span></h1>Starts the selected Count-in, then records sequencer hits and manually auditioned voices with their timing, velocity and voice settings for one Length cycle at the selected BPM. Record does not start the sequencer. Count-in happens only before the first pass and is excluded from the take. With Loop off, recording completes at the cycle boundary. Press Record again or Stop to finish early. The take keeps its full cycle duration, including leading and trailing silence, and is added to Playlist even when silent. Sound tails are cut at the cycle boundary during recording playback and WAV export. The recording status shows the selected step count and whether Loop is overwriting. Length, BPM, Tempo and Tap are unavailable during Count-in and recording. <span class="default">Default: off.</span>
   </div>
 </div>
 
@@ -118,7 +138,7 @@
     <use href="/icons.svg#loop"></use>
   </svg>
   <div class="justify">
-    <h1>Loop <span class="object">button</span></h1>During Play, repeats the sequencer's selected Length cycle. Turning it off finishes the current cycle. During recording, repeats the same Length cycle and replaces previous hits as recording advances, including silence replacing old hits. This is overwrite recording, not overdubbing. Stopping partway through a pass keeps the previous pass in the region not yet overwritten. All passes form one Playlist take. Turning Loop off completes recording at the next cycle boundary. During Playback, Loop repeats the selected recording using its exact stored duration and hit timing, including leading and trailing silence. Turning it off finishes the current pass. Older freeform recordings retain their stored duration. Loop does not repeat WAV exports. <span class="default">Default: off.</span>
+    <h1>Loop <span class="object">button</span></h1>For sequencer playback, repeats the selected Length cycle. Turning it off finishes the current cycle. During recording, repeats the same Length cycle and replaces previous hits as recording advances, including silence replacing old hits. This is overwrite recording, not overdubbing. Stopping partway through a pass keeps the previous pass in the region not yet overwritten. All passes form one Playlist take. Turning Loop off completes recording at the next cycle boundary. During recording playback, Loop repeats the selected recording using its exact stored duration and hit timing, including leading and trailing silence. Turning it off finishes the current pass. Older freeform recordings retain their stored duration. Loop does not repeat WAV exports. <span class="default">Default: off.</span>
   </div>
 </div>
 
@@ -136,7 +156,7 @@
     <use href="/icons.svg#download"></use>
   </svg>
   <div class="justify">
-    <h1>Save <span class="object">button</span></h1>Exports the selected Length-based Playlist recording as a WAV file with its exact cycle duration, recorded timing and voice settings. Leading and trailing silence are retained and tails beyond the end are cut. If no Length-based recording is selected, exports the current pattern with its sound tails. Volume applies to either export. Metronome and Count-in clicks are excluded.
+    <h1>Save <span class="object">button</span></h1>Exports the current Grid source as a WAV file. Recordings use their exact stored duration, hit timing and voice settings, retaining silence and cutting tails beyond the end. Sequencer patterns include hits between steps, use the selected Length and retain sound tails. Volume applies to either export. Metronome and Count-in clicks are excluded.
   </div>
 </div>
 
@@ -480,7 +500,7 @@
     <use href="/icons.svg#undo"></use>
   </svg>
   <div class="justify">
-    <h1>Undo <span class="object">button</span></h1>Restores the previous pattern edit.
+    <h1>Undo <span class="object">button</span></h1>Restores the previous hit edit without stopping playback.
   </div>
 </div>
 
@@ -489,7 +509,7 @@
     <use href="/icons.svg#redo"></use>
   </svg>
   <div class="justify">
-    <h1>Redo <span class="object">button</span></h1>Restores the next pattern edit after Undo.
+    <h1>Redo <span class="object">button</span></h1>Restores the next hit edit after Undo without stopping playback.
   </div>
 </div>
 

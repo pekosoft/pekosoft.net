@@ -1,9 +1,10 @@
 ---
-description: "Use when: reviewing Pekosoft in the browser, investigating visual or interaction defects, or reporting product issues."
+description: "Use when: changing Pekosoft pages or assets, validating website changes, reviewing Pekosoft in the browser, investigating visual or interaction defects, or reporting product issues."
 ---
 
 # Browser Review
 
+- After website changes, perform the [mandatory full-page refresh](../copilot-instructions.md#mandatory-browser-refresh-after-website-changes) yourself before final validation. A stylesheet reload or injected update does not count.
 - Keep the shared browser on the page under review. After each meaningful visible change or interaction, show the rendered page before proceeding.
 - Treat Playwright geometry, accessibility snapshots, DOM hit tests, and automation timeouts as diagnostic evidence only. They do not establish a user-facing defect on their own.
 - Report a visual or interaction issue only after two independent checks support it. At least one must be visible in the shared browser at the user's current viewport and zoom.

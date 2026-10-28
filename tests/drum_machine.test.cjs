@@ -19,13 +19,14 @@ function createMachine(saved = {}) {
   };
   vm.createContext(context);
   vm.runInContext(source.replace('  document.addEventListener("DOMContentLoaded",', `
-    globalThis.api = { DrumMachine, createDefaultState, normalizeState, loadState, normalizeRecording };
+    globalThis.api = { DrumMachine, createDefaultState, normalizeState, loadState, normalizeRecording, timeAtStep, stepAtTime };
     document.addEventListener("DOMContentLoaded",
   `), context);
   const machine = Object.create(context.api.DrumMachine.prototype);
   machine.state = context.api.loadState();
   return { machine, storage, api: context.api, context };
 }
+
 
 test('Blink defaults off and survives save, reload, export and import', () => {
   const { machine, storage, api } = createMachine();
@@ -124,6 +125,9 @@ function createTransport() {
     activeSources: new Set()
   });
   machine.ensureAudioReady = async () => {};
+  machine.refreshGrid = () => {};
+  machine.updateGrid = () => {};
+  machine.renderGridHits = () => {};
   machine.renderRecordingPlaylist = () => machine.updateRecordingControls();
   context.window.playTransientSound = options => {
     const source = { stopped: false, stop() { this.stopped = true; }, addEventListener() {} };
@@ -240,6 +244,72 @@ test('Playlist Loop keeps exact non-bar-aligned duration, silence, timing and se
   assert.equal(machine.recordingPlaybackTimer, null);
 });
 
+test('Playlist Metronome keeps straight beats and bar accents across recording loops without Count-in or capture', async () => {
+  const { machine, sounds, clicks, advance } = createRecordingPlayback();
+  Object.assign(machine.state, { metronome: true, countIn: 4, loop: true, bpm: 120, swing: 50, length: 4 });
+  const recording = JSON.stringify(machine.recordings[0]);
+  machine.queueRecordingEvent = () => assert.fail('Playlist Metronome must never capture events');
+  await machine.startRecordingPlayback();
+  assert.equal(machine.isCountingIn, false);
+  assert.equal(machine.recordingPlayback.startTime, 0.03);
+  advance(4.8);
+  assert.equal(clicks.length, 10);
+  clicks.forEach((click, index) => {
+    assert.ok(Math.abs(click.when - (0.03 + index * 0.5)) < 1e-9);
+    assert.equal(click.pitchRatio, index % 4 === 0 ? 1.5 : 1);
+    assert.equal(click.destinationNode, machine.guideGain);
+  });
+  assert.ok(sounds.length > clicks.length);
+  assert.ok(machine.timelineEvents.every(event => ['kick', 'snare'].includes(event.voice)));
+  assert.equal(machine.recordingEvents.length, 0);
+  assert.equal(JSON.stringify(machine.recordings[0]), recording);
+  machine.stopAll(true);
+  const count = clicks.length;
+  advance(10);
+  assert.equal(clicks.length, count);
+  assert.equal(machine.guideTimer, null);
+  assert.ok(clicks.every(click => click.source.stopped));
+});
+
+test('Metronome toggles during Playlist playback without stopping or retiming the recording', async () => {
+  const { machine, handlers, clicks, advance } = createRecordingPlayback();
+  machine.state.loop = true;
+  await machine.startRecordingPlayback();
+  const playback = machine.recordingPlayback;
+  advance(0.2);
+  assert.equal(clicks.length, 0);
+  handlers['metronome:click']();
+  advance(0.85);
+  assert.equal(clicks.length, 2);
+  assert.ok(Math.abs(clicks[0].when - 0.23) < 1e-9);
+  handlers['metronome:click']();
+  advance(1.1);
+  assert.equal(clicks.length, 2);
+  assert.equal(machine.guideTimer, null);
+  assert.ok(clicks.every(click => click.source.stopped));
+  handlers['metronome:click']();
+  advance(1.7);
+  assert.equal(clicks.length, 4);
+  assert.ok(Math.abs(clicks[2].when - 1.13) < 1e-9);
+  assert.equal(machine.isRecordingPlayback, true);
+  assert.equal(machine.recordingPlayback, playback);
+  assert.equal(playback.startTime, 0.03);
+  assert.equal(playback.duration, 0.43725);
+});
+
+test('Playlist Metronome stops at the end of one-shot playback', async () => {
+  const { machine, clicks, advance } = createRecordingPlayback(600, [0]);
+  machine.state.metronome = true;
+  await machine.startRecordingPlayback();
+  advance(0.7);
+  assert.equal(clicks.length, 2);
+  assert.equal(machine.isRecordingPlayback, false);
+  assert.equal(machine.guideTimer, null);
+  assert.ok(clicks.every(click => click.source.stopped));
+  advance(10);
+  assert.equal(clicks.length, 2);
+});
+
 test('Loop can be enabled during a one-shot pass and disabled without an extra pass', async () => {
   const { machine, sounds, handlers, storage, advance } = createRecordingPlayback();
   await machine.startRecordingPlayback();
@@ -331,11 +401,13 @@ test('Late and suspended playback callbacks do not burst-replay missed hits or s
 
 test('Stop, selection, removal, import, pattern apply and Reset cancel all pending loop playback', async () => {
   for (const action of ['stop', 'selection', 'removal', 'import', 'apply', 'reset', 'record', 'play']) {
-    const { machine, sounds, advance } = createRecordingPlayback(8, [0]);
+    const { machine, sounds, clicks, advance } = createRecordingPlayback(8, [0]);
     machine.state.loop = true;
     machine.state.countIn = 0;
+    machine.state.metronome = true;
     await machine.startRecordingPlayback();
     const scheduled = [...sounds];
+    const guideClicks = [...clicks];
     if (action === 'stop') machine.stopAll(true);
     if (action === 'selection') {
       machine.recordings.push({ ...machine.recordings[0], id: 'other' });
@@ -365,11 +437,17 @@ test('Stop, selection, removal, import, pattern apply and Reset cancel all pendi
       await machine.togglePlayback();
     }
     const count = sounds.length;
+    const clickCount = clicks.length;
     advance(0.5);
     assert.equal(sounds.length, count, action);
     assert.equal(machine.recordingPlaybackTimer, null, action);
     assert.equal(machine.isRecordingPlayback, false, action);
     assert.ok(scheduled.every(sound => sound.source.stoppedAt === 0), action);
+    assert.ok(guideClicks.every(click => click.source.stopped), action);
+    if (action !== 'record' && action !== 'play') {
+      assert.equal(machine.guideTimer, null, action);
+      assert.equal(clicks.length, clickCount, action);
+    }
   }
 });
 
@@ -780,7 +858,7 @@ function createSequencer(options = {}) {
   const result = createTransport();
   const { machine, context } = result;
   const sounds = [];
-  Object.assign(machine.state, { length: 4, bpm: 320, ...options });
+  Object.assign(machine.state, { mode: 'grid', length: 4, bpm: 320, ...options });
   machine.currentStep = -1;
   machine.updatePanel = () => {};
   context.navigator = {};
@@ -795,6 +873,8 @@ function createSequencer(options = {}) {
   };
   return { ...result, sounds };
 }
+
+
 
 test('Sequencer Loop off plays exactly one selected Length cycle through its audio-clock boundary', async () => {
   for (const length of [4, 8, 12, 16]) {
@@ -1347,6 +1427,8 @@ test('Pad pointer presses play once, support multiple voices and retain keyboard
 
 test('Grid voice clicks and keyboard step editing keep their existing behavior', () => {
   const { machine } = createMachine();
+  machine.state.mode = 'grid';
+  machine.stopAll = () => {};
   const hits = [];
   machine.selectVoice = () => {};
   machine.auditionVoice = voice => hits.push(voice);
@@ -1359,7 +1441,7 @@ test('Grid voice clicks and keyboard step editing keep their existing behavior',
   machine.commitPatternChange = () => { committed = true; };
   const before = machine.state.pattern.kick[0];
   machine.handleGridKeyDown({
-    target: { closest: () => ({ dataset: { voice: 'kick', step: '0' }, disabled: false }) },
+    target: { closest: selector => selector === '.step-button' ? { dataset: { voice: 'kick', step: '0' }, disabled: false } : null },
     key: ' ',
     preventDefault() {}
   });
@@ -1433,6 +1515,8 @@ test('Space preserves native button activation and toggles transport elsewhere',
   assert.equal(prevented, 1);
 });
 
+
+
 test('Mode updates pattern control availability without changing the pattern or flickering on drum selection', () => {
   const { machine } = createMachine();
   const mutations = [];
@@ -1453,10 +1537,14 @@ test('Mode updates pattern control availability without changing the pattern or 
       setAttribute: (...args) => mutations.push(args)
     },
     voiceSelect: {},
+    gridSource: { classList: { toggle() {} }, setAttribute() {} },
     random: {},
     clear: {}
   };
   machine.updateVoiceFields = () => {};
+  machine.isRecording = false;
+  machine.isCountingIn = false;
+  machine.renderGridHits = () => {};
   machine.updatePanel = () => {};
   const pattern = JSON.stringify(machine.state.pattern);
   for (const mode of ['grid', 'pad', 'grid', 'pad']) {
@@ -1473,68 +1561,605 @@ test('Mode updates pattern control availability without changing the pattern or 
   }
 });
 
-test('Playlist Metronome keeps straight beats and bar accents across recording loops without Count-in or capture', async () => {
-  const { machine, sounds, clicks, advance } = createRecordingPlayback();
-  Object.assign(machine.state, { metronome: true, countIn: 4, loop: true, bpm: 120, swing: 50, length: 4 });
-  const recording = JSON.stringify(machine.recordings[0]);
-  machine.queueRecordingEvent = () => assert.fail('Playlist Metronome must never capture events');
-  await machine.startRecordingPlayback();
-  assert.equal(machine.isCountingIn, false);
-  assert.equal(machine.recordingPlayback.startTime, 0.03);
-  advance(4.8);
-  assert.equal(clicks.length, 10);
-  clicks.forEach((click, index) => {
-    assert.ok(Math.abs(click.when - (0.03 + index * 0.5)) < 1e-9);
-    assert.equal(click.pitchRatio, index % 4 === 0 ? 1.5 : 1);
-    assert.equal(click.destinationNode, machine.guideGain);
-  });
-  assert.ok(sounds.length > clicks.length);
-  assert.ok(machine.timelineEvents.every(event => ['kick', 'snare'].includes(event.voice)));
-  assert.equal(machine.recordingEvents.length, 0);
-  assert.equal(JSON.stringify(machine.recordings[0]), recording);
-  machine.stopAll(true);
-  const count = clicks.length;
-  advance(10);
-  assert.equal(clicks.length, count);
-  assert.equal(machine.guideTimer, null);
-  assert.ok(clicks.every(click => click.source.stopped));
+function createEditor() {
+  const result = createTransport();
+  const { machine } = result;
+  const edits = [];
+  machine.state.mode = 'grid';
+  machine.history = { record: (label, before, after) => edits.push({ label, before, after }) };
+  machine.gridSource = 'pattern';
+  machine.updatePanel = () => {};
+  return { ...result, edits };
+}
+
+test('Snap and off-step hits survive persistence and pattern exchange without quantization', () => {
+  const { machine, storage, api, handlers } = createEditor();
+  assert.equal(machine.state.snap, true);
+  assert.deepEqual(Array.from(machine.state.freeHits), []);
+  const hits = [{ voice: 'snare', step: 1.23456789, velocity: 2 }];
+  machine.state.freeHits = hits;
+  machine.bindEvents();
+  handlers['snap:click']();
+  assert.equal(machine.state.snap, false);
+  assert.equal(JSON.stringify(machine.state.freeHits), JSON.stringify(hits));
+  assert.equal(JSON.parse(storage.get('drum_machine.state')).snap, false);
+  assert.equal(api.loadState().freeHits[0].step, hits[0].step);
+  const imported = api.normalizeState(machine.getExportData(), false);
+  assert.equal(imported.snap, false);
+  assert.equal(imported.freeHits[0].step, hits[0].step);
+  assert.equal(imported.freeHits[0].velocity, 2);
+  const validated = api.normalizeState({ freeHits: [
+    ...hits, null, { voice: 'missing', step: 1 }, { voice: 'kick', step: Infinity },
+    { voice: 'kick', step: -1 }, { voice: 'kick', step: 16 }
+  ] }, false);
+  assert.equal(validated.freeHits.length, 1);
 });
 
-test('Metronome toggles during Playlist playback without stopping or retiming the recording', async () => {
-  const { machine, handlers, clicks, advance } = createRecordingPlayback();
+test('Fractional step and time conversion are inverse across swing, tempo and long recordings', () => {
+  const { api } = createMachine();
+  for (const bpm of [30, 120, 320]) {
+    for (const swing of [0, 25, 50]) {
+      for (const step of [0, 0.12345, 0.99999, 1, 1.5, 7.9999, 8, 15.99, 133.208, 1000.9]) {
+        assert.ok(Math.abs(api.stepAtTime(api.timeAtStep(step, bpm, swing), bpm, swing) - step) < 1e-9);
+      }
+    }
+  }
+});
+
+test('All pattern hits can move between voices and off steps, overlap, delete and undo', () => {
+  const { machine, edits, storage } = createEditor();
+  const before = machine.patternSnapshot();
+  machine.editGridHit('step:kick:0', 'snare', 3.375, 2);
+  assert.equal(machine.state.pattern.kick[0], 0);
+  assert.equal(machine.state.freeHits[0].step, 3.375);
+  assert.equal(machine.state.freeHits[0].voice, 'snare');
+  assert.equal(machine.state.patternName, 'custom');
+  assert.equal(JSON.parse(storage.get('drum_machine.state')).freeHits[0].step, 3.375);
+  const moved = machine.patternSnapshot();
+  machine.editGridHit(null, 'snare', 3.375, 1);
+  assert.equal(machine.state.freeHits.length, 2);
+  machine.editGridHit('free:0', 'snare', 3.375, 0);
+  assert.equal(machine.state.freeHits.length, 1);
+  machine.restoreGridSnapshot(moved);
+  assert.equal(machine.state.freeHits[0].velocity, 2);
+  machine.restoreGridSnapshot(before);
+  assert.equal(machine.state.pattern.kick[0], 2);
+  assert.equal(machine.state.freeHits.length, 0);
+  machine.restoreGridSnapshot(edits[0].after);
+  assert.equal(machine.state.freeHits[0].step, 3.375);
+});
+
+test('Recording edits preserve the exact window, per-hit settings and unsnapped timing through undo and reload', () => {
+  const { machine, api, storage, edits } = createEditor();
+  const originalSettings = { ...machine.state.voices.kick, frequency: 77 };
+  const recording = api.normalizeRecording({
+    id: 'editor-take', name: 'Take', fixedDuration: true, durationMs: 2000, bpm: 120, swing: 25,
+    events: [{ voice: 'kick', timestampMs: 123.456789, durationMs: 200, velocity: 1, settings: originalSettings }]
+  });
+  machine.recordings = [recording];
+  machine.selectedRecordingIndex = 0;
+  machine.gridSource = 'recording';
+  assert.equal(machine.getGridLength(), 16);
+  const original = machine.patternSnapshot();
+  const hit = machine.getGridHits()[0];
+  machine.editGridHit(hit.key, 'kick', 9.125, 2);
+  assert.ok(Math.abs(recording.events[0].timestampMs - api.timeAtStep(9.125, 120, 25) * 1000) < 1e-9);
+  assert.equal(recording.events[0].settings.frequency, 77);
+  assert.equal(recording.durationMs, 2000);
+  machine.restoreGridSnapshot(original);
+  assert.equal(machine.getGridHits()[0].step, hit.step);
+  assert.equal(machine.recordings[0].events[0].timestampMs, 123.456789);
+  machine.restoreGridSnapshot(edits[0].after);
+  machine.editGridHit('recording:0', 'perc', 9.125, 1);
+  assert.equal(machine.recordings[0].events[0].settings.frequency, machine.state.voices.perc.frequency);
+  const playlist = [...storage.entries()].find(([key]) => key.includes('playlist'));
+  const reloaded = api.normalizeRecording(JSON.parse(playlist[1]).recordings[0]);
+  assert.equal(reloaded.durationMs, 2000);
+  assert.equal(reloaded.events[0].timestampMs, machine.recordings[0].events[0].timestampMs);
+  machine.editGridHit('recording:0', 'perc', 9.125, 0);
+  assert.equal(api.normalizeRecording(machine.recordings[0]).events.length, 0);
+  assert.equal(machine.recordings[0].durationMs, 2000);
+});
+
+test('Source switching keeps both models and shows every bank of a long legacy recording', () => {
+  const { machine, handlers } = createEditor();
+  machine.recordings = [{ id: 'long', durationMs: 16651, bpm: 120, swing: 0, events: [
+    { voice: 'hat', velocity: 1, timestampMs: 16501 }
+  ] }];
+  machine.selectedRecordingIndex = 0;
+  machine.bindEvents();
+  const pattern = machine.patternSnapshot();
+  handlers['gridSource:click']();
+  assert.equal(machine.gridSource, 'recording');
+  assert.equal(machine.getGridLength(), 134);
+  assert.equal(machine.getGridHits()[0].step, 132.008);
+  machine.state.snap = false;
+  assert.ok(machine.constrainHitStep(200) < 133.208);
+  handlers['gridSource:click']();
+  assert.equal(machine.patternSnapshot(), pattern);
+  assert.equal(machine.getGridLength(), 16);
+  const styles = fs.readFileSync(path.join(__dirname, '..', 'css', 'drum_machine.css'), 'utf8');
+  assert.match(styles, /\.pad-mode \.sequence-bank:not\(\[data-bank="0"\]\)/);
+});
+
+test('Pointer hit editing previews without mutation, cancels cleanly, and commits free timing across voices', () => {
+  const { machine, edits } = createEditor();
+  machine.editGridHit('step:kick:0', 'snare', 3.375, 1);
+  edits.length = 0;
+  machine.state.snap = false;
+  let previews = 0;
+  machine.positionGridHit = () => previews++;
+  machine.renderGridHits = () => {};
+  machine.getGridPoint = x => ({ voice: x > 4 ? 'perc' : 'snare', step: x > 4 ? 5.25 : 3.375 });
+  const button = { dataset: { hit: 'free:0' } };
+  const event = {
+    button: 0, pointerId: 7, clientX: 0, clientY: 0, preventDefault() {},
+    target: { closest: selector => selector === '.grid-hit' ? button : null }
+  };
+  const before = machine.patternSnapshot();
+  machine.handleGridPointerDown(event);
+  machine.handlePaintMove({ ...event, pointerId: 8, clientX: 10 });
+  assert.equal(previews, 0);
+  machine.handlePaintMove({ ...event, clientX: 10 });
+  assert.equal(previews, 1);
+  assert.equal(machine.patternSnapshot(), before);
+  machine.endPaintGesture({ pointerId: 7, type: 'pointercancel' });
+  assert.equal(machine.patternSnapshot(), before);
+  assert.equal(edits.length, 0);
+  machine.handleGridPointerDown(event);
+  machine.handlePaintMove({ ...event, clientX: 10 });
+  machine.endPaintGesture({ pointerId: 7, type: 'pointerup' });
+  assert.equal(machine.state.freeHits[0].voice, 'perc');
+  assert.equal(machine.state.freeHits[0].step, 5.25);
+  assert.equal(edits.length, 1);
+});
+
+test('Hit keyboard editing restores focus after changing keys and blocks edits while recording', () => {
+  const { machine } = createEditor();
+  machine.editGridHit('step:kick:0', 'snare', 1.2, 1);
+  let focused;
+  machine.elements.grid.querySelector = selector => ({ focus() { focused = selector; } });
+  machine.handleGridKeyDown({
+    key: 'ArrowRight', preventDefault() {},
+    target: { closest: selector => selector === '.grid-hit' ? { dataset: { hit: 'free:0' } } : null }
+  });
+  assert.equal(machine.state.pattern.snare[2], 1);
+  assert.equal(machine.state.freeHits.length, 0);
+  assert.equal(focused, '.grid-hit[data-hit="step:snare:2"]');
+  const before = machine.patternSnapshot();
+  machine.isRecording = true;
+  machine.editGridHit('step:snare:2', 'kick', 4.5, 1);
+  assert.equal(machine.patternSnapshot(), before);
+});
+
+test('Every part of a bank, including its last off-step interval, can be hit and keeps notes inside the bank', () => {
+  const { machine } = createEditor();
+  const bounds = { left: 100, right: 140, top: 20, bottom: 56, width: 40, height: 36 };
+  const first = {
+    getBoundingClientRect: () => bounds,
+    nextElementSibling: { getBoundingClientRect: () => ({ left: 144 }) }
+  };
+  const bank = {
+    dataset: { bank: '1' },
+    getBoundingClientRect: () => ({ left: 0, right: 452, top: 0, bottom: 200, width: 452 }),
+    querySelector: () => first,
+    appendChild() {}
+  };
+  machine.elements.grid.querySelectorAll = () => [bank];
+  machine.elements.grid.querySelector = () => bank;
+  assert.equal(machine.getGridPoint(100, 30).step, 8);
+  assert.ok(Math.abs(machine.getGridPoint(447.6, 30).step - 15.9) < 1e-9);
+  const button = { style: {} };
+  for (const velocity of [1, 2]) {
+    machine.positionGridHit(button, { voice: 'kick', step: 10, velocity });
+    assert.equal(button.style.left, '188px');
+    assert.equal(button.style.top, '20px');
+    assert.equal(button.style.width, '40px');
+    assert.equal(button.style.height, '36px');
+  }
+  machine.positionGridHit(button, { voice: 'kick', step: 10.25, velocity: 1 });
+  assert.equal(button.style.left, '199px');
+  machine.positionGridHit(button, { voice: 'kick', step: 15.99, velocity: 1 });
+  assert.ok(Number.parseFloat(button.style.left) + Number.parseFloat(button.style.width) <= 452);
+  machine.state.snap = true;
+  assert.equal(machine.constrainHitStep(15.99), 15);
+  machine.state.snap = false;
+  assert.equal(machine.constrainHitStep(15.99), 15.99);
+});
+
+test('Recording keyboard movement retains focus after fractional time conversion', () => {
+  const { machine, api } = createEditor();
+  machine.recordings = [api.normalizeRecording({
+    id: 'keyboard-take', fixedDuration: true, durationMs: 2000, bpm: 320, swing: 50,
+    events: [{ voice: 'snare', velocity: 1, timestampMs: 123.456789, settings: machine.state.voices.snare }]
+  })];
+  machine.selectedRecordingIndex = 0;
+  machine.gridSource = 'recording';
+  machine.state.snap = false;
+  let focused = false;
+  machine.elements.grid.querySelector = () => ({ focus() { focused = true; } });
+  const before = machine.getGridHits()[0].step;
+  machine.handleGridKeyDown({
+    key: 'ArrowRight', preventDefault() {},
+    target: { closest: selector => selector === '.grid-hit' ? { dataset: { hit: 'recording:0' } } : null }
+  });
+  assert.ok(Math.abs(machine.getGridHits()[0].step - before - 0.1) < 1e-9);
+  assert.equal(focused, true);
+});
+
+test('Clicking an off-step hit changes velocity without snapping its timing or moving it on touch cancellation', () => {
+  const { machine } = createEditor();
+  machine.editGridHit('step:kick:0', 'snare', 3.375, 1);
+  machine.getGridPoint = () => ({ voice: 'snare', step: 3.375 });
+  machine.renderGridHits = () => {};
+  const event = {
+    button: 0, pointerType: 'touch', pointerId: 3, clientX: 0, clientY: 0, preventDefault() {},
+    target: { closest: selector => selector === '.grid-hit' ? { dataset: { hit: 'free:0' } } : null }
+  };
+  machine.handleGridPointerDown(event);
+  machine.endPaintGesture({ pointerId: 3, type: 'pointerup' });
+  assert.equal(machine.state.freeHits[0].step, 3.375);
+  assert.equal(machine.state.freeHits[0].velocity, 2);
+  const before = machine.patternSnapshot();
+  machine.handleGridPointerDown(event);
+  machine.endPaintGesture({ pointerId: 3, type: 'pointercancel' });
+  assert.equal(machine.patternSnapshot(), before);
+});
+
+test('Free hits use swung audio timing, bounded lookahead, Length and mutes, and enter recordings once', async () => {
+  const { machine, sounds, advance, api } = createSequencer({ bpm: 30, swing: 50, countIn: 0 });
+  machine.state.pattern.kick.fill(0);
+  machine.state.mutes.hat = true;
+  machine.state.freeHits = [
+    { voice: 'snare', step: 0.8, velocity: 2 }, { voice: 'perc', step: 1.5, velocity: 1 },
+    { voice: 'hat', step: 2.1, velocity: 1 }, { voice: 'kick', step: 4.2, velocity: 1 }
+  ];
+  await machine.startRecording();
+  await machine.togglePlayback();
+  advance(0.5);
+  assert.equal(sounds.length, 0);
+  advance(0.56);
+  assert.equal(sounds.length, 1);
+  assert.ok(Math.abs(sounds[0].when - (0.03 + api.timeAtStep(0.8, 30, 50))) < 1e-9);
+  advance(2.1);
+  assert.equal(sounds.length, 2);
+  assert.equal(machine.recordings[0].events.length, 2);
+  sounds.forEach((sound, index) => {
+    assert.ok(Math.abs(machine.recordings[0].events[index].timestampMs - sound.when * 1000) < 1e-9);
+  });
+});
+
+test('Loop cancellation stops queued free hits but retains the current pass, and Stop clears transport callbacks', async () => {
+  const { machine, sounds, advance, timers } = createSequencer({ loop: true });
+  machine.state.pattern.kick.fill(0);
+  machine.state.freeHits = [{ voice: 'snare', step: 0.15, velocity: 1 }, { voice: 'perc', step: 3.8, velocity: 2 }];
+  await machine.togglePlayback();
+  advance(0.2);
+  const nextPass = sounds.filter(sound => sound.when >= 0.2175);
+  assert.ok(nextPass.length > 0);
+  machine.toggleRecordingLoop();
+  assert.ok(nextPass.every(sound => sound.source.stoppedAt === 0.2));
+  advance(0.22);
+  assert.equal(sounds.filter(sound => sound.source.stoppedAt === undefined).length, 2);
+  machine.stopAll(false);
+  assert.equal(machine.schedulerTimer, null);
+  assert.equal(machine.visualTimers.size, 0);
+  assert.equal(machine.recordingCaptureTimers.size, 0);
+  const count = sounds.length;
+  advance(2);
+  assert.equal(sounds.length, count);
+});
+
+test('Delayed callbacks discard missed free hits rather than burst replaying them', async () => {
+  const { machine, sounds, timers, advance } = createSequencer({ bpm: 30, swing: 50 });
+  machine.state.pattern.kick.fill(0);
+  machine.state.freeHits = [{ voice: 'snare', step: 0.8, velocity: 1 }, { voice: 'perc', step: 1.5, velocity: 1 }];
+  await machine.togglePlayback();
+  timers.clear();
+  machine.audioContext.currentTime = 0.7;
+  machine.scheduler(machine.sequencerPlayback);
+  assert.equal(sounds.length, 0);
+  advance(1);
+  assert.equal(sounds.length, 1);
+  assert.equal(sounds[0].voice, 'perc');
+  assert.ok(Math.abs(sounds[0].when - 0.905) < 1e-9);
+  machine.stopAll(false);
+});
+
+test('Recording grid voice mutes affect playback without removing stored hits', async () => {
+  const { machine, sounds, advance } = createRecordingPlayback();
+  machine.state.mutes.kick = true;
+  await machine.startRecordingPlayback();
+  advance(0.5);
+  assert.equal(sounds.length, 1);
+  assert.equal(sounds[0].voice, 'snare');
+  assert.equal(machine.recordings[0].events.length, 2);
+});
+
+test('Dragging during a sequencer loop preserves phase and tails while replacing queued hits', async () => {
+  const { machine, sounds, advance } = createSequencer({ bpm: 120, loop: true, metronome: true });
+  machine.history = { record() {} };
+  machine.state.pattern.kick.fill(0);
+  machine.state.pattern.kick[0] = 1;
+  machine.state.freeHits = [{ voice: 'snare', step: 0.5, velocity: 1 }];
+  await machine.togglePlayback();
+  advance(0.05);
+  const playback = machine.sequencerPlayback;
+  const guideTime = machine.nextGuideTime;
+  const originalKick = sounds.find(sound => sound.voice === 'kick');
+  const queuedSnare = sounds.find(sound => sound.voice === 'snare');
+  machine.editGridHit('free:0', 'perc', 1.5, 1);
+  assert.equal(machine.isPlaying, true);
+  assert.equal(machine.sequencerPlayback, playback);
+  assert.equal(machine.nextGuideTime, guideTime);
+  assert.equal(originalKick.source.stoppedAt, undefined);
+  assert.equal(queuedSnare.source.stoppedAt, 0.05);
+  advance(1.1);
+  const audible = sounds.filter(sound => sound.source.stoppedAt === undefined && sound.when <= 1.1);
+  assert.deepEqual(audible.map(sound => sound.voice), ['kick', 'perc', 'kick', 'perc', 'kick']);
+  const expected = [0.03, 0.2175, 0.53, 0.7175, 1.03];
+  audible.forEach((sound, index) => assert.ok(Math.abs(sound.when - expected[index]) < 1e-9));
+  assert.equal(machine.isPlaying, true);
+  machine.stopAll(false);
+});
+
+function createStepButton(voice, step) {
+  return {
+    dataset: { voice, step: String(step) }, disabled: false,
+    classList: { toggle() {} }, setAttribute() {}
+  };
+}
+
+
+
+test('Adding and painting snapped steps updates a running loop without stopping or resetting it', async () => {
+  const { machine, sounds, advance, context } = createSequencer({ bpm: 120, loop: true });
+  machine.history = { record() {} };
+  machine.state.pattern.kick.fill(0);
+  await machine.togglePlayback();
+  advance(0.05);
+  const playback = machine.sequencerPlayback;
+  const first = createStepButton('kick', 2);
+  const next = createStepButton('kick', 3);
+  machine.handleGridPointerDown({
+    button: 0, pointerId: 7, preventDefault() {},
+    target: { closest: selector => selector === '.step-button' ? first : null }
+  });
+  assert.equal(machine.isPlaying, true);
+  assert.equal(machine.state.pattern.kick[2], 1);
+  context.document.elementFromPoint = () => ({ closest: () => next });
+  machine.handlePaintMove({ pointerId: 7, clientX: 0, clientY: 0, preventDefault() {} });
+  assert.equal(machine.state.pattern.kick[3], 1);
+  machine.endPaintGesture({ pointerId: 7, type: 'pointerup' });
+  assert.equal(machine.sequencerPlayback, playback);
+  advance(1);
+  const audible = sounds.filter(sound => sound.source.stoppedAt === undefined && sound.when <= 1);
+  const expected = [0.28, 0.405, 0.78, 0.905];
+  assert.equal(audible.length, expected.length);
+  audible.forEach((sound, index) => assert.ok(Math.abs(sound.when - expected[index]) < 1e-9));
+  assert.equal(machine.isPlaying, true);
+  machine.stopAll(false);
+});
+
+test('Keyboard and unsnapped pointer additions preserve looping and one-shot playback timing', async () => {
+  for (const loop of [false, true]) {
+    for (const input of ['Enter', ' ', 'pointer']) {
+      const { machine, sounds, advance } = createSequencer({ bpm: 120, loop });
+      machine.history = { record() {} };
+      machine.state.pattern.kick.fill(0);
+      await machine.togglePlayback();
+      advance(0.05);
+      const playback = machine.sequencerPlayback;
+      const button = createStepButton('snare', 2);
+      const target = { closest: selector => selector === '.step-button' ? button : null };
+      if (input === 'pointer') {
+        machine.state.snap = false;
+        machine.getGridPoint = () => ({ voice: 'snare', step: 2.25 });
+        machine.handleGridPointerDown({
+          button: 0, pointerId: 8, clientX: 0, clientY: 0, target, preventDefault() {}
+        });
+        machine.endPaintGesture({ pointerId: 8, type: 'pointerup' });
+      } else {
+        machine.handleGridKeyDown({ key: input, target, preventDefault() {} });
+      }
+      assert.equal(machine.isPlaying, true, `${input}, loop ${loop}`);
+      assert.equal(machine.sequencerPlayback, playback);
+      advance(0.4);
+      const when = 0.03 + (input === 'pointer' ? 2.25 : 2) * 0.125;
+      const audible = () => sounds.filter(sound => sound.source.stoppedAt === undefined);
+      assert.equal(audible().length, 1);
+      assert.ok(Math.abs(audible()[0].when - when) < 1e-9);
+      advance(0.85);
+      assert.equal(machine.isPlaying, loop);
+      assert.equal(audible().length, loop ? 2 : 1);
+      if (loop) assert.ok(Math.abs(audible()[1].when - when - 0.5) < 1e-9);
+      machine.stopAll(false);
+    }
+  }
+});
+
+test('Clearing a sequencer and undoing or redoing its edits preserves the running loop', async () => {
+  const { machine, sounds, advance } = createSequencer({ bpm: 120, loop: true });
+  machine.history = { record() {} };
+  await machine.togglePlayback();
+  advance(0.1);
+  const playback = machine.sequencerPlayback;
+  const original = machine.patternSnapshot();
+  machine.clearPattern();
+  const cleared = machine.patternSnapshot();
+  advance(0.6);
+  assert.equal(machine.isPlaying, true);
+  assert.equal(machine.sequencerPlayback, playback);
+  assert.equal(sounds.filter(sound => sound.source.stoppedAt === undefined).length, 1);
+  machine.restoreGridSnapshot(original);
+  advance(0.8);
+  assert.equal(machine.sequencerPlayback, playback);
+  const audible = sounds.filter(sound => sound.source.stoppedAt === undefined && sound.when <= 0.8);
+  const expected = [0.03, 0.655, 0.78];
+  assert.equal(audible.length, expected.length);
+  audible.forEach((sound, index) => assert.ok(Math.abs(sound.when - expected[index]) < 1e-9));
+  machine.restoreGridSnapshot(cleared);
+  assert.equal(machine.isPlaying, true);
+  assert.equal(machine.sequencerPlayback, playback);
+  machine.stopAll(false);
+});
+
+test('Adding recorded hits by pointer or keyboard preserves looping and one-shot playback', async () => {
+  for (const loop of [false, true]) {
+    for (const input of ['snap-on', 'snap-off', 'keyboard']) {
+      const { machine, sounds, advance } = createRecordingPlayback();
+      machine.history = { record() {} };
+      Object.assign(machine.recordings[0], { bpm: 120, swing: 0 });
+      machine.state.loop = loop;
+      machine.state.snap = input !== 'snap-off';
+      await machine.startRecordingPlayback();
+      advance(0.05);
+      const playback = machine.recordingPlayback;
+      const origin = playback.startTime;
+      const button = createStepButton('perc', 2);
+      const target = { closest: selector => selector === '.step-button' ? button : null };
+      if (input === 'keyboard') {
+        machine.handleGridKeyDown({ key: 'Enter', target, preventDefault() {} });
+      } else {
+        machine.getGridPoint = () => ({ voice: 'perc', step: 2.25 });
+        machine.handleGridPointerDown({
+          button: 0, pointerId: 9, clientX: 0, clientY: 0, target, preventDefault() {}
+        });
+        machine.endPaintGesture({ pointerId: 9, type: 'pointerup' });
+      }
+      assert.equal(machine.isRecordingPlayback, true);
+      assert.equal(machine.recordingPlayback, playback);
+      assert.equal(playback.startTime, origin);
+      advance(0.4);
+      const added = () => sounds.filter(sound => sound.voice === 'perc' &&
+        (sound.source.stoppedAt === undefined || sound.source.stoppedAt > sound.when));
+      const when = 0.03 + (input === 'snap-off' ? 2.25 : 2) * 0.125;
+      assert.equal(added().length, 1);
+      assert.ok(Math.abs(added()[0].when - when) < 1e-9);
+      advance(0.85);
+      assert.equal(machine.isRecordingPlayback, loop);
+      assert.equal(added().length, loop ? 2 : 1);
+      if (loop) assert.ok(Math.abs(added()[1].when - when - 0.43725) < 1e-9);
+      machine.stopAll(false);
+    }
+  }
+});
+
+test('Clearing and restoring recorded hits keeps playback running against the restored recording', async () => {
+  const { machine, sounds, advance } = createRecordingPlayback();
+  machine.history = { record() {} };
+  Object.assign(machine.recordings[0], { bpm: 120, swing: 0 });
   machine.state.loop = true;
   await machine.startRecordingPlayback();
+  advance(0.1);
   const playback = machine.recordingPlayback;
-  advance(0.2);
-  assert.equal(clicks.length, 0);
-  handlers['metronome:click']();
-  advance(0.85);
-  assert.equal(clicks.length, 2);
-  assert.ok(Math.abs(clicks[0].when - 0.23) < 1e-9);
-  handlers['metronome:click']();
-  advance(1.1);
-  assert.equal(clicks.length, 2);
-  assert.equal(machine.guideTimer, null);
-  assert.ok(clicks.every(click => click.source.stopped));
-  handlers['metronome:click']();
-  advance(1.7);
-  assert.equal(clicks.length, 4);
-  assert.ok(Math.abs(clicks[2].when - 1.13) < 1e-9);
+  const origin = playback.startTime;
+  const original = machine.patternSnapshot();
+  machine.clearPattern();
+  const cleared = machine.patternSnapshot();
+  advance(0.6);
+  assert.equal(machine.isRecordingPlayback, true);
+  assert.equal(sounds.length, 1);
+  machine.restoreGridSnapshot(original);
+  assert.equal(playback.recording, machine.getGridRecording());
+  advance(0.7);
+  assert.equal(sounds.length, 2);
+  assert.equal(sounds[1].voice, 'snare');
+  assert.ok(Math.abs(sounds[1].when - 0.660625) < 1e-9);
+  machine.restoreGridSnapshot(cleared);
+  assert.equal(playback.recording, machine.getGridRecording());
+  assert.equal(playback.recording.events.length, 0);
   assert.equal(machine.isRecordingPlayback, true);
   assert.equal(machine.recordingPlayback, playback);
-  assert.equal(playback.startTime, 0.03);
+  assert.equal(playback.startTime, origin);
   assert.equal(playback.duration, 0.43725);
+  machine.stopAll(false);
 });
 
-test('Playlist Metronome stops at the end of one-shot playback', async () => {
-  const { machine, clicks, advance } = createRecordingPlayback(600, [0]);
+test('Dragging recorded hits during looping playback preserves its origin and replaces future audio once', async () => {
+  const { machine, sounds, advance } = createRecordingPlayback();
+  machine.history = { record() {} };
+  Object.assign(machine.recordings[0], { bpm: 120, swing: 0 });
+  machine.state.loop = true;
   machine.state.metronome = true;
   await machine.startRecordingPlayback();
-  advance(0.7);
-  assert.equal(clicks.length, 2);
-  assert.equal(machine.isRecordingPlayback, false);
-  assert.equal(machine.guideTimer, null);
-  assert.ok(clicks.every(click => click.source.stopped));
-  advance(10);
-  assert.equal(clicks.length, 2);
+  advance(0.16);
+  const playback = machine.recordingPlayback;
+  const origin = playback.startTime;
+  const guideTime = machine.nextGuideTime;
+  const queued = sounds.find(sound => sound.voice === 'snare');
+  const original = sounds.find(sound => sound.voice === 'kick');
+  machine.editGridHit('recording:1', 'snare', 2.48, 2);
+  assert.equal(machine.isRecordingPlayback, true);
+  assert.equal(machine.recordingPlayback, playback);
+  assert.equal(playback.startTime, origin);
+  assert.equal(machine.nextGuideTime, guideTime);
+  assert.equal(original.source.stoppedAt, undefined);
+  assert.equal(queued.source.stoppedAt, 0.16);
+  advance(1.1);
+  const audible = sounds.filter(sound =>
+    (sound.source.stoppedAt === undefined || sound.source.stoppedAt > sound.when) && sound.when <= 1.1);
+  const expected = [0.047125, 0.34, 0.484375, 0.77725, 0.921625];
+  assert.equal(audible.length, expected.length);
+  audible.forEach((sound, index) => assert.ok(Math.abs(sound.when - expected[index]) < 1e-9));
+  assert.equal(machine.isRecordingPlayback, true);
+  assert.equal(playback.duration, 0.43725);
+  machine.stopAll(false);
+});
+
+test('Moving a recorded hit past another event does not skip or duplicate the remaining events', async () => {
+  const { machine, sounds, advance } = createRecordingPlayback();
+  machine.history = { record() {} };
+  Object.assign(machine.recordings[0], { bpm: 120, swing: 0 });
+  machine.state.loop = true;
+  await machine.startRecordingPlayback();
+  advance(0.06);
+  machine.editGridHit('recording:0', 'kick', 2.4, 1);
+  advance(0.4);
+  const audible = sounds.filter(sound =>
+    (sound.source.stoppedAt === undefined || sound.source.stoppedAt > sound.when) && sound.when <= 0.4);
+  assert.deepEqual(audible.map(sound => sound.voice), ['kick', 'snare', 'kick']);
+  const expected = [0.047125, 0.223375, 0.33];
+  audible.forEach((sound, index) => assert.ok(Math.abs(sound.when - expected[index]) < 1e-9));
+  assert.equal(machine.isRecordingPlayback, true);
+  machine.stopAll(false);
+});
+
+test('WAV follows the visible source and includes exact fractional timing while respecting mutes and Length', async () => {
+  const { machine, context, api } = createEditor();
+  const drums = [];
+  context.OfflineAudioContext = context.window.OfflineAudioContext = class {
+    constructor(channels, frames, sampleRate) { Object.assign(this, { destination: {}, channels, frames, sampleRate }); }
+    async startRendering() {
+      return { numberOfChannels: this.channels, sampleRate: this.sampleRate, length: this.frames,
+        getChannelData: () => new Float32Array(this.frames) };
+    }
+  };
+  context.window.playDrumSound = options => drums.push(options);
+  context.Blob = Blob;
+  context.URL = { createObjectURL: () => 'blob:hits', revokeObjectURL() {} };
+  context.document.createElement = () => ({ click() {}, remove() {} });
+  context.document.body = { appendChild() {} };
+  machine.showPanelSuccess = () => {};
+  Object.assign(machine.state, { length: 4, swing: 25, bpm: 120 });
+  machine.state.pattern = Object.fromEntries(['kick', 'snare', 'hat', 'perc'].map(voice => [voice, Array(16).fill(0)]));
+  machine.state.mutes.hat = true;
+  machine.state.freeHits = [{ voice: 'snare', step: 1.2345, velocity: 2 },
+    { voice: 'hat', step: 2.5, velocity: 1 }, { voice: 'kick', step: 6.5, velocity: 1 }];
+  machine.recordings = [{ durationMs: 500, events: [{
+    voice: 'perc', timestampMs: 123.456, velocity: 1, settings: machine.state.voices.perc
+  }] }];
+  machine.selectedRecordingIndex = 0;
+  await machine.savePatternAsWav();
+  assert.equal(drums.length, 1);
+  assert.equal(drums[0].voice, 'snare');
+  assert.ok(Math.abs(drums[0].when - (api.timeAtStep(1.2345, 120, 25) + 0.02)) < 1e-9);
+  machine.gridSource = 'recording';
+  await machine.savePatternAsWav();
+  assert.equal(drums.length, 2);
+  assert.equal(drums[1].voice, 'perc');
+  assert.equal(drums[1].when, 0.123456);
+  machine.state.mutes.perc = true;
+  await machine.savePatternAsWav();
+  assert.equal(drums.length, 2);
 });

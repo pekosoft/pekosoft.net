@@ -132,11 +132,37 @@
     return normalized;
   }
 
+  function normalizeFreeHits(hits) {
+    return (Array.isArray(hits) ? hits : [])
+      .filter((hit) => hit && VOICES.some(({ id }) => id === hit.voice) &&
+        Number.isFinite(hit.step) && hit.step >= 0 && hit.step < STEP_COUNT)
+      .map((hit) => ({ voice: hit.voice, step: hit.step, velocity: Math.round(clamp(hit.velocity, 1, 2, 1)) }));
+  }
+
+  function timeAtStep(step, bpm, swing) {
+    const straight = 60 / bpm / 4;
+    const pair = Math.floor(step / 2);
+    const remainder = step - pair * 2;
+    const first = straight * (1 + swing / 100);
+    return pair * straight * 2 + (remainder <= 1
+      ? remainder * first : first + (remainder - 1) * straight * (1 - swing / 100));
+  }
+
+  function stepAtTime(time, bpm, swing) {
+    const straight = 60 / bpm / 4;
+    const pair = Math.floor(time / (straight * 2));
+    const remainder = time - pair * straight * 2;
+    const first = straight * (1 + swing / 100);
+    return pair * 2 + (remainder <= first
+      ? remainder / first : 1 + (remainder - first) / (straight * (1 - swing / 100)));
+  }
+
   function createDefaultState() {
     const globalBpm = Number.parseFloat(localStorage.getItem("global.default_bpm"));
     return {
       mode: "grid",
       blink: false,
+      snap: true,
       loop: false,
       metronome: false,
       countIn: 1,
@@ -151,6 +177,7 @@
       kitName: "classic",
       selectedVoice: "kick",
       pattern: clone(PATTERN_PRESETS.basic),
+      freeHits: [],
       voices: clone(KIT_PRESETS.classic),
       mutes: { kick: false, snare: false, hat: false, perc: false }
     };
@@ -172,6 +199,7 @@
     return {
       mode: raw.mode === "pad" ? "pad" : defaults.mode,
       blink: raw.blink === undefined ? defaults.blink : !!raw.blink,
+      snap: raw.snap === undefined ? defaults.snap : !!raw.snap,
       loop: raw.loop === undefined ? defaults.loop : !!raw.loop,
       metronome: raw.metronome === undefined ? defaults.metronome : !!raw.metronome,
       countIn: [0, 1, 2, 4].includes(raw.countIn) ? raw.countIn : defaults.countIn,
@@ -188,6 +216,7 @@
       kitName: kitNames.includes(raw.kitName) ? raw.kitName : defaults.kitName,
       selectedVoice: voiceIds.includes(raw.selectedVoice) ? raw.selectedVoice : defaults.selectedVoice,
       pattern: normalizePattern(raw.pattern),
+      freeHits: normalizeFreeHits(raw.freeHits),
       voices: normalizeVoices(raw.voices),
       mutes
     };
@@ -312,6 +341,8 @@
       const savedPlaylist = this.loadRecordingPlaylist();
       this.recordings = savedPlaylist.recordings;
       this.selectedRecordingIndex = savedPlaylist.selectedRecordingIndex;
+      this.gridSource = this.selectedRecordingIndex >= 0 ? "recording" : "pattern";
+      this.hitGesture = null;
       this.isPlaying = false;
       this.isRecording = false;
       this.isCountingIn = false;
@@ -350,6 +381,8 @@
         grid: document.getElementById("sequencer-grid"),
         mode: document.getElementById("mode-button"),
         blink: document.getElementById("blink-button"),
+        snap: document.getElementById("snap-button"),
+        gridSource: document.getElementById("grid-source-button"),
         play: document.getElementById("play-button"),
         record: document.getElementById("record-button"),
         metronome: document.getElementById("metronome-button"),
@@ -420,9 +453,7 @@
         viewStorageKey: "drum_machine.history_view",
         limit: 50,
         restore: (snapshot) => {
-          this.state.pattern = normalizePattern(JSON.parse(snapshot));
-          this.state.patternName = "custom";
-          this.saveAndRender();
+          this.restoreGridSnapshot(snapshot);
         }
       });
       this.buildGrid();
@@ -431,6 +462,8 @@
       this.bindEvents();
       this.updateAll();
         this.renderRecordingPlaylist();
+      this.gridObserver = new ResizeObserver(() => this.renderGridHits());
+      this.gridObserver.observe(this.elements.grid);
 
       window.addEventListener("pekosoft:global-defaults-change", (event) => {
           const defaults = event.detail;
@@ -609,6 +642,8 @@
           this.stopRecordingPlayback();
         }
         this.selectedRecordingIndex = index;
+        this.gridSource = "recording";
+        this.refreshGrid();
         this.saveRecordingPlaylist();
         this.renderRecordingPlaylist();
       }
@@ -625,6 +660,8 @@
         } else if (this.selectedRecordingIndex >= this.recordings.length) {
           this.selectedRecordingIndex = this.recordings.length - 1;
         }
+        if (!this.recordings.length) this.gridSource = "pattern";
+        this.refreshGrid();
         this.saveRecordingPlaylist();
         this.renderRecordingPlaylist();
       }
@@ -635,6 +672,8 @@
         this.stopRecordingPlayback();
         this.recordings = [];
         this.selectedRecordingIndex = -1;
+        this.gridSource = "pattern";
+        this.refreshGrid();
         this.saveRecordingPlaylist();
         this.renderRecordingPlaylist();
       }
@@ -672,6 +711,8 @@
           this.stopAll(true);
           this.recordings = imported;
           this.selectedRecordingIndex = 0;
+          this.gridSource = "recording";
+          this.refreshGrid();
           this.saveRecordingPlaylist();
           this.renderRecordingPlaylist();
         } catch (error) {
@@ -846,13 +887,247 @@
       return event;
     }
 
+    getGridRecording() {
+      return this.gridSource === "pattern" ? null : this.recordings?.[this.selectedRecordingIndex] || null;
+    }
+
+    getGridLength() {
+      const recording = this.getGridRecording();
+      return recording
+        ? Math.max(1, Math.ceil(stepAtTime(recording.durationMs / 1000, recording.bpm, recording.swing) - 1e-8))
+        : this.state.length;
+    }
+
+    getPatternHits() {
+      const hits = [];
+      VOICES.forEach(({ id }) => this.state.pattern[id].forEach((velocity, step) => {
+        if (velocity) hits.push({ key: `step:${id}:${step}`, voice: id, step, velocity });
+      }));
+      (this.state.freeHits || []).forEach((hit, index) => hits.push({ ...hit, key: `free:${index}` }));
+      return hits.sort((left, right) => left.step - right.step);
+    }
+
+    getGridHits() {
+      const recording = this.getGridRecording();
+      return recording ? recording.events.map((event, index) => ({
+        key: `recording:${index}`, voice: event.voice, velocity: event.velocity,
+        step: stepAtTime(event.timestampMs / 1000, recording.bpm, recording.swing)
+      })) : this.getPatternHits().filter((hit) => hit.step < this.state.length);
+    }
+
+    refreshGrid() {
+      const focused = document.activeElement;
+      const selector = focused?.matches(".grid-hit") ? `.grid-hit[data-hit="${focused.dataset.hit}"]`
+        : focused?.matches(".step-button") ? `.step-button[data-voice="${focused.dataset.voice}"][data-step="${focused.dataset.step}"]` : null;
+      this.hitGesture = null;
+      const recording = this.getGridRecording();
+      if (recording ? this.recordingPlayback?.recording.id !== recording.id : !this.isPlaying) this.currentStep = -1;
+      this.buildGrid();
+      this.updateAll();
+      if (selector) this.elements.grid.querySelector(selector)?.focus({ preventScroll: true });
+    }
+
+    positionGridHit(button, hit) {
+      const bankIndex = Math.floor(hit.step / 8);
+      const bank = this.elements.grid.querySelector(`.sequence-bank[data-bank="${bankIndex}"]`);
+      const first = bank?.querySelector(`.step-button[data-voice="${hit.voice}"]`);
+      if (!first) return;
+      const second = first.nextElementSibling;
+      const bounds = first.getBoundingClientRect();
+      if (!bounds.width || !bounds.height) return;
+      const bankBounds = bank.getBoundingClientRect();
+      const pitch = second.getBoundingClientRect().left - bounds.left;
+      bank.appendChild(button);
+      const left = bounds.left - bankBounds.left + (hit.step % 8) * pitch;
+      button.style.left = `${Math.min(bankBounds.width - bounds.width, left)}px`;
+      button.style.top = `${bounds.top - bankBounds.top}px`;
+      button.style.width = `${bounds.width}px`;
+      button.style.height = `${bounds.height}px`;
+    }
+
+    renderGridHits() {
+      if (this.hitGesture) return;
+      const focusedKey = document.activeElement?.dataset.hit;
+      this.elements.grid.querySelectorAll(".grid-hit").forEach((hit) => hit.remove());
+      if (this.state.mode === "pad") return;
+      this.getGridHits().forEach((hit) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = `grid-hit square velocity-${hit.velocity}`;
+        button.dataset.hit = hit.key;
+        button.dataset.step = String(Math.floor(hit.step));
+        button.classList.toggle("current-step", Math.floor(hit.step) === this.currentStep);
+        button.classList.toggle("muted-hit", this.state.mutes[hit.voice]);
+        const mark = document.createElement("span");
+        mark.className = "step-mark";
+        mark.setAttribute("aria-hidden", "true");
+        button.appendChild(mark);
+        const recording = this.getGridRecording();
+        const time = timeAtStep(hit.step, recording?.bpm || this.state.bpm, recording?.swing ?? this.state.swing);
+        const label = `${hit.voice}, ${(time * 1000).toFixed(3)} ms, ${hit.velocity === 2 ? "accent" : "normal"}`;
+        button.title = label;
+        button.setAttribute("aria-label", label);
+        button.setAttribute("aria-keyshortcuts", "ArrowLeft ArrowRight ArrowUp ArrowDown Delete Enter");
+        button.disabled = this.isRecording || this.isCountingIn;
+        this.positionGridHit(button, hit);
+      });
+      if (focusedKey) this.elements.grid.querySelector(`.grid-hit[data-hit="${focusedKey}"]`)?.focus({ preventScroll: true });
+    }
+
+    getGridPoint(x, y) {
+      const banks = [...this.elements.grid.querySelectorAll(".sequence-bank")];
+      const bank = banks.find((element) => {
+        const bounds = element.getBoundingClientRect();
+        return x >= bounds.left && x <= bounds.right && y >= bounds.top && y <= bounds.bottom;
+      });
+      if (!bank) return null;
+      const first = bank.querySelector(".step-button");
+      const bounds = first.getBoundingClientRect();
+      const pitch = first.nextElementSibling.getBoundingClientRect().left - bounds.left;
+      if (!pitch) return null;
+      const voice = VOICES.find(({ id }) => {
+        const row = bank.querySelector(`.step-button[data-voice="${id}"]`).getBoundingClientRect();
+        return y >= row.top && y <= row.bottom;
+      });
+      if (!voice) return null;
+      return {
+        voice: voice.id,
+        step: Number(bank.dataset.bank) * 8 + Math.max(0, Math.min(7.999999, (x - bounds.left) / pitch))
+      };
+    }
+
+    constrainHitStep(step) {
+      const recording = this.getGridRecording();
+      const end = recording
+        ? stepAtTime(Math.max(0, recording.durationMs - 0.001) / 1000, recording.bpm, recording.swing)
+        : this.state.length - 0.000001;
+      return this.state.snap
+        ? Math.max(0, Math.min(Math.floor(end), Math.round(step)))
+        : Math.max(0, Math.min(end, step));
+    }
+
+    editGridHit(key, voice, step, velocity) {
+      if (this.isRecording || this.isCountingIn) return;
+      const before = this.patternSnapshot();
+      const recording = this.getGridRecording();
+      if (recording) {
+        const index = key === null ? -1 : Number(key.split(":")[1]);
+        const existing = recording.events[index];
+        const settings = existing?.voice === voice ? existing.settings : { ...this.state.voices[voice] };
+        if (index >= 0) recording.events.splice(index, 1);
+        if (velocity) recording.events.push({
+          ...existing,
+          durationMs: existing?.voice === voice ? existing.durationMs : Math.max(8, settings.decay * 1000),
+          voice, velocity, settings,
+          timestampMs: timeAtStep(step, recording.bpm, recording.swing) * 1000
+        });
+        recording.events.sort((left, right) => left.timestampMs - right.timestampMs);
+        recording.fixedDuration = true;
+      } else {
+        if (key?.startsWith("step:")) {
+          const [, oldVoice, oldStep] = key.split(":");
+          this.state.pattern[oldVoice][Number(oldStep)] = 0;
+        } else if (key?.startsWith("free:")) {
+          this.state.freeHits.splice(Number(key.split(":")[1]), 1);
+        }
+        if (velocity) {
+          if (Number.isInteger(step) && !this.state.pattern[voice][step]) this.state.pattern[voice][step] = velocity;
+          else this.state.freeHits.push({ voice, step, velocity });
+        }
+      }
+      this.commitPatternChange(before, true, velocity ? "Edited hit" : "Removed hit", "pen");
+    }
+
+    cancelScheduledHit(hit) {
+      hit.sources.forEach((source) => {
+        try {
+          source.stop(this.audioContext.currentTime);
+        } catch (_) {
+          // Source may already have ended.
+        }
+        this.activeSources.delete(source);
+      });
+      hit.visualTimers.forEach((timer) => {
+        window.clearTimeout(timer);
+        this.visualTimers.delete(timer);
+      });
+      window.clearTimeout(hit.captureTimer);
+      this.recordingCaptureTimers.delete(hit.captureTimer);
+      if (hit.timelineEvent) this.timelineEvents = this.timelineEvents.filter((event) => event !== hit.timelineEvent);
+    }
+
+    refreshScheduledHits() {
+      const now = this.audioContext?.currentTime;
+      if (!Number.isFinite(now)) return;
+      const recording = this.getGridRecording();
+      const playback = this.recordingPlayback;
+      if (recording && playback?.recording.id === recording.id) {
+        playback.recording = recording;
+        playback.pending = playback.pending.filter((hit) => {
+          if (hit.when <= now) return true;
+          this.cancelScheduledHit(hit);
+          return false;
+        });
+        playback.cycle = Math.max(0, Math.floor((now - playback.startTime) / playback.duration));
+        playback.eventIndex = 0;
+        playback.skipThrough = now;
+        window.clearTimeout(this.recordingPlaybackTimer);
+        this.scheduleRecordingPlayback();
+      } else if (!recording && this.sequencerPlayback) {
+        const hits = this.getPatternHits().filter((hit) => hit.step < this.state.length);
+        this.sequencerPlayback.pending.forEach((pending) => {
+          pending.scheduledHits = pending.scheduledHits.filter((hit) => {
+            if (hit.when <= now) return true;
+            this.cancelScheduledHit(hit);
+            return false;
+          });
+          pending.sources = pending.scheduledHits.flatMap((hit) => hit.sources);
+          pending.captureTimers = pending.scheduledHits.map((hit) => hit.captureTimer);
+          pending.timelineEvents = pending.scheduledHits.map((hit) => hit.timelineEvent).filter(Boolean);
+          pending.visualTimers = pending.visualTimers.filter((timer) => this.visualTimers.has(timer));
+          pending.freeHits = hits.filter((hit) => Math.floor(hit.step) === pending.step)
+            .map((hit) => ({ ...hit, when: pending.when + (hit.step - pending.step) * pending.duration }))
+            .filter((hit) => hit.when > now);
+          this.scheduleFreeHits(pending);
+        });
+      }
+    }
+
+    restoreGridSnapshot(snapshot) {
+      const data = JSON.parse(snapshot);
+      if (this.isRecording || this.isCountingIn) this.stopAll(false);
+      if (data.recording) {
+        const index = this.recordings.findIndex((recording) => recording.id === data.recording.id);
+        if (index < 0) {
+          this.elements.recordingStatus.textContent = "Recording is no longer available.";
+          console.warn("Drum Machine history recording is no longer in Playlist:", data.recording.id);
+          return;
+        }
+        this.recordings[index] = data.recording;
+        this.selectedRecordingIndex = index;
+        this.gridSource = "recording";
+        this.saveRecordingPlaylist();
+      } else {
+        this.gridSource = "pattern";
+        this.state.pattern = normalizePattern(data.pattern || data);
+        this.state.freeHits = normalizeFreeHits(data.freeHits);
+        this.state.patternName = "custom";
+        this.saveState();
+      }
+      this.refreshScheduledHits();
+      this.refreshGrid();
+      this.renderRecordingPlaylist();
+    }
+
     buildGrid() {
       this.elements.grid.textContent = "";
 
-      for (let bankIndex = 0; bankIndex < 2; bankIndex++) {
+      const length = this.getGridLength();
+      for (let bankIndex = 0; bankIndex < Math.max(2, Math.ceil(length / 8)); bankIndex++) {
         const bank = document.createElement("div");
         bank.className = "sequence-bank";
         bank.dataset.bank = String(bankIndex);
+        bank.classList.toggle("bank-continuation", bankIndex % 2 === 1);
 
         const voiceSpacer = document.createElement("div");
         voiceSpacer.className = "sequence-heading bank-leading";
@@ -926,6 +1201,17 @@
         this.saveState();
         this.updateToggleButtons();
         this.updatePanel();
+      });
+      this.elements.snap.addEventListener("click", () => {
+        this.state.snap = !this.state.snap;
+        this.saveState();
+        this.updateToggleButtons();
+        this.updatePanel();
+      });
+      this.elements.gridSource.addEventListener("click", () => {
+        this.gridSource = this.getGridRecording() ? "pattern" : "recording";
+        this.setCurrentStep(-1);
+        this.refreshGrid();
       });
       this.elements.grid.addEventListener("pointerdown", (event) => this.handleGridPointerDown(event));
       this.elements.grid.addEventListener("click", (event) => this.handleGridClick(event));
@@ -1062,8 +1348,27 @@
         return;
       }
 
+      const hitButton = event.target.closest(".grid-hit");
+      const stepButton = event.target.closest(".step-button");
+      if (event.button === 0 && !this.isRecording && !this.isCountingIn &&
+          (hitButton || (stepButton && !stepButton.disabled && (!this.state.snap || this.getGridRecording())))) {
+        event.preventDefault();
+        const point = this.getGridPoint(event.clientX, event.clientY);
+        if (!point) return;
+        const hit = hitButton ? this.getGridHits().find((item) => item.key === hitButton.dataset.hit) : null;
+        this.hitGesture = {
+          pointerId: event.pointerId, key: hit?.key ?? null, button: hitButton,
+          startX: event.clientX, startY: event.clientY, moved: false,
+          offset: hit ? point.step - hit.step : 0,
+          voice: hit?.voice || point.voice,
+          step: hit?.step ?? (this.state.snap ? Number(stepButton.dataset.step) : this.constrainHitStep(point.step)),
+          velocity: hit?.velocity || 1
+        };
+        return;
+      }
+
       const button = event.target.closest(".step-button");
-      if (!button || button.disabled || event.button !== 0) return;
+      if (!button || button.disabled || event.button !== 0 || this.isRecording || this.isCountingIn) return;
 
       event.preventDefault();
       const voice = button.dataset.voice;
@@ -1079,6 +1384,18 @@
     }
 
     handlePaintMove(event) {
+      if (this.hitGesture && event.pointerId === this.hitGesture.pointerId) {
+        event.preventDefault();
+        const gesture = this.hitGesture;
+        if (Math.hypot(event.clientX - gesture.startX, event.clientY - gesture.startY) < 4 && !gesture.moved) return;
+        const point = this.getGridPoint(event.clientX, event.clientY);
+        if (!point) return;
+        gesture.moved = true;
+        gesture.voice = point.voice;
+        gesture.step = this.constrainHitStep(point.step - gesture.offset);
+        if (gesture.button) this.positionGridHit(gesture.button, gesture);
+        return;
+      }
       if (!this.paintGesture || event.pointerId !== this.paintGesture.pointerId) return;
       event.preventDefault();
       const target = document.elementFromPoint(event.clientX, event.clientY);
@@ -1095,9 +1412,22 @@
       this.paintGesture.visited.add(key);
       this.state.pattern[voice][step] = this.paintGesture.value;
       this.updateStepButton(button, voice, step);
+      this.refreshScheduledHits();
+      this.renderGridHits();
     }
 
     endPaintGesture(event) {
+      if (this.hitGesture && event.pointerId === this.hitGesture.pointerId) {
+        const gesture = this.hitGesture;
+        this.hitGesture = null;
+        if (event.type === "pointercancel") {
+          this.renderGridHits();
+          return;
+        }
+        const velocity = gesture.key && !gesture.moved ? (gesture.velocity + 1) % 3 : gesture.velocity;
+        this.editGridHit(gesture.key, gesture.voice, gesture.step, velocity);
+        return;
+      }
       if (!this.paintGesture || event.pointerId !== this.paintGesture.pointerId) return;
       const before = this.paintGesture.before;
       const changedSteps = this.paintGesture.visited.size;
@@ -1126,9 +1456,31 @@
     }
 
     handleGridKeyDown(event) {
+      const hitButton = event.target.closest(".grid-hit");
+      if (hitButton && ["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "Delete", "Backspace", "Enter", " "].includes(event.key)) {
+        event.preventDefault();
+        const hit = this.getGridHits().find((item) => item.key === hitButton.dataset.hit);
+        if (!hit) return;
+        let { voice, step, velocity } = hit;
+        if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
+          step = this.constrainHitStep(step + (event.key === "ArrowLeft" ? -1 : 1) * (this.state.snap ? 1 : 0.1));
+        } else if (event.key === "ArrowUp" || event.key === "ArrowDown") {
+          const index = VOICES.findIndex(({ id }) => id === voice);
+          voice = VOICES[Math.max(0, Math.min(VOICES.length - 1, index + (event.key === "ArrowUp" ? -1 : 1)))].id;
+        } else if (event.key === "Delete" || event.key === "Backspace") velocity = 0;
+        else velocity = (velocity + 1) % 3;
+        this.editGridHit(hit.key, voice, step, velocity);
+        const edited = this.getGridHits().find((item) => item.voice === voice && Math.abs(item.step - step) < 1e-8 && item.velocity === velocity);
+        if (edited) this.elements.grid.querySelector(`.grid-hit[data-hit="${edited.key}"]`)?.focus();
+        return;
+      }
       const button = event.target.closest(".step-button");
       if (!button || button.disabled || !["Enter", " "].includes(event.key)) return;
       event.preventDefault();
+      if (this.getGridRecording()) {
+        this.editGridHit(null, button.dataset.voice, Number(button.dataset.step), 1);
+        return;
+      }
       const before = this.patternSnapshot();
       const voice = button.dataset.voice;
       const step = Number(button.dataset.step);
@@ -1417,6 +1769,8 @@
 
       this.recordings.push(recording);
       this.selectedRecordingIndex = this.recordings.length - 1;
+      this.gridSource = "recording";
+      this.refreshGrid();
       this.saveRecordingPlaylist();
       this.renderRecordingPlaylist();
       return recording;
@@ -1451,6 +1805,8 @@
       if (index < 0) return;
       const recording = this.recordings[index];
       this.selectedRecordingIndex = index;
+      this.gridSource = "recording";
+      this.refreshGrid();
       this.playingRecordingIndex = index;
       this.isRecordingPlayback = true;
       this.recordingPlayback = {
@@ -1573,6 +1929,11 @@
         this.stopRecordingPlayback();
         return;
       }
+      if (this.getGridRecording()?.id === playback.recording.id) {
+        const time = Math.max(0, now - playback.startTime) % playback.duration;
+        const step = Math.floor(stepAtTime(time, playback.recording.bpm, playback.recording.swing));
+        if (step !== this.currentStep) this.setCurrentStep(step);
+      }
       playback.pending = playback.pending.filter((hit) => hit.when >= now);
       // Skip missed passes after a delayed callback instead of replaying a burst.
       const currentCycle = Math.max(0, Math.floor((now - playback.startTime) / playback.duration));
@@ -1585,12 +1946,15 @@
         const event = events[playback.eventIndex];
         const when = playback.startTime + playback.cycle * playback.duration + event.timestampMs / 1000;
         if (when >= now + SCHEDULE_AHEAD_SEC) break;
-        if (when >= now - 0.000001) {
+        if (when >= now - 0.000001 && when > (playback.skipThrough ?? -Infinity) && !this.state.mutes[event.voice]) {
           const boundary = playback.recording.fixedDuration
             ? playback.startTime + (playback.cycle + 1) * playback.duration : null;
           const result = this.playVoice(event.voice, event.velocity, when, event.settings, false, boundary);
           const visualTimer = this.flashVoice(event.voice, Math.max(0, (when - now) * 1000));
-          playback.pending.push({ cycle: playback.cycle, when, sources: result?.sources || [], visualTimer });
+          playback.pending.push({
+            cycle: playback.cycle, when, sources: result?.sources || [], visualTimer,
+            visualTimers: [visualTimer], timelineEvent: result?.timelineEvent
+          });
         }
         playback.eventIndex++;
         if (playback.eventIndex === events.length) {
@@ -1613,6 +1977,7 @@
       this.isRecordingPlayback = false;
       this.playingRecordingIndex = -1;
       if (!this.isPlaying && !this.isRecording && !this.isCountingIn) this.stopGuide();
+      if (!this.isPlaying) this.setCurrentStep(-1);
       this.visualTimers.forEach((timer) => window.clearTimeout(timer));
       this.visualTimers.clear();
       this.activeSources.forEach((source) => {
@@ -1678,6 +2043,8 @@
       }
 
       this.stopRecordingPlayback();
+      this.gridSource = "pattern";
+      this.refreshGrid();
       const sessionId = this.transportSessionId;
       await this.ensureAudioReady();
       if (sessionId !== this.transportSessionId) return;
@@ -1703,7 +2070,7 @@
         this.finishSequencerPlayback();
         return;
       }
-      playback.pending = playback.pending.filter((step) => step.when >= now);
+      playback.pending = playback.pending.filter((step) => step.when + step.duration > now);
       playback.cycles = playback.cycles.filter((cycle) => cycle.endTime > now);
 
       while (playback.cycle < playback.endCycle && this.nextStepTime < now + SCHEDULE_AHEAD_SEC) {
@@ -1720,6 +2087,7 @@
         }
       }
 
+      playback.pending.forEach((step) => this.scheduleFreeHits(step));
       this.schedulerTimer = window.setTimeout(
         () => this.scheduler(playback),
         Math.min(SCHEDULER_DELAY_MS, Math.max(0, (playback.endTime - now) * 1000))
@@ -1745,30 +2113,57 @@
     scheduleStep(step, when) {
       const playback = this.sequencerPlayback;
       const pending = {
-        cycle: playback.cycle, when, sources: [], visualTimers: [], captureTimers: [], timelineEvents: []
+        step, cycle: playback.cycle, when, duration: this.getStepDuration(step), scheduledHits: [],
+        sources: [], visualTimers: [], captureTimers: [], timelineEvents: [],
+        freeHits: (this.state.freeHits || [])
+          .filter((hit) => Math.floor(hit.step) === step)
+          .map((hit) => ({ ...hit, when: when + (hit.step - step) * this.getStepDuration(step) }))
       };
       const delayMs = Math.max(0, (when - this.audioContext.currentTime) * 1000);
       pending.visualTimers.push(this.scheduleVisual(() => {
-        if (this.isPlaying && playback === this.sequencerPlayback) this.setCurrentStep(step);
+        if (this.isPlaying && playback === this.sequencerPlayback && !this.getGridRecording()) this.setCurrentStep(step);
       }, delayMs));
 
       VOICES.forEach(({ id }) => {
         const velocity = this.state.pattern[id][step];
         if (!velocity || this.state.mutes[id]) return;
-        const result = this.playVoice(id, velocity, when);
-        if (result) {
-          pending.sources.push(...result.sources);
-          pending.captureTimers.push(result.captureTimer);
-          pending.timelineEvents.push(result.timelineEvent);
-        }
-        pending.visualTimers.push(this.flashVoice(id, delayMs));
-        if (id === "kick") {
-          pending.visualTimers.push(this.scheduleVisual(() => {
-            if (playback === this.sequencerPlayback) this.vibrate(8);
-          }, delayMs));
-        }
+        this.schedulePatternHit(pending, id, velocity, when);
       });
       return pending;
+    }
+
+    scheduleFreeHits(pending) {
+      const now = this.audioContext.currentTime;
+      pending.freeHits = pending.freeHits.filter((hit) => {
+        if (hit.when >= now + SCHEDULE_AHEAD_SEC) return true;
+        if (hit.when >= now - 0.000001 && !this.state.mutes[hit.voice]) {
+          this.schedulePatternHit(pending, hit.voice, hit.velocity, hit.when);
+        }
+        return false;
+      });
+    }
+
+    schedulePatternHit(pending, voice, velocity, when) {
+      const result = this.playVoice(voice, velocity, when);
+      const hit = {
+        when, sources: result?.sources || [], captureTimer: result?.captureTimer,
+        timelineEvent: result?.timelineEvent, visualTimers: []
+      };
+      if (result) {
+        pending.sources.push(...result.sources);
+        pending.captureTimers.push(result.captureTimer);
+        pending.timelineEvents.push(result.timelineEvent);
+      }
+      const delayMs = Math.max(0, (when - this.audioContext.currentTime) * 1000);
+      hit.visualTimers.push(this.flashVoice(voice, delayMs));
+      if (voice === "kick") {
+        const playback = this.sequencerPlayback;
+        hit.visualTimers.push(this.scheduleVisual(() => {
+          if (playback === this.sequencerPlayback) this.vibrate(8);
+        }, delayMs));
+      }
+      pending.visualTimers.push(...hit.visualTimers);
+      pending.scheduledHits.push(hit);
     }
 
     scheduleVisual(callback, delayMs) {
@@ -1838,11 +2233,11 @@
 
     setCurrentStep(step) {
       this.currentStep = step;
-      document.querySelectorAll(".step-button.current-step").forEach((button) => {
+      document.querySelectorAll(".step-button.current-step, .grid-hit.current-step").forEach((button) => {
         button.classList.remove("current-step");
       });
       if (step >= 0) {
-        document.querySelectorAll(`.step-button[data-step="${step}"]`).forEach((button) => {
+        document.querySelectorAll(`.step-button[data-step="${step}"], .grid-hit[data-step="${step}"]`).forEach((button) => {
           button.classList.add("current-step");
         });
       }
@@ -1878,6 +2273,7 @@
       this.elements.bpmInput.value = String(this.state.bpm);
       this.elements.bpmSlider.value = String(this.state.bpm);
       this.saveState();
+      this.renderGridHits();
       this.updatePanel();
     }
 
@@ -1886,6 +2282,7 @@
       this.elements.swingInput.value = String(this.state.swing);
       this.elements.swingSlider.value = String(this.state.swing);
       this.saveState();
+      this.renderGridHits();
       this.updatePanel();
     }
 
@@ -1919,11 +2316,14 @@
     }
 
     loadPatternPreset(name) {
+      this.gridSource = "pattern";
       const before = this.patternSnapshot();
       this.state.pattern = clone(PATTERN_PRESETS[name]);
+      this.state.freeHits = [];
       this.state.patternName = name;
       if (before === this.patternSnapshot()) {
-        this.saveAndRender();
+        this.saveState();
+        this.refreshGrid();
         return;
       }
       const label = this.elements.patternSelect.selectedOptions[0]?.textContent || name;
@@ -1938,7 +2338,9 @@
     }
 
     randomizePattern() {
+      this.gridSource = "pattern";
       const before = this.patternSnapshot();
+      this.state.freeHits = [];
       const probabilities = { kick: 0.3, snare: 0.2, hat: 0.68, perc: 0.16 };
 
       VOICES.forEach(({ id }) => {
@@ -1960,20 +2362,32 @@
 
     clearPattern() {
       const before = this.patternSnapshot();
-      VOICES.forEach(({ id }) => this.state.pattern[id].fill(0));
+      const recording = this.getGridRecording();
+      if (recording) {
+        recording.events = [];
+        recording.fixedDuration = true;
+      } else {
+        VOICES.forEach(({ id }) => this.state.pattern[id].fill(0));
+        this.state.freeHits = [];
+      }
       this.commitPatternChange(before, true, "Cleared pattern", "close");
     }
 
     patternSnapshot() {
-      return JSON.stringify(this.state.pattern);
+      const recording = this.getGridRecording();
+      return JSON.stringify(recording ? { recording } : { pattern: this.state.pattern, freeHits: this.state.freeHits });
     }
 
     commitPatternChange(before, markCustom, label = "Changed pattern", icon = "undo") {
       const after = this.patternSnapshot();
       if (before === after) return;
-      if (markCustom) this.state.patternName = "custom";
+      this.refreshScheduledHits();
+      if (markCustom && !this.getGridRecording()) this.state.patternName = "custom";
       this.history.record(label, before, after, { icon });
-      this.saveAndRender();
+      this.saveRecordingPlaylist();
+      this.saveState();
+      this.refreshGrid();
+      this.renderRecordingPlaylist();
     }
 
     undo() {
@@ -1990,13 +2404,15 @@
       localStorage.removeItem(PLAYLIST_STORAGE_KEY);
       this.recordings = [];
       this.selectedRecordingIndex = -1;
+      this.gridSource = "pattern";
       this.renderRecordingPlaylist();
       this.state = createDefaultState();
       this.history.clear();
       this.tapTimes = [];
       this.timelineEvents = [];
       this.applyMasterGain();
-      this.saveAndRender();
+      this.saveState();
+      this.refreshGrid();
     }
 
     getExportData() {
@@ -2005,6 +2421,7 @@
         version: 1,
         mode: this.state.mode,
         blink: this.state.blink,
+        snap: this.state.snap,
         loop: this.state.loop,
         metronome: this.state.metronome,
         countIn: this.state.countIn,
@@ -2019,6 +2436,7 @@
         kitName: this.state.kitName,
         selectedVoice: this.state.selectedVoice,
         pattern: clone(this.state.pattern),
+        freeHits: clone(this.state.freeHits),
         voices: clone(this.state.voices),
         mutes: clone(this.state.mutes)
       };
@@ -2035,9 +2453,10 @@
       try {
         const data = JSON.parse(this.elements.patternText.value);
         if (!data || typeof data.pattern !== "object") throw new Error("Pattern data is missing");
+        this.gridSource = "pattern";
         const before = this.patternSnapshot();
         this.stopAll(false);
-        this.state = normalizeState({ ...this.state, ...data }, false);
+        this.state = normalizeState({ ...this.state, ...data, freeHits: data.freeHits || [] }, false);
         this.applyMasterGain();
         this.commitPatternChange(before, false, "Applied pattern data", "check");
         this.saveAndRender();
@@ -2073,15 +2492,8 @@
       }
 
       const sampleRate = 44100;
-      const selected = this.recordings[this.selectedRecordingIndex];
-      const recording = selected?.fixedDuration ? selected : null;
-      const stepStartTimes = [];
-      let totalDuration = 0;
-
-      for (let step = 0; step < this.state.length; step++) {
-        stepStartTimes.push(totalDuration);
-        totalDuration += this.getStepDuration(step);
-      }
+      const recording = this.getGridRecording();
+      const totalDuration = timeAtStep(this.state.length, this.state.bpm, this.state.swing);
 
       const longestDecay = VOICES.reduce((max, { id }) => {
         const decay = Number(this.state.voices[id]?.decay) || 0;
@@ -2090,14 +2502,13 @@
       const renderDuration = recording ? recording.durationMs / 1000 : Math.max(1, totalDuration + longestDecay + 0.35);
       const offlineContext = new OfflineAudioContext(2, Math.ceil(renderDuration * sampleRate), sampleRate);
 
-      const events = recording ? recording.events : stepStartTimes.flatMap((time, step) =>
-        VOICES.filter(({ id }) => this.state.pattern[id][step] && !this.state.mutes[id]).map(({ id }) => ({
-          voice: id,
-          velocity: this.state.pattern[id][step],
-          timestampMs: (time + 0.02) * 1000,
-          settings: this.state.voices[id]
-        }))
-      );
+      const events = recording ? recording.events.filter((event) => !this.state.mutes[event.voice]) : this.getPatternHits()
+        .filter((hit) => hit.step < this.state.length && !this.state.mutes[hit.voice])
+        .map((hit) => ({
+          voice: hit.voice, velocity: hit.velocity,
+          timestampMs: (timeAtStep(hit.step, this.state.bpm, this.state.swing) + 0.02) * 1000,
+          settings: this.state.voices[hit.voice]
+        }));
       events.forEach((event) => {
         const settings = event.settings;
         window.playDrumSound({
@@ -2171,9 +2582,15 @@
       const isPadMode = this.state.mode === "pad";
       const modeLabel = isPadMode ? "Switch to grid" : "Switch to pad";
       this.elements.grid.classList.toggle("pad-mode", isPadMode);
-      this.elements.grid.setAttribute("aria-label", isPadMode ? "Four drum pads" : "16-step drum sequencer");
-      this.elements.random.disabled = isPadMode;
-      this.elements.clear.disabled = isPadMode;
+      this.elements.grid.classList.toggle("hit-grid", true);
+      const recording = this.getGridRecording();
+      this.elements.grid.setAttribute("aria-label", isPadMode ? "Four drum pads" : recording ? `${recording.name} hit editor` : "16-step drum sequencer");
+      this.elements.random.disabled = isPadMode || !!recording || this.isRecording || this.isCountingIn;
+      this.elements.clear.disabled = isPadMode || this.isRecording || this.isCountingIn;
+      this.elements.gridSource.disabled = !this.recordings?.length || this.isRecording || this.isCountingIn;
+      this.elements.gridSource.classList.toggle("button-on", !!recording);
+      this.elements.gridSource.setAttribute("aria-pressed", String(!!recording));
+      this.elements.gridSource.title = recording ? "Show sequencer pattern" : "Show selected recording";
       const modeIcon = this.elements.mode.querySelector("use");
       const modeIconHref = isPadMode ? "/icons.svg#drum_machine" : "/icons.svg#view_grid";
       if (modeIcon.getAttribute("href") !== modeIconHref) {
@@ -2199,17 +2616,19 @@
         button.classList.toggle("button-on", soundEnabled);
         button.setAttribute("aria-pressed", soundEnabled ? "true" : "false");
       });
+      this.renderGridHits();
     }
 
     updateStepButton(button, voice, step) {
-      const velocity = this.state.pattern[voice][step];
-      const disabled = step >= this.state.length;
+      const velocity = this.getGridRecording() ? 0 : this.state.pattern[voice][step];
+      const disabled = step >= this.getGridLength() || this.isRecording || this.isCountingIn;
       const muted = this.state.mutes[voice];
       const voiceLabel = VOICES.find((item) => item.id === voice).label;
       const velocityLabel = velocity === 2 ? "accent" : velocity === 1 ? "on" : "off";
       button.classList.toggle("velocity-1", velocity === 1);
       button.classList.toggle("velocity-2", velocity === 2);
       button.classList.toggle("muted-step", muted);
+      button.classList.toggle("current-step", step === this.currentStep);
       button.disabled = disabled;
       button.setAttribute("aria-pressed", velocity > 0 ? "true" : "false");
       button.setAttribute("aria-label", `${voiceLabel}, step ${step + 1}, ${disabled ? "disabled" : velocityLabel}`);
@@ -2248,6 +2667,8 @@
     updateToggleButtons() {
       this.elements.blink.classList.toggle("button-on", this.state.blink);
       this.elements.blink.setAttribute("aria-pressed", this.state.blink ? "true" : "false");
+      this.elements.snap.classList.toggle("button-on", this.state.snap);
+      this.elements.snap.setAttribute("aria-pressed", String(this.state.snap));
       this.elements.loop.classList.toggle("button-on", this.state.loop);
       this.elements.loop.setAttribute("aria-pressed", String(this.state.loop));
       this.elements.metronome.classList.toggle("button-on", this.state.metronome);
@@ -2268,6 +2689,11 @@
       const hasRecording = this.selectedRecordingIndex >= 0 && this.selectedRecordingIndex < this.recordings.length;
       const canFinalizeAndPlay = this.isRecording;
       const armed = this.isRecording || this.isCountingIn;
+      if (this.gridArmed !== armed) {
+        this.gridArmed = armed;
+        this.hitGesture = null;
+        this.updateGrid();
+      }
       this.elements.record.classList.toggle("recording", armed);
       this.elements.record.setAttribute("aria-pressed", armed ? "true" : "false");
       this.elements.record.title = this.isCountingIn ? "Cancel count-in" : this.isRecording ? "Stop recording" : "Start recording";

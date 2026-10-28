@@ -30,6 +30,14 @@
         <svg class="icons" role="img"><use href="/icons.svg#blink" /></svg>
         <span class="button-text">Blink</span>
       </button>
+      <button id="snap-button" class="square" title="Toggle snap" aria-pressed="true">
+        <svg class="icons" role="img"><use href="/icons.svg#snap" /></svg>
+        <span class="button-text">Snap</span>
+      </button>
+      <button id="grid-source-button" class="square" title="Show selected recording" aria-label="Source" aria-pressed="false">
+        <svg class="icons" role="img"><use href="/icons.svg#cassette" /></svg>
+        <span class="button-text">Source</span>
+      </button>
       <button id="random-button" class="square" title="Randomize pattern" aria-label="Randomize pattern">
         <svg class="icons" role="img"><use href="/icons.svg#random" /></svg>
         <span class="button-text">Random</span>

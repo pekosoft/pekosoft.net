@@ -31,6 +31,14 @@ Before any other task in every session:
 3. Reset the shared browser to 100% zoom before reviewing the site. Verify browser zoom where the available tools permit it; page scale or device pixel ratio alone is not proof of browser zoom.
 4. Show the rendered page and report startup pass/fail, explicitly identifying any checks that could not be verified. Keep the local server running for subsequent work.
 
+## Mandatory browser refresh after website changes
+
+- After changing website code, styles or content, perform a **full-page reload of the affected page in the shared browser** before final validation and before reporting the task complete. Do this yourself; do not leave refreshing to the user.
+- Reloading a stylesheet, injecting code or changing the DOM is not a substitute for refreshing the whole page.
+- Verify that the refreshed page uses the latest changes and show the rendered page. Preserve user data and restore temporary test changes before the final reload.
+- If browser tools cannot perform or verify the reload, explicitly report that limitation. Do not claim the page was refreshed.
+- Follow the related [Browser Review instructions](instructions/browser-review.instructions.md).
+
 ## Production deployment
 
 Keep tests, local tooling, editor and agent configuration, and development documentation in GitHub, not on Host1. Deploy only files needed to run the website.

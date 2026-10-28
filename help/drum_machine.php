@@ -44,7 +44,7 @@
   </svg>
   <div class="justify">
     <h1>Mode <span class="object">button</span></h1>
-    Switches between Grid sequencing and Pad performance. Press a pad to play its voice, or use its assigned keyboard key. Record captures pad hits with their timing and voice settings. Switching modes preserves the pattern, voice settings and playback state. The selected mode is saved. <span class="default">Default: Grid.</span>
+    Switches between Grid sequencing and Pad performance. Press a pad to play its voice, or use its assigned keyboard key. Record captures pad hits with their timing and voice settings. Switching modes preserves the pattern, voice settings and playback state. The selected mode is saved. <span class="default">Default: Pad.</span>
   </div>
 </div>
 

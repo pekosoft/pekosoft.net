@@ -431,6 +431,7 @@ test('Stop, selection, removal, import, pattern apply and Reset cancel all pendi
       else {
         machine.reset();
         assert.equal(machine.state.loop, false);
+        assert.equal(machine.state.mode, 'pad');
       }
     }
     if (action === 'record') await machine.startRecording();
@@ -1414,23 +1415,26 @@ test('Voice feedback respects Blink at scheduling and execution time', () => {
   assert.equal(scheduled.length, 0);
 });
 
-test('Grid is the default for fresh, legacy and invalid saved modes', () => {
+test('Pad is the default for fresh, legacy and invalid saved modes', () => {
+  assert.equal(createMachine().machine.state.mode, 'pad');
   for (const state of [null, {}, { mode: 'invalid' }, { mode: null }]) {
     const { machine } = createMachine({ 'drum_machine.state': JSON.stringify(state) });
-    assert.equal(machine.state.mode, 'grid');
+    assert.equal(machine.state.mode, 'pad');
   }
 });
 
-test('Pad mode survives save, reload, export and import; defaults restore Grid', () => {
+test('Both modes survive save, reload, export and import while defaults restore Pad', () => {
   const { machine, storage, api } = createMachine();
-  machine.state.mode = 'pad';
-  machine.saveState();
-  assert.equal(JSON.parse(storage.get('drum_machine.state')).mode, 'pad');
-  assert.equal(api.loadState().mode, 'pad');
-  const exported = machine.getExportData();
-  assert.equal(exported.mode, 'pad');
-  assert.equal(api.normalizeState(exported, false).mode, 'pad');
-  assert.equal(api.createDefaultState().mode, 'grid');
+  for (const mode of ['grid', 'pad']) {
+    machine.state.mode = mode;
+    machine.saveState();
+    assert.equal(JSON.parse(storage.get('drum_machine.state')).mode, mode);
+    assert.equal(api.loadState().mode, mode);
+    const exported = machine.getExportData();
+    assert.equal(exported.mode, mode);
+    assert.equal(api.normalizeState(exported, false).mode, mode);
+  }
+  assert.equal(api.createDefaultState().mode, 'pad');
 });
 
 test('Mode toggles without changing patterns, voices or transport', () => {
@@ -1445,7 +1449,7 @@ test('Mode toggles without changing patterns, voices or transport', () => {
   const pattern = JSON.stringify(machine.state.pattern);
   const voices = JSON.stringify(machine.state.voices);
   machine.bindEvents();
-  for (const mode of ['pad', 'grid']) {
+  for (const mode of ['grid', 'pad']) {
     handlers['mode:click']();
     assert.equal(machine.state.mode, mode);
     assert.equal(JSON.parse(storage.get('drum_machine.state')).mode, mode);

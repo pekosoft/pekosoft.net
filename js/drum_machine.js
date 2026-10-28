@@ -168,7 +168,7 @@
   function createDefaultState() {
     const globalBpm = Number.parseFloat(localStorage.getItem("global.default_bpm"));
     return {
-      mode: "grid",
+      mode: "pad",
       blink: false,
       snap: true,
       loop: false,
@@ -205,7 +205,7 @@
     });
 
     return {
-      mode: raw.mode === "pad" ? "pad" : defaults.mode,
+      mode: ["grid", "pad"].includes(raw.mode) ? raw.mode : defaults.mode,
       blink: raw.blink === undefined ? defaults.blink : !!raw.blink,
       snap: raw.snap === undefined ? defaults.snap : !!raw.snap,
       loop: raw.loop === undefined ? defaults.loop : !!raw.loop,

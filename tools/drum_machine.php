@@ -19,11 +19,11 @@
 
   <div id="tool-container" class="container">
     <div class="module-body drum-machine-view border no-swipe">
-      <div id="sequencer-grid" class="sequencer-grid" role="group" aria-label="16-step drum sequencer"></div>
+      <div id="sequencer-grid" class="sequencer-grid pad-mode" role="group" aria-label="Four drum pads"></div>
     </div>
     <div class="module-footer wrapper colored">
-      <button id="mode-button" class="square" title="Switch to pad" aria-label="Mode" aria-pressed="false" aria-controls="sequencer-grid">
-        <svg class="icons" role="img"><use href="/icons.svg#view_grid" /></svg>
+      <button id="mode-button" class="square button-on" title="Switch to grid" aria-label="Mode" aria-pressed="true" aria-controls="sequencer-grid">
+        <svg class="icons" role="img"><use href="/icons.svg#drum_machine" /></svg>
         <span class="button-text">Mode</span>
       </button>
       <button id="blink-button" class="square" title="Toggle blink" aria-pressed="false">

@@ -102,7 +102,7 @@
   </svg>
   <div class="justify">
     <h1>Controls <span class="object">module</span></h1>
-    Transport, tempo, pattern, kit and voice-shaping controls are collected in the Controls module.
+    Transport, tempo and pattern controls are collected in the Controls module. Open More for Kit, Voice, Pitch, Decay, Tone, Level and Pan, including their fields and knobs.
   </div>
 </div>
 
@@ -266,7 +266,7 @@
     <use href="/icons.svg#field"></use>
   </svg>
   <div class="justify">
-    <h1>Pitch <span class="object">field</span></h1>Sets the selected voice frequency in hertz. For PERC, it shifts the noise filtering rather than setting a musical pitch. The supported range follows the selected voice.
+    <h1>Pitch <span class="object">field / knob</span></h1>Sets the selected voice frequency in hertz. For PERC, it shifts the noise filtering rather than setting a musical pitch. The supported range follows the selected voice.
   </div>
 </div>
 
@@ -275,7 +275,7 @@
     <use href="/icons.svg#field"></use>
   </svg>
   <div class="justify">
-    <h1>Decay <span class="object">field</span></h1>Sets the selected voice decay in milliseconds. The supported range follows the selected voice.
+    <h1>Decay <span class="object">field / knob</span></h1>Sets the selected voice decay in milliseconds. The supported range follows the selected voice.
   </div>
 </div>
 
@@ -284,7 +284,7 @@
     <use href="/icons.svg#field"></use>
   </svg>
   <div class="justify">
-    <h1>Tone <span class="object">field</span></h1>Sets brightness and transient character for the selected voice.
+    <h1>Tone <span class="object">field / knob</span></h1>Sets brightness and transient character for the selected voice.
   </div>
 </div>
 
@@ -293,7 +293,7 @@
     <use href="/icons.svg#field"></use>
   </svg>
   <div class="justify">
-    <h1>Level <span class="object">field</span></h1>Sets the selected voice level before master volume.
+    <h1>Level <span class="object">field / knob</span></h1>Sets the selected voice level before master volume.
   </div>
 </div>
 
@@ -302,7 +302,7 @@
     <use href="/icons.svg#field"></use>
   </svg>
   <div class="justify">
-    <h1>Pan <span class="object">field</span></h1>Positions the selected voice from left through center to right.
+    <h1>Pan <span class="object">field / knob</span></h1>Positions the selected voice from left through center to right.
   </div>
 </div>
 

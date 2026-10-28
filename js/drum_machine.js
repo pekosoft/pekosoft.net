@@ -30,6 +30,14 @@
     perc: { frequency: [120, 2400], decay: [0.025, 0.8] }
   };
 
+  const VOICE_PARAMETERS = [
+    ["pitch", "frequency", 1, "Hz"],
+    ["decay", "decay", 0.001, "ms"],
+    ["tone", "tone", 0.01, "%"],
+    ["level", "level", 0.01, "%"],
+    ["pan", "pan", 0.01, "%"]
+  ];
+
   const PATTERN_PRESETS = {
     basic: {
       kick:  [2, 0, 0, 0, 1, 0, 0, 0, 2, 0, 0, 0, 1, 0, 0, 0],
@@ -417,6 +425,11 @@
         toneInput: document.getElementById("tone-input"),
         levelInput: document.getElementById("level-input"),
         panInput: document.getElementById("pan-input"),
+        pitchKnob: document.getElementById("pitch-knob"),
+        decayKnob: document.getElementById("decay-knob"),
+        toneKnob: document.getElementById("tone-knob"),
+        levelKnob: document.getElementById("level-knob"),
+        panKnob: document.getElementById("pan-knob"),
         timelineCanvas: document.getElementById("drum-roll"),
         timelineGuides: document.getElementById("timeline-guides-button"),
         timelineBright: document.getElementById("timeline-bright-button"),
@@ -455,6 +468,7 @@
           this.restoreGridSnapshot(snapshot);
         }
       });
+      this.setupControlsMenu();
       this.buildGrid();
         this.setupTimeline();
       this.setupAudio();
@@ -886,6 +900,18 @@
       return event;
     }
 
+    setupControlsMenu() {
+      const menu = document.getElementById("voice-menu-controls");
+      const values = document.getElementById("voice-menu-values");
+      const panel = document.getElementById("controls-icon-panel");
+      [this.elements.kitSelect, this.elements.voiceSelect, this.elements.pitchInput,
+        this.elements.decayInput, this.elements.toneInput, this.elements.levelInput,
+        this.elements.panInput].forEach((input) => values.appendChild(input.closest(".pair")));
+      menu.appendChild(this.elements.pitchKnob.closest(".controls-knobs"));
+      panel.appendChild(menu);
+      menu.hidden = false;
+    }
+
     getGridRecording() {
       return this.gridSource === "pattern" ? null : this.recordings?.[this.selectedRecordingIndex] || null;
     }
@@ -1314,14 +1340,19 @@
         this.updatePanel();
       });
 
-      [
-        [this.elements.pitchInput, "frequency", 1],
-        [this.elements.decayInput, "decay", 0.001],
-        [this.elements.toneInput, "tone", 0.01],
-        [this.elements.levelInput, "level", 0.01],
-        [this.elements.panInput, "pan", 0.01]
-      ].forEach(([input, property, scale]) => {
+      VOICE_PARAMETERS.forEach(([name, property, scale]) => {
+        const input = this.elements[`${name}Input`];
+        const knob = this.elements[`${name}Knob`];
+        const set = (value) => this.setVoiceParameter(property, value * scale);
         input.addEventListener("change", () => this.setVoiceParameter(property, Number(input.value) * scale));
+        bindKnobControl(knob, {
+          get: () => Number(input.value),
+          nudge: (direction) => set(Number(input.value) + direction * Number(input.step)),
+          drag: (start, delta) => set(Math.round(start + delta * (Number(input.max) - Number(input.min)) / 270)),
+          home: () => set(Number(input.min)),
+          end: () => set(Number(input.max)),
+          reset: () => this.setVoiceParameter(property, KIT_PRESETS.classic[this.state.selectedVoice][property])
+        });
       });
 
       this.elements.open.addEventListener("click", () => this.elements.fileInput.click());
@@ -2664,6 +2695,20 @@
       this.elements.toneInput.value = String(Math.round(settings.tone * 100));
       this.elements.levelInput.value = String(Math.round(settings.level * 100));
       this.elements.panInput.value = String(Math.round(settings.pan * 100));
+      VOICE_PARAMETERS.forEach(([name, , , unit]) => {
+        const input = this.elements[`${name}Input`];
+        const knob = this.elements[`${name}Knob`];
+        const value = Number(input.value);
+        const min = Number(input.min);
+        const max = Number(input.max);
+        knob.style.setProperty("--knob-angle", `${-135 + (value - min) / (max - min) * 270}deg`);
+        knob.setAttribute("role", "slider");
+        knob.setAttribute("aria-orientation", "vertical");
+        knob.setAttribute("aria-valuemin", String(min));
+        knob.setAttribute("aria-valuemax", String(max));
+        knob.setAttribute("aria-valuenow", String(value));
+        knob.setAttribute("aria-valuetext", `${input.value} ${unit}`);
+      });
     }
 
     updateToggleButtons() {

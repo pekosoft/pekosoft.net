@@ -50,6 +50,9 @@
   </div>
 
   <div id="controls-container" class="container">
+    <div id="voice-menu-controls" class="module-panel-menu" hidden>
+      <div id="voice-menu-values" class="controls-values wrapper"></div>
+    </div>
     <div class="module-body controls border">
       <div class="controls-buttons wrapper">
         <button id="play-button" class="square" title="Toggle playback">
@@ -207,6 +210,13 @@
             </button>
           </div>
         </div>
+      </div>
+      <div class="controls-knobs wrapper">
+        <div class="controls-knob"><button id="pitch-knob" class="knob-control" type="button" title="Adjust pitch" aria-label="Pitch"></button><span>Pitch</span></div>
+        <div class="controls-knob"><button id="decay-knob" class="knob-control" type="button" title="Adjust decay" aria-label="Decay"></button><span>Decay</span></div>
+        <div class="controls-knob"><button id="tone-knob" class="knob-control" type="button" title="Adjust tone" aria-label="Tone"></button><span>Tone</span></div>
+        <div class="controls-knob"><button id="level-knob" class="knob-control" type="button" title="Adjust level" aria-label="Level"></button><span>Level</span></div>
+        <div class="controls-knob"><button id="pan-knob" class="knob-control" type="button" title="Adjust pan" aria-label="Pan"></button><span>Pan</span></div>
       </div>
     </div>
     <div class="module-footer wrapper colored">

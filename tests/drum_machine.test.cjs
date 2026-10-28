@@ -15,7 +15,8 @@ function createMachine(saved = {}) {
       removeItem: key => storage.delete(key)
     },
     document: { addEventListener() {}, getElementById() {}, querySelectorAll: () => [] },
-    window: { addEventListener() {}, bindPekosoftRangeButtons() {} }
+    window: { addEventListener() {}, bindPekosoftRangeButtons() {} },
+    bindKnobControl() {}
   };
   vm.createContext(context);
   vm.runInContext(source.replace('  document.addEventListener("DOMContentLoaded",', `
@@ -96,7 +97,8 @@ function createTransport() {
         classList: { toggle() {}, remove() {} },
         addEventListener(event, callback) { handlers[`${String(name)}:${event}`] = callback; },
         setAttribute(name, value) { this[name] = value; },
-        textContent: ''
+        textContent: '',
+        style: { setProperty(name, value) { this[name] = value; } }
       };
     }
   });
@@ -1568,7 +1570,83 @@ test('Space preserves native button activation and toggles transport elsewhere',
   assert.equal(prevented, 1);
 });
 
+test('Controls More contains all voice-setting pairs and knobs without duplicating controls', () => {
+  const { machine, context } = createTransport();
+  const menu = { hidden: true, children: [], appendChild(child) { this.children.push(child); } };
+  const values = { children: [], appendChild(child) { this.children.push(child); } };
+  const panel = { appendChild(child) { this.child = child; } };
+  context.document.getElementById = id => ({
+    'voice-menu-controls': menu, 'voice-menu-values': values, 'controls-icon-panel': panel
+  })[id];
+  const names = ['kitSelect', 'voiceSelect', 'pitchInput', 'decayInput', 'toneInput', 'levelInput', 'panInput'];
+  const pairs = names.map(name => ({ name }));
+  names.forEach((name, index) => {
+    machine.elements[name].closest = selector => {
+      assert.equal(selector, '.pair');
+      return pairs[index];
+    };
+  });
+  const knobs = { name: 'knobs' };
+  machine.elements.pitchKnob.closest = selector => {
+    assert.equal(selector, '.controls-knobs');
+    return knobs;
+  };
+  machine.setupControlsMenu();
+  assert.deepEqual(values.children, pairs);
+  assert.deepEqual(menu.children, [knobs]);
+  assert.equal(panel.child, menu);
+  assert.equal(menu.hidden, false);
+});
 
+test('Voice knobs follow selected-voice limits, synchronize fields and persist all five parameters', () => {
+  const { machine, context, api, storage, handlers } = createTransport();
+  const bindings = new Map();
+  context.bindKnobControl = (knob, callbacks) => bindings.set(knob, callbacks);
+  machine.updatePanel = () => {};
+  const controls = [
+    ['pitch', 'frequency', 1], ['decay', 'decay', 0.001],
+    ['tone', 'tone', 0.01], ['level', 'level', 0.01], ['pan', 'pan', 0.01]
+  ];
+  controls.forEach(([name]) => {
+    Object.assign(machine.elements[`${name}Input`], { min: name === 'pan' ? '-100' : '0', max: '100', step: '1' });
+  });
+  machine.bindEvents();
+  assert.equal(bindings.size, 5);
+  const defaults = api.createDefaultState().voices;
+  for (const voice of ['kick', 'snare', 'hat', 'perc']) {
+    machine.state.selectedVoice = voice;
+    machine.updateControls();
+    const others = Object.entries(machine.state.voices).filter(([id]) => id !== voice);
+    const before = JSON.stringify(others);
+    for (const [name, property, scale] of controls) {
+      const input = machine.elements[`${name}Input`];
+      const knob = machine.elements[`${name}Knob`];
+      const callbacks = bindings.get(knob);
+      assert.equal(knob.role, 'slider');
+      assert.equal(knob['aria-valuemin'], input.min);
+      assert.equal(knob['aria-valuemax'], input.max);
+      callbacks.home();
+      assert.equal(machine.state.voices[voice][property], Number(input.min) * scale);
+      assert.equal(knob.style['--knob-angle'], '-135deg');
+      callbacks.nudge(1);
+      assert.ok(Math.abs(machine.state.voices[voice][property] - (Number(input.min) + 1) * scale) < 1e-12);
+      callbacks.drag(callbacks.get(), 540);
+      assert.equal(machine.state.voices[voice][property], Number(input.max) * scale);
+      assert.equal(knob.style['--knob-angle'], '135deg');
+      callbacks.home();
+      callbacks.end();
+      assert.equal(machine.state.voices[voice][property], Number(input.max) * scale);
+      callbacks.reset();
+      assert.equal(machine.state.voices[voice][property], defaults[voice][property]);
+      input.value = String(Number(input.min) + 2);
+      handlers[`${name}Input:change`]();
+      assert.equal(knob['aria-valuenow'], String(Number(input.value)));
+      const saved = JSON.parse(storage.get('drum_machine.state'));
+      assert.equal(saved.voices[voice][property], machine.state.voices[voice][property]);
+    }
+    assert.equal(JSON.stringify(others), before);
+  }
+});
 
 test('Mode updates pattern control availability without changing the pattern or flickering on drum selection', () => {
   const { machine } = createMachine();

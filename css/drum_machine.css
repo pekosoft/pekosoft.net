@@ -302,6 +302,10 @@
   grid-column: 1 / -1;
 }
 
+#controls-container .controls-knobs {
+  flex-wrap: wrap;
+}
+
 #recording-status {
   display: block;
   width: 100%;

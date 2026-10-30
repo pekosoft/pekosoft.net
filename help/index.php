@@ -213,7 +213,7 @@
   <svg class="standard-image-help"><use href="/icons.svg#share"></use></svg>
   <div class="justify">
     <h1>Share <span class="object">button</span></h1>
-    Shares the current page using your device's sharing options. If sharing is unavailable, copies the link to the clipboard or shows it for manual copying.
+    Available in Settings. Shares the current page using your device's sharing options. If sharing is unavailable, copies the link to the clipboard or shows it for manual copying.
   </div>
 </div>
 

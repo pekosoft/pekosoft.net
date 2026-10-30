@@ -38,6 +38,13 @@
         Fullscreen
       </button>
 
+      <button id="share-settings-button" class="toc-button" title="Share" aria-label="Share" data-help-release="index">
+        <svg class="icons" role="img">
+          <use href="/icons.svg#share" />
+        </svg>
+        Share
+      </button>
+
       <button id="play-site-button" class="toc-button" title="Play all pages" aria-label="Play all pages" data-site-play-sequence="<?php echo $isBetaRelease ? 'beta' : 'official'; ?>">
         <svg class="icons" role="img">
           <use href="/icons.svg#play" />

@@ -1792,13 +1792,13 @@ async function shareCurrentPage() {
   window.prompt('Copy this link:', shareUrl);
 }
 
-// Function to attach main TOC commands
+// Function to attach sharing and main TOC commands
 
 document.addEventListener("DOMContentLoaded", () => {
-  const shareTocButton = document.getElementById("share-toc-button");
+  const shareSettingsButton = document.getElementById("share-settings-button");
 
-  if (shareTocButton) {
-    shareTocButton.addEventListener("click", async () => {
+  if (shareSettingsButton) {
+    shareSettingsButton.addEventListener("click", async () => {
       await shareCurrentPage();
     });
   }

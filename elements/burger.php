@@ -142,12 +142,6 @@ $hasPlaylistModule = in_array('playlist', $availableModules, true);
         </button>
       </div>
 
-      <?php if ($release !== ''): ?>
-        <div class="toc-column">
-          <button id="share-toc-button" class="toc-button" title="Share" aria-label="Share" data-help-release="index"><svg class="icons" role="img"><use href="/icons.svg#share"></use></svg>Share</button>
-        </div>
-      <?php endif; ?>
-
       <div class="toc-close">
         <button id="toggle-menu-close-button" class="square transparent" title="Close" aria-label="Close">
           <svg class="icons" role="img">

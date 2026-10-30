@@ -145,7 +145,7 @@ The project sits in the space between music production, web tools, and mathemati
 
 ## User experience principles
 
-The front page focuses on the official tools without an updates feed. Updates remain available from the TOC. Share opens a sharing action rather than a page, so it has its own final TOC section.
+The front page focuses on the official tools without an updates feed. Updates remain available from the TOC. Share opens a sharing action rather than a page and is available in Settings after Fullscreen.
 
 Pekosoft favors:
 
@@ -451,7 +451,7 @@ Examples of root-level tool and site files include:
 
 Special page note:
 
-- Shared TOC links use this order: Buy Us Coffee, Contact, Share, Updates. Preserve this order in both official and Beta navigation.
+- Shared TOC links use this order: Buy Us Coffee, Contact, Updates. Share is in Settings, not the TOC. Preserve this arrangement in both official and Beta navigation.
 - `bitcoin.php` is a standalone donation page linked from the main TOC as **BUY US COFFEE**.
 - On `bitcoin.php`, the tool menu (Tool, Help, History, About) is intentionally hidden.
 - `contact.php` is a standalone Contact page at `/contact`, linked from both the official and Beta TOCs and included in their Play sequences. It uses General, Bug report and Feature request categories and sends to `ole@peko.net`. Its implementation URL redirects with HTTP 308 to preserve form POSTs.

@@ -136,18 +136,18 @@ test('front page omits the updates feed while retaining official tools and Updat
   assert.match(result.body, /data-href="\/updates"/);
 });
 
-test('Share occupies the final standalone TOC section on official and beta pages', () => {
+test('Share appears once in Settings instead of the TOC on official and beta pages', () => {
   for (const file of ['index.php', 'tools\\metronome.php', 'beta.php', 'tools\\player.php']) {
     const result = renderPhp(file, '', {
       setup: file === 'index.php' ? "$_SERVER['REQUEST_URI'] = '/';" : ''
     });
     assert.equal(result.status, 200, file);
     assert.equal(result.diagnostics, '', file);
-    assert.match(result.body, /<div class="toc-column">\s*<button id="share-toc-button"[^>]*>.*?<\/button>\s*<\/div>\s*<div class="toc-close">/s, file);
-    const shareButton = result.body.match(/<button id="share-toc-button"[^>]*>/)[0];
+    assert.match(result.body, /id="settings-panel"[\s\S]*id="toggle-fullscreen-button"[\s\S]*id="share-settings-button"[\s\S]*id="play-site-button"/, file);
+    const shareButton = result.body.match(/<button id="share-settings-button"[^>]*>/)[0];
     assert.doesNotMatch(shareButton, /data-href=/, file);
-    assert.equal((result.body.match(/id="share-toc-button"/g) || []).length, 1, file);
-    assert.ok(result.body.indexOf('data-href="/updates"') < result.body.indexOf('id="share-toc-button"'), file);
+    assert.equal((result.body.match(/id="share-settings-button"/g) || []).length, 1, file);
+    assert.doesNotMatch(result.body, /id="share-toc-button"/, file);
   }
 });
 

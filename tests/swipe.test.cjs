@@ -7,7 +7,8 @@ const test = require('node:test');
 const vm = require('node:vm');
 
 const root = path.join(__dirname, '..');
-const source = fs.readFileSync(path.join(root, 'js', 'swipe.js'), 'utf8');
+const source = fs.readFileSync(path.join(root, 'js', 'swipe-gesture.js'), 'utf8')
+  + '\n' + fs.readFileSync(path.join(root, 'js', 'swipe.js'), 'utf8');
 const officialLinks = [
   '/index.php', '/tap_pad', '/bpm_calculator', '/metronome', '/turntable',
   '/bitcoin.php', '/contact', '#', '/updates'
@@ -102,6 +103,8 @@ test('both footer variants version the swipe script so navigation updates reach 
   for (const name of ['footer.php', 'beta_footer.php']) {
     const footer = fs.readFileSync(path.join(root, 'elements', name), 'utf8');
     assert.match(footer, /src="\/js\/swipe\.js\?v=<\?php echo filemtime\(/);
+    assert.match(footer, /src="\/js\/swipe-gesture\.js\?v=<\?php echo filemtime\(/);
+    assert.ok(footer.indexOf('/js/swipe-gesture.js') < footer.indexOf('/js/swipe.js'));
   }
 });
 

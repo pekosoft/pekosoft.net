@@ -87,6 +87,23 @@ const headerScope = document.querySelector(".top-heading"); // header only
 // For non-tool pages: fall back to whole document as before.
 const scopeEl = isToolPage ? headerScope : document;
 
+let startX = null;
+let startY = null;
+let pointerId = null;
+let swipeLocked = false;
+let swipeHorizontal = false;
+
+const swipeLockThreshold = 16;
+const swipeCommitThreshold = 75;
+
+function resetSwipe() {
+  startX = null;
+  startY = null;
+  pointerId = null;
+  swipeLocked = false;
+  swipeHorizontal = false;
+}
+
 function buildPageUrl(page) {
   const path = window.location.pathname;
   const toolPages = [
@@ -136,8 +153,88 @@ function navigateByDirection(direction) {
   window.location.href = buildPageUrl(page);
 }
 
+// Disable swipe in areas marked with .no-swipe (inside scopeEl)
+(scopeEl || document).querySelectorAll?.(".no-swipe").forEach(el => {
+  el.addEventListener("pointerdown", (e) => { e.stopPropagation(); });
+  el.addEventListener("pointerup", (e) => { e.stopPropagation(); });
+});
+
+// Only attach listeners if we have a scope (on tool pages without header, swipe is disabled)
 if (scopeEl) {
-  attachSwipeNavigation(scopeEl, navigateByDirection);
+  if (scopeEl !== document) {
+    scopeEl.style.touchAction = "pan-y";
+  }
+
+  scopeEl.addEventListener("pointerdown", (e) => {
+    if (e.pointerType === "mouse" && e.button !== 0) return;
+    const target = e.target;
+    const noSwipeSelector = "a, button, input, textarea, select, canvas, table";
+    const isEditable = target.isContentEditable;
+    const hasNoSwipeTarget = target.closest(noSwipeSelector);
+    const hasNoSwipeClass = target.closest(".no-swipe");
+
+    if (hasNoSwipeTarget || isEditable || hasNoSwipeClass) {
+      resetSwipe(); // disable swipe
+      return;
+    }
+
+    pointerId = e.pointerId;
+    startX = e.clientX;
+    startY = e.clientY;
+
+    if (typeof scopeEl.setPointerCapture === "function") {
+      try {
+        scopeEl.setPointerCapture(pointerId);
+      } catch (_) {
+        // Document-scoped swipes continue through normal bubbling.
+      }
+    }
+  });
+
+  scopeEl.addEventListener("pointermove", (e) => {
+    if (startX === null || startY === null) return;
+    if (pointerId !== null && e.pointerId !== pointerId) return;
+
+    const moveX = e.clientX;
+    const moveY = e.clientY;
+    const deltaX = moveX - startX;
+    const deltaY = moveY - startY;
+
+    if (!swipeLocked) {
+      if (Math.abs(deltaX) < swipeLockThreshold && Math.abs(deltaY) < swipeLockThreshold) {
+        return;
+      }
+      swipeLocked = true;
+      swipeHorizontal = Math.abs(deltaX) > Math.abs(deltaY);
+    }
+
+    if (!swipeHorizontal) return;
+
+    e.preventDefault();
+  });
+
+  scopeEl.addEventListener("pointerup", (e) => {
+    if (startX === null || startY === null) return; // no valid start => ignore
+    if (pointerId !== null && e.pointerId !== pointerId) return;
+
+    const endX = e.clientX;
+    const endY = e.clientY;
+    const deltaX = endX - startX;
+    const deltaY = endY - startY;
+
+    // Horizontal swipe with threshold
+    if (swipeHorizontal && Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > swipeCommitThreshold) {
+      deltaX > 0 ? navigateByDirection("backward") : navigateByDirection("forward");
+      return;
+    }
+
+    resetSwipe();
+  });
+
+  scopeEl.addEventListener("pointercancel", (e) => {
+    if (pointerId !== null && e.pointerId !== pointerId) return;
+    resetSwipe();
+  });
 }
 
 function goToNextPage() {

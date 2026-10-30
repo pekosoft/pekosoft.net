@@ -546,13 +546,6 @@ Only one mode is displayed at a time. The selected button is highlighted with th
 
 ## Accessibility and responsiveness
 
-Header swipe gestures use `js/swipe-gesture.js`, shared with Kiss Bands Tree's
-`swipe-gesture.js`. Keep these files byte-identical and serve a local copy on
-each site; site-specific navigation remains in `swipe.js`. Run
-`node --test tests/swipe.test.cjs tests/swipe-gesture.test.cjs` here and
-`node --test .github/tests/swipe.test.cjs` in Kiss Bands Tree after changing
-the shared gesture handling.
-
 Accessibility is treated as part of the product, not an afterthought.
 
 That includes:

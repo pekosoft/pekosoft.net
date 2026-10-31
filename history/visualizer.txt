@@ -1,4 +1,4 @@
 <h1>1.0
 XX-XX-2026
 </h1>
-Introducing: Pekosoft Visualizer. A selection of visualizers to display the BPM. Initial release.
+Introducing: Pekosoft Visualizer. A selection of visualizers to display the BPM. One Instrument module with meter selection in One mode, independent meter toggles in All mode and playback controls in its footer. Initial release.

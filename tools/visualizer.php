@@ -7,7 +7,7 @@
   $release = "visualizer";
   $releaseName = "Visualizer";
   $releasePage = "";
-  $availableModules = ["tool", "controls"];
+  $availableModules = ["tool"];
   ?>
   <meta name="keywords" content="visualizer, visualizers, bpm visualizer, bpm visualizers, tempo visualizer, tempo visualizers, beats per minute visualizer, beats per minute visualizers, bpm meter, bpm meters">
   <link rel="stylesheet" type="text/css" href="/css/<?php echo $release; ?>.css?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/css/' . $release . '.css'); ?>">
@@ -16,56 +16,9 @@
 <body>
   <?php require($_SERVER['DOCUMENT_ROOT'] . "/elements/toc.php"); ?>
 
-  <!-- CONTROLS -->
-
-  <div id="controls-container" class="container">
-
-    <div class="module-body controls border">
-
-      <div class="controls-buttons wrapper visualizer-controls-buttons">
-        <div class="visualizer-controls-top-row">
-          <div class="visualizer-bpm-inline">
-            <label for="bpm" title="Beats Per Minute">BPM:</label>
-            <input type="number" id="bpm" value="5">
-          </div>
-
-          <button id="toggle-play-button" class="square" title="Toggle play">
-            <svg class="icons">
-              <use href="/icons.svg#play" />
-            </svg>
-            <span class="button-text">Play</span>
-          </button>
-
-          <button id="toggle-cross-button" class="square" title="Toggle crosshair">
-            <svg class="icons">
-              <use href="/icons.svg#crosshair" />
-            </svg>
-            <span class="button-text">Cross</span>
-          </button>
-
-          <button id="toggle-mask-button" class="square" title="Toggle mask">
-            <svg class="icons">
-              <use href="/icons.svg#mask" />
-            </svg>
-            <span class="button-text">Mask</span>
-          </button>
-
-          <button id="toggle-title-button" class="square" title="Toggle meter titles">
-            <svg class="icons">
-              <use href="/icons.svg#text" />
-            </svg>
-            <span class="button-text">Title</span>
-          </button>
-
-          <button id="reset-button" class="square" title="Reset to default">
-            <svg class="icons">
-              <use href="/icons.svg#reset" />
-            </svg>
-            <span class="button-text">Reset</span>
-          </button>
-        </div>
-
-        <div class="visualizer-meter-buttons">
+  <div id="tool-container" class="container one-module-tool">
+    <div class="module-body standard border">
+        <div class="controls-buttons wrapper module-tabs visualizer-meter-buttons">
           <button id="toggle-clock-button" class="square" title="Toggle clock">
             <svg class="icons">
               <use href="/icons.svg#clock" />
@@ -128,18 +81,14 @@
             </svg>
             <span class="button-text">Blink</span>
           </button>
+          <button id="tool-single-next-button" class="square module-tab-skip-button" title="Next meter in One mode" aria-label="Next meter">
+            <svg class="icons">
+              <use href="/icons.svg#skip_right" />
+            </svg>
+            <span class="button-text">Next</span>
+          </button>
         </div>
-
-      </div>
-
-    </div>
-
-  </div>
-
-  <!-- TOOL -->
-
-  <div id="tool-container" class="container">
-    <div class="module-body standard wrapper border">
+      <div class="visualizer-meters wrapper">
       <div class="meter">
         <div class="circle-outline"></div>
         <div class="clock-container">
@@ -212,34 +161,47 @@
         <div class="blink-container"></div>
         <div class="label">BLINK</div>
       </div>
+      </div>
     </div>
     <div class="module-footer wrapper colored">
-      <button id="tool-mode-all-button" class="square button-on" title="All enabled meters">
+      <button id="tool-mode-all-button" class="square" title="All enabled meters">
         <svg class="icons">
           <use href="/icons.svg#select_all" />
         </svg>
         <span class="button-text">All</span>
       </button>
 
-      <button id="tool-mode-single-button" class="square" title="One meter at a time">
+      <button id="tool-mode-single-button" class="square button-on" title="One meter at a time">
         <svg class="icons">
-          <use href="/icons.svg#radio_button" />
+          <use href="/icons.svg#selected" />
         </svg>
         <span class="button-text">One</span>
       </button>
 
-      <button id="tool-single-prev-button" class="square" title="Previous meter in single mode">
+      <button id="toggle-play-button" class="square" title="Toggle play">
         <svg class="icons">
-          <use href="/icons.svg#skip_left" />
+          <use href="/icons.svg#play" />
         </svg>
-        <span class="button-text">Left</span>
+        <span class="button-text">Play</span>
       </button>
 
-      <button id="tool-single-next-button" class="square" title="Next meter in single mode">
+      <button id="toggle-cross-button" class="square" title="Toggle crosshair">
         <svg class="icons">
-          <use href="/icons.svg#skip_right" />
+          <use href="/icons.svg#crosshair" />
         </svg>
-        <span class="button-text">Right</span>
+        <span class="button-text">Cross</span>
+      </button>
+      <button id="toggle-mask-button" class="square" title="Toggle mask">
+        <svg class="icons"><use href="/icons.svg#mask" /></svg>
+        <span class="button-text">Mask</span>
+      </button>
+      <button id="toggle-title-button" class="square" title="Toggle meter titles">
+        <svg class="icons"><use href="/icons.svg#text" /></svg>
+        <span class="button-text">Title</span>
+      </button>
+      <button id="reset-button" class="square" title="Reset to default">
+        <svg class="icons"><use href="/icons.svg#reset" /></svg>
+        <span class="button-text">Reset</span>
       </button>
     </div>
   </div>

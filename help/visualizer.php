@@ -4,7 +4,7 @@
   </svg>
   <div class="justify">
     <h1>General</h1>
-    Pekosoft Visualizer is a collection of BPM (beats per minute) visualizers. The same beat stream drives multiple visual styles in parallel.
+    Pekosoft Visualizer is a collection of BPM (beats per minute) visualizers. The same beat stream drives multiple visual styles in parallel. Uses the global BPM setting and updates when it changes.
   </div>
 </div>
 
@@ -14,7 +14,7 @@
   </svg>
   <div class="justify">
     <h1>Instrument <span class="object">module</span></h1>
-    Shows the active visualizers as meters. Each meter responds to the same BPM, but with a different visual language. Footer buttons switch between All and Single view and step through meters in Single view.
+    Shows the active visualizers as meters in one module. Each meter responds to the same BPM. Meter buttons select one visualizer when One is active and toggle individual visualizers when All is active. The module header identifies the selected visualizer or All. The Instrument footer contains playback, display options, All, One and Reset.
   </div>
 </div>
 
@@ -114,27 +114,17 @@
   </svg>
   <div class="justify">
     <h1>All <span class="object">button</span></h1>
-    Shows all enabled visualizers in Instrument module. <span class="default">Default: on.</span>
+    Shows all enabled visualizers in a grid that fills the Instrument module.
   </div>
 </div>
 
 <div class="feature-row border">
   <svg class="standard-image-help">
-    <use href="/icons.svg#radio_button"></use>
+    <use href="/icons.svg#selected"></use>
   </svg>
   <div class="justify">
     <h1>One <span class="object">button</span></h1>
-    Shows one enabled visualizer at a time in Instrument module.
-  </div>
-</div>
-
-<div class="feature-row border">
-  <svg class="standard-image-help">
-    <use href="/icons.svg#skip_left"></use>
-  </svg>
-  <div class="justify">
-    <h1>Left <span class="object">button</span></h1>
-    Shows the previous enabled visualizer when One is active.
+    Shows one visualizer at a time. Select any meter without changing the enabled meters used by All. <span class="default">Default: on, Clock selected.</span>
   </div>
 </div>
 
@@ -143,28 +133,8 @@
     <use href="/icons.svg#skip_right"></use>
   </svg>
   <div class="justify">
-    <h1>Right <span class="object">button</span></h1>
-    Shows the next enabled visualizer when One is active.
-  </div>
-</div>
-
-<div class="feature-row module">
-  <svg class="standard-image-help">
-    <use href="/icons.svg#controls"></use>
-  </svg>
-  <div class="justify">
-    <h1>Controls <span class="object">module</span></h1>
-    Buttons and fields used to set BPM, start playback and toggle visualizers.
-  </div>
-</div>
-
-<div class="feature-row border">
-  <svg class="standard-image-help">
-    <use href="/icons.svg#field"></use>
-  </svg>
-  <div class="justify">
-    <h1>BPM <span class="object">field</span></h1>
-    Sets beats per minute. Updates when the global BPM setting changes.
+    <h1>Next <span class="object">button</span></h1>
+    Selects the next visualizer when One is active.
   </div>
 </div>
 
@@ -194,7 +164,7 @@
   </svg>
   <div class="justify">
     <h1>Mask <span class="object">button</span></h1>
-    Toggles the circular mask overlay. <span class="default">Default: on.</span>
+    Toggles circular clipping. Content stays within each visualizer's boundaries with Mask on or off. <span class="default">Default: on.</span>
   </div>
 </div>
 
@@ -224,7 +194,7 @@
   </svg>
   <div class="justify">
     <h1>Clock <span class="object">button</span></h1>
-    Toggles the clock visualizer. <span class="default">Default: on.</span>
+    Selects Clock in One mode or toggles it in All mode. <span class="default">Default in All: on.</span>
   </div>
 </div>
 
@@ -234,7 +204,7 @@
   </svg>
   <div class="justify">
     <h1>Cake <span class="object">button</span></h1>
-    Toggles the cake visualizer. <span class="default">Default: on.</span>
+    Selects Cake in One mode or toggles it in All mode. <span class="default">Default in All: on.</span>
   </div>
 </div>
 
@@ -244,7 +214,7 @@
   </svg>
   <div class="justify">
     <h1>Speedometer <span class="object">button</span></h1>
-    Toggles the speedometer visualizer. <span class="default">Default: on.</span>
+    Selects Speedometer in One mode or toggles it in All mode. <span class="default">Default in All: on.</span>
   </div>
 </div>
 
@@ -254,7 +224,7 @@
   </svg>
   <div class="justify">
     <h1>Metronome <span class="object">button</span></h1>
-    Toggles the metronome visualizer. <span class="default">Default: on.</span>
+    Selects Metronome in One mode or toggles it in All mode. <span class="default">Default in All: on.</span>
   </div>
 </div>
 
@@ -264,7 +234,7 @@
   </svg>
   <div class="justify">
     <h1>Ticker <span class="object">button</span></h1>
-    Toggles the ticker visualizer. <span class="default">Default: on.</span>
+    Selects Ticker in One mode or toggles it in All mode. <span class="default">Default in All: on.</span>
   </div>
 </div>
 
@@ -274,7 +244,7 @@
   </svg>
   <div class="justify">
     <h1>Lines <span class="object">button</span></h1>
-    Toggles the lines visualizer. <span class="default">Default: on.</span>
+    Selects Lines in One mode or toggles it in All mode. <span class="default">Default in All: on.</span>
   </div>
 </div>
 
@@ -284,7 +254,7 @@
   </svg>
   <div class="justify">
     <h1>Stars <span class="object">button</span></h1>
-    Toggles the stars visualizer. <span class="default">Default: on.</span>
+    Selects Stars in One mode or toggles it in All mode. <span class="default">Default in All: on.</span>
   </div>
 </div>
 
@@ -294,7 +264,7 @@
   </svg>
   <div class="justify">
     <h1>Pulse <span class="object">button</span></h1>
-    Toggles the pulse visualizer. <span class="default">Default: on.</span>
+    Selects Pulse in One mode or toggles it in All mode. <span class="default">Default in All: on.</span>
   </div>
 </div>
 
@@ -304,6 +274,6 @@
   </svg>
   <div class="justify">
     <h1>Blink <span class="object">button</span></h1>
-    Toggles the blink visualizer. <span class="default">Default: on.</span>
+    Selects Blink in One mode or toggles it in All mode. <span class="default">Default in All: on.</span>
   </div>
 </div>

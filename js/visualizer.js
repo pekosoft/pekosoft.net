@@ -1,7 +1,7 @@
 // Pekosoft Visualizer
 // pekosoft.net/js/visualizer.js
 
-const bpmInput = document.getElementById('bpm');
+let currentBpm = 120;
 const togglePlayButton = document.getElementById('toggle-play-button');
 const toggleCrossButton = document.getElementById('toggle-cross-button');
 const toggleMaskButton = document.getElementById('toggle-mask-button');
@@ -30,22 +30,21 @@ const starsMeter = starsContainer.closest('.meter');
 const tickerMeter = tickerText.closest('.meter');
 const linesMeter = linesContainer.closest('.meter');
 const toolContainer = document.getElementById('tool-container');
-const toolBody = toolContainer ? toolContainer.querySelector(':scope > .module-body') : null;
+const toolBody = toolContainer ? toolContainer.querySelector('.visualizer-meters') : null;
 const toolModeAllButton = document.getElementById('tool-mode-all-button');
 const toolModeSingleButton = document.getElementById('tool-mode-single-button');
-const toolSinglePrevButton = document.getElementById('tool-single-prev-button');
 const toolSingleNextButton = document.getElementById('tool-single-next-button');
 
 const buttons = {
-  pulse: document.getElementById('toggle-pulse-button'),
   clock: document.getElementById('toggle-clock-button'),
-  blink: document.getElementById('toggle-blink-button'),
   cake: document.getElementById('toggle-cake-button'),
   speedometer: document.getElementById('toggle-speedometer-button'),
   metronome: document.getElementById('toggle-metronome-button'),
-  stars: document.getElementById('toggle-stars-button'),
   ticker: document.getElementById('toggle-ticker-button'),
   lines: document.getElementById('toggle-lines-button'),
+  stars: document.getElementById('toggle-stars-button'),
+  pulse: document.getElementById('toggle-pulse-button'),
+  blink: document.getElementById('toggle-blink-button'),
 };
 
 const meters = {
@@ -73,8 +72,8 @@ let restartTickerOnNextUpdate = false;
 let maskEnabled = true;
 let crossEnabled = true;
 let titleEnabled = true;
-let toolViewMode = 'all';
-let singleMeterName = 'pulse';
+let toolViewMode = 'single';
+let singleMeterName = 'clock';
 
 // Keep ticker hidden until playback starts.
 tickerText.style.visibility = 'hidden';
@@ -113,10 +112,7 @@ function updateTickerMotion(bpm, forceRestart) {
 }
 
 function updateAnimation() {
-  let bpm = parseInt(bpmInput.value);
-  if (isNaN(bpm) || bpm < 1) bpm = 1;
-  if (bpm > 480) bpm = 480;
-  bpmInput.value = bpm;
+  const bpm = currentBpm;
 
   tickerText.textContent = `BPM: ${bpm}`;
   updateTickerMotion(bpm, restartTickerOnNextUpdate);
@@ -259,13 +255,9 @@ function saveToggleState(state) {
   localStorage.setItem('visualizer.toggles', JSON.stringify(state));
 }
 
-function saveBpm(bpm) {
-  localStorage.setItem('visualizer.bpm', bpm.toString());
-}
-
 function loadToolMode() {
   const saved = localStorage.getItem('visualizer.tool_mode');
-  return saved === 'single' ? 'single' : 'all';
+  return saved === 'all' ? 'all' : 'single';
 }
 
 function saveToolMode(mode) {
@@ -274,7 +266,7 @@ function saveToolMode(mode) {
 
 function loadSingleMeterName() {
   const saved = localStorage.getItem('visualizer.single_meter');
-  return saved && defaultState[saved] !== undefined ? saved : 'pulse';
+  return saved && Object.hasOwn(defaultState, saved) ? saved : 'clock';
 }
 
 function saveSingleMeterName(name) {
@@ -285,8 +277,7 @@ function saveSingleMeterName(name) {
 function loadBpm() {
   const globalBpm = parseInt(localStorage.getItem('global.default_bpm'), 10);
   if (Number.isFinite(globalBpm)) return Math.min(480, Math.max(1, globalBpm));
-  const saved = localStorage.getItem('visualizer.bpm');
-  return saved ? parseInt(saved) : 5;
+  return 120;
 }
 
 function loadCrosshair() {
@@ -356,15 +347,9 @@ function applyToggle(name, on, save) {
   renderToolMeters();
 }
 
-function getEnabledMeterNames() {
-  return Object.keys(defaultState).filter((name) => !!toggleState[name]);
-}
-
 function ensureSingleMeterName() {
-  const enabled = getEnabledMeterNames();
-  if (!enabled.length) return;
-  if (!enabled.includes(singleMeterName)) {
-    singleMeterName = enabled[0];
+  if (!Object.hasOwn(defaultState, singleMeterName)) {
+    singleMeterName = 'clock';
     saveSingleMeterName(singleMeterName);
   }
 }
@@ -377,14 +362,26 @@ function updateToolModeButtons() {
     toolModeSingleButton.classList.toggle('button-on', toolViewMode === 'single');
   }
 
-  const enabledCount = getEnabledMeterNames().length;
-  const skipDisabled = toolViewMode !== 'single' || enabledCount <= 1;
-  [toolSinglePrevButton, toolSingleNextButton].forEach((button) => {
+  const skipDisabled = toolViewMode !== 'single';
+  [toolSingleNextButton].forEach((button) => {
     if (!button) return;
     button.classList.toggle('grey', skipDisabled);
     button.disabled = skipDisabled;
     button.setAttribute('aria-disabled', skipDisabled ? 'true' : 'false');
   });
+  Object.keys(defaultState).forEach((name) => {
+    const selected = toolViewMode === 'single' ? name === singleMeterName : toggleState[name];
+    buttons[name].classList.toggle('button-on', selected);
+    buttons[name].setAttribute('aria-pressed', selected ? 'true' : 'false');
+    const label = buttons[name].querySelector('.button-text').textContent;
+    buttons[name].title = `${toolViewMode === 'single' ? 'Select' : 'Toggle'} ${label.toLowerCase()}`;
+  });
+  const title = toolContainer.querySelector(':scope > .module-header .module-title');
+  if (title) {
+    const label = toolViewMode === 'single'
+      ? buttons[singleMeterName].querySelector('.button-text').textContent : 'All';
+    title.textContent = `Visualizer: ${label}`;
+  }
 }
 
 function updateToolSizing() {
@@ -393,11 +390,26 @@ function updateToolSizing() {
   const singleMode = toolViewMode === 'single';
   toolContainer.classList.toggle('visualizer-single-mode', singleMode);
   toolBody.classList.toggle('circular-instrument', singleMode);
+  if (!singleMode) {
+    const count = Object.values(meters).filter((meter) => !meter.classList.contains('hidden')).length;
+    const { width, height } = toolBody.getBoundingClientRect();
+    let columns = 1;
+    let largestSize = 0;
+    for (let candidate = 1; candidate <= count; candidate++) {
+      const rows = Math.ceil(count / candidate);
+      const size = Math.min((width - (candidate - 1) * 8) / candidate, (height - (rows - 1) * 8) / rows);
+      if (size > largestSize) {
+        largestSize = size;
+        columns = candidate;
+      }
+    }
+    toolBody.style.gridTemplateColumns = `repeat(${columns}, minmax(0, 1fr))`;
+    toolBody.style.gridTemplateRows = `repeat(${Math.max(1, Math.ceil(count / columns))}, minmax(0, 1fr))`;
+  }
 }
 
 function renderToolMeters() {
   ensureSingleMeterName();
-  const enabled = getEnabledMeterNames();
 
   Object.keys(defaultState).forEach((name) => {
     const meter = meters[name];
@@ -408,7 +420,7 @@ function renderToolMeters() {
       return;
     }
 
-    const shouldShow = enabled.length > 0 && name === singleMeterName && toggleState[name];
+    const shouldShow = name === singleMeterName;
     meter.classList.toggle('hidden', !shouldShow);
   });
 
@@ -427,12 +439,11 @@ function setToolViewMode(mode, save = true) {
 function stepSingleMeter(direction) {
   if (toolViewMode !== 'single') return;
 
-  const enabled = getEnabledMeterNames();
-  if (enabled.length <= 1) return;
+  const names = Object.keys(buttons);
 
-  const currentIndex = Math.max(0, enabled.indexOf(singleMeterName));
-  const nextIndex = (currentIndex + direction + enabled.length) % enabled.length;
-  singleMeterName = enabled[nextIndex];
+  const currentIndex = Math.max(0, names.indexOf(singleMeterName));
+  const nextIndex = (currentIndex + direction + names.length) % names.length;
+  singleMeterName = names[nextIndex];
   saveSingleMeterName(singleMeterName);
   renderToolMeters();
 }
@@ -463,6 +474,12 @@ const toggleState = Object.keys(defaultState).reduce((acc, key) => {
 Object.keys(defaultState).forEach(name => {
   if (!buttons[name] || !meters[name]) return;
   buttons[name].addEventListener('click', () => {
+    if (toolViewMode === 'single') {
+      singleMeterName = name;
+      saveSingleMeterName(name);
+      renderToolMeters();
+      return;
+    }
     const current = !!toggleState[name];
     applyToggle(name, !current, true);
   });
@@ -484,31 +501,17 @@ if (toolModeSingleButton) {
   });
 }
 
-if (toolSinglePrevButton) {
-  toolSinglePrevButton.addEventListener('click', () => {
-    stepSingleMeter(-1);
-  });
-}
-
 if (toolSingleNextButton) {
   toolSingleNextButton.addEventListener('click', () => {
     stepSingleMeter(1);
   });
 }
 
-bpmInput.addEventListener('input', () => {
-  const bpm = parseInt(bpmInput.value);
-  saveBpm(bpm);
-  updateStars(bpm);
-  updateAnimation();
-});
-
 window.addEventListener('pekosoft:global-defaults-change', (event) => {
   const defaults = event.detail;
   if (!defaults || !['bpm', 'all'].includes(defaults.changed) || !Number.isFinite(defaults.bpm)) return;
   const bpm = Math.min(480, Math.max(1, Math.round(defaults.bpm)));
-  bpmInput.value = String(bpm);
-  saveBpm(bpm);
+  currentBpm = bpm;
   updateStars(bpm);
   restartTickerOnNextUpdate = true;
   updateAnimation();
@@ -551,16 +554,15 @@ const resetButton = document.getElementById('reset-button');
 resetButton.addEventListener('click', () => {
   isPaused = true;
   totalBeats = 0;
-  bpmInput.value = 5;
-  saveBpm(5);
+  currentBpm = loadBpm();
   togglePlayButton.classList.toggle('button-on', false);
   stopAnimation();
   Object.keys(defaultState).forEach(name => {
     applyToggle(name, defaultState[name], true);
   });
-  singleMeterName = 'pulse';
+  singleMeterName = 'clock';
   saveSingleMeterName(singleMeterName);
-  setToolViewMode('all', true);
+  setToolViewMode('single', true);
   crossEnabled = true;
   applyCrosshair(crossEnabled, true);
   maskEnabled = true;
@@ -578,8 +580,7 @@ window.addEventListener('resize', () => {
 });
 
 // Load saved BPM on page init
-const savedBpm = loadBpm();
-bpmInput.value = savedBpm;
+currentBpm = loadBpm();
 toolViewMode = loadToolMode();
 singleMeterName = loadSingleMeterName();
 crossEnabled = loadCrosshair();
@@ -591,8 +592,10 @@ applyTitles(titleEnabled, false);
 
 createClockDots();
 createSpeedometerLabels();
-updateStars(parseInt(bpmInput.value));
-buildLines(parseInt(bpmInput.value));
+updateStars(currentBpm);
+buildLines(currentBpm);
 renderToolMeters();
+document.addEventListener('DOMContentLoaded', renderToolMeters);
+new ResizeObserver(updateToolSizing).observe(toolBody);
 
 // END OF FILE

@@ -3,48 +3,50 @@
 
 /* Meters */
 
-#controls-container .visualizer-controls-buttons {
-  justify-content: flex-start;
-  align-content: flex-start;
-  gap: 8px;
-}
-
-#controls-container .visualizer-controls-top-row,
-#controls-container .visualizer-meter-buttons {
+#tool-container .visualizer-meters {
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-start;
-  align-items: center;
+  align-items: flex-start;
+  align-content: flex-start;
   gap: 8px;
   width: 100%;
+  flex: 1 1 auto;
+  min-height: 0;
 }
 
-#controls-container .visualizer-meter-buttons {
-  border-top: 4px solid var(--grey1);
-  margin: 0 -4px;
-  padding-top: 8px;
-  padding-left: 4px;
-  padding-right: 4px;
-  width: calc(100% + 8px);
-}
-
-#controls-container .visualizer-bpm-inline {
+#tool-container > .module-body {
   display: flex;
+  flex-direction: column;
+  padding: 0;
+}
+
+#tool-container .visualizer-meter-buttons {
+  flex: 0 0 auto;
+}
+
+#tool-container.visualizer-single-mode .visualizer-meters {
+  flex: 1 1 auto;
+  min-height: 0;
+  container-type: size;
   align-items: center;
-  gap: 8px;
+  justify-content: center;
 }
 
-#controls-container .visualizer-bpm-inline label {
-  min-width: 72px;
+#tool-container.visualizer-single-mode .meter {
+  flex: 0 0 auto;
+  width: min(100cqw, 100cqh);
+  height: min(100cqw, 100cqh);
+  max-width: none;
 }
 
-#controls-container .visualizer-bpm-inline input {
-  width: 88px;
-  min-width: 88px;
+#tool-container .module-footer {
+  justify-content: space-between;
 }
 
 .meter {
   position: relative;
+  overflow: hidden;
   width: 100%;
   aspect-ratio: 1;
   display: flex;
@@ -61,11 +63,30 @@
   margin-top: 0;
 }
 
-#tool-container:not(.visualizer-single-mode) .standard.wrapper {
-  flex-direction: row;
-  justify-content: flex-start;
-  align-items: flex-start;
-  align-content: flex-start;
+#tool-container:not(.visualizer-single-mode) .visualizer-meters {
+  display: grid;
+  align-items: stretch;
+}
+
+#tool-container:not(.visualizer-single-mode) .meter {
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  min-width: 0;
+  min-height: 0;
+  aspect-ratio: auto;
+  container-type: size;
+}
+
+#tool-container:not(.visualizer-single-mode) .meter > :not(.label) {
+  width: min(100cqw, 100cqh);
+  height: min(100cqw, 100cqh);
+}
+
+#tool-container:not(.visualizer-single-mode) .circle-outline {
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
 
 #tool-container.visualizer-single-mode .meter .label {
@@ -112,12 +133,6 @@ body.visualizer-mask-on :is(
   clip-path: circle(50% at 50% 50%);
 }
 
-body.visualizer-mask-on .ticker-container {
-  border-radius: 0;
-  overflow: hidden;
-  clip-path: inset(0);
-}
-
 body:not(.visualizer-mask-on) :is(
   .pulse-container,
   .clock-container,
@@ -130,7 +145,7 @@ body:not(.visualizer-mask-on) :is(
   .stars-container
 ) {
   border-radius: 0;
-  overflow: visible;
+  overflow: hidden;
   clip-path: none;
 }
 

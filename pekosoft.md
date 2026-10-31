@@ -574,6 +574,19 @@ Pekosoft uses HTTP port 8000 with Caddy and PHP FastCGI. Its startup script in
 instead of stopping listeners. It validates clean routes, canonical redirects,
 query preservation, static files and missing-page responses.
 
+### Visualizer
+
+Visualizer uses one Instrument module. Its meter tabs select one meter in One
+mode and toggle visibility in All mode. Single-meter selection is independent
+of All visibility preferences. The header reads `Visualizer: {meter}` or
+`Visualizer: All`. Display/playback controls belong in the Instrument
+footer. Next cycles meter tabs in One mode. Visualizer uses global BPM only,
+including on Reset, and ignores legacy `visualizer.bpm` preferences.
+One with Clock selected is the default and Reset mode. Saved selections are retained. All uses an
+adaptive grid filling the available meter area, recalculated on resize and
+visibility changes.
+Meter content stays clipped to its boundaries whether Mask is enabled or not.
+
 ### Reference data
 
 Reference includes music, timing, metric prefixes and cable tables.

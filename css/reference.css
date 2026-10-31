@@ -65,6 +65,23 @@
   word-break: break-word;
 }
 
+.reference-card-icon {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+}
+
+.reference-connector-icons {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  vertical-align: middle;
+}
+
+.reference-connector-icons .icons {
+  flex: 0 0 var(--size1);
+}
+
 .reference-card-line {
   margin: 0 0 4px;
   white-space: normal;

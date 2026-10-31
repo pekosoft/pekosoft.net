@@ -7,36 +7,14 @@ const modeButtons = {
   notes: document.getElementById('table-notes-button'),
   scales: document.getElementById('table-scales-button'),
   chords: document.getElementById('table-chords-button'),
-  prefixes: document.getElementById('table-prefixes-button')
+  prefixes: document.getElementById('table-prefixes-button'),
+  cables: document.getElementById('table-cables-button')
 };
 
 const resetButton = document.getElementById('reset-button');
 
-const columnButtons = [
-  document.getElementById('toggle-col-1-button'),
-  document.getElementById('toggle-col-2-button'),
-  document.getElementById('toggle-col-3-button'),
-  document.getElementById('toggle-col-4-button'),
-  document.getElementById('toggle-col-5-button'),
-  document.getElementById('toggle-col-6-button'),
-  document.getElementById('toggle-col-7-button'),
-  document.getElementById('toggle-col-8-button'),
-  document.getElementById('toggle-col-9-button'),
-  document.getElementById('toggle-col-10-button')
-];
-
-const columnButtonLabels = [
-  document.getElementById('toggle-col-1-text'),
-  document.getElementById('toggle-col-2-text'),
-  document.getElementById('toggle-col-3-text'),
-  document.getElementById('toggle-col-4-text'),
-  document.getElementById('toggle-col-5-text'),
-  document.getElementById('toggle-col-6-text'),
-  document.getElementById('toggle-col-7-text'),
-  document.getElementById('toggle-col-8-text'),
-  document.getElementById('toggle-col-9-text'),
-  document.getElementById('toggle-col-10-text')
-];
+const columnButtons = Array.from(document.querySelectorAll('.reference-column-buttons button'));
+const columnButtonLabels = columnButtons.map((button) => button.querySelector('.button-text'));
 
 const headerRow = document.getElementById('header-row');
 const resultTable = document.getElementById('resultTable');
@@ -98,7 +76,8 @@ const state = {
     notes: [true, true, true, true, true, true, true, true],
     scales: [true, true, true, true, true, true],
     chords: [true, true, true, true, true, true],
-    prefixes: [true, true, true, true, true]
+    prefixes: [true, true, true, true, true],
+    cables: cableReferenceColumns.map(() => true)
   }
 };
 
@@ -680,6 +659,13 @@ const TABLES = {
     columns: ['Prefix', 'Symbol', 'Power', 'Multiplier', 'Writing'],
     aligns: ['left', 'left', 'right', 'right', 'left'],
     rows: makePrefixesRows()
+  },
+  cables: {
+    columns: cableReferenceColumns,
+    aligns: cableReferenceColumns.map((column) => column === 'Icon' ? 'center' : column === 'Year' ? 'right' : 'left'),
+    titleColumn: 1,
+    widths: [16, 22, 26, 22, 7, 26, 14, 28, 28, 36, 36, 36, 32, 32, 32, 36, 54, 18],
+    rows: cableReferenceRows
   }
 };
 
@@ -714,7 +700,23 @@ const COLUMN_ICONS = {
   Prefix: 'text',
   Symbol: 'value',
   Power: 'formula',
-  Multiplier: 'value'
+  Multiplier: 'value',
+  Icon: 'connector',
+  Cable: 'connector',
+  Family: 'table_rows',
+  Version: 'text',
+  Year: 'calendar',
+  Connectors: 'connector',
+  Contacts: 'value',
+  Signal: 'wavelength',
+  Rate: 'pulse',
+  Video: 'asterisk',
+  Audio: 'mic',
+  Length: 'ruler',
+  Impedance: 'asterisk',
+  Shielding: 'asterisk',
+  Compatibility: 'asterisk',
+  Source: 'external'
 };
 
 const REFERENCE_HEADER_TOOLTIPS = {
@@ -767,6 +769,26 @@ const REFERENCE_HEADER_TOOLTIPS = {
     Power: 'Power of ten relative to the unprefixed unit',
     Multiplier: 'Exact decimal multiplier',
     Writing: 'English short-scale name for the multiplier (billion = 10^9)'
+  },
+  cables: {
+    Icon: 'Connector pictogram',
+    Cable: 'Cable, connector or interface name',
+    Family: 'Interface or cable family',
+    Version: 'Published revision, link mode or wiring format',
+    Year: 'Specification publication year where identified',
+    Connectors: 'Connector types, not a guarantee of protocol support',
+    Contacts: 'Electrical contacts or optical connection',
+    Signal: 'Electrical or optical signal type',
+    Rate: 'Nominal link or signaling rate, not file-transfer throughput',
+    Video: 'Video capabilities and illustrative formats, not universal maxima',
+    Audio: 'Audio capabilities or channel counts',
+    Power: 'Power capability requires suitable devices and cable ratings',
+    Length: 'Specified or typical reach under the stated conditions',
+    Impedance: 'Nominal characteristic impedance where applicable',
+    Shielding: 'Cable shielding requirements or common construction',
+    Compatibility: 'Compatibility conditions',
+    Notes: 'Important qualifications and version changes',
+    Source: 'Open the technical source'
   }
 };
 
@@ -797,6 +819,9 @@ function loadSettings() {
     const savedVisibility = JSON.parse(savedVisibilityRaw);
     Object.keys(TABLES).forEach((modeKey) => {
       if (!Array.isArray(savedVisibility[modeKey])) return;
+      if (modeKey === 'cables' && savedVisibility[modeKey].length === cableReferenceColumns.length - 1) {
+        savedVisibility[modeKey].unshift(true);
+      }
       state.visibility[modeKey] = TABLES[modeKey].columns.map((_, index) => {
         const value = savedVisibility[modeKey][index];
         return value !== false;
@@ -862,7 +887,9 @@ function updateColumnButtons() {
     label.textContent = buttonLabel;
     button.title = `Toggle ${buttonLabel} column`;
     const icon = button.querySelector('use');
-    const iconHref = `/icons.svg#${COLUMN_ICONS[columnLabel]}`;
+    const columnIcon = state.activeMode === 'cables' && columnLabel === 'Power'
+      ? 'asterisk' : COLUMN_ICONS[columnLabel] || 'asterisk';
+    const iconHref = `/icons.svg#${columnIcon}`;
     if (icon.getAttribute('href') !== iconHref) {
       icon.setAttribute('href', iconHref);
     }
@@ -905,7 +932,11 @@ function renderTable() {
   const table = TABLES[state.activeMode];
   const visibility = state.visibility[state.activeMode];
   const aligns = table.aligns || [];
-  const columnWidths = getColumnWidths();
+  const previousMode = resultTableElement.dataset.referenceMode;
+  const changingCableMode = previousMode !== state.activeMode
+    && (previousMode === 'cables' || state.activeMode === 'cables');
+  const columnWidths = changingCableMode ? new Map() : getColumnWidths();
+  resultTableElement.dataset.referenceMode = state.activeMode;
 
   headerRow.innerHTML = '';
   resultTable.innerHTML = '';
@@ -925,6 +956,8 @@ function renderTable() {
       th.style.width = '36ch';
     } else if (state.activeMode === 'prefixes' && columnLabel === 'Writing') {
       th.style.width = '16ch';
+    } else if (state.activeMode === 'cables') {
+      th.style.width = `${table.widths[index]}ch`;
     }
 
     if (state.activeMode === 'bpm' && index === 0) {
@@ -1194,6 +1227,7 @@ function renderCards() {
   const visibility = state.visibility[state.activeMode];
   cardsView.innerHTML = '';
   const playColumnIndex = table.columns.indexOf('Play');
+  const titleColumnIndex = table.titleColumn || 0;
 
   getOrderedRows(table).forEach((rowCells) => {
     const card = document.createElement('article');
@@ -1212,16 +1246,23 @@ function renderCards() {
     copyButton.innerHTML = '<svg class="icons icons-small"><use href="/icons.svg#copy" /></svg>';
     card.appendChild(copyButton);
 
-    if (visibility[0] !== false) {
+    if (titleColumnIndex > 0 && visibility[0] !== false) {
+      const icon = document.createElement('div');
+      icon.className = 'reference-card-icon';
+      icon.innerHTML = getCellContent(rowCells[0]);
+      card.appendChild(icon);
+    }
+
+    if (visibility[titleColumnIndex] !== false) {
       const heading = document.createElement('h2');
       heading.className = 'reference-card-title';
-      heading.innerHTML = getCellContent(rowCells[0]);
+      heading.innerHTML = getCellContent(rowCells[titleColumnIndex]);
       card.appendChild(heading);
     }
 
     const copyLines = [];
-    if (visibility[0] !== false) {
-      copyLines.push(String(rowCells[0].text ?? '').trim());
+    if (visibility[titleColumnIndex] !== false) {
+      copyLines.push(String(rowCells[titleColumnIndex].text ?? '').trim());
     }
 
     if (state.activeMode === 'bpm') {
@@ -1233,7 +1274,7 @@ function renderCards() {
     } else if (state.activeMode === 'chords') {
       appendChordsCardBody({ card, rowCells, table, visibility, copyLines });
     } else {
-      for (let i = 1; i < rowCells.length; i++) {
+      for (let i = titleColumnIndex + 1; i < rowCells.length; i++) {
         if (i === playColumnIndex) continue;
         if (visibility[i] === false) continue;
 
@@ -1262,6 +1303,7 @@ function renderView() {
   cardsView.classList.toggle('hidden', !isCardsView);
 
   if (isCardsView) {
+    if (!headerRow.cells.length) renderTable();
     renderCards();
   } else {
     renderTable();
@@ -1317,6 +1359,7 @@ modeButtons.notes.addEventListener('click', () => setMode('notes'));
 modeButtons.scales.addEventListener('click', () => setMode('scales'));
 modeButtons.chords.addEventListener('click', () => setMode('chords'));
 modeButtons.prefixes.addEventListener('click', () => setMode('prefixes'));
+modeButtons.cables.addEventListener('click', () => setMode('cables'));
 resetButton.addEventListener('click', resetReference);
 viewToggleButton.addEventListener('click', toggleView);
 sortToggleButton.addEventListener('click', toggleSort);

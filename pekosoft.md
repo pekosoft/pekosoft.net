@@ -106,6 +106,12 @@ The visual language is based on:
 
 That stripped-down look is part of the product identity.
 
+### Table rows
+
+Never wrap or break text in tables. Keep table cells on one line with
+`white-space: nowrap` so rows retain a uniform height. Use horizontal scrolling
+and column resizing for long values. Cards may wrap text.
+
 ## Root CSS variables
 
 The main shared `:root` variables currently defined in `css/index.css` are:
@@ -559,6 +565,26 @@ That includes:
 - responsive layouts for mobile and desktop
 
 ## Technical profile
+
+### Local previews
+
+The cross-site register is [Websites](../SITES.md), beside the shared VS Code workspace.
+Pekosoft uses HTTP port 8000 with Caddy and PHP FastCGI. Its startup script in
+`.dev/startup-localhost.ps1` verifies existing processes and reuses shared PHP
+instead of stopping listeners. It validates clean routes, canonical redirects,
+query preservation, static files and missing-page responses.
+
+### Reference data
+
+Reference includes music, timing, metric prefixes and cable tables.
+Cables data in `js/cables.js` separates interface revisions, cable certifications
+and connector formats. Rates are nominal link or signaling rates. Video formats
+are examples with qualifications, not universal maxima. Every row has a source.
+All 18 columns support table and card views, visibility preferences,
+sort reversal and Reset. Keep the column-control capacity in `tools/reference.php`
+at least as large as the widest Reference table when extending the data.
+The leading connector pictogram is decorative reference information. Cards keep
+the cable name as their heading and copy enabled text without the pictogram.
 
 Pekosoft is intentionally built with a minimal stack:
 

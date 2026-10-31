@@ -1,4 +1,4 @@
 <h1>1.0
 XX-XX-2026
 </h1>
-Introducing: Pekosoft Reference. A selection of tables including BPMs, Italian tempi, notes, scales, chords and metric prefixes. Initial release.
+Introducing: Pekosoft Reference. A selection of tables including BPMs, Italian tempi, notes, scales, chords, metric prefixes and cables. Cables compares published interface revisions and cable formats with technical details, compatibility notes and sources. Initial release.

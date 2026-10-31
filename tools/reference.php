@@ -9,7 +9,7 @@
   $releasePage = "";
   $availableModules = ["tool"];
   ?>
-  <meta name="keywords" content="bpm reference, Italian tempi, note frequency chart, scale reference, chord reference, metric prefixes, SI prefixes, powers of ten">
+  <meta name="keywords" content="bpm reference, Italian tempi, note frequency chart, scale reference, chord reference, metric prefixes, SI prefixes, powers of ten, cable reference, USB, HDMI, DisplayPort, Thunderbolt, audio cables">
   <link rel="stylesheet" type="text/css" href="/css/<?php echo $release; ?>.css?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/css/' . $release . '.css'); ?>">
 </head>
 
@@ -62,6 +62,13 @@
           </svg>
           <span class="button-text">Prefixes</span>
         </button>
+
+        <button id="table-cables-button" class="square" title="Show cable reference" data-module-tab="Cables">
+          <svg class="icons">
+            <use href="/icons.svg#connector" />
+          </svg>
+          <span class="button-text">Cables</span>
+        </button>
       </div>
 
       <div class="reference-content-scroll">
@@ -81,75 +88,18 @@
         <fieldset class="module-panel-menu-row reference-column-buttons">
           <legend class="module-panel-menu-label" title="Columns">Columns:</legend>
           <div class="module-panel-menu-buttons">
-        <button id="toggle-col-1-button" class="square" title="Toggle first column">
-          <svg class="icons">
-            <use href="/icons.svg#bpm" />
-          </svg>
-          <span id="toggle-col-1-text" class="button-text">COL 1</span>
-        </button>
-
-        <button id="toggle-col-2-button" class="square" title="Toggle second column">
-          <svg class="icons">
-            <use href="/icons.svg#text" />
-          </svg>
-          <span id="toggle-col-2-text" class="button-text">COL 2</span>
-        </button>
-
-        <button id="toggle-col-3-button" class="square" title="Toggle third column">
-          <svg class="icons">
-            <use href="/icons.svg#plus_minus" />
-          </svg>
-          <span id="toggle-col-3-text" class="button-text">COL 3</span>
-        </button>
-
-        <button id="toggle-col-4-button" class="square" title="Toggle fourth column">
-          <svg class="icons">
-            <use href="/icons.svg#triangle_down" />
-          </svg>
-          <span id="toggle-col-4-text" class="button-text">COL 4</span>
-        </button>
-
-        <button id="toggle-col-5-button" class="square" title="Toggle fifth column">
-          <svg class="icons">
-            <use href="/icons.svg#triangle_up" />
-          </svg>
-          <span id="toggle-col-5-text" class="button-text">COL 5</span>
-        </button>
-
-        <button id="toggle-col-6-button" class="square" title="Toggle sixth column">
-          <svg class="icons">
-            <use href="/icons.svg#triplet" />
-          </svg>
-          <span id="toggle-col-6-text" class="button-text">COL 6</span>
-        </button>
-
-        <button id="toggle-col-7-button" class="square" title="Toggle seventh column">
-          <svg class="icons">
-            <use href="/icons.svg#1_4_dotted" />
-          </svg>
-          <span id="toggle-col-7-text" class="button-text">COL 7</span>
-        </button>
-
-        <button id="toggle-col-8-button" class="square" title="Toggle eighth column">
-          <svg class="icons">
-            <use href="/icons.svg#clock" />
-          </svg>
-          <span id="toggle-col-8-text" class="button-text">COL 8</span>
-        </button>
-
-        <button id="toggle-col-9-button" class="square" title="Toggle ninth column">
-          <svg class="icons">
-            <use href="/icons.svg#pulse" />
-          </svg>
-          <span id="toggle-col-9-text" class="button-text">COL 9</span>
-        </button>
-
-        <button id="toggle-col-10-button" class="square" title="Toggle tenth column">
-          <svg class="icons">
-            <use href="/icons.svg#play" />
-          </svg>
-          <span id="toggle-col-10-text" class="button-text">COL 10</span>
-        </button>
+            <?php
+            $columnIcons = ['bpm', 'text', 'plus_minus', 'triangle_down', 'triangle_up', 'triplet', '1_4_dotted', 'clock', 'pulse', 'play'];
+            for ($columnNumber = 1; $columnNumber <= 18; $columnNumber++) {
+              $columnIcon = $columnIcons[$columnNumber - 1] ?? 'asterisk';
+            ?>
+            <button id="toggle-col-<?php echo $columnNumber; ?>-button" class="square" title="Toggle column <?php echo $columnNumber; ?>"<?php echo $columnNumber > 10 ? ' hidden' : ''; ?>>
+              <svg class="icons">
+                <use href="/icons.svg#<?php echo $columnIcon; ?>" />
+              </svg>
+              <span id="toggle-col-<?php echo $columnNumber; ?>-text" class="button-text">COL <?php echo $columnNumber; ?></span>
+            </button>
+            <?php } ?>
           </div>
         </fieldset>
       </div>
@@ -183,6 +133,7 @@
   <script src="/js/drag.js?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/js/drag.js'); ?>"></script>
   <script src="/js/audio.js"></script>
   <script src="/js/tempi.js?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/js/tempi.js'); ?>"></script>
+  <script src="/js/cables.js?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/js/cables.js'); ?>"></script>
   <script src="/js/<?php echo $release; ?>.js?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/js/' . $release . '.js'); ?>"></script>
   <?php require($_SERVER['DOCUMENT_ROOT'] . "/elements/beta_footer.php"); ?>
 </body>

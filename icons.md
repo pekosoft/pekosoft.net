@@ -14,6 +14,7 @@ Pekosoft uses a single SVG sprite file (`icons.svg`) for all interface icons. Ea
 - For connected icon parts, overlap geometry slightly to avoid hairline gaps between parts.
 - For desktop computer icons, the vertical monitor stand must overlap the monitor and base so sub-pixel gaps cannot appear.
 - Use the available 512 canvas fully in at least one dimension. Avoid unnecessary padding that makes icons look small.
+- `connector` shows a USB-A connector without a cable stem. The `connector_*` symbols identify other connector types without attached cables. Reference maps the listed connectors to these pictograms in tables and cards.
 
 ## Workflow Rules
 

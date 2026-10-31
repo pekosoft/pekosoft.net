@@ -10,9 +10,6 @@ $baseUrl = "http://localhost:$Port"
 $caddyfilePath = Join-Path $env:TEMP ("pekosoft-caddy-{0}.Caddyfile" -f $Port)
 $fastCgiPort = 9000
 
-git -C $projectRoot config --local core.hooksPath .githooks
-& (Join-Path $PSScriptRoot 'generate-updates-feed.ps1')
-
 $toolSlugs = Get-ChildItem -Path (Join-Path $projectRoot 'tools') -Filter '*.php' -File |
     ForEach-Object { [regex]::Escape($_.BaseName) }
 $toolRoutePattern = $toolSlugs -join '|'
@@ -25,18 +22,23 @@ $caddyfileContent = @"
 http://localhost:$Port {
     root * "$($projectRoot.Replace('\', '/'))"
 
-    redir /index.php / 301
+    map {query} {querySuffix} {
+        "" ""
+        default "?{query}"
+    }
+
+    redir /index.php /{querySuffix} 301
     @legacyRoot path_regexp legacyRoot ^/(beta|bitcoin)\.php$
-    redir @legacyRoot /{re.legacyRoot.1} 301
-    redir /contact.php /contact 308
+    redir @legacyRoot /{re.legacyRoot.1}{querySuffix} 301
+    redir /contact.php /contact{querySuffix} 308
     @legacyTool path_regexp legacyTool ^/tools/([A-Za-z0-9_]+)\.php$
-    redir @legacyTool /{re.legacyTool.1} 301
+    redir @legacyTool /{re.legacyTool.1}{querySuffix} 301
 
     @home path /
     rewrite @home /index.php
     @toolRoutes path_regexp toolRoutes ^/($toolRoutePattern)/?$
     rewrite @toolRoutes /tools/{re.toolRoutes.1}.php
-    @rootRoutes path_regexp rootRoutes ^/([A-Za-z0-9_]+)/?$
+    @rootRoutes path_regexp rootRoutes ^/(beta|bitcoin|contact|updates)/?$
     rewrite @rootRoutes /{re.rootRoutes.1}.php
 
     @phpFiles path *.php
@@ -50,46 +52,45 @@ http://localhost:$Port {
     handle @staticFiles {
         file_server
     }
+
+    handle {
+        error 404
+    }
+
+    handle_errors {
+        rewrite * /404.php
+        php_fastcgi 127.0.0.1:$fastCgiPort {
+            try_files {path}
+        }
+    }
 }
 "@
-[System.IO.File]::WriteAllText($caddyfilePath, $caddyfileContent, [System.Text.UTF8Encoding]::new($false))
 
 function Get-ListeningPids([int]$TargetPort) {
-    try {
-        $pids = Get-NetTCPConnection -State Listen -LocalPort $TargetPort -ErrorAction Stop |
-            Select-Object -ExpandProperty OwningProcess -Unique
-        return @($pids)
-    } catch {
-        $netstatMatches = netstat -ano | Select-String (":$TargetPort\\s+")
-        $pids = @()
-        foreach ($match in $netstatMatches) {
-            $parts = ($match.Line -replace '\\s+', ' ').Trim().Split(' ')
-            if ($parts.Length -ge 5) {
-                $listeningProcessId = $parts[-1]
-                if ($listeningProcessId -match '^\\d+$') {
-                    $pids += [int]$listeningProcessId
-                }
-            }
-        }
-        return @($pids | Select-Object -Unique)
-    }
+    return @(Get-NetTCPConnection -State Listen -ErrorAction Stop |
+        Where-Object { $_.LocalPort -eq $TargetPort } |
+        Select-Object -ExpandProperty OwningProcess -Unique)
 }
 
-$existing = Get-ListeningPids -TargetPort $Port
+$caddyProcesses = @(Get-CimInstance Win32_Process -Filter "Name = 'caddy.exe'" |
+    Where-Object { $_.CommandLine -and $_.CommandLine.Contains($caddyfilePath) })
+$existing = @(@(Get-ListeningPids -TargetPort $Port) + @($caddyProcesses.ProcessId) |
+    Where-Object { $_ } | Select-Object -Unique)
 foreach ($listeningProcessId in $existing) {
-    try {
-        Stop-Process -Id $listeningProcessId -Force -ErrorAction Stop
-    } catch {
-        Write-Warning "Could not stop PID $listeningProcessId on port $Port."
+    $process = Get-CimInstance Win32_Process -Filter "ProcessId = $listeningProcessId"
+    if ($process.Name -ne 'caddy.exe' -or -not $process.CommandLine.Contains($caddyfilePath)) {
+        throw "Port $Port belongs to another listener (PID $listeningProcessId). It was left running."
     }
 }
 
-$existingFastCgi = Get-ListeningPids -TargetPort $fastCgiPort
+$phpProcesses = @(Get-CimInstance Win32_Process -Filter "Name = 'php-cgi.exe'" |
+    Where-Object { $_.CommandLine -match "-b\s+127\.0\.0\.1:$fastCgiPort\b" })
+$existingFastCgi = @(@(Get-ListeningPids -TargetPort $fastCgiPort) + @($phpProcesses.ProcessId) |
+    Where-Object { $_ } | Select-Object -Unique)
 foreach ($listeningProcessId in $existingFastCgi) {
-    try {
-        Stop-Process -Id $listeningProcessId -Force -ErrorAction Stop
-    } catch {
-        Write-Warning "Could not stop PHP CGI PID $listeningProcessId on port $fastCgiPort."
+    $process = Get-CimInstance Win32_Process -Filter "ProcessId = $listeningProcessId"
+    if ($process.Name -ne 'php-cgi.exe' -or $process.CommandLine -notmatch "-b\s+127\.0\.0\.1:$fastCgiPort\b") {
+        throw "FastCGI port $fastCgiPort belongs to another listener (PID $listeningProcessId). It was left running."
     }
 }
 
@@ -112,8 +113,38 @@ if (-not $caddyPath) {
     throw 'Caddy was not found in PATH. Install it with: winget install --id CaddyServer.Caddy --exact'
 }
 
-$phpCgiServer = Start-Process -FilePath $phpCgi.Source -ArgumentList "-b 127.0.0.1:$fastCgiPort" -WorkingDirectory $projectRoot -WindowStyle Hidden -PassThru
-$caddyServer = Start-Process -FilePath $caddyPath -ArgumentList "run --config `"$caddyfilePath`" --adapter caddyfile" -WorkingDirectory $projectRoot -WindowStyle Hidden -PassThru
+[System.IO.File]::WriteAllText($caddyfilePath, $caddyfileContent, [System.Text.UTF8Encoding]::new($false))
+& $caddyPath validate --config $caddyfilePath --adapter caddyfile
+if ($LASTEXITCODE -ne 0) { throw 'Caddy configuration validation failed.' }
+
+if ($existingFastCgi.Count -eq 0) {
+    $phpCgiServer = Start-Process -FilePath $phpCgi.Source -ArgumentList "-b 127.0.0.1:$fastCgiPort" -WorkingDirectory $projectRoot -WindowStyle Hidden -PassThru
+    $fastCgiProcessId = $phpCgiServer.Id
+} else {
+    $fastCgiProcessId = $existingFastCgi[0]
+}
+
+if ($existing.Count -eq 0) {
+    if ((Get-ListeningPids -TargetPort 2019).Count -gt 0) {
+        throw 'The default Caddy admin port is already in use. No additional server was started.'
+    }
+    $caddyServer = Start-Process -FilePath $caddyPath -ArgumentList "run --config `"$caddyfilePath`" --adapter caddyfile" -WorkingDirectory $projectRoot -WindowStyle Hidden -PassThru
+    $caddyProcessId = $caddyServer.Id
+} else {
+    $adminProcessIds = Get-ListeningPids -TargetPort 2019
+    if ($existing.Count -ne 1 -or ($adminProcessIds.Count -gt 0 -and $adminProcessIds[0] -ne $existing[0])) {
+        throw 'The Caddy admin endpoint does not belong to this preview. No listener was stopped.'
+    }
+    $activeConfiguration = Invoke-RestMethod -Uri 'http://localhost:2019/config/' -ErrorAction Stop
+    $activeConfigurationJson = ConvertTo-Json $activeConfiguration -Depth 100 -Compress
+    if (-not $activeConfigurationJson.Contains($projectRoot.Replace('\', '/')) -or
+        -not $activeConfigurationJson.Contains('":' + $Port + '"')) {
+        throw 'The Caddy admin configuration does not match this preview. No listener was changed.'
+    }
+    & $caddyPath reload --config $caddyfilePath --adapter caddyfile
+    if ($LASTEXITCODE -ne 0) { throw 'Caddy reload failed.' }
+    $caddyProcessId = $existing[0]
+}
 
 function Get-HeadResult([string]$Url) {
     $request = [System.Net.HttpWebRequest]::Create($Url)
@@ -124,6 +155,9 @@ function Get-HeadResult([string]$Url) {
         $response = $request.GetResponse()
     } catch [System.Net.WebException] {
         $response = $_.Exception.Response
+        if (-not $response) {
+            Write-Warning ("Request failed for {0}: {1}" -f $Url, $_.Exception.Message)
+        }
     }
 
     if (-not $response) {
@@ -157,7 +191,17 @@ $checks = @(
     [pscustomobject]@{ Url = "$baseUrl/tools/tap_pad.php"; ExpectedStatus = 301; ExpectedLocation = '/tap_pad' },
     [pscustomobject]@{ Url = "$baseUrl/tap_pad"; ExpectedStatus = 200; ExpectedLocation = '' },
     [pscustomobject]@{ Url = "$baseUrl/contact"; ExpectedStatus = 200; ExpectedLocation = '' },
-    [pscustomobject]@{ Url = "$baseUrl/contact.php"; ExpectedStatus = 308; ExpectedLocation = '/contact' }
+    [pscustomobject]@{ Url = "$baseUrl/contact.php"; ExpectedStatus = 308; ExpectedLocation = '/contact' },
+    [pscustomobject]@{ Url = "$baseUrl/index.php?check=1"; ExpectedStatus = 301; ExpectedLocation = '/?check=1' },
+    [pscustomobject]@{ Url = "$baseUrl/tools/reference.php?check=1"; ExpectedStatus = 301; ExpectedLocation = '/reference?check=1' },
+    [pscustomobject]@{ Url = "$baseUrl/contact.php?check=1"; ExpectedStatus = 308; ExpectedLocation = '/contact?check=1' },
+    [pscustomobject]@{ Url = "$baseUrl/reference"; ExpectedStatus = 200; ExpectedLocation = '' },
+    [pscustomobject]@{ Url = "$baseUrl/beta"; ExpectedStatus = 200; ExpectedLocation = '' },
+    [pscustomobject]@{ Url = "$baseUrl/bitcoin"; ExpectedStatus = 200; ExpectedLocation = '' },
+    [pscustomobject]@{ Url = "$baseUrl/updates"; ExpectedStatus = 200; ExpectedLocation = '' },
+    [pscustomobject]@{ Url = "$baseUrl/icons.svg"; ExpectedStatus = 200; ExpectedLocation = '' },
+    [pscustomobject]@{ Url = "$baseUrl/css/reference.css"; ExpectedStatus = 200; ExpectedLocation = '' },
+    [pscustomobject]@{ Url = "$baseUrl/missing-startup-page"; ExpectedStatus = 404; ExpectedLocation = '' }
 )
 
 $allPassed = $true
@@ -182,12 +226,15 @@ if ($OpenBrowser) {
 }
 
 Write-Host ""
-Write-Host ("Caddy PID: {0}" -f $caddyServer.Id)
-Write-Host ("PHP CGI PID: {0}" -f $phpCgiServer.Id)
+Write-Host ("Caddy PID: {0}" -f $caddyProcessId)
+Write-Host ("PHP CGI PID: {0}" -f $fastCgiProcessId)
 Write-Host "Zoom policy: press Ctrl+0 in browser to enforce 100% zoom."
 
 if (-not $allPassed) {
     exit 1
 }
+
+git -C $projectRoot config --local core.hooksPath .githooks
+& (Join-Path $PSScriptRoot 'generate-updates-feed.ps1')
 
 exit 0

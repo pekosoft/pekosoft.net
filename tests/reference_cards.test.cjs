@@ -20,7 +20,7 @@ const columnIcons = {
   cables: ['connector', 'connector', 'table_rows', 'text', 'calendar', 'connector', 'value', 'wavelength', 'pulse', 'asterisk', 'mic', 'asterisk', 'ruler', 'asterisk', 'asterisk', 'asterisk', 'table_rows', 'external']
 };
 
-function createRenderer(mode, savedSettings = {}) {
+function createRenderer(mode, savedSettings = {}, href = 'https://pekosoft.net/reference') {
   function element() {
     return {
       children: [], dataset: {}, attributes: {}, attributeWrites: [], style: {}, className: '',
@@ -62,14 +62,63 @@ function createRenderer(mode, savedSettings = {}) {
     getItem: key => storage.get(key) ?? null,
     setItem: (key, value) => storage.set(key, value)
   };
-  const context = vm.createContext({ document, localStorage });
+  const location = { href };
+  const history = {
+    state: { existing: true },
+    replaceState(state, title, url) { this.state = state; location.href = url; }
+  };
+  const warnings = [];
+  const context = vm.createContext({
+    document, localStorage, URL, window: { location, history },
+    console: { warn: (...args) => warnings.push(args) }
+  });
   vm.runInContext(tempiSource, context);
   vm.runInContext(cablesSource, context);
   vm.runInContext(renderSource, context);
   const state = vm.runInContext('state', context);
   const tables = vm.runInContext('TABLES', context);
   state.activeMode = mode;
-  return { context, state, table: tables[mode], cards: elements.get('cards-view'), elements, storage };
+  return { context, state, table: tables[mode], cards: elements.get('cards-view'), elements, storage, location, history, warnings };
+}
+
+for (const mode of Object.keys(columnIcons)) {
+  test(`${mode} direct links override the saved table and retain other preferences`, () => {
+    const { context, state, location, history } = createRenderer('bpm', {
+      'reference.mode': 'notes', 'reference.view': 'cards', 'reference.sort': 'desc'
+    }, `https://pekosoft.net/reference?other=kept&a=${mode}#section`);
+    context.loadSettings();
+    context.updateReferenceUrl();
+    assert.equal(state.activeMode, mode);
+    assert.equal(state.view, 'cards');
+    assert.equal(state.sort, 'desc');
+    assert.equal(location.href, `https://pekosoft.net/reference?other=kept&a=${mode}#section`);
+    assert.deepEqual(history.state, { existing: true });
+    context.setMode('cables');
+    assert.equal(new URL(location.href).searchParams.get('a'), 'cables');
+    assert.equal(new URL(location.href).searchParams.get('other'), 'kept');
+    assert.equal(new URL(location.href).hash, '#section');
+  });
+}
+
+test('Reference without a requested table retains the saved selection in its share URL', () => {
+  const { context, state, location } = createRenderer('bpm', { 'reference.mode': 'prefixes' });
+  context.loadSettings();
+  context.updateReferenceUrl();
+  assert.equal(state.activeMode, 'prefixes');
+  assert.equal(location.href, 'https://pekosoft.net/reference?a=prefixes');
+});
+
+for (const requested of ['missing', '', 'constructor', '__proto__']) {
+  test(`Reference reports invalid table ${JSON.stringify(requested)} and uses the saved selection`, () => {
+    const { context, state, location, warnings } = createRenderer('bpm', {
+      'reference.mode': 'notes'
+    }, `https://pekosoft.net/reference?a=${requested}`);
+    context.loadSettings();
+    context.updateReferenceUrl();
+    assert.equal(state.activeMode, 'notes');
+    assert.equal(warnings.length, 1);
+    assert.equal(location.href, 'https://pekosoft.net/reference?a=notes');
+  });
 }
 
 function descendants(node) {
@@ -315,6 +364,7 @@ test('Tempi mode, view, sort and column settings survive reload and reset to exi
   assert.equal(restored.state.sort, 'asc');
   assert.deepEqual(Array.from(restored.state.visibility.tempi), [true, true, true]);
   assert.equal(restored.storage.get('reference.mode'), 'bpm');
+  assert.equal(restored.location.href, 'https://pekosoft.net/reference?a=bpm');
 });
 
 test('Metric prefixes contain all 24 SI names and case-sensitive symbols plus the unprefixed unit', () => {

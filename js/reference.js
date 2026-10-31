@@ -798,8 +798,17 @@ function getReferenceHeaderTooltip(modeKey, columnLabel) {
 
 function loadSettings() {
   const savedMode = localStorage.getItem(STORAGE.mode);
-  if (savedMode && TABLES[savedMode]) {
+  if (savedMode && Object.hasOwn(TABLES, savedMode)) {
     state.activeMode = savedMode;
+  }
+
+  const requestedMode = new URL(window.location.href).searchParams.get('a');
+  if (requestedMode !== null) {
+    if (Object.hasOwn(TABLES, requestedMode)) {
+      state.activeMode = requestedMode;
+    } else {
+      console.warn('Unknown Reference table:', requestedMode);
+    }
   }
 
   const savedView = localStorage.getItem(STORAGE.view);
@@ -839,6 +848,14 @@ function saveSettings() {
   localStorage.setItem(STORAGE.sort, state.sort);
 }
 
+function updateReferenceUrl() {
+  const url = new URL(window.location.href);
+  url.searchParams.set('a', state.activeMode);
+  if (url.href !== window.location.href) {
+    window.history.replaceState(window.history.state, '', url.href);
+  }
+}
+
 function getDefaultVisibility() {
   return Object.fromEntries(
     Object.entries(TABLES).map(([modeKey, table]) => [
@@ -855,6 +872,7 @@ function resetReference() {
   state.sort = 'asc';
   state.visibility = getDefaultVisibility();
   saveSettings();
+  updateReferenceUrl();
   updateModeButtons();
   updateColumnButtons();
   updateViewButton();
@@ -1316,13 +1334,14 @@ function scrollTableToTop() {
 }
 
 function setMode(modeKey) {
-  if (!TABLES[modeKey]) return;
+  if (!Object.hasOwn(TABLES, modeKey)) return;
   state.activeMode = modeKey;
   updateModeButtons();
   updateColumnButtons();
   renderView();
   scrollTableToTop();
   saveSettings();
+  updateReferenceUrl();
 }
 
 function toggleView() {
@@ -1389,6 +1408,7 @@ tableScrollContainer.addEventListener('click', (event) => {
 });
 
 loadSettings();
+updateReferenceUrl();
 updateModeButtons();
 document.addEventListener('DOMContentLoaded', setupReferenceToolMenu);
 updateColumnButtons();

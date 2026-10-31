@@ -4,7 +4,7 @@
   </svg>
   <div class="justify">
     <h1>General</h1>
-    Pekosoft Reference is a lookup tool with two views. Includes BPM (beats per minute), Italian tempi, notes, scales, chords, metric prefixes and cables. Columns can be toggled and resized by dragging a column header edge in standard view. On touchscreens, drag the right side of the header. Double-click or double-tap the edge to restore its default width.
+    Pekosoft Reference is a lookup tool with two views. Includes BPM (beats per minute), Italian tempi, notes, scales, chords, metric prefixes and cables. Each table has a direct link, such as <a href="/reference?a=cables">Cables</a>. Selecting a table updates the page URL. Copy that URL or use Share to send the selected table. A direct link selects its table regardless of the previously selected table. Columns can be toggled and resized by dragging a column header edge in standard view. On touchscreens, drag the right side of the header. Double-click or double-tap the edge to restore its default width.
   </div>
 </div>
 

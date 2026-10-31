@@ -577,6 +577,12 @@ query preservation, static files and missing-page responses.
 ### Reference data
 
 Reference includes music, timing, metric prefixes and cable tables.
+The `a` query parameter selects `bpm`, `tempi`, `notes`, `scales`, `chords`,
+`prefixes` or `cables` ahead of the saved mode. Table selection and Reset update
+the URL without navigation, preserving other query parameters and the fragment.
+The shared Share control uses this URL. Links retain the recipient's view,
+sort and column preferences. Unknown table values produce a console warning
+and fall back to the saved mode or BPM.
 Cables data in `js/cables.js` separates interface revisions, cable certifications
 and connector formats. Rates are nominal link or signaling rates. Video formats
 are examples with qualifications, not universal maxima. Every row has a source.

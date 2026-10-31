@@ -15,6 +15,7 @@ Pekosoft uses a single SVG sprite file (`icons.svg`) for all interface icons. Ea
 - For desktop computer icons, the vertical monitor stand must overlap the monitor and base so sub-pixel gaps cannot appear.
 - Use the available 512 canvas fully in at least one dimension. Avoid unnecessary padding that makes icons look small.
 - `connector` shows a USB-A connector without a cable stem. The `connector_*` symbols identify other connector types without attached cables. Reference maps the listed connectors to these pictograms in tables and cards.
+- Cables column controls use `cable` for a connected pair of plugs, `lightning` for Power, `ohm` for Impedance, `shield` for Shielding and `puzzle` for Compatibility. Puzzle uses two complementary pieces with a transparent gap. Keep these controls separate from connector pictograms in the rows.
 
 ## Workflow Rules
 

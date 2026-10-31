@@ -1,8 +1,101 @@
 const cableReferenceColumns = [
   'Icon', 'Cable', 'Family', 'Version', 'Year', 'Connectors', 'Contacts', 'Signal',
   'Rate', 'Video', 'Audio', 'Power', 'Length', 'Impedance', 'Shielding',
-  'Compatibility', 'Notes', 'Source'
+  'Compatibility', 'Notes', 'Source', 'Developer'
 ];
+
+const cableDeveloperLinks = {
+  usb: ['USB-IF', 'https://www.usb.org/'],
+  hdmi: ['HDMI Founders', 'https://hdmiforum.org/about/'],
+  hdmiForum: ['HDMI Forum', 'https://hdmiforum.org/'],
+  vesa: ['VESA', 'https://vesa.org/'],
+  intel: ['Intel', 'https://www.intel.com/'],
+  apple: ['Apple', 'https://www.apple.com/'],
+  tia: ['TIA', 'https://tiaonline.org/'],
+  iso: ['ISO', 'https://www.iso.org/'],
+  iec: ['IEC', 'https://www.iec.ch/'],
+  ieee: ['IEEE', 'https://www.ieee802.org/3/'],
+  ctia: ['CTIA', 'https://www.ctia.org/'],
+  omtp: ['OMTP', 'https://en.wikipedia.org/wiki/Open_Mobile_Terminal_Platform'],
+  pentaconn: ['Nippon Dics', 'https://www.ndics.com/en/'],
+  rca: ['RCA', 'https://en.wikipedia.org/wiki/RCA'],
+  cannon: ['Cannon', 'https://www.ittcannon.com/'],
+  tascam: ['Tascam', 'https://tascam.com/'],
+  aes: ['AES', 'https://aes.org/standards/'],
+  neutrik: ['Neutrik', 'https://www.neutrik.com/'],
+  sony: ['Sony', 'https://www.sony.com/'],
+  philips: ['Philips', 'https://www.philips.com/'],
+  toshiba: ['Toshiba', 'https://www.global.toshiba/'],
+  alesis: ['Alesis', 'https://www.alesis.com/'],
+  midi: ['MIDI Association', 'https://midi.org/'],
+  amei: ['AMEI', 'https://www.amei.or.jp/'],
+  esta: ['ESTA', 'https://tsp.esta.org/'],
+  ibm: ['IBM', 'https://www.ibm.com/'],
+  ddwg: ['DDWG', 'https://en.wikipedia.org/wiki/Digital_Display_Working_Group'],
+  smpte: ['SMPTE', 'https://www.smpte.org/'],
+  sata: ['SATA-IO', 'https://sata-io.org/'],
+  ieee1394: ['IEEE', 'https://standards.ieee.org/standard/1394-2008.html'],
+  eia: ['EIA', 'https://en.wikipedia.org/wiki/Electronic_Industries_Alliance']
+};
+
+const cableFamilyDevelopers = {
+  USB: ['usb'],
+  'USB connectors and power': ['usb'],
+  HDMI: ['hdmi', 'hdmiForum'],
+  'HDMI cable classes': ['hdmi', 'hdmiForum'],
+  DisplayPort: ['vesa'],
+  'DisplayPort cable classes': ['vesa'],
+  Thunderbolt: ['intel', 'apple'],
+  'Ethernet cable categories': ['tia', 'iso', 'iec'],
+  'Ethernet link standards': ['ieee'],
+  'Analog audio': [],
+  'Speaker cables': [],
+  'Digital audio and control': [],
+  'Legacy video': [],
+  SDI: ['smpte'],
+  'Storage and legacy data': []
+};
+
+const cableRowDevelopers = {
+  '3.5 mm TRRS CTIA': ['ctia'],
+  '3.5 mm TRRS OMTP': ['omtp'],
+  '4.4 mm balanced headphones': ['pentaconn'],
+  'RCA audio': ['rca'],
+  'XLR microphone / line': ['cannon'],
+  'XLR stereo microphone': ['cannon'],
+  'XLR balanced headphones': ['cannon'],
+  'DB25 analog audio': ['tascam', 'aes'],
+  'speakON 2-pole': ['neutrik'],
+  'speakON 4-pole': ['neutrik'],
+  'speakON 8-pole': ['neutrik'],
+  'S/PDIF coaxial': ['sony', 'philips', 'iec'],
+  'S/PDIF optical': ['sony', 'philips', 'toshiba', 'iec'],
+  'AES3 balanced': ['aes'],
+  'AES3id coaxial': ['aes'],
+  'ADAT Lightpipe': ['alesis'],
+  'MADI coaxial': ['aes'],
+  'MADI optical': ['aes'],
+  'MIDI DIN': ['midi', 'amei'],
+  'MIDI TRS Type A': ['midi', 'amei'],
+  DMX512: ['esta'],
+  VGA: ['ibm'],
+  'DVI-D single-link': ['ddwg'],
+  'DVI-D dual-link': ['ddwg'],
+  'DVI-I single-link': ['ddwg'],
+  'DVI-I dual-link': ['ddwg'],
+  'DVI-A': ['ddwg'],
+  SCART: ['iec'],
+  'SATA I': ['sata'],
+  'SATA II': ['sata'],
+  'SATA III': ['sata'],
+  eSATA: ['sata'],
+  'FireWire 400': ['apple', 'ieee1394'],
+  'FireWire 800': ['apple', 'ieee1394'],
+  'FireWire S1600': ['apple', 'ieee1394'],
+  'FireWire S3200': ['apple', 'ieee1394'],
+  'RS-232 serial': ['eia'],
+  'PS/2': ['ibm']
+};
 
 const cableReferenceGroups = [
   {
@@ -407,6 +500,21 @@ const cableReferenceRows = cableReferenceGroups.flatMap((group) => group.rows.ma
     text: icons.map((icon) => icon.label).join(' / '),
     html: `<span class="reference-connector-icons">${icons.map((icon) => `<svg class="icons" role="img" aria-label="${icon.label}"><use href="/icons.svg#${icon.id}" /></svg>`).join('')}</span>`,
     className: 'center'
+  });
+  const developerIds = record.family === 'HDMI'
+    ? [Number.parseFloat(record.version) < 2 ? 'hdmi' : 'hdmiForum']
+    : cableRowDevelopers[record.name] ?? cableFamilyDevelopers[record.family];
+  if (!developerIds) throw new Error(`Missing cable developer attribution: ${record.name}`);
+  const developers = developerIds.length
+    ? developerIds.map((id) => {
+      const link = cableDeveloperLinks[id];
+      if (!link) throw new Error(`Missing cable developer link: ${id}`);
+      return link;
+    })
+    : [['No single developer', record.source]];
+  cells.push({
+    text: developers.map(([name]) => name).join(' / '),
+    html: developers.map(([name, url]) => `<a href="${url}" target="wiki" rel="noopener">${name}</a>`).join(' / ')
   });
   return cells;
 }));

@@ -17,7 +17,7 @@ const columnIcons = {
   scales: ['timeline', 'ruler', 'quantized_steps', 'letter_c', 'table_rows', 'play'],
   chords: ['value', 'formula', 'piano', 'letter_c', 'table_rows', 'play'],
   prefixes: ['text', 'value', 'formula', 'value', 'text'],
-  cables: ['connector', 'connector', 'table_rows', 'text', 'calendar', 'connector', 'value', 'wavelength', 'pulse', 'asterisk', 'mic', 'asterisk', 'ruler', 'asterisk', 'asterisk', 'asterisk', 'table_rows', 'external']
+  cables: ['icons', 'cable', 'band', 'letter_v', 'calendar', 'connector', 'value', 'wavelength', 'pulse', 'youtube', 'mic', 'lightning', 'ruler', 'ohm', 'shield', 'puzzle', '1_4', 'external', 'external']
 };
 
 function createRenderer(mode, savedSettings = {}, href = 'https://pekosoft.net/reference') {
@@ -60,7 +60,7 @@ function createRenderer(mode, savedSettings = {}, href = 'https://pekosoft.net/r
       return elements.get(id);
     },
     querySelector: () => element(),
-    querySelectorAll: () => Array.from({ length: 18 }, (_, index) => document.getElementById(`toggle-col-${index + 1}-button`)),
+    querySelectorAll: () => Array.from({ length: 19 }, (_, index) => document.getElementById(`toggle-col-${index + 1}-button`)),
     createElement: element
   };
   const storage = new Map(Object.entries(savedSettings));
@@ -140,7 +140,7 @@ function expectedCopy(mode, row, visibility) {
     scales: [0, 1, 2, 3, 4],
     chords: [0, 1, 2, 3, 4],
     prefixes: [0, 1, 2, 3, 4],
-    cables: Array.from({ length: 17 }, (_, index) => index + 1)
+    cables: Array.from({ length: 18 }, (_, index) => index + 1)
   };
   const bpmLabels = { 3: 'Half', 4: 'Double', 5: 'Triplet', 6: 'Dotted', 7: 'SPB', 8: 'BPS' };
   return order[mode]
@@ -150,7 +150,7 @@ function expectedCopy(mode, row, visibility) {
       if (mode === 'tempi' && index === 1) return `BPM: ${row[index].text}`;
       if (mode === 'prefixes' && index > 0) return `${['Prefix', 'Symbol', 'Power', 'Multiplier', 'Writing'][index]}: ${row[index].text}`;
       if (mode === 'cables' && index > 1) {
-        const columns = ['Icon', 'Cable', 'Family', 'Version', 'Year', 'Connectors', 'Contacts', 'Signal', 'Rate', 'Video', 'Audio', 'Power', 'Length', 'Impedance', 'Shielding', 'Compatibility', 'Notes', 'Source'];
+        const columns = ['Icon', 'Cable', 'Family', 'Version', 'Year', 'Connectors', 'Contacts', 'Signal', 'Rate', 'Video', 'Audio', 'Power', 'Length', 'Impedance', 'Shielding', 'Compatibility', 'Notes', 'Source', 'Developer'];
         return `${columns[index]}: ${row[index].text}`;
       }
       return row[index].text;
@@ -162,7 +162,7 @@ for (const mode of ['bpm', 'tempi', 'notes', 'scales', 'chords', 'prefixes', 'ca
   test(`${mode} toggles retain existing SVG references in both views`, () => {
     const { context, state, table, elements } = createRenderer(mode);
     context.updateColumnButtons();
-    const icons = Array.from({ length: 18 }, (_, index) => elements.get(`toggle-col-${index + 1}-button`).querySelector('use'));
+    const icons = Array.from({ length: 19 }, (_, index) => elements.get(`toggle-col-${index + 1}-button`).querySelector('use'));
     icons.forEach(icon => { icon.attributeWrites.length = 0; });
     for (const view of ['table', 'cards']) {
       state.view = view;
@@ -184,7 +184,7 @@ for (const mode of ['bpm', 'tempi', 'notes', 'scales', 'chords', 'prefixes', 'ca
     context.updateColumnButtons();
     const columns = vm.runInContext(`TABLES.${mode}.columns`, context);
     assert.equal(columnIcons[mode].length, columns.length);
-    for (let index = 0; index < 18; index++) {
+    for (let index = 0; index < 19; index++) {
       const button = elements.get(`toggle-col-${index + 1}-button`);
       assert.equal(button.hidden, index >= columns.length);
       if (button.hidden) continue;
@@ -504,9 +504,9 @@ test('four-column prefix preferences enable Writing while preserving every exist
   assert.deepEqual(Array.from(state.visibility.prefixes), [false, true, false, true, true]);
 });
 
-test('Cables provides at least 140 unique sourced rows with 18 complete columns', () => {
+test('Cables provides at least 140 unique sourced rows with 19 complete columns', () => {
   const { table } = createRenderer('cables');
-  assert.equal(table.columns.length, 18);
+  assert.equal(table.columns.length, 19);
   assert.ok(table.rows.length >= 140, `Only ${table.rows.length} cable rows`);
   const names = new Set();
   table.rows.forEach(row => {
@@ -520,6 +520,16 @@ test('Cables provides at least 140 unique sourced rows with 18 complete columns'
     assert.ok(icons.length > 0);
     icons.forEach(([, icon]) => assert.ok(spriteIcons.has(icon), `Missing ${icon}`));
   });
+});
+
+test('Cables aligns Icon and Year contents to the left', () => {
+  const { context, table, elements } = createRenderer('cables');
+  context.renderTable();
+  for (const name of ['Icon', 'Year']) {
+    const index = table.columns.indexOf(name);
+    assert.equal(table.aligns[index], 'left');
+    elements.get('resultTable').children.forEach(row => assert.equal(row.cells[index].className, 'left'));
+  }
 });
 
 test('Cables includes every listed USB, HDMI, DisplayPort and Thunderbolt revision', () => {
@@ -561,17 +571,17 @@ test('Cables column preferences beyond ten survive reload and Reset without affe
   original.context.loadSettings();
   assert.equal(original.state.visibility.bpm[0], false);
   assert.equal(original.state.visibility.prefixes[1], false);
-  assert.equal(original.state.visibility.cables.length, 18);
+  assert.equal(original.state.visibility.cables.length, 19);
   assert.ok(original.state.visibility.cables.every(Boolean));
   original.state.view = 'cards';
   original.state.sort = 'desc';
-  original.context.toggleColumn(17);
+  original.context.toggleColumn(18);
   const restored = createRenderer('bpm', Object.fromEntries(original.storage));
   restored.context.loadSettings();
   assert.equal(restored.state.activeMode, 'cables');
   assert.equal(restored.state.view, 'cards');
   assert.equal(restored.state.sort, 'desc');
-  assert.equal(restored.state.visibility.cables[17], false);
+  assert.equal(restored.state.visibility.cables[18], false);
   assert.equal(restored.state.visibility.bpm[0], false);
   restored.context.resetReference();
   assert.equal(restored.state.activeMode, 'bpm');
@@ -604,10 +614,10 @@ test('starting in Cables cards creates headers for the shared table-resizing con
   state.view = 'cards';
   context.renderView();
   assert.equal(cards.children.length, table.rows.length);
-  assert.equal(elements.get('header-row').cells.length, 18);
+  assert.equal(elements.get('header-row').cells.length, 19);
   state.view = 'table';
   context.renderView();
-  assert.equal(elements.get('header-row').cells.length, 18);
+  assert.equal(elements.get('header-row').cells.length, 19);
   assert.equal(elements.get('resultTable').children.length, table.rows.length);
 });
 
@@ -619,16 +629,62 @@ test('the leading Icon preserves old cable visibility preferences and stays out 
     'reference.column_visibility': JSON.stringify({ cables: visibility })
   });
   context.loadSettings();
-  assert.equal(state.visibility.cables.length, 18);
+  assert.equal(state.visibility.cables.length, 19);
   assert.equal(state.visibility.cables[0], true);
   assert.equal(state.visibility.cables[1], false);
   assert.equal(state.visibility.cables[17], false);
+  assert.equal(state.visibility.cables[18], true);
   context.renderCards();
   const nodes = descendants(cards.children[0]);
   assert.ok(nodes.some(node => node.className === 'reference-card-icon'));
   assert.ok(!nodes.some(node => node.className === 'reference-card-title'));
   const copy = nodes.find(node => node.dataset.copyText !== undefined);
   assert.doesNotMatch(copy.dataset.copyText, /Icon:|Connector\n|Source:/);
+});
+
+test('Developer links cover every cable row and appear in both views and copied cards', () => {
+  const { context, table, elements, cards } = createRenderer('cables');
+  const rows = new Map(Array.from(table.rows, row => [row[1].text, row[18]]));
+  const expected = {
+    'USB4 80Gbps': 'USB-IF',
+    'HDMI 1.4': 'HDMI Founders',
+    'HDMI 2.2': 'HDMI Forum',
+    'DisplayPort 2.1b': 'VESA',
+    'Thunderbolt 5': 'Intel / Apple',
+    '6.35 mm TS': 'No single developer',
+    'speakON 4-pole': 'Neutrik',
+    'MIDI DIN': 'MIDI Association / AMEI',
+    'ADAT Lightpipe': 'Alesis',
+    VGA: 'IBM',
+    'DVI-D dual-link': 'DDWG',
+    '12G-SDI': 'SMPTE',
+    'SATA III': 'SATA-IO'
+  };
+  Object.entries(expected).forEach(([name, developer]) => assert.equal(rows.get(name).text, developer));
+  rows.forEach(cell => {
+    assert.match(cell.html, /<a href="https:\/\/[^"]+" target="wiki" rel="noopener">[^<]+<\/a>/);
+    assert.equal((cell.html.match(/<a /g) || []).length, cell.text.split(' / ').length);
+  });
+  context.renderTable();
+  assert.equal(elements.get('header-row').cells[18].textContent, 'Developer');
+  assert.equal(elements.get('resultTable').children[0].cells[18].innerHTML, table.rows[0][18].html);
+  context.renderCards();
+  let nodes = descendants(cards.children[0]);
+  assert.ok(nodes.some(node => node.innerHTML.includes(table.rows[0][18].html)));
+  assert.match(nodes.find(node => node.dataset.copyText !== undefined).dataset.copyText, /Developer: USB-IF/);
+  context.toggleColumn(18);
+  context.renderCards();
+  nodes = descendants(cards.children[0]);
+  assert.doesNotMatch(nodes.find(node => node.dataset.copyText !== undefined).dataset.copyText, /Developer:/);
+});
+
+test('adding Developer preserves every existing 18-column visibility preference', () => {
+  const visibility = Array.from({ length: 18 }, (_, index) => index % 2 === 0);
+  const { context, state } = createRenderer('cables', {
+    'reference.column_visibility': JSON.stringify({ cables: visibility })
+  });
+  context.loadSettings();
+  assert.deepEqual(Array.from(state.visibility.cables), [...visibility, true]);
 });
 
 test('Cables uses the shared connector sprite and never wraps table text', () => {

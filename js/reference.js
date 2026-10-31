@@ -662,9 +662,9 @@ const TABLES = {
   },
   cables: {
     columns: cableReferenceColumns,
-    aligns: cableReferenceColumns.map((column) => column === 'Icon' ? 'center' : column === 'Year' ? 'right' : 'left'),
+    aligns: cableReferenceColumns.map(() => 'left'),
     titleColumn: 1,
-    widths: [16, 22, 26, 22, 7, 26, 14, 28, 28, 36, 36, 36, 32, 32, 32, 36, 54, 18],
+    widths: [16, 22, 26, 22, 7, 26, 14, 28, 28, 36, 36, 36, 32, 32, 32, 36, 54, 18, 48],
     rows: cableReferenceRows
   }
 };
@@ -716,7 +716,30 @@ const COLUMN_ICONS = {
   Impedance: 'asterisk',
   Shielding: 'asterisk',
   Compatibility: 'asterisk',
-  Source: 'external'
+  Source: 'external',
+  Developer: 'external'
+};
+
+const CABLE_COLUMN_ICONS = {
+  Icon: 'icons',
+  Cable: 'cable',
+  Family: 'band',
+  Version: 'letter_v',
+  Year: 'calendar',
+  Connectors: 'connector',
+  Contacts: 'value',
+  Signal: 'wavelength',
+  Rate: 'pulse',
+  Video: 'youtube',
+  Audio: 'mic',
+  Power: 'lightning',
+  Length: 'ruler',
+  Impedance: 'ohm',
+  Shielding: 'shield',
+  Compatibility: 'puzzle',
+  Notes: '1_4',
+  Source: 'external',
+  Developer: 'external'
 };
 
 const REFERENCE_HEADER_TOOLTIPS = {
@@ -788,7 +811,8 @@ const REFERENCE_HEADER_TOOLTIPS = {
     Shielding: 'Cable shielding requirements or common construction',
     Compatibility: 'Compatibility conditions',
     Notes: 'Important qualifications and version changes',
-    Source: 'Open the technical source'
+    Source: 'Open the technical source',
+    Developer: 'Open the developer or standards organization'
   }
 };
 
@@ -828,7 +852,7 @@ function loadSettings() {
     const savedVisibility = JSON.parse(savedVisibilityRaw);
     Object.keys(TABLES).forEach((modeKey) => {
       if (!Array.isArray(savedVisibility[modeKey])) return;
-      if (modeKey === 'cables' && savedVisibility[modeKey].length === cableReferenceColumns.length - 1) {
+      if (modeKey === 'cables' && savedVisibility[modeKey].length === 17) {
         savedVisibility[modeKey].unshift(true);
       }
       state.visibility[modeKey] = TABLES[modeKey].columns.map((_, index) => {
@@ -906,8 +930,7 @@ function updateColumnButtons() {
     label.textContent = buttonLabel;
     button.title = `Toggle ${buttonLabel} column`;
     const icon = button.querySelector('use');
-    const columnIcon = state.activeMode === 'cables' && columnLabel === 'Power'
-      ? 'asterisk' : COLUMN_ICONS[columnLabel] || 'asterisk';
+    const columnIcon = (state.activeMode === 'cables' ? CABLE_COLUMN_ICONS : COLUMN_ICONS)[columnLabel] || 'asterisk';
     const iconHref = `/icons.svg#${columnIcon}`;
     if (icon.getAttribute('href') !== iconHref) {
       icon.setAttribute('href', iconHref);

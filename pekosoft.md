@@ -609,11 +609,14 @@ canvas and artwork dimensions have different parity.
 Cables data in `js/cables.js` separates interface revisions, cable certifications
 and connector formats. Rates are nominal link or signaling rates. Video formats
 are examples with qualifications, not universal maxima. Every row has a source.
-All 18 columns support table and card views, visibility preferences,
+All 19 columns support table and card views, visibility preferences,
 sort reversal and Reset. Keep the column-control capacity in `tools/reference.php`
 at least as large as the widest Reference table when extending the data.
 The leading connector pictogram is decorative reference information. Cards keep
 the cable name as their heading and copy enabled text without the pictogram.
+Developer links identify originators or standards organizations. General wiring
+conventions explicitly use No single developer. Developer is appended after Source
+so existing column indices and visibility preferences remain aligned.
 
 Pekosoft is intentionally built with a minimal stack:
 

@@ -11,9 +11,16 @@ function content(id) {
 }
 
 test('updated interface icons remain unique standalone monochrome geometry', () => {
-  for (const id of ['clock', 'release', 'help', 'bars', 'loop', 'beat', 'snare', 'hi_hat', 'maraca', 'tambourine', 'bongos', 'knob', 'arrow_up_down', 'center', 'asterisk', 'ip', 'external', 'pulse', 'cassette', 'bitmeter']) {
+  for (const id of ['clock', 'release', 'help', 'bars', 'loop', 'beat', 'snare', 'hi_hat', 'maraca', 'tambourine', 'bongos', 'knob', 'arrow_up_down', 'center', 'asterisk', 'ip', 'external', 'pulse', 'cassette', 'bitmeter', 'cable', 'lightning', 'ohm', 'shield', 'puzzle']) {
     assert.doesNotMatch(content(id), /<(?:text|use|image)\b|\b(?:fill|stroke|style)\s*=|\bfont-/i, id);
   }
+});
+
+test('Cables compatibility uses two puzzle pieces with complementary curved edges', () => {
+  const icon = content('puzzle');
+  assert.equal((icon.match(/<path /g) || []).length, 2);
+  assert.match(icon, /a64 64 0 0 1/);
+  assert.match(icon, /a96 96 0 0 0/);
 });
 
 test('sprite symbols are alphabetically ordered by ID', () => {

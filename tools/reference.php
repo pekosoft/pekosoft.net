@@ -90,7 +90,7 @@
           <div class="module-panel-menu-buttons">
             <?php
             $columnIcons = ['bpm', 'text', 'plus_minus', 'triangle_down', 'triangle_up', 'triplet', '1_4_dotted', 'clock', 'pulse', 'play'];
-            for ($columnNumber = 1; $columnNumber <= 18; $columnNumber++) {
+            for ($columnNumber = 1; $columnNumber <= 19; $columnNumber++) {
               $columnIcon = $columnIcons[$columnNumber - 1] ?? 'asterisk';
             ?>
             <button id="toggle-col-<?php echo $columnNumber; ?>-button" class="square" title="Toggle column <?php echo $columnNumber; ?>"<?php echo $columnNumber > 10 ? ' hidden' : ''; ?>>

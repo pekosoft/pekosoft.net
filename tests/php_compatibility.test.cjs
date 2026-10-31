@@ -112,6 +112,43 @@ test('shared metadata ignores non-string release parameters on standalone pages'
   }
 });
 
+test('Reference direct links expose their table identity without JavaScript', () => {
+  const titles = {
+    bpm: 'BPM', tempi: 'Italian tempi', notes: 'Notes', scales: 'Scales',
+    chords: 'Chords', prefixes: 'Metric prefixes', cables: 'Cables'
+  };
+  for (const [mode, title] of Object.entries(titles)) {
+    const result = renderPhp('tools\\reference.php', `a=${mode}&other=ignored`, {
+      setup: `$_SERVER['REQUEST_URI'] = '/reference?a=${mode}&other=ignored';`
+    });
+    assert.equal(result.status, 200, mode);
+    assert.equal(result.diagnostics, '', mode);
+    assert.ok(result.body.includes(`<title>Pekosoft - Reference - ${title}</title>`), mode);
+    assert.ok(result.body.includes(`<meta property="og:title" content="Pekosoft - Reference - ${title}">`), mode);
+    for (const marker of ['<link rel="canonical" href=', '<meta property="og:url" content=']) {
+      assert.ok(result.body.includes(`${marker}"https://pekosoft.net/reference?a=${mode}">`), mode);
+    }
+    assert.match(result.body, /property="og:image" content="https:\/\/pekosoft\.net\/png\/og\/reference\.png"/);
+    if (mode === 'cables') assert.match(result.body, /property="og:description" content="Compare USB, HDMI/);
+  }
+});
+
+test('Reference metadata ignores unknown and non-string tables without PHP warnings', () => {
+  for (const query of ['', 'a=unknown', 'a[]=cables', 'a=%22%3E%3Cscript%3E']) {
+    const result = renderPhp('tools\\reference.php', query, {
+      setup: "$_SERVER['REQUEST_URI'] = '/reference?' . $argv[2];"
+    });
+    assert.equal(result.status, 200, query);
+    assert.equal(result.diagnostics, '', query);
+    assert.match(result.body, /<title>Pekosoft - Reference<\/title>/);
+    assert.match(result.body, /property="og:url" content="https:\/\/pekosoft\.net\/reference"/);
+  }
+  const result = renderPhp('help.php', 't=reference&a=cables');
+  assert.equal(result.diagnostics, '');
+  assert.match(result.body, /<title>Pekosoft - Help - Reference<\/title>/);
+  assert.doesNotMatch(result.body, /Reference - Cables/);
+});
+
 test('normal release pages, missing entries and standalone pages retain their responses', () => {
   for (const file of ['about.php', 'help.php', 'history.php']) {
     for (const [query, status] of [['t=index', 200], ['t=tuner', 200], ['', 200], ['t=missing-entry', 404]]) {

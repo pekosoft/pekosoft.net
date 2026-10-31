@@ -44,6 +44,12 @@ function createRenderer(mode, savedSettings = {}, href = 'https://pekosoft.net/r
     getElementById(id) {
       if (!elements.has(id)) {
         const node = element();
+        const tableTitles = {
+          bpm: 'BPM', tempi: 'Italian tempi', notes: 'Notes', scales: 'Scales',
+          chords: 'Chords', prefixes: 'Metric prefixes', cables: 'Cables'
+        };
+        const tableMode = id.match(/^table-(.+)-button$/)?.[1];
+        if (tableMode) node.title = tableTitles[tableMode];
         if (/^toggle-col-\d+-button$/.test(id)) {
           const icon = element();
           node.querySelector = selector => selector === 'use' ? icon
@@ -94,6 +100,7 @@ for (const mode of Object.keys(columnIcons)) {
     assert.equal(location.href, `https://pekosoft.net/reference?other=kept&a=${mode}#section`);
     assert.deepEqual(history.state, { existing: true });
     context.setMode('cables');
+    assert.equal(context.document.title, 'Pekosoft - Reference - Cables');
     assert.equal(new URL(location.href).searchParams.get('a'), 'cables');
     assert.equal(new URL(location.href).searchParams.get('other'), 'kept');
     assert.equal(new URL(location.href).hash, '#section');

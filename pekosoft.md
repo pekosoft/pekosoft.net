@@ -583,6 +583,16 @@ the URL without navigation, preserving other query parameters and the fragment.
 The shared Share control uses this URL. Links retain the recipient's view,
 sort and column preferences. Unknown table values produce a console warning
 and fall back to the saved mode or BPM.
+Server-rendered titles, canonical links and Open Graph URLs retain valid
+Reference table selections so social crawlers do not need JavaScript.
+Reference links use the shared Reference preview image and a relevant description.
+
+Bitmap previews in `png/` and `png/og/` centre the visible artwork bounds within
+their existing canvas. Preserve artwork pixels and dimensions when adjusting
+alignment. Run `powershell.exe -NoProfile -ExecutionPolicy Bypass -File .dev\center-preview-images.ps1`
+to centre both sets, or add `-Check` to validate
+them without writing files. Opposite margins may differ by one pixel when the
+canvas and artwork dimensions have different parity.
 Cables data in `js/cables.js` separates interface revisions, cable certifications
 and connector formats. Rates are nominal link or signaling rates. Video formats
 are examples with qualifications, not universal maxima. Every row has a source.

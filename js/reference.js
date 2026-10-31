@@ -849,6 +849,7 @@ function saveSettings() {
 }
 
 function updateReferenceUrl() {
+  document.title = `Pekosoft - Reference - ${modeButtons[state.activeMode].title}`;
   const url = new URL(window.location.href);
   url.searchParams.set('a', state.activeMode);
   if (url.href !== window.location.href) {

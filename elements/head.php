@@ -90,6 +90,27 @@ $previewSlug = $releaseTitle !== '' && $sectionTitle !== ''
 if ($sectionTitle && $releaseTitle) {
 	$canonicalUrl .= '?t=' . rawurlencode($releaseSlug);
 }
+$previewDescription = 'Official website for the experimental audio software company Pekosoft.';
+$referenceTableTitles = [
+	'bpm' => 'BPM',
+	'tempi' => 'Italian tempi',
+	'notes' => 'Notes',
+	'scales' => 'Scales',
+	'chords' => 'Chords',
+	'prefixes' => 'Metric prefixes',
+	'cables' => 'Cables',
+];
+if ($previewSlug === 'reference' && $sectionTitle === '') {
+	$referenceTable = isset($_GET['a']) && is_string($_GET['a']) ? $_GET['a'] : '';
+	$previewDescription = 'Reference tables for BPM, Italian tempi, notes, scales, chords, metric prefixes and cables.';
+	if (isset($referenceTableTitles[$referenceTable])) {
+		$documentTitle .= ' - ' . $referenceTableTitles[$referenceTable];
+		$canonicalUrl .= '?a=' . rawurlencode($referenceTable);
+		if ($referenceTable === 'cables') {
+			$previewDescription = 'Compare USB, HDMI, DisplayPort, Thunderbolt, Ethernet, audio and other cable formats, with connector types, technical specifications and sources.';
+		}
+	}
+}
 $ogImage = 'https://pekosoft.net/png/og/index.png';
 if ($previewSlug !== '') {
 	$ogImagePng = $_SERVER['DOCUMENT_ROOT'] . '/png/og/' . $previewSlug . '.png';
@@ -154,4 +175,4 @@ try {
 <meta property="og:image" content="<?php echo htmlspecialchars($ogImage, ENT_QUOTES, 'UTF-8'); ?>">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:description" content="Official website for the experimental audio software company Pekosoft.">
+<meta property="og:description" content="<?php echo htmlspecialchars($previewDescription, ENT_QUOTES, 'UTF-8'); ?>">

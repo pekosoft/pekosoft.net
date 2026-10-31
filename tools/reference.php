@@ -63,7 +63,7 @@
           <span class="button-text">Prefixes</span>
         </button>
 
-        <button id="table-cables-button" class="square" title="Show cable reference" data-module-tab="Cables">
+        <button id="table-cables-button" class="square" title="Cables" data-module-tab="Cables">
           <svg class="icons">
             <use href="/icons.svg#connector" />
           </svg>

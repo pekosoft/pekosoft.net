@@ -5,7 +5,7 @@ if (isset($_GET['t']) && !is_string($_GET['t'])) {
 }
 $requestedRelease = isset($_GET['t']) ? basename($_GET['t']) : '';
 if ($requestedRelease === 'contact') {
-  header('Location: /help.php?t=index&e=contact&k=button', true, 302);
+  header('Location: /help?t=index&e=contact&k=button', true, 302);
   exit;
 }
 if ($requestedRelease === 'settings') {

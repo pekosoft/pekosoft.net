@@ -193,6 +193,10 @@ To recover from an incomplete deployment, run Deploy site manually on `main` wit
 
 ## PHP request handling
 
+- Public URLs omit `.php`, including `/about`, `/help`, `/history` and `/updates`.
+  `.htaccess` redirects implementation URLs permanently, preserving queries.
+  Keep local Caddy routes and context-page swipe navigation consistent.
+
 - About, Help and History release parameters (`t`) must be strings. Array-valued parameters receive HTTP 400. Shared page metadata ignores non-string release parameters on standalone pages.
 - The updates feed accepts integer `page` and `per_page` parameters, defaulting to 1 and 25. Values below 1 are clamped to 1, and `per_page` is capped at 100. Invalid or out-of-range integers receive HTTP 400; pages beyond the available entries return an empty list with the unchanged total count.
 - Failed reads of existing About metadata are logged and return the HTTP 500 page before normal page output.

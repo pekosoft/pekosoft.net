@@ -42,6 +42,7 @@ Pekosoft uses a single SVG sprite file (`icons.svg`) for all interface icons. Ea
 - Pulse's horizontal sections share exact top and bottom coordinates, avoiding accumulated rounding differences from relative path commands.
 - `bitmeter` uses two equal columns of four rectangular cells in a portrait layout. The top pair uses transparent cutouts to form outlines, and the lower six cells are filled.
 - `cassette` replaces `recorder` with a simple body, two reel cutouts, a central window and a lower tape opening, all in one standalone path.
+- `label` is a filled landscape rectangle with a centered point on its right edge, without lettering.
 - Crosshair uses 32-unit lines and rim. Label L, Label S, Pivot and Jukebox share the 32-unit circular rim; Pivot's dot has radius 12.
 - Archive, Battery Full and RAM use single union silhouettes without overlapping interior shapes, preserving their filled appearance.
 - Circle Of Fifths follows BPM Circle's bold segmented bands, using twelve equal key sectors in each of two bands and no center triangles. Band radii are 256/198 and 186/134, with 12-unit gaps between bands and sectors.

@@ -9,10 +9,10 @@ const vm = require('node:vm');
 const root = path.join(__dirname, '..');
 const source = fs.readFileSync(path.join(root, 'js', 'swipe.js'), 'utf8');
 const officialLinks = [
-  '/index.php', '/tap_pad', '/bpm_calculator', '/metronome', '/turntable',
+  '/', '/tap_pad', '/bpm_calculator', '/metronome', '/turntable',
   '/bitcoin.php', '/contact', '#', '/updates'
 ];
-const betaLinks = ['/beta.php', '/player', '/tuner', '/icons', '/contact', '/updates'];
+const betaLinks = ['/beta', '/player', '/tuner', '/icons', '/contact', '/updates'];
 
 function createSwipe(url, links = officialLinks) {
   const parsed = new URL(url, 'http://localhost:8000');
@@ -34,22 +34,22 @@ function createSwipe(url, links = officialLinks) {
 }
 
 test('official About swipes wrap between Turntable and Pekosoft without Contact', () => {
-  const last = createSwipe('/about.php?t=turntable');
+  const last = createSwipe('/about?t=turntable');
   assert.equal(last.getTargetPage('forward'), 'index');
   last.goToNextPage();
-  assert.equal(last.location.href, '/about.php?t=index');
+  assert.equal(last.location.href, '/about?t=index');
   const first = createSwipe('/about.php?t=index');
   first.goToPreviousPage();
-  assert.equal(first.location.href, '/about.php?t=turntable');
+  assert.equal(first.location.href, '/about?t=turntable');
 });
 
 test('Beta About swipes wrap between Icons and Beta without Contact', () => {
-  const last = createSwipe('/about.php?t=icons', betaLinks);
+  const last = createSwipe('/about?t=icons', betaLinks);
   last.goToNextPage();
-  assert.equal(last.location.href, '/about.php?t=beta');
+  assert.equal(last.location.href, '/about?t=beta');
   const first = createSwipe('/about.php?t=beta', betaLinks);
   first.goToPreviousPage();
-  assert.equal(first.location.href, '/about.php?t=icons');
+  assert.equal(first.location.href, '/about?t=icons');
 });
 
 test('Contact stays out of tool and contextual swipe loops', () => {
@@ -61,6 +61,19 @@ test('Contact stays out of tool and contextual swipe loops', () => {
     ]);
     assert.equal(swipe.getTargetPage('forward'), 'index');
   }
+});
+
+test('clean context swipes preserve their page and tool query', () => {
+  for (const context of ['about', 'help', 'history']) {
+    for (const suffix of ['', '.php']) {
+      const swipe = createSwipe(`/${context}${suffix}?t=turntable`);
+      swipe.goToNextPage();
+      assert.equal(swipe.location.href, `/${context}?t=index`);
+    }
+  }
+  const tool = createSwipe('/turntable');
+  tool.goToNextPage();
+  assert.equal(tool.location.href, '/');
 });
 
 test('standalone Contact has no swipe destinations', () => {

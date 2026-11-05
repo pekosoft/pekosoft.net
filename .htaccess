@@ -1,4 +1,6 @@
 Options -Indexes
+Options -MultiViews
+DirectorySlash Off
 
 RewriteEngine On
 
@@ -20,12 +22,16 @@ RewriteRule ^(beta|bitcoin)\.php$ /$1 [R=301,L]
 RewriteCond %{THE_REQUEST} \s/+contact\.php[\s?] [NC]
 RewriteRule ^contact\.php$ /contact [R=308,L]
 
+RewriteCond %{THE_REQUEST} \s/+(about|help|history|updates)\.php[\s?] [NC]
+RewriteRule ^(about|help|history|updates)\.php$ /$1 [R=301,L]
+RewriteRule ^(beta|bitcoin|contact|updates|about|help|history)/$ /$1 [R=301,L]
+
 RewriteCond %{THE_REQUEST} \s/+tools/([A-Za-z0-9_]+)\.php[\s?] [NC]
 RewriteRule ^tools/([A-Za-z0-9_]+)\.php$ /$1 [R=301,L]
 
 # Root page routes
 RewriteCond %{DOCUMENT_ROOT}/$1.php -f
-RewriteRule ^(beta|bitcoin|contact|updates)/?$ /$1.php [L]
+RewriteRule ^(beta|bitcoin|contact|updates|about|help|history)$ /$1.php [END]
 
 # Tool routes
 RewriteCond %{DOCUMENT_ROOT}/tools/$1.php -f

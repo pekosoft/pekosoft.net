@@ -41,8 +41,7 @@ if (file_exists($textFile)) {
   $releasePage = "About";
   $footerPath = isBetaRelease($release) ? "/elements/beta_footer.php" : "/elements/footer.php";
   $toolPages = ["tap_pad.php", "bpm_calculator.php", "metronome.php", "turntable.php", "bpm_circle.php", "bpm_curve.php", "circle_of_fifths.php", "drum_machine.php", "player.php", "piano.php", "audio_calculator.php", "icons.php", "tuner.php", "visualizer.php", "reference.php", "notepad.php"];
-  $releaseFile = $release . ".php";
-  $releaseHref = is_file($_SERVER['DOCUMENT_ROOT'] . "/tools/" . $releaseFile) ? "/" . $release : "/" . $releaseFile;
+  $releaseHref = $release === 'index' ? '/' : '/' . $release;
   ?>
 </head>
 

@@ -43,6 +43,7 @@ function pageFromHref(href) {
 }
 
 function pageFromPathname(pathname) {
+  if (pathname === "/") return "index";
   const phpMatch = pathname.match(/\/([\w]+)\.php$/);
   if (phpMatch) return phpMatch[1];
 
@@ -106,33 +107,13 @@ function resetSwipe() {
 
 function buildPageUrl(page) {
   const path = window.location.pathname;
-  const toolPages = [
-    "tap_pad",
-    "bpm_calculator",
-    "metronome",
-    "turntable",
-    "clock",
-    "system",
-    "bpm_circle",
-    "bpm_curve",
-    "circle_of_fifths",
-    "drum_machine",
-    "player",
-    "piano",
-    "audio_calculator",
-    "icons",
-    "tuner",
-    "visualizer",
-    "reference",
-    "notepad"
-  ];
-
-  if (path.includes("about.php")) return `/about.php?t=${page}`;
-  if (path.includes("help.php")) return `/help.php?t=${page}`;
-  if (path.includes("history.php")) return `/history.php?t=${page}`;
+  const context = pageFromPathname(path);
+  if (context === "about") return `/about?t=${page}`;
+  if (context === "help") return `/help?t=${page}`;
+  if (context === "history") return `/history?t=${page}`;
   if (path.includes("js.php")) return `/js.php?t=${page}`;
   if (path.includes("css.php")) return `/css.php?t=${page}`;
-  return toolPages.includes(page) ? `/${page}` : `/${page}.php`;
+  return page === "index" ? "/" : `/${page}`;
 }
 
 function getTargetPage(direction) {

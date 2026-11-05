@@ -9,8 +9,7 @@ $toolSlugs = array_map(function ($toolPage) {
   return pathinfo($toolPage, PATHINFO_FILENAME);
 }, $toolPages);
 $hasModules = in_array($currentFile, $toolPages, true) || in_array($requestPath, $toolSlugs, true);
-$releaseFile = $release . ".php";
-$releaseHref = is_file($_SERVER['DOCUMENT_ROOT'] . "/tools/" . $releaseFile) ? "/" . $release : "/" . $releaseFile;
+$releaseHref = $release === 'index' ? '/' : '/' . $release;
 $availableModules = isset($availableModules) && is_array($availableModules)
   ? array_values(array_unique($availableModules))
   : ['tool', 'controls', 'timeline', 'panel'];
@@ -28,7 +27,7 @@ $hasPlaylistModule = in_array('playlist', $availableModules, true);
     <div class="toc-content">
       <div class="toc-column">
 
-    <button class="toc-button" data-href="<?php echo $isBetaRelease ? '/beta.php' : '/index.php'; ?>" title="<?php echo $isBetaRelease ? 'Beta' : 'Pekosoft'; ?>" aria-label="<?php echo $isBetaRelease ? 'Beta' : 'Pekosoft'; ?>">
+    <button class="toc-button" data-href="<?php echo $isBetaRelease ? '/beta' : '/'; ?>" title="<?php echo $isBetaRelease ? 'Beta' : 'Pekosoft'; ?>" aria-label="<?php echo $isBetaRelease ? 'Beta' : 'Pekosoft'; ?>">
       <svg class="icons" role="img">
         <use href="/icons.svg#<?php echo $isBetaRelease ? 'beta' : 'index'; ?>"></use>
       </svg>
@@ -89,9 +88,9 @@ $hasPlaylistModule = in_array('playlist', $availableModules, true);
       <div class="toc-column">
         <?php if (empty($hideReleaseMenu) && $release !== ''): ?>
           <button class="toc-button" data-href="<?php echo $releaseHref; ?>" title="Tool" aria-label="Tool"><svg class="icons" role="img"><use href="/icons.svg#release"></use></svg>Tool</button>
-          <button class="toc-button" data-href="/help.php?t=<?php echo $release; ?>" title="Help" aria-label="Help"><svg class="icons" role="img"><use href="/icons.svg#help"></use></svg>Help</button>
-          <button class="toc-button" data-href="/history.php?t=<?php echo $release; ?>" title="History" aria-label="History"><svg class="icons" role="img"><use href="/icons.svg#clock"></use></svg>History</button>
-          <button class="toc-button" data-href="/about.php?t=<?php echo $release; ?>" title="About" aria-label="About"><svg class="icons" role="img"><use href="/icons.svg#about"></use></svg>About</button>
+          <button class="toc-button" data-href="/help?t=<?php echo $release; ?>" title="Help" aria-label="Help"><svg class="icons" role="img"><use href="/icons.svg#help"></use></svg>Help</button>
+          <button class="toc-button" data-href="/history?t=<?php echo $release; ?>" title="History" aria-label="History"><svg class="icons" role="img"><use href="/icons.svg#clock"></use></svg>History</button>
+          <button class="toc-button" data-href="/about?t=<?php echo $release; ?>" title="About" aria-label="About"><svg class="icons" role="img"><use href="/icons.svg#about"></use></svg>About</button>
         <?php endif; ?>
       </div>
 
@@ -122,7 +121,7 @@ $hasPlaylistModule = in_array('playlist', $availableModules, true);
       </div>
 
       <div class="toc-column">
-        <button class="toc-button" data-href="/bitcoin.php" title="Buy Us Coffee" aria-label="Buy Us Coffee">
+        <button class="toc-button" data-href="/bitcoin" title="Buy Us Coffee" aria-label="Buy Us Coffee">
           <svg class="icons" role="img">
             <use href="/icons.svg#qr"></use>
           </svg>

@@ -2,57 +2,66 @@ name: Deploy site
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
     paths-ignore:
-      - .github/**
+      - .github/instructions/**
+      - .github/tests/**
+      - .github/workflows/connection-test.yml
+      - .github/workflows/actions.lock
       - .dev/**
       - .githooks/**
       - .vscode/**
       - tests/**
+      - '**/*.md'
+      - '**/*.ai'
+      - '**/*_originals/**'
       - .editorconfig
-      - .ftpignore
       - .gitignore
-      - DEPLOYMENT.md
-      - README.md
-      - pekosoft.md
-      - icons.md
-      - rulers.md
+      - .ftpignore
       - LICENCE
+      - THIRD-PARTY-LICENCES
+      - '**/.env*'
+      - '**/*.pem'
+      - '**/*.key'
+      - '**/*.p12'
+      - '**/*.pfx'
+      - '**/error_log*'
+      - '**/*.log'
+      - '**/*.bak'
+      - '**/*.tmp'
+      - '**/.DS_Store'
+      - '**/Thumbs.db'
   workflow_dispatch:
     inputs:
       mode:
-        description: Deployment mode
-        required: true
+        description: Deployment mode. Check verifies login and destination without uploading.
         type: choice
-        default: changed
-        options:
-          - changed
-          - full
-
-concurrency:
-  group: deploy-production
-  cancel-in-progress: false
+        required: true
+        default: check
+        options: [check, dry-run, changed, full]
 
 permissions:
   contents: read
   actions: read
 
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
 jobs:
   deploy:
     name: Upload via SFTP
     runs-on: ubuntu-latest
-
+    timeout-minutes: 30
     env:
-      SFTP_HOST: ${{ secrets.SFTP_HOST }}
-      SFTP_USERNAME: ${{ secrets.SFTP_USERNAME }}
-      SFTP_PASSWORD: ${{ secrets.SFTP_PASSWORD }}
+      SFTP_HOST: ${{ secrets.SFTP_HOST || secrets.FTP_SERVER }}
+      SFTP_USERNAME: ${{ secrets.SFTP_USERNAME || secrets.FTP_USERNAME }}
+      SFTP_PASSWORD: ${{ secrets.SFTP_PASSWORD || secrets.FTP_PASSWORD }}
       SFTP_PORT: ${{ vars.SFTP_PORT || '22' }}
-      SFTP_REMOTE_DIR: ${{ vars.SFTP_REMOTE_DIR }}
-      DEPLOY_MODE: ${{ github.event.inputs.mode || 'changed' }}
-      DEPLOY_UPLOAD_LIST: /tmp/deploy-upload.txt
-      DEPLOY_DELETE_LIST: /tmp/deploy-delete.txt
-      DEPLOY_SFTP_BATCH: /tmp/deploy.sftp
+      SFTP_REMOTE_DIR: ${{ vars.SFTP_REMOTE_DIR || secrets.SERVER_DIR }}
+      DEPLOY_MODE: ${{ inputs.mode || 'changed' }}
+      DEPLOY_UPDATES_FEED: 'true'
+      DEPLOY_FULL_PRUNE: ''
 
     steps:
       - name: Check out repository
@@ -60,48 +69,12 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Generate updates feed
-        shell: bash
-        run: |
-          mkdir -p data
-          python3 - <<'PY'
-          import json
-          import subprocess
-          from pathlib import Path
+      - name: Test deployment behavior
+        run: node --test .github/tests/deployment.cjs
 
-          output = subprocess.check_output(
-            ['git', 'log', '--format=%H%x1f%aI%x1f%s%x1e'],
-            text=True,
-          )
-          runs = []
-          for record in output.split('\x1e'):
-            parts = record.strip().split('\x1f', 2)
-            if len(parts) != 3:
-              continue
-            sha, created_at, title = parts
-            runs.append({
-              'head_sha': sha,
-              'created_at': created_at,
-              'display_title': title,
-            })
-
-          Path('data/updates.json').write_text(
-            json.dumps({'workflow_runs': runs, 'total_count': len(runs)}) + '\n',
-            encoding='utf-8',
-          )
-          PY
-
-      - name: Validate deployment settings
-        shell: bash
-        run: |
-          test -n "$SFTP_HOST" || { echo "Missing secret: SFTP_HOST"; exit 1; }
-          test -n "$SFTP_USERNAME" || { echo "Missing secret: SFTP_USERNAME"; exit 1; }
-          test -n "$SFTP_PASSWORD" || { echo "Missing secret: SFTP_PASSWORD"; exit 1; }
-          test -n "$SFTP_REMOTE_DIR" || { echo "Missing variable: SFTP_REMOTE_DIR"; exit 1; }
-
-      - name: Find last successful deployment
+      - name: Find last successful upload
         id: baseline
-        if: env.DEPLOY_MODE != 'full'
+        if: env.DEPLOY_MODE == 'changed' || env.DEPLOY_MODE == 'dry-run'
         uses: actions/github-script@v8
         with:
           script: |
@@ -112,200 +85,54 @@ jobs:
               status: 'success',
               per_page: 100
             });
-            const previous = runs
+            const candidates = runs
               .filter(run => run.id !== context.runId)
-              .sort((left, right) => Date.parse(right.updated_at) - Date.parse(left.updated_at))[0];
-            if (previous) {
-              core.info(`Using successful deployment ${previous.id} at ${previous.head_sha}`);
-              core.setOutput('sha', previous.head_sha);
-            } else {
-              core.info('No successful deployment found; a full sync is required.');
+              .sort((left, right) => Date.parse(right.updated_at) - Date.parse(left.updated_at));
+            for (const run of candidates) {
+              if (run.event === 'workflow_dispatch') {
+                const jobs = await github.paginate(github.rest.actions.listJobsForWorkflowRun, {
+                  ...context.repo, run_id: run.id, per_page: 100
+                });
+                const uploadSteps = ['Upload website files', 'Upload changed website files',
+                  'Full sync website files', 'Upload runtime files', 'Deploy via FTP'];
+                if (!jobs.some(job => job.steps?.some(step =>
+                  uploadSteps.includes(step.name) && step.conclusion === 'success'))) continue;
+              }
+              core.info(`Using successful upload ${run.id} at ${run.head_sha}`);
+              core.setOutput('sha', run.head_sha);
+              return;
             }
+            core.setFailed('No successful upload baseline. Verify the destination with Check before requesting a full upload.');
 
-      - name: Prepare deployment plan
-        id: plan
-        shell: bash
-        env:
-          DEPLOY_BASE_SHA: ${{ steps.baseline.outputs.sha }}
-        run: |
-          : > "$DEPLOY_UPLOAD_LIST"
-          : > "$DEPLOY_DELETE_LIST"
-          echo "data/updates.json" >> "$DEPLOY_UPLOAD_LIST"
-
-          mode="$DEPLOY_MODE"
-          if [[ "$mode" == "full" ]]; then
-            {
-              echo "mode=full"
-              echo "has_changes=true"
-              echo "upload_count=full"
-              echo "delete_count=0"
-            } >> "$GITHUB_OUTPUT"
-            echo "Full sync requested."
-            exit 0
-          fi
-
-          base_commit="$DEPLOY_BASE_SHA"
-          if [[ -z "$base_commit" ]] || ! git merge-base --is-ancestor "$base_commit" "$GITHUB_SHA"; then
-            {
-              echo "mode=full"
-              echo "has_changes=true"
-              echo "upload_count=full"
-              echo "delete_count=0"
-            } >> "$GITHUB_OUTPUT"
-            echo "No usable deployed ancestor found; falling back to full sync."
-            exit 0
-          fi
-
-          is_excluded() {
-            case "$1" in
-              .git/*|.github/*|.dev/*|.githooks/*|.vscode/*|tests/*|.editorconfig|.ftpignore|.gitignore|DEPLOYMENT.md|README.md|pekosoft.md|icons.md|rulers.md|LICENCE)
-                return 0
-                ;;
-            esac
-            return 1
-          }
-
-          while IFS=$'\t' read -r status path_a path_b; do
-            [[ -z "$status" ]] && continue
-
-            case "$status" in
-              A|M|T)
-                if ! is_excluded "$path_a" && [[ -f "$path_a" ]]; then
-                  echo "$path_a" >> "$DEPLOY_UPLOAD_LIST"
-                fi
-                ;;
-              D)
-                if ! is_excluded "$path_a"; then
-                  echo "$path_a" >> "$DEPLOY_DELETE_LIST"
-                fi
-                ;;
-              R*)
-                if ! is_excluded "$path_a"; then
-                  echo "$path_a" >> "$DEPLOY_DELETE_LIST"
-                fi
-                if ! is_excluded "$path_b" && [[ -f "$path_b" ]]; then
-                  echo "$path_b" >> "$DEPLOY_UPLOAD_LIST"
-                fi
-                ;;
-              C*)
-                if ! is_excluded "$path_b" && [[ -f "$path_b" ]]; then
-                  echo "$path_b" >> "$DEPLOY_UPLOAD_LIST"
-                fi
-                ;;
-            esac
-          done < <(git diff --name-status -M "$base_commit" "$GITHUB_SHA")
-
-          upload_count=$(grep -c . "$DEPLOY_UPLOAD_LIST" || true)
-          delete_count=$(grep -c . "$DEPLOY_DELETE_LIST" || true)
-
-          if [[ "$upload_count" -eq 0 && "$delete_count" -eq 0 ]]; then
-            has_changes=false
-            echo "No deployable file changes found."
-          else
-            has_changes=true
-            echo "Deployable uploads: $upload_count"
-            echo "Deployable deletes: $delete_count"
-          fi
-
-          {
-            echo "mode=changed"
-            echo "has_changes=$has_changes"
-            echo "upload_count=$upload_count"
-            echo "delete_count=$delete_count"
-          } >> "$GITHUB_OUTPUT"
-
-      - name: Install deploy tools
-        if: steps.plan.outputs.has_changes == 'true'
+      - name: Install lftp
+        if: env.DEPLOY_MODE != 'dry-run'
         shell: bash
         run: |
-          tools=()
-
-          if [[ "${{ steps.plan.outputs.mode }}" == "full" ]]; then
-            command -v lftp >/dev/null 2>&1 || tools+=(lftp)
-          else
-            command -v sshpass >/dev/null 2>&1 || tools+=(sshpass)
-          fi
-
-          if [[ "${#tools[@]}" -gt 0 ]]; then
-            sudo apt-get install -y --no-install-recommends "${tools[@]}" || {
-              sudo apt-get update
-              sudo apt-get install -y --no-install-recommends "${tools[@]}"
-            }
+          if ! command -v lftp >/dev/null 2>&1; then
+            sudo apt-get update
+            sudo apt-get install -y --no-install-recommends lftp
           fi
 
       - name: Trust SFTP host key
-        if: steps.plan.outputs.has_changes == 'true'
+        if: env.DEPLOY_MODE != 'dry-run'
         shell: bash
         run: |
+          test -n "$SFTP_HOST" || { echo "Missing SFTP_HOST or FTP_SERVER"; exit 1; }
+          [[ "$SFTP_HOST" =~ ^[a-zA-Z0-9.-]+$ ]] || { echo "Invalid SFTP hostname"; exit 1; }
+          [[ "$SFTP_PORT" =~ ^[0-9]+$ ]] || { echo "Invalid SFTP port"; exit 1; }
           mkdir -p ~/.ssh
-          ssh-keyscan -p "$SFTP_PORT" "$SFTP_HOST" >> ~/.ssh/known_hosts
+          ssh-keyscan -p "$SFTP_PORT" "$SFTP_HOST" > ~/.ssh/known_hosts
+          test -s ~/.ssh/known_hosts || { echo "No host key returned"; exit 1; }
           chmod 600 ~/.ssh/known_hosts
 
-      - name: Upload changed website files
-        if: steps.plan.outputs.mode == 'changed' && steps.plan.outputs.has_changes == 'true'
-        shell: bash
-        run: |
-          remote_root="${SFTP_REMOTE_DIR%/}"
+      - name: Check connection or preview changes
+        if: env.DEPLOY_MODE == 'check' || env.DEPLOY_MODE == 'dry-run'
+        env:
+          DEPLOY_BASE: ${{ steps.baseline.outputs.sha }}
+        run: node .github/scripts/deploy.cjs
 
-          : > "$DEPLOY_SFTP_BATCH"
-
-          add_remote_dirs() {
-            local relative_dir="$1"
-            local current="$remote_root"
-
-            [[ -z "$relative_dir" || "$relative_dir" == "." ]] && return
-
-            IFS='/' read -ra parts <<< "$relative_dir"
-            for part in "${parts[@]}"; do
-              [[ -z "$part" ]] && continue
-              current="$current/$part"
-              printf -- '-mkdir "%s"\n' "$current" >> "$DEPLOY_SFTP_BATCH"
-            done
-          }
-
-          while IFS= read -r file; do
-            [[ -z "$file" ]] && continue
-            printf -- '-rm "%s/%s"\n' "$remote_root" "$file" >> "$DEPLOY_SFTP_BATCH"
-          done < "$DEPLOY_DELETE_LIST"
-
-          while IFS= read -r file; do
-            [[ -z "$file" ]] && continue
-            dir=$(dirname "$file")
-            add_remote_dirs "$dir"
-            printf 'put "%s" "%s/%s"\n' "$file" "$remote_root" "$file" >> "$DEPLOY_SFTP_BATCH"
-          done < "$DEPLOY_UPLOAD_LIST"
-
-          sshpass -p "$SFTP_PASSWORD" sftp \
-            -P "$SFTP_PORT" \
-            -o BatchMode=no \
-            -o StrictHostKeyChecking=yes \
-            -b "$DEPLOY_SFTP_BATCH" \
-            "$SFTP_USERNAME@$SFTP_HOST"
-
-      - name: Full sync website files
-        if: steps.plan.outputs.mode == 'full' && steps.plan.outputs.has_changes == 'true'
-        shell: bash
-        run: |
-          lftp -u "$SFTP_USERNAME","$SFTP_PASSWORD" -p "$SFTP_PORT" "sftp://$SFTP_HOST" <<EOF
-          set cmd:fail-exit yes
-          set net:max-retries 2
-          set net:timeout 30
-          mirror --reverse --verbose --only-newer --no-perms --parallel=4 \
-            --exclude-glob .git/** \
-            --exclude-glob .github/** \
-            --exclude-glob .dev/** \
-            --exclude-glob .githooks/** \
-            --exclude-glob .vscode/** \
-            --exclude-glob tests/** \
-            --exclude-glob .editorconfig \
-            --exclude-glob .ftpignore \
-            --exclude-glob .gitignore \
-            --exclude-glob DEPLOYMENT.md \
-            --exclude-glob README.md \
-            --exclude-glob pekosoft.md \
-            --exclude-glob icons.md \
-            --exclude-glob rulers.md \
-            --exclude-glob LICENCE \
-            ./ "$SFTP_REMOTE_DIR"
-          bye
-          EOF
+      - name: Upload website files
+        if: env.DEPLOY_MODE == 'changed' || env.DEPLOY_MODE == 'full'
+        env:
+          DEPLOY_BASE: ${{ steps.baseline.outputs.sha }}
+        run: node .github/scripts/deploy.cjs

@@ -28,3 +28,20 @@ js_variable_list.txt
 # OS/editor junk
 .DS_Store
 Thumbs.db
+
+# Shared deployment exclusions
+**/*.md
+THIRD-PARTY-LICENCES
+**/.env*
+**/*.pem
+**/*.key
+**/*.p12
+**/*.pfx
+**/error_log*
+**/*.log
+**/*.bak
+**/*.tmp
+**/.DS_Store
+**/Thumbs.db
+.well-known/acme-challenge/**
+.well-known/pki-validation/**

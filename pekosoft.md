@@ -287,6 +287,25 @@ Tooltip placement rule:
 - Do not mention development Markdown, internal guidance updates or routine documentation maintenance in titles.
 - Cover all substantive user-facing changes without listing every implementation detail.
 
+## Deployment
+
+The standardized `.github/workflows/deploy.yml` workflow uses lftp over SFTP.
+It reads `.ftpignore`, generates `data/updates.json` from Git history and
+uploads changes since the last successful upload on the same branch.
+Failed commits are recovered by the next successful upload.
+Missing baselines fail explicitly instead of selecting full sync.
+Manual **check** mode verifies login and destination without modifying files.
+**dry-run** previews a deployment plan without connecting.
+Neither mode replaces the upload baseline.
+Full mode uploads tracked runtime files without deleting remote-only files.
+
+Configure `SFTP_HOST`, `SFTP_USERNAME`, `SFTP_PASSWORD`, `SFTP_REMOTE_DIR`
+and optional `SFTP_PORT` (22 by default). Existing FTP-named settings are
+compatibility aliases only, not a change of protocol. Verify SFTP access and
+the exact website destination before uploading.
+Run `node --test tests/deployment.test.cjs` for the deployment regression suite.
+See the shared [deployment procedure](../SITES.md#deployment).
+
 ## Help writing conventions
 
 - Describe deterministic calculations as "calculates" or "calculated", not "estimates". State actual limitations explicitly, such as excluding file headers and metadata.

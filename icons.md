@@ -42,6 +42,7 @@ Pekosoft uses a single SVG sprite file (`icons.svg`) for all interface icons. Ea
 - Pulse's horizontal sections share exact top and bottom coordinates, avoiding accumulated rounding differences from relative path commands.
 - `bitmeter` uses two equal columns of four rectangular cells in a portrait layout. The top pair uses transparent cutouts to form outlines, and the lower six cells are filled.
 - `cassette` replaces `recorder` with a simple body, two reel cutouts, a central window and a lower tape opening, all in one standalone path.
+- Cassette reel centers are at x=128 and x=384; its central window is a 96-by-48 landscape rectangle.
 - `label` is a filled landscape rectangle with a centered point on its right edge, without lettering.
 - Crosshair uses 32-unit lines and rim. Label L, Label S, Pivot and Jukebox share the 32-unit circular rim; Pivot's dot has radius 12.
 - Archive, Battery Full and RAM use single union silhouettes without overlapping interior shapes, preserving their filled appearance.

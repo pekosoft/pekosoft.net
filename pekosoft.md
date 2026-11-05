@@ -573,10 +573,14 @@ That includes:
 ### Local previews
 
 The cross-site register is [Websites](../SITES.md), beside the shared VS Code workspace.
-Pekosoft uses HTTP port 8000 with Caddy and PHP FastCGI. Its startup script in
-`.dev/startup-localhost.ps1` verifies existing processes and reuses shared PHP
-instead of stopping listeners. It validates clean routes, canonical redirects,
-query preservation, static files and missing-page responses.
+Pekosoft uses HTTP port 8000 with Caddy and PHP FastCGI. Run the shared
+`../local-tools/startup.ps1` command to start all eight previews, beginning with
+MC Peko on port 8001. The `.dev/startup-localhost.ps1` entry point delegates to
+that shared routine. It verifies managed processes, routing, redirects, query
+preservation, production canonical metadata, static files and missing pages.
+The shared routine also synchronizes the master icon sprite, maintains one icon
+watcher and reuses Chrome site groups. See the register for missing browser links
+and the user action needed to allow VS Code's automatic startup task.
 
 ### Visualizer
 

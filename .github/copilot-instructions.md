@@ -26,7 +26,7 @@ When no suitable icon exists, use `/icons.svg#asterisk`. Never use `#field` as a
 
 Before any other task in every session:
 
-1. Start or verify `http://localhost:8000` using a PHP rewrite router that mirrors the routes and redirects in [`.htaccess`](../.htaccess). Keep localhost on HTTP and do not replace an existing listener without checking it.
+1. Read the shared [SITES.md](../../SITES.md) and run its all-sites startup command before site-specific work. Start MC Peko on port 8001 first, then all eight sites, keeping Pekosoft on `http://localhost:8000`. Use Caddy and PHP FastCGI with routing that mirrors [`.htaccess`](../.htaccess). Keep localhost on HTTP and do not replace an existing listener without checking it.
 2. Validate clean tool and root-page URLs, canonical links, implementation-URL redirects, query-string preservation, static resources and missing-page responses.
 3. Reset the shared browser to 100% zoom before reviewing the site. Verify browser zoom where the available tools permit it; page scale or device pixel ratio alone is not proof of browser zoom.
 4. Show the rendered page and report startup pass/fail, explicitly identifying any checks that could not be verified. Keep the local server running for subsequent work.

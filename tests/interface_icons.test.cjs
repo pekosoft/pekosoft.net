@@ -187,16 +187,16 @@ test('Circle Of Fifths matches BPM Circle band weights with twelve sectors and n
   assert.deepEqual(rotations, Array.from({ length: 11 }, (_, index) => (index + 1) * 30));
 });
 
-test('Cassette replaces Recorder with a single simple path and symmetric reel cutouts', () => {
-  assert.doesNotMatch(sprite, /<symbol id="recorder"/);
+test('Cassette has a landscape window and symmetric reels while preserving Recorder compatibility', () => {
+  assert.equal([...sprite.matchAll(/<symbol id="recorder"/g)].length, 1);
   const icon = content('cassette');
   assert.equal([...icon.matchAll(/<path\b/g)].length, 1);
   assert.match(icon, /fill-rule="evenodd"/);
   const data = icon.match(/\bd="([^"]+)"/)[1];
   assert.ok(data.length < 320);
-  assert.match(data, /M144 176a48 48 0 1 0 0 96 48 48 0 1 0 0-96Z/);
-  assert.match(data, /M368 176a48 48 0 1 0 0 96 48 48 0 1 0 0-96Z/);
-  assert.match(data, /M224 192h64v64h-64Z/);
+  assert.match(data, /M128 176a48 48 0 1 0 0 96 48 48 0 1 0 0-96Z/);
+  assert.match(data, /M384 176a48 48 0 1 0 0 96 48 48 0 1 0 0-96Z/);
+  assert.match(data, /M208 200h96v48h-96Z/);
   assert.match(data, /M160 336h192l32 64H128Z/);
 });
 

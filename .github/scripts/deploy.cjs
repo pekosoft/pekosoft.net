@@ -66,7 +66,8 @@ function settings(env) {
   const remote = env.SFTP_REMOTE_DIR.replace(/\/+$/, '');
   const parts = remote.replace(/^\//, '').split('/');
   const site = (env.GITHUB_REPOSITORY || '').split('/').at(-1);
-  if (!site || !remote || parts.some(part => !part || part === '.' || part === '..') || parts.at(-1) !== site) {
+  const directory = site === 'peko.net' ? 'public_html' : site;
+  if (!site || !remote || parts.some(part => !part || part === '.' || part === '..') || parts.at(-1) !== directory) {
     throw new Error('The SFTP destination must name this repository website directory, not the account or server root.');
   }
   quote(remote);

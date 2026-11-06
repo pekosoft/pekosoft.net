@@ -58,7 +58,7 @@ jobs:
       SFTP_USERNAME: ${{ secrets.SFTP_USERNAME || secrets.FTP_USERNAME }}
       SFTP_PASSWORD: ${{ secrets.SFTP_PASSWORD || secrets.FTP_PASSWORD }}
       SFTP_PORT: ${{ vars.SFTP_PORT || '22' }}
-      SFTP_REMOTE_DIR: ${{ vars.SFTP_REMOTE_DIR || secrets.SERVER_DIR }}
+      SFTP_REMOTE_DIR: /home/flamenco/pekosoft.net
       DEPLOY_MODE: ${{ inputs.mode || 'changed' }}
       DEPLOY_UPDATES_FEED: 'true'
       DEPLOY_FULL_PRUNE: ''

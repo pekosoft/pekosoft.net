@@ -61,6 +61,11 @@ test('Settings reject missing values, invalid ports, wrong-site destinations and
   const valid = { SFTP_HOST: 'host.example', SFTP_USERNAME: 'test', SFTP_PASSWORD: 'unused',
     SFTP_REMOTE_DIR: '/home/account/site.example/', GITHUB_REPOSITORY: 'owner/site.example' };
   assert.deepEqual(deploy.settings(valid), { remote: '/home/account/site.example', port: 22 });
+  const site = path.basename(root);
+  const destination = `/home/flamenco/${site === 'peko.net' ? 'public_html' : site}`;
+  assert.ok(workflow.includes(`SFTP_REMOTE_DIR: ${destination}\n`));
+  assert.equal(deploy.settings({ ...valid, GITHUB_REPOSITORY: `owner/${site}`, SFTP_REMOTE_DIR: destination }).remote, destination);
+  assert.throws(() => deploy.settings({ ...valid, SFTP_REMOTE_DIR: '/home/flamenco/public_html' }), /directory/);
   assert.equal(deploy.settings({ ...valid, SFTP_REMOTE_DIR: 'account/site.example' }).remote, 'account/site.example');
   for (const name of ['SFTP_HOST', 'SFTP_USERNAME', 'SFTP_PASSWORD', 'SFTP_REMOTE_DIR']) {
     assert.throws(() => deploy.settings({ ...valid, [name]: '' }), /Missing/);

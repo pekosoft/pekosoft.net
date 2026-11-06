@@ -299,10 +299,12 @@ Manual **check** mode verifies login and destination without modifying files.
 Neither mode replaces the upload baseline.
 Full mode uploads tracked runtime files without deleting remote-only files.
 
-Configure `SFTP_HOST`, `SFTP_USERNAME`, `SFTP_PASSWORD`, `SFTP_REMOTE_DIR`
+Configure `SFTP_HOST`, `SFTP_USERNAME`, `SFTP_PASSWORD`
 and optional `SFTP_PORT` (22 by default). Existing FTP-named settings are
 compatibility aliases only, not a change of protocol. Verify SFTP access and
 the exact website destination before uploading.
+The workflow defines `SFTP_REMOTE_DIR` as `/home/flamenco/pekosoft.net`.
+The old destination variable and `SERVER_DIR` secret are not used.
 Run `node --test tests/deployment.test.cjs` for the deployment regression suite.
 See the shared [deployment procedure](../SITES.md#deployment).
 

@@ -11,7 +11,13 @@
 
   <div class="top-heading-title">
     <h1 class="release-title">
-      <?php echo $releaseName; ?><?php if ($releasePage !== ''): ?> <span><?php echo $releasePage; ?></span><?php endif; ?>
+      <?php if (isset($release) && $release === 'index'): ?>
+        <a href="/" aria-label="Pekosoft home">
+          <svg class="assets" viewBox="0 0 512 101.87" role="img" aria-label="Pekosoft"><use href="/assets.svg#logo" /></svg>
+        </a>
+      <?php else: ?>
+        <?php echo $releaseName; ?><?php if ($releasePage !== ''): ?> <span><?php echo $releasePage; ?></span><?php endif; ?>
+      <?php endif; ?>
     </h1>
   </div>
 

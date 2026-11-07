@@ -1410,6 +1410,8 @@ a > .assets {
   left: 0;
   right: 0;
   width: 100%;
+  box-sizing: border-box;
+  height: 48px;
   z-index: 15;
   padding: 8px 8px;
 }
@@ -1433,6 +1435,10 @@ a > .assets {
 
 .index-page .top-heading-title .release-title {
   display: block;
+}
+
+body.index-page:not(.beta-page) .top-heading-title .release-title > a > .assets {
+  height: 24px;
 }
 
 .top-heading .settings-panel .knob-control {
@@ -1465,6 +1471,8 @@ body.settings-sidebar-open #toggle-settings-panel-button .icons {
 .footer {
   display: flex;
   align-items: center;
+  box-sizing: border-box;
+  height: 48px;
   padding: 8px;
   max-width: var(--maxwidth);
   margin: 0 auto;

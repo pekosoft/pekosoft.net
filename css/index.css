@@ -1437,7 +1437,7 @@ a > .assets {
   display: block;
 }
 
-body.index-page:not(.beta-page) .top-heading-title .release-title > a > .assets {
+.top-heading-title .release-title > a > .assets {
   height: 24px;
 }
 

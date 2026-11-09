@@ -475,6 +475,7 @@
     <h1>Playlist <span class="object">module</span></h1>
     Manages queued tracks and per-row actions. Presets is the default view, and Custom holds your own playlist. Switching views does not interrupt playback. Previous and Next track follow the displayed playlist. Drag a column header edge to resize that column. On touchscreens, drag the right side of the header. Double-click or double-tap the edge to restore its default width.
     Modified and Added show the date and local time down to seconds.
+    Drop one or more audio files from Windows Explorer or another file manager onto Playlist to append them to Custom and play the first added track, just like Open files. Existing tracks are kept. Unsupported files are reported and skipped. Files stay local and are not uploaded.
   </div>
 </div>
 

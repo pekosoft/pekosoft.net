@@ -4361,7 +4361,7 @@ function addToPlaylist(files) {
     setPlaylistView('custom');
 
     for (let file of files) {
-        if (file.type.startsWith('audio/')) {
+        if (isAudioFile(file)) {
             const item = {
                 name: file.name,
                 size: file.size,
@@ -4835,18 +4835,84 @@ if (playlistLoadButton) {
     });
 }
 
-// Update file input to add to playlist instead of replacing
-audioFileInput.addEventListener('change', function (event) {
-    const files = event.target.files;
-    if (files && files.length > 0) {
-        const firstNewIndex = getCustomPlaylist().length;
-        addToPlaylist(files);
-        const firstNewPlayableIndex = playlist.findIndex((item, index) => index >= firstNewIndex && item?.file);
-        if (firstNewPlayableIndex !== -1) {
-            playPlaylistItem(firstNewPlayableIndex);
-        }
+function isAudioFile(file) {
+    return file.type.startsWith('audio/')
+        || (!file.type && /\.(wav|wave|mp3|flac|ogg|oga|opus|m4a|aac|aif|aiff|aifc|wma|webm)$/i.test(file.name));
+}
+
+function importPlaylistFiles(files) {
+    const audioFiles = Array.from(files).filter(isAudioFile);
+    const rejectedFiles = Array.from(files).filter(file => !isAudioFile(file));
+    if (rejectedFiles.length) {
+        const message = `Unsupported audio files: ${rejectedFiles.map(file => file.name).join(', ')}`;
+        console.warn(message);
+        alert(message);
     }
+    if (!audioFiles.length) return;
+    const firstNewIndex = getCustomPlaylist().length;
+    addToPlaylist(audioFiles);
+    const firstNewPlayableIndex = playlist.findIndex((item, index) => index >= firstNewIndex && item?.file);
+    if (firstNewPlayableIndex !== -1) {
+        playPlaylistItem(firstNewPlayableIndex);
+    }
+}
+
+audioFileInput.addEventListener('change', function (event) {
+    importPlaylistFiles(event.target.files || []);
+    audioFileInput.value = '';
 });
+
+const playlistDropTarget = document.getElementById('playlist-container');
+let playlistDragDepth = 0;
+
+function isFileDrag(event) {
+    return Array.from(event.dataTransfer?.types || []).includes('Files');
+}
+
+function clearPlaylistDropTarget() {
+    playlistDragDepth = 0;
+    playlistDropTarget.classList.remove('playlist-drop-target');
+}
+
+playlistDropTarget.addEventListener('dragenter', (event) => {
+    if (!isFileDrag(event)) return;
+    event.preventDefault();
+    playlistDragDepth++;
+    playlistDropTarget.classList.add('playlist-drop-target');
+});
+
+playlistDropTarget.addEventListener('dragleave', (event) => {
+    if (!isFileDrag(event)) return;
+    playlistDragDepth = Math.max(0, playlistDragDepth - 1);
+    if (!playlistDragDepth) clearPlaylistDropTarget();
+});
+
+playlistDropTarget.addEventListener('dragover', (event) => {
+    if (!isFileDrag(event)) return;
+    event.preventDefault();
+    event.dataTransfer.dropEffect = 'copy';
+});
+
+playlistDropTarget.addEventListener('drop', (event) => {
+    if (!isFileDrag(event)) return;
+    event.preventDefault();
+    clearPlaylistDropTarget();
+    importPlaylistFiles(event.dataTransfer.files);
+});
+
+// Prevent file drops outside Playlist from navigating away from the session.
+document.addEventListener('dragover', (event) => {
+    if (!isFileDrag(event)) return;
+    event.preventDefault();
+    if (!playlistDropTarget.contains(event.target)) event.dataTransfer.dropEffect = 'none';
+});
+document.addEventListener('drop', (event) => {
+    if (!isFileDrag(event)) return;
+    event.preventDefault();
+    clearPlaylistDropTarget();
+});
+document.addEventListener('dragend', clearPlaylistDropTarget);
+window.addEventListener('blur', clearPlaylistDropTarget);
 
 loadPlaylistFromStorage();
 presetPlaylist = window.PekoTestTones.createPresets().map(item => ({

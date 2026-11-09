@@ -370,6 +370,8 @@ Clock tick sound defaults to off even when global Sound initially defaults to on
 
 The shared Meters Freeze button holds meter samples without stopping audio or recording. Guides, Bright, Rulers, Color, mode changes and resizing redraw from cached samples or Wavescope history without sampling or advancing the held signal. Freeze is transient, starts off and is released by tool Reset or page reload. Document its shared behavior in General Help rather than individual tool Help files.
 
+Meters All mode uses the shared 4px `--grey1` dividers between meter frames and below their non-selectable titles, without extra outer padding or doubled borders. The selected meter label indicates the focused view.
+
 ## Panel editability rule
 
 Panels are always input fields.

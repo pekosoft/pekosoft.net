@@ -10,6 +10,7 @@ function createMeter(initialStorage = {}) {
   const elements = new Map();
   const storage = new Map(Object.entries(initialStorage));
   const draws = [];
+  const contextReads = [];
   const errors = [];
   const rulers = {};
   const frames = [];
@@ -35,7 +36,7 @@ function createMeter(initialStorage = {}) {
         contains: name => classes.has(name)
       },
       getBoundingClientRect() { return { left: 0, top: 0, width: this.clientWidth, height: this.clientHeight }; },
-      getContext: () => context2d,
+      getContext: () => { contextReads.push(value); return context2d; },
       setAttribute(name, text) { attributes.set(name, text); },
       getAttribute: name => attributes.get(name),
       addEventListener(name, callback) { listeners.set(name, callback); },
@@ -76,13 +77,13 @@ function createMeter(initialStorage = {}) {
   vm.runInContext(source.replace(/\}\)\(\);(?=\s*\/\/ END OF FILE)/, `
     globalThis.meter = {
       getBitActivity, getBitMeterGeometry, getMeterTicks, getCrosshairReadout,
-      applyMode, applyFreeze, applyGuides, applyBright, applyRulers, applyMulticolor,
+      applyMode, applyAllMetersMode, applyFreeze, applyGuides, applyBright, applyRulers, applyMulticolor,
       renderBitMeter, redrawMeterFrame, tick, bitMeterState, spectrumDisplayState, levelDisplayState,
-      getSourceConfig, buildMeterBitmap, canvasByMode
+      getSourceConfig, buildMeterBitmap, canvasByMode, frameByMode
     };
   })();`), context);
   return {
-    ...context.meter, window, element, draws, errors, rulers, storage, frames, context2d,
+    ...context.meter, window, element, draws, contextReads, errors, rulers, storage, frames, context2d,
     tick(timestamp) { nowMs = timestamp; context.meter.tick(timestamp); }
   };
 }
@@ -176,7 +177,7 @@ test('stereo channels are sampled independently with their actual FFT sizes', ()
   assert.equal(meter.bitMeterState.channels, 2);
   assert.equal(meter.rulers.corner.title, 'Bit');
   assert.equal(meter.rulers.horizontal.ticks.length, 4);
-  assert.equal(meter.element('meters-vertical-ruler').getAttribute('aria-label'), 'Meter bit position ruler');
+  assert.equal(meter.element('meters-vertical-ruler-bit_meter').getAttribute('aria-label'), 'Meter bit position ruler');
 });
 
 test('mono uses a single M lane and never invents a second channel', () => {
@@ -470,9 +471,12 @@ test('Reset clears all Bit meter activity and Freeze', () => {
   setSource(meter, [0.5]);
   meter.applyMode('bit_meter');
   meter.tick(100);
+  meter.applyAllMetersMode(true);
   meter.applyFreeze(true);
   meter.element('reset-button').click();
   assert.equal(meter.element('meters-freeze-button').getAttribute('aria-pressed'), 'false');
+  assert.equal(meter.storage.has('meters.player.view_mode'), false);
+  assert.equal(meter.element('meters-all-button').getAttribute('aria-pressed'), 'false');
   assert.equal(meter.bitMeterState.ready, false);
   assert.equal(meter.bitMeterState.lastUpdateMs, 0);
   assert.ok(meter.bitMeterState.currentActivity.every(value => value === 0));
@@ -489,6 +493,41 @@ test('Bit meter participates in mode persistence and Next cycles back to Spectro
   meter.element('meters-next-button').click();
   assert.equal(meter.storage.get('meters.player.mode'), 'spectroscope');
   assert.ok(!meter.element('bit-meter').classList.contains('active'));
+});
+
+test('All mode displays each meter and keeps the selected mode for Next and bitmap export', () => {
+  const meter = createMeter();
+  meter.applyMode('phasescope');
+  meter.element('meters-all-button').click();
+  assert.equal(meter.storage.get('meters.player.view_mode'), 'all');
+  assert.equal(meter.element('meters-all-button').getAttribute('aria-pressed'), 'true');
+  assert.ok(meter.element('meters-container').classList.contains('meters-all-mode'));
+  assert.equal(Object.keys(meter.frameByMode).length, 6);
+  assert.ok(meter.frameByMode.phasescope.classList.contains('active'));
+  meter.tick(100);
+  assert.ok(Object.values(meter.canvasByMode).every(canvas => meter.contextReads.includes(canvas)));
+
+  meter.element('meters-next-button').click();
+  assert.equal(meter.storage.get('meters.player.mode'), 'bit_meter');
+  assert.equal(meter.element('meters-all-button').getAttribute('aria-pressed'), 'true');
+  meter.element('meters-all-button').click();
+  assert.equal(meter.storage.get('meters.player.view_mode'), 'one');
+  assert.equal(meter.element('meters-all-button').getAttribute('aria-pressed'), 'false');
+  assert.ok(!meter.element('meters-container').classList.contains('meters-all-mode'));
+  assert.ok(meter.frameByMode.bit_meter.classList.contains('active'));
+  assert.ok(Object.entries(meter.frameByMode).every(([mode, frame]) => mode === 'bit_meter' || !frame.classList.contains('active')));
+});
+
+test('saved All mode is restored without changing the saved meter selection', () => {
+  const meter = createMeter({
+    'meters.player.view_mode': 'all',
+    'meters.player.mode': 'bit_meter',
+    'meters.piano.view_mode': 'one'
+  });
+  assert.equal(meter.element('meters-all-button').getAttribute('aria-pressed'), 'true');
+  assert.ok(meter.element('meters-container').classList.contains('meters-all-mode'));
+  assert.ok(meter.frameByMode.bit_meter.classList.contains('active'));
+  assert.equal(meter.storage.get('meters.piano.view_mode'), 'one');
 });
 
 test('saved Bit meter selection is restored without changing other tools', () => {

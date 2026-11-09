@@ -29,21 +29,40 @@
   const brightButton = document.getElementById('tool-bright-button');
   const colorButton = document.getElementById('tool-color-button');
   const rulersButton = document.getElementById('tool-rulers-button');
+  const allMetersButton = document.getElementById('meters-all-button');
   const freezeButton = document.getElementById('meters-freeze-button');
   const crosshairButton = document.getElementById('meters-crosshair-button');
   const nextButton = document.getElementById('meters-next-button');
   const saveButton = document.getElementById('meters-save-button');
   const copyButton = document.getElementById('meters-copy-button');
-  const meterPlot = metersContainer.querySelector('.meter-plot');
-  const crosshairOverlay = metersContainer.querySelector('.meters-crosshair');
-  const crosshairTooltip = document.getElementById('meters-crosshair-tooltip');
-  const rulerLayout = metersContainer.querySelector('.meters-ruler-layout');
-  const rulerCorner = document.getElementById('meters-ruler-corner');
-  const horizontalRuler = document.getElementById('meters-horizontal-ruler');
-  const verticalRuler = document.getElementById('meters-vertical-ruler');
   const timelineUtils = window.PekoSvgTimeline;
   const availableModes = Object.keys(canvasByMode).filter((mode) => !!canvasByMode[mode]);
   if (!availableModes.length) return;
+
+  const frameByMode = Object.fromEntries(availableModes.map((mode) => [
+    mode, document.getElementById(`meters-frame-${mode}`)
+  ]));
+  const rulerLayoutByMode = Object.fromEntries(availableModes.map((mode) => [
+    mode, frameByMode[mode].querySelector('.meters-ruler-layout')
+  ]));
+  const meterPlotByMode = Object.fromEntries(availableModes.map((mode) => [
+    mode, frameByMode[mode].querySelector('.meter-plot')
+  ]));
+  const crosshairOverlayByMode = Object.fromEntries(availableModes.map((mode) => [
+    mode, frameByMode[mode].querySelector('.meters-crosshair')
+  ]));
+  const crosshairTooltipByMode = Object.fromEntries(availableModes.map((mode) => [
+    mode, document.getElementById(`meters-crosshair-tooltip-${mode}`)
+  ]));
+  const rulerCornerByMode = Object.fromEntries(availableModes.map((mode) => [
+    mode, document.getElementById(`meters-ruler-corner-${mode}`)
+  ]));
+  const horizontalRulerByMode = Object.fromEntries(availableModes.map((mode) => [
+    mode, document.getElementById(`meters-horizontal-ruler-${mode}`)
+  ]));
+  const verticalRulerByMode = Object.fromEntries(availableModes.map((mode) => [
+    mode, document.getElementById(`meters-vertical-ruler-${mode}`)
+  ]));
 
   const release = (path.split('/').pop() || 'index.php').replace(/\.php$/i, '') || 'index';
   const storagePrefix = `meters.${release}`;
@@ -51,6 +70,10 @@
   function getSavedMode() {
     const saved = localStorage.getItem(`${storagePrefix}.mode`);
     return availableModes.includes(saved) ? saved : 'oscilloscope';
+  }
+
+  function getSavedAllMetersMode() {
+    return localStorage.getItem(`${storagePrefix}.view_mode`) === 'all';
   }
 
   function getSavedGuides() {
@@ -169,7 +192,7 @@
   }
 
   function buildMeterBitmap() {
-    const bitmap = buildTimelineBitmap(meterPlot);
+    const bitmap = buildTimelineBitmap(meterPlotByMode[activeMode]);
     if (!bitmap) throw new Error('No Meters bitmap is available to export.');
     if (guidesOn && brightGuides) {
       const ctx = bitmap.getContext('2d');
@@ -320,40 +343,44 @@
     return ticks.sort((a, b) => a.position - b.position);
   }
 
-  let rulerRenderKey = '';
+  const rulerRenderKey = {};
 
-  function drawMeterRulers(source) {
+  function drawMeterRulers(source, mode = activeMode) {
+    const rulerLayout = rulerLayoutByMode[mode];
+    const rulerCorner = rulerCornerByMode[mode];
+    const horizontalRuler = horizontalRulerByMode[mode];
+    const verticalRuler = verticalRulerByMode[mode];
     rulerLayout.classList.toggle('timeline-rulers-hidden', !rulersOn);
-    const canvas = canvasByMode[activeMode];
+    const canvas = canvasByMode[mode];
     const { width, height } = canvas.getBoundingClientRect();
-    const key = [activeMode, width, height, source?.sampleRate, source?.channelCount, guideColor, rulersOn].join(':');
-    if (key === rulerRenderKey) return;
-    rulerRenderKey = key;
+    const key = [mode, width, height, source?.sampleRate, source?.channelCount, guideColor, rulersOn].join(':');
+    if (key === rulerRenderKey[mode]) return;
+    rulerRenderKey[mode] = key;
     meterNeedsRedraw = true;
     if (!rulersOn) return;
 
-    const ticks = getMeterTicks(activeMode, width, height, source);
-    verticalRuler.setAttribute('aria-label', activeMode === 'level'
+    const ticks = getMeterTicks(mode, width, height, source);
+    verticalRuler.setAttribute('aria-label', mode === 'level'
       ? 'Meter channel ruler'
-      : activeMode === 'bit_meter' ? 'Meter bit position ruler'
-      : activeMode === 'phasescope' ? 'Meter mid amplitude ruler' : 'Meter decibel ruler');
-    horizontalRuler.setAttribute('aria-label', activeMode === 'phasescope'
+      : mode === 'bit_meter' ? 'Meter bit position ruler'
+      : mode === 'phasescope' ? 'Meter mid amplitude ruler' : 'Meter decibel ruler');
+    horizontalRuler.setAttribute('aria-label', mode === 'phasescope'
       ? 'Meter side amplitude ruler'
-      : activeMode === 'bit_meter' ? 'Meter bit occurrence ruler' : 'Meter horizontal ruler');
+      : mode === 'bit_meter' ? 'Meter bit occurrence ruler' : 'Meter horizontal ruler');
     timelineUtils.syncViewBox(verticalRuler, 48, height);
     timelineUtils.drawVerticalRuler(verticalRuler, {
       width: 48, height, ticks: ticks.vertical.map(tick => ({ ...tick, drawLine: tick.position > 0 })),
       labels: ticks.labels, color: guideColor, bright: brightGuides, sideBorders: true,
-      topBorder: false, tickLength: activeMode === 'bit_meter' ? 5 : undefined
+      topBorder: false, tickLength: mode === 'bit_meter' ? 5 : undefined
     });
     timelineUtils.syncViewBox(horizontalRuler, width, 24);
     timelineUtils.drawHorizontalRuler(horizontalRuler, {
       width, height: 24, ticks: ticks.horizontal, color: guideColor,
       bright: brightGuides, sideBorders: true, leftBorder: false,
-      tickLength: activeMode === 'level' ? 5 : undefined,
-      labelBaseline: activeMode === 'level' ? 14 : undefined
+      tickLength: mode === 'level' ? 5 : undefined,
+      labelBaseline: mode === 'level' ? 14 : undefined
     });
-    if (activeMode !== 'level') {
+    if (mode !== 'level') {
       let labelRight = 0;
       horizontalRuler.querySelectorAll('text').forEach((label) => {
         const bounds = label.getBBox();
@@ -367,8 +394,8 @@
     timelineUtils.syncViewBox(rulerCorner, 48, 24);
     timelineUtils.drawRulerCorner(rulerCorner, {
       width: 48, height: 24, color: guideColor, bright: brightGuides,
-      title: activeMode === 'level' ? '' : activeMode === 'phasescope' ? 'M/S'
-        : activeMode === 'bit_meter' ? 'Bit' : 'dB', sideBorders: true
+      title: mode === 'level' ? '' : mode === 'phasescope' ? 'M/S'
+        : mode === 'bit_meter' ? 'Bit' : 'dB', sideBorders: true
     });
   }
 
@@ -494,11 +521,12 @@
   let rulersOn = getSavedRulers();
   let multicolorOn = getSavedMulticolor();
   let crosshairOn = localStorage.getItem(`${storagePrefix}.crosshair`) === 'on';
-  let crosshairPointer = null;
+  const crosshairPointerByMode = {};
   let frozen = false;
   let frozenSource = null;
   let meterNeedsRedraw = true;
-  let wasMeterActive = false;
+  const wasMeterActiveByMode = Object.fromEntries(availableModes.map((mode) => [mode, false]));
+  let allMetersOn = getSavedAllMetersMode();
   let meterPalette = null;
   const meterReleaseMs = 350;
 
@@ -511,16 +539,16 @@
     return magnitude > 0 ? `${(20 * Math.log10(magnitude)).toFixed(1)} dBFS` : '-∞ dBFS';
   }
 
-  function getCrosshairReadout(x, y, width, height, source) {
+  function getCrosshairReadout(x, y, width, height, source, mode = activeMode) {
     const sampleRate = source?.sampleRate || 44100;
-    if (activeMode === 'spectroscope') {
+    if (mode === 'spectroscope') {
       const frequency = 20 * Math.pow(Math.max(21, sampleRate / 2) / 20, x / width);
       const index = Math.min(31, Math.floor(x / width * 32));
       const level = spectrumDisplayState.levels[index];
       const bar = pausedFrameState.spectrumReady ? `${(-60 + level * 60).toFixed(1)} dB` : '-';
       return `Frequency: ${frequency.toFixed(1)} Hz\nCursor: ${(-60 * y / height).toFixed(1)} dB\nBar: ${bar}`;
     }
-    if (activeMode === 'level') {
+    if (mode === 'level') {
       const channels = pausedFrameState.levelReady ? pausedFrameState.levelChannels : (source?.channelCount || 2);
       const barHeight = Math.max(1, Math.floor((height - (channels > 1 ? 4 : 0)) / Math.min(2, channels)));
       if (channels > 1 && y >= barHeight && y < barHeight + 4) return 'Between channels';
@@ -530,7 +558,7 @@
       const signal = pausedFrameState.levelReady ? formatCrosshairAmplitude(level) : '-';
       return `Channel: ${channel}\nCursor: ${formatCrosshairAmplitude(x / width)}\nLevel: ${signal}`;
     }
-    if (activeMode === 'phasescope') {
+    if (mode === 'phasescope') {
       const { centerX, centerY, radius, plotTop, plotHeight } = getPhasescopeGeometry(width, height);
       if (!radius || y < plotTop || y > plotTop + plotHeight) return 'Outside phase plot';
       const side = (x - centerX) / radius;
@@ -539,7 +567,7 @@
         ? phasescopeState.correlation.toFixed(2) : '-';
       return `Mid: ${mid.toFixed(3)} FS\nSide: ${side.toFixed(3)} FS\nL: ${(mid - side).toFixed(3)} FS  R: ${(mid + side).toFixed(3)} FS\nCorrelation: ${correlation}`;
     }
-    if (activeMode === 'bit_meter') {
+    if (mode === 'bit_meter') {
       const { rowTop, rowHeight, channelWidth, rightStart, channels } = getBitMeterGeometry(width, height, source);
       const row = Math.floor((y - rowTop) / rowHeight);
       if (row < 0 || row > 32) return '32-bit PCM activity';
@@ -554,13 +582,13 @@
       const label = row === 0 ? 'Over' : `Bit ${row}${row === 1 ? ' (sign)' : row === 32 ? ' (least significant)' : ''}`;
       return `Channel: ${channel}\n${label}\nCursor: ${(Math.max(0, Math.min(1, ratio)) * 100).toFixed(1)}%\n${row === 0 ? 'Displayed overload' : 'Displayed activity'}: ${signal}`;
     }
-    const stereo = activeMode === 'wavescope' && (source?.channelCount || 1) > 1;
+    const stereo = mode === 'wavescope' && (source?.channelCount || 1) > 1;
     const right = stereo && y >= height / 2;
     const channel = stereo ? (right ? 'R' : 'L') : 'M';
     const centerY = stereo ? height * (right ? 0.75 : 0.25) : height / 2;
     const amplitude = (centerY - y) / (height * (stereo ? 0.18 : 0.5));
     const cursor = `Cursor: ${amplitude.toFixed(3)} FS (${formatCrosshairAmplitude(amplitude)})`;
-    if (activeMode === 'wavescope') {
+    if (mode === 'wavescope') {
       const index = Math.min(Math.max(0, wavescopeState.width - 1), Math.floor(x));
       const min = (right ? wavescopeState.historyMinR : wavescopeState.historyMinL)[index];
       const max = (right ? wavescopeState.historyMaxR : wavescopeState.historyMaxL)[index];
@@ -575,12 +603,19 @@
     return `Time: ${(x / width * timeArray.length / sampleRate * 1000).toFixed(2)} ms\n${cursor}\nSample: ${signal}`;
   }
 
-  function updateCrosshair() {
+  function updateCrosshair(mode) {
+    if (!mode) {
+      availableModes.forEach(updateCrosshair);
+      return;
+    }
+    const crosshairOverlay = crosshairOverlayByMode[mode];
+    const crosshairTooltip = crosshairTooltipByMode[mode];
+    const crosshairPointer = crosshairPointerByMode[mode];
     if (!crosshairOn || !crosshairPointer) {
       crosshairOverlay.hidden = true;
       return;
     }
-    const rect = meterPlot.getBoundingClientRect();
+    const rect = meterPlotByMode[mode].getBoundingClientRect();
     const isTouch = crosshairPointer.pointerType === 'touch';
     const x = isTouch ? crosshairPointer.x * rect.width : crosshairPointer.x - rect.left;
     const y = isTouch ? crosshairPointer.y * rect.height : crosshairPointer.y - rect.top;
@@ -592,7 +627,7 @@
     crosshairOverlay.style.setProperty('--meter-crosshair-y', `${Math.floor(y)}px`);
     crosshairOverlay.hidden = false;
     const source = frozen ? frozenSource : getSourceConfig();
-    const text = getCrosshairReadout(x, y, rect.width, rect.height, source);
+    const text = getCrosshairReadout(x, y, rect.width, rect.height, source, mode);
     if (crosshairTooltip.textContent !== text) crosshairTooltip.textContent = text;
     const tooltipWidth = crosshairTooltip.offsetWidth;
     const tooltipHeight = crosshairTooltip.offsetHeight;
@@ -609,33 +644,45 @@
     }
     crosshairButton.classList.toggle('button-on', crosshairOn);
     crosshairButton.setAttribute('aria-pressed', String(crosshairOn));
-    meterPlot.classList.toggle('meters-crosshair-on', crosshairOn);
-    if (!crosshairOn && crosshairPointer?.pointerType === 'touch') crosshairPointer = null;
+    availableModes.forEach((mode) => {
+      meterPlotByMode[mode].classList.toggle('meters-crosshair-on', crosshairOn);
+      if (!crosshairOn && crosshairPointerByMode[mode]?.pointerType === 'touch') {
+        delete crosshairPointerByMode[mode];
+      }
+    });
     updateCrosshair();
   }
 
-  function moveCrosshair(event) {
+  function moveCrosshair(event, mode) {
+    const meterPlot = meterPlotByMode[mode];
     if (event.pointerType === 'touch') {
       if (!crosshairOn || !event.isPrimary) return;
       const rect = meterPlot.getBoundingClientRect();
-      crosshairPointer = {
+      crosshairPointerByMode[mode] = {
         x: (event.clientX - rect.left) / rect.width,
         y: (event.clientY - rect.top) / rect.height,
         pointerType: 'touch'
       };
     } else {
-      crosshairPointer = { x: event.clientX, y: event.clientY, pointerType: event.pointerType };
+      crosshairPointerByMode[mode] = { x: event.clientX, y: event.clientY, pointerType: event.pointerType };
     }
-    updateCrosshair();
+    updateCrosshair(mode);
   }
 
-  function leaveCrosshair(event) {
-    if (event.pointerType !== 'touch') clearCrosshair();
+  function leaveCrosshair(event, mode) {
+    if (event.pointerType !== 'touch') clearCrosshair(mode);
   }
 
-  function clearCrosshair() {
-    crosshairPointer = null;
-    updateCrosshair();
+  function clearCrosshair(mode) {
+    if (mode) {
+      delete crosshairPointerByMode[mode];
+      updateCrosshair(mode);
+      return;
+    }
+    availableModes.forEach((meterMode) => {
+      delete crosshairPointerByMode[meterMode];
+      updateCrosshair(meterMode);
+    });
   }
 
   function applyFreeze(nextState) {
@@ -656,6 +703,7 @@
     Object.entries(canvasByMode).forEach(([mode, canvas]) => {
       if (!canvas) return;
       canvas.classList.toggle('active', mode === activeMode);
+      frameByMode[mode].classList.toggle('active', mode === activeMode);
     });
 
     Object.entries(buttonByMode).forEach(([mode, button]) => {
@@ -663,6 +711,19 @@
       button.classList.toggle('button-on', mode === activeMode);
     });
     meterNeedsRedraw = true;
+  }
+
+  function applyAllMetersMode(nextState, persist = true) {
+    allMetersOn = !!nextState;
+    metersContainer.classList.toggle('meters-all-mode', allMetersOn);
+    allMetersButton.classList.toggle('button-on', allMetersOn);
+    allMetersButton.setAttribute('aria-pressed', String(allMetersOn));
+    allMetersButton.title = allMetersOn ? 'Show one meter' : 'Show all meters';
+    if (persist) {
+      localStorage.setItem(`${storagePrefix}.view_mode`, allMetersOn ? 'all' : 'one');
+    }
+    meterNeedsRedraw = true;
+    requestAnimationFrame(redrawMeterFrame);
   }
 
   function applyGuides(nextState) {
@@ -1552,8 +1613,8 @@
     drawBrightGuideBoundary(ctx, width, height);
   }
 
-  function drawIdleMeterFrame(canvas, ctx, source) {
-    if (activeMode === 'bit_meter') {
+  function drawIdleMeterFrame(canvas, ctx, source, mode = activeMode) {
+    if (mode === 'bit_meter') {
       resizeCanvasToDisplaySize(canvas, ctx);
       drawBitMeterFromData(
         ctx,
@@ -1563,7 +1624,7 @@
       );
       return;
     }
-    if (activeMode === 'phasescope') {
+    if (mode === 'phasescope') {
       resizeCanvasToDisplaySize(canvas, ctx);
       drawPhasescopeFromData(
         ctx,
@@ -1573,7 +1634,7 @@
       );
       return;
     }
-    if (source && activeMode === 'wavescope') {
+    if (source && mode === 'wavescope') {
       renderWavescope(ctx, canvas, source, !frozen);
       return;
     }
@@ -1584,15 +1645,15 @@
     ctx.clearRect(0, 0, width, height);
 
     if (!source) {
-      drawGuidesBehind(activeMode, ctx, width, height, null);
+      drawGuidesBehind(mode, ctx, width, height, null);
       return;
     }
 
-    if (activeMode === 'oscilloscope' && pausedFrameState.oscilloscopeReady) {
+    if (mode === 'oscilloscope' && pausedFrameState.oscilloscopeReady) {
       drawOscilloscopeFromData(ctx, width, height, pausedFrameState.oscilloscopeData, source, false);
-    } else if (activeMode === 'spectroscope' && pausedFrameState.spectrumReady) {
+    } else if (mode === 'spectroscope' && pausedFrameState.spectrumReady) {
       drawSpectrumFromData(ctx, width, height, source, null, false);
-    } else if (activeMode === 'level' && pausedFrameState.levelReady) {
+    } else if (mode === 'level' && pausedFrameState.levelReady) {
       drawLevelFromValues(
         ctx,
         width,
@@ -1604,7 +1665,7 @@
         false
       );
     } else {
-      drawGuidesBehind(activeMode, ctx, width, height, source);
+      drawGuidesBehind(mode, ctx, width, height, source);
     }
   }
 
@@ -1612,19 +1673,20 @@
     const source = frozen
       ? (frozenSource ? { ...frozenSource, palette: getMeterPalette() } : null)
       : getSourceConfig();
-    drawMeterRulers(source);
-    const canvas = canvasByMode[activeMode];
-    if (!canvas) return;
+    const modes = allMetersOn ? availableModes : [activeMode];
+    modes.forEach((mode) => {
+      drawMeterRulers(source, mode);
+      const canvas = canvasByMode[mode];
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
 
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    drawIdleMeterFrame(canvas, ctx, source);
-    if (guidesOn) {
-      const width = canvas.width / (window.devicePixelRatio || 1) || canvas.clientWidth;
-      const height = canvas.height / (window.devicePixelRatio || 1) || canvas.clientHeight;
-      drawBrightGuideBoundary(ctx, width, height);
-    }
+      drawIdleMeterFrame(canvas, ctx, source, mode);
+      if (guidesOn) {
+        const width = canvas.width / (window.devicePixelRatio || 1) || canvas.clientWidth;
+        const height = canvas.height / (window.devicePixelRatio || 1) || canvas.clientHeight;
+        drawBrightGuideBoundary(ctx, width, height);
+      }
+    });
     meterNeedsRedraw = false;
   }
 
@@ -1646,39 +1708,38 @@
     lastMeterFrameMs = timestamp - (elapsedMs % meterFrameIntervalMs);
 
     const source = getSourceConfig();
-    drawMeterRulers(source);
     const sourceIsActive = Boolean(source && (!source.isActive || source.isActive()));
-    const releaseIsActive = Boolean(source && !sourceIsActive && (
-      (activeMode === 'spectroscope' && spectrumDisplayState.levels.some((value) => value > 0))
-      || (activeMode === 'level' && (levelDisplayState.left > 0 || levelDisplayState.right > 0))
-    ));
-    const meterIsActive = sourceIsActive || releaseIsActive || Boolean(source && activeMode === 'bit_meter');
-    const activityEnded = wasMeterActive && !meterIsActive;
-    if (activityEnded) wavescopeState.lastPushMs = 0;
-    const canvas = canvasByMode[activeMode];
-    if (canvas) {
+    const modes = allMetersOn ? availableModes : [activeMode];
+    modes.forEach((mode) => {
+      drawMeterRulers(source, mode);
+      const releaseIsActive = Boolean(source && !sourceIsActive && (
+        (mode === 'spectroscope' && spectrumDisplayState.levels.some((value) => value > 0))
+        || (mode === 'level' && (levelDisplayState.left > 0 || levelDisplayState.right > 0))
+      ));
+      const meterIsActive = sourceIsActive || releaseIsActive || Boolean(source && mode === 'bit_meter');
+      const activityEnded = wasMeterActiveByMode[mode] && !meterIsActive;
+      if (activityEnded) wavescopeState.lastPushMs = 0;
+      const canvas = canvasByMode[mode];
       const ctx = canvas.getContext('2d');
       if (ctx) {
         if (!meterIsActive) {
           if (meterNeedsRedraw || activityEnded) {
-            drawIdleMeterFrame(canvas, ctx, source);
-            meterNeedsRedraw = false;
+            drawIdleMeterFrame(canvas, ctx, source, mode);
           }
         } else {
-          if (activeMode === 'oscilloscope') {
+          if (mode === 'oscilloscope') {
             renderOscilloscope(ctx, canvas, source.analyser, source);
-          } else if (activeMode === 'wavescope') {
+          } else if (mode === 'wavescope') {
             renderWavescope(ctx, canvas, source);
-          } else if (activeMode === 'spectroscope') {
+          } else if (mode === 'spectroscope') {
             renderSpectrum(ctx, canvas, source);
-          } else if (activeMode === 'level') {
+          } else if (mode === 'level') {
             renderLevel(ctx, canvas, source);
-          } else if (activeMode === 'phasescope') {
+          } else if (mode === 'phasescope') {
             renderPhasescope(ctx, canvas, source);
-          } else if (activeMode === 'bit_meter') {
+          } else if (mode === 'bit_meter') {
             renderBitMeter(ctx, canvas, source);
           }
-          meterNeedsRedraw = false;
         }
 
         if (guidesOn) {
@@ -1687,8 +1748,9 @@
           drawBrightGuideBoundary(ctx, width, height);
         }
       }
-    }
-    wasMeterActive = meterIsActive;
+      wasMeterActiveByMode[mode] = meterIsActive;
+    });
+    meterNeedsRedraw = false;
     updateCrosshair();
     requestAnimationFrame(tick);
   }
@@ -1701,6 +1763,8 @@
   nextButton.addEventListener('click', () => {
     applyMode(availableModes[(availableModes.indexOf(activeMode) + 1) % availableModes.length]);
   });
+
+  allMetersButton.addEventListener('click', () => applyAllMetersMode(!allMetersOn));
 
   if (guidesButton) {
     guidesButton.addEventListener('click', () => applyGuides(!guidesOn));
@@ -1735,13 +1799,16 @@
       console.warn('Meters bitmap copy failed:', error);
     }
   });
-  meterPlot.addEventListener('pointerdown', moveCrosshair);
-  meterPlot.addEventListener('pointerenter', moveCrosshair);
-  meterPlot.addEventListener('pointermove', moveCrosshair);
-  meterPlot.addEventListener('pointerleave', leaveCrosshair);
-  meterPlot.addEventListener('pointercancel', clearCrosshair);
-  window.addEventListener('blur', clearCrosshair);
-  window.addEventListener('scroll', updateCrosshair, true);
+  availableModes.forEach((mode) => {
+    const meterPlot = meterPlotByMode[mode];
+    meterPlot.addEventListener('pointerdown', (event) => moveCrosshair(event, mode));
+    meterPlot.addEventListener('pointerenter', (event) => moveCrosshair(event, mode));
+    meterPlot.addEventListener('pointermove', (event) => moveCrosshair(event, mode));
+    meterPlot.addEventListener('pointerleave', (event) => leaveCrosshair(event, mode));
+    meterPlot.addEventListener('pointercancel', () => clearCrosshair(mode));
+  });
+  window.addEventListener('blur', () => clearCrosshair());
+  window.addEventListener('scroll', () => updateCrosshair(), true);
 
   if (typeof ResizeObserver !== 'undefined') {
     const resizeObserver = new ResizeObserver(() => {
@@ -1781,6 +1848,8 @@
     resetButton.addEventListener('click', () => {
       localStorage.removeItem(`${storagePrefix}.crosshair`);
       applyCrosshair(false, false);
+      localStorage.removeItem(`${storagePrefix}.view_mode`);
+      applyAllMetersMode(false, false);
       applyFreeze(false);
       clearMeterFrame('wavescope');
       clearMeterFrame('phasescope');
@@ -1789,6 +1858,7 @@
   }
 
   applyMode(activeMode);
+  applyAllMetersMode(allMetersOn, false);
   applyGuides(guidesOn);
   applyBright(brightGuides);
   applyRulers(rulersOn, false);

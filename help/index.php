@@ -321,7 +321,15 @@
   <svg class="standard-image-help"><use href="/icons.svg#meter"></use></svg>
   <div class="justify">
     <h1>Meters <span class="object">module</span></h1>
-    Displays the current tool's audio signal. Choose Spectroscope, Level, Oscilloscope, Wavescope, Phasescope or Bit to inspect different aspects of the signal. Freeze, Crosshair, Guides, Bright, Rulers and Color adjust the view without changing the audio.
+    Displays the current tool's audio signal. Choose Spectroscope, Level, Oscilloscope, Wavescope, Phasescope or Bit to inspect different aspects of the signal. Use All to show every meter view together. Freeze, Crosshair, Guides, Bright, Rulers and Color adjust the view without changing the audio.
+  </div>
+</div>
+
+<div class="feature-row border">
+  <svg class="standard-image-help"><use href="/icons.svg#select_all"></use></svg>
+  <div class="justify">
+    <h1>All <span class="object">button</span></h1>
+    Shows all six Meters views together, each with its own rulers and crosshair. Select a meter tab to focus that view for Next, Save and Copy. Press All again to show only the selected meter. The choice is saved for the current tool and Reset restores the single-meter view. <span class="default">Default: off.</span>
   </div>
 </div>
 

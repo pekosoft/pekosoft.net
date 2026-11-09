@@ -44,31 +44,88 @@
         <span class="button-text">Next</span>
       </button>
     </div>
-    <div class="timeline-ruler-layout meters-ruler-layout">
-      <div class="meters-ruler-corner">
-        <svg id="meters-ruler-corner" aria-hidden="true"></svg>
+    <div id="meters-all-layout" class="meters-all-layout">
+      <div id="meters-frame-spectroscope" class="meter-frame">
+        <div class="meter-mode-label">Spectroscope</div>
+        <div class="timeline-ruler-layout meters-ruler-layout">
+          <div class="meters-ruler-corner"><svg id="meters-ruler-corner-spectroscope" aria-hidden="true"></svg></div>
+          <div class="meters-horizontal-ruler"><svg id="meters-horizontal-ruler-spectroscope" aria-label="Meter horizontal ruler"></svg></div>
+          <div class="meters-vertical-ruler"><svg id="meters-vertical-ruler-spectroscope" aria-label="Meter decibel ruler"></svg></div>
+          <div class="timeline-scroll meter-plot">
+            <canvas id="frequency-analyzer" class="meter-canvas" width="4096" height="512" role="img" aria-label="Spectroscope"></canvas>
+            <div class="meters-crosshair" hidden><div id="meters-crosshair-tooltip-spectroscope" class="meters-crosshair-tooltip" role="tooltip"></div></div>
+          </div>
+        </div>
       </div>
-      <div class="meters-horizontal-ruler">
-        <svg id="meters-horizontal-ruler" aria-label="Meter horizontal ruler"></svg>
+      <div id="meters-frame-level" class="meter-frame">
+        <div class="meter-mode-label">Level</div>
+        <div class="timeline-ruler-layout meters-ruler-layout">
+          <div class="meters-ruler-corner"><svg id="meters-ruler-corner-level" aria-hidden="true"></svg></div>
+          <div class="meters-horizontal-ruler"><svg id="meters-horizontal-ruler-level" aria-label="Meter horizontal ruler"></svg></div>
+          <div class="meters-vertical-ruler"><svg id="meters-vertical-ruler-level" aria-label="Meter decibel ruler"></svg></div>
+          <div class="timeline-scroll meter-plot">
+            <canvas id="volume-meter" class="meter-canvas" width="4096" height="32" role="img" aria-label="Level meter"></canvas>
+            <div class="meters-crosshair" hidden><div id="meters-crosshair-tooltip-level" class="meters-crosshair-tooltip" role="tooltip"></div></div>
+          </div>
+        </div>
       </div>
-      <div class="meters-vertical-ruler">
-        <svg id="meters-vertical-ruler" aria-label="Meter decibel ruler"></svg>
+      <div id="meters-frame-oscilloscope" class="meter-frame">
+        <div class="meter-mode-label">Oscilloscope</div>
+        <div class="timeline-ruler-layout meters-ruler-layout">
+          <div class="meters-ruler-corner"><svg id="meters-ruler-corner-oscilloscope" aria-hidden="true"></svg></div>
+          <div class="meters-horizontal-ruler"><svg id="meters-horizontal-ruler-oscilloscope" aria-label="Meter horizontal ruler"></svg></div>
+          <div class="meters-vertical-ruler"><svg id="meters-vertical-ruler-oscilloscope" aria-label="Meter decibel ruler"></svg></div>
+          <div class="timeline-scroll meter-plot">
+            <canvas id="waveform" class="meter-canvas" width="4096" height="256" role="img" aria-label="Oscilloscope"></canvas>
+            <div class="meters-crosshair" hidden><div id="meters-crosshair-tooltip-oscilloscope" class="meters-crosshair-tooltip" role="tooltip"></div></div>
+          </div>
+        </div>
       </div>
-      <div class="timeline-scroll meter-plot">
-        <canvas id="volume-meter" class="meter-canvas" width="4096" height="32"></canvas>
-        <canvas id="frequency-analyzer" class="meter-canvas" width="4096" height="512"></canvas>
-        <canvas id="wavescope" class="meter-canvas" width="4096" height="256"></canvas>
-        <canvas id="waveform" class="meter-canvas active" width="4096" height="256"></canvas>
-        <canvas id="phasescope" class="meter-canvas" width="4096" height="256" role="img" aria-label="Stereo phasescope with phase correlation"></canvas>
-        <canvas id="bit-meter" class="meter-canvas" width="4096" height="512" role="img" aria-label="Bit activity in a 32-bit PCM representation of the audio signal"></canvas>
-        <div class="meters-crosshair" hidden>
-          <div id="meters-crosshair-tooltip" class="meters-crosshair-tooltip" role="tooltip"></div>
+      <div id="meters-frame-wavescope" class="meter-frame">
+        <div class="meter-mode-label">Wavescope</div>
+        <div class="timeline-ruler-layout meters-ruler-layout">
+          <div class="meters-ruler-corner"><svg id="meters-ruler-corner-wavescope" aria-hidden="true"></svg></div>
+          <div class="meters-horizontal-ruler"><svg id="meters-horizontal-ruler-wavescope" aria-label="Meter horizontal ruler"></svg></div>
+          <div class="meters-vertical-ruler"><svg id="meters-vertical-ruler-wavescope" aria-label="Meter decibel ruler"></svg></div>
+          <div class="timeline-scroll meter-plot">
+            <canvas id="wavescope" class="meter-canvas" width="4096" height="256" role="img" aria-label="Wavescope"></canvas>
+            <div class="meters-crosshair" hidden><div id="meters-crosshair-tooltip-wavescope" class="meters-crosshair-tooltip" role="tooltip"></div></div>
+          </div>
+        </div>
+      </div>
+      <div id="meters-frame-phasescope" class="meter-frame">
+        <div class="meter-mode-label">Phasescope</div>
+        <div class="timeline-ruler-layout meters-ruler-layout">
+          <div class="meters-ruler-corner"><svg id="meters-ruler-corner-phasescope" aria-hidden="true"></svg></div>
+          <div class="meters-horizontal-ruler"><svg id="meters-horizontal-ruler-phasescope" aria-label="Meter horizontal ruler"></svg></div>
+          <div class="meters-vertical-ruler"><svg id="meters-vertical-ruler-phasescope" aria-label="Meter decibel ruler"></svg></div>
+          <div class="timeline-scroll meter-plot">
+            <canvas id="phasescope" class="meter-canvas" width="4096" height="256" role="img" aria-label="Stereo phasescope with phase correlation"></canvas>
+            <div class="meters-crosshair" hidden><div id="meters-crosshair-tooltip-phasescope" class="meters-crosshair-tooltip" role="tooltip"></div></div>
+          </div>
+        </div>
+      </div>
+      <div id="meters-frame-bit_meter" class="meter-frame">
+        <div class="meter-mode-label">Bit</div>
+        <div class="timeline-ruler-layout meters-ruler-layout">
+          <div class="meters-ruler-corner"><svg id="meters-ruler-corner-bit_meter" aria-hidden="true"></svg></div>
+          <div class="meters-horizontal-ruler"><svg id="meters-horizontal-ruler-bit_meter" aria-label="Meter horizontal ruler"></svg></div>
+          <div class="meters-vertical-ruler"><svg id="meters-vertical-ruler-bit_meter" aria-label="Meter bit position ruler"></svg></div>
+          <div class="timeline-scroll meter-plot">
+            <canvas id="bit-meter" class="meter-canvas" width="4096" height="512" role="img" aria-label="Bit activity in a 32-bit PCM representation of the audio signal"></canvas>
+            <div class="meters-crosshair" hidden><div id="meters-crosshair-tooltip-bit_meter" class="meters-crosshair-tooltip" role="tooltip"></div></div>
+          </div>
         </div>
       </div>
     </div>
   </div>
-
   <div class="module-footer wrapper colored">
+    <button id="meters-all-button" class="square" title="Show all meters" aria-pressed="false" data-help-release="index" data-help-entry="All">
+      <svg class="icons">
+        <use href="/icons.svg#select_all" />
+      </svg>
+      <span class="button-text">All</span>
+    </button>
     <button id="meters-freeze-button" class="square" title="Toggle freeze" aria-label="Freeze" aria-pressed="false" data-help-release="index" data-help-entry="Meter freeze">
       <svg class="icons">
         <use href="/icons.svg#pause" />

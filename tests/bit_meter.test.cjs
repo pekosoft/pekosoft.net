@@ -14,6 +14,8 @@ function createMeter(initialStorage = {}) {
   const errors = [];
   const rulers = {};
   const frames = [];
+  const intervals = new Map();
+  let nextTimerId = 0;
   let nowMs = 100;
   const context2d = new Proxy({
     measureText: text => ({ width: text.length * 6 }),
@@ -68,6 +70,12 @@ function createMeter(initialStorage = {}) {
       removeItem: key => storage.delete(key)
     },
     requestAnimationFrame: callback => { frames.push(callback); },
+    setInterval(callback, delay) {
+      const id = ++nextTimerId;
+      intervals.set(id, { callback, delay });
+      return id;
+    },
+    clearInterval: id => intervals.delete(id),
     ResizeObserver: class { observe() {} },
     MutationObserver: class { observe() {} },
     performance: { now: () => nowMs },
@@ -83,7 +91,7 @@ function createMeter(initialStorage = {}) {
     };
   })();`), context);
   return {
-    ...context.meter, window, element, draws, contextReads, errors, rulers, storage, frames, context2d,
+    ...context.meter, window, element, draws, contextReads, errors, rulers, storage, frames, intervals, context2d,
     tick(timestamp) { nowMs = timestamp; context.meter.tick(timestamp); }
   };
 }
@@ -535,6 +543,42 @@ test('saved Bit meter selection is restored without changing other tools', () =>
   assert.ok(meter.element('bit-meter').classList.contains('active'));
   assert.ok(meter.element('tool-bit-meter-button').classList.contains('button-on'));
   assert.equal(meter.storage.get('meters.piano.mode'), 'level');
+});
+
+test('Play cycles meters at 10-second intervals, wraps, and stops when toggled off', () => {
+  const meter = createMeter();
+  const play = meter.element('meters-play-button');
+  assert.equal(meter.intervals.size, 0);
+  meter.applyMode('phasescope');
+  play.click();
+  assert.equal(play.getAttribute('aria-pressed'), 'true');
+  assert.equal(meter.storage.get('meters.player.mode'), 'phasescope');
+  assert.equal(meter.intervals.size, 1);
+  const timer = [...meter.intervals.values()][0];
+  assert.equal(timer.delay, 10000);
+  timer.callback();
+  assert.equal(meter.storage.get('meters.player.mode'), 'bit_meter');
+  timer.callback();
+  assert.equal(meter.storage.get('meters.player.mode'), 'spectroscope');
+  play.click();
+  assert.equal(play.getAttribute('aria-pressed'), 'false');
+  assert.equal(meter.intervals.size, 0);
+  play.click();
+  assert.equal(meter.intervals.size, 1);
+});
+
+test('Play preserves All mode and Freeze and Reset stops its timer', () => {
+  const meter = createMeter();
+  meter.applyAllMetersMode(true);
+  meter.applyFreeze(true);
+  meter.element('meters-play-button').click();
+  [...meter.intervals.values()][0].callback();
+  assert.equal(meter.element('meters-all-button').getAttribute('aria-pressed'), 'true');
+  assert.equal(meter.element('meters-freeze-button').getAttribute('aria-pressed'), 'true');
+  assert.equal(meter.storage.get('meters.player.mode'), 'wavescope');
+  meter.element('reset-button').click();
+  assert.equal(meter.intervals.size, 0);
+  assert.equal(meter.element('meters-play-button').getAttribute('aria-pressed'), 'false');
 });
 
 test('crosshair reports cached bit percentages and overload instead of time or decibels', () => {

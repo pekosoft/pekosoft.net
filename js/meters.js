@@ -33,6 +33,7 @@
   const freezeButton = document.getElementById('meters-freeze-button');
   const crosshairButton = document.getElementById('meters-crosshair-button');
   const nextButton = document.getElementById('meters-next-button');
+  const playMetersButton = document.getElementById('meters-play-button');
   const saveButton = document.getElementById('meters-save-button');
   const copyButton = document.getElementById('meters-copy-button');
   const timelineUtils = window.PekoSvgTimeline;
@@ -706,7 +707,7 @@
       frameByMode[mode].classList.toggle('active', mode === activeMode);
     });
 
-    Object.entries(buttonByMode).forEach(([mode, button]) => {
+      Object.entries(buttonByMode).forEach(([mode, button]) => {
       if (!button) return;
       button.classList.toggle('button-on', mode === activeMode);
     });
@@ -1755,14 +1756,28 @@
     requestAnimationFrame(tick);
   }
 
+  let meterCycleTimer = null;
+
+  function nextMeter() {
+    applyMode(availableModes[(availableModes.indexOf(activeMode) + 1) % availableModes.length]);
+  }
+
+  function applyMeterPlay(enabled) {
+    if (meterCycleTimer !== null) clearInterval(meterCycleTimer);
+    meterCycleTimer = enabled ? setInterval(nextMeter, 10000) : null;
+    playMetersButton.classList.toggle('button-on', enabled);
+    playMetersButton.setAttribute('aria-pressed', String(enabled));
+    playMetersButton.title = enabled ? 'Stop cycling meters' : 'Start cycling meters';
+  }
+
   Object.entries(buttonByMode).forEach(([mode, button]) => {
     if (!button) return;
     button.addEventListener('click', () => applyMode(mode));
   });
 
-  nextButton.addEventListener('click', () => {
-    applyMode(availableModes[(availableModes.indexOf(activeMode) + 1) % availableModes.length]);
-  });
+  nextButton.addEventListener('click', nextMeter);
+  playMetersButton.addEventListener('click', () => applyMeterPlay(meterCycleTimer === null));
+  window.addEventListener('pagehide', () => applyMeterPlay(false));
 
   allMetersButton.addEventListener('click', () => applyAllMetersMode(!allMetersOn));
 
@@ -1846,6 +1861,7 @@
   const resetButton = document.getElementById('reset-button');
   if (resetButton) {
     resetButton.addEventListener('click', () => {
+      applyMeterPlay(false);
       localStorage.removeItem(`${storagePrefix}.crosshair`);
       applyCrosshair(false, false);
       localStorage.removeItem(`${storagePrefix}.view_mode`);

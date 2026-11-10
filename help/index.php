@@ -342,6 +342,14 @@
 </div>
 
 <div class="feature-row border">
+  <svg class="standard-image-help"><use href="/icons.svg#play"></use></svg>
+  <div class="justify">
+    <h1>Meter play <span class="object">button</span></h1>
+    The Play button in Meters selects the next meter every 10 seconds, returning to Spectroscope after Bit. It does not start or stop audio playback. In All mode, it cycles the focused meter while keeping every view visible. Manual meter selection and Next remain available. Freeze holds the samples without stopping the cycle. Press Play again to stop cycling. Reset and page reload stop cycling. <span class="default">Default: off.</span>
+  </div>
+</div>
+
+<div class="feature-row border">
   <svg class="standard-image-help"><use href="/icons.svg#skip_right"></use></svg>
   <div class="justify">
     <h1>Next meter <span class="object">button</span></h1>

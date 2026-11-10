@@ -37,6 +37,12 @@
         </svg>
         <span class="button-text">Bit</span>
       </button>
+      <button id="meters-play-button" class="square" title="Start cycling meters" aria-label="Play" aria-pressed="false" data-help-release="index" data-help-entry="Meter play">
+        <svg class="icons">
+          <use href="/icons.svg#play" />
+        </svg>
+        <span class="button-text">Play</span>
+      </button>
       <button id="meters-next-button" class="square module-tab-skip-button" title="Next meter" data-help-release="index" data-help-entry="Next meter">
         <svg class="icons">
           <use href="/icons.svg#skip_right" />

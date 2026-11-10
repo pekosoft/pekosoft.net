@@ -459,4 +459,18 @@ canvas {
   outline-offset: -4px;
 }
 
+#progress-slider:disabled::-webkit-slider-thumb {
+  border-color: var(--grey2);
+  cursor: default;
+}
+
+#progress-slider:disabled::-webkit-slider-runnable-track {
+  cursor: default;
+}
+
+#progress-slider:disabled::-moz-range-thumb {
+  border-color: var(--grey2);
+  cursor: default;
+}
+
 /* END OF FILE */

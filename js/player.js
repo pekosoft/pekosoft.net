@@ -1198,6 +1198,7 @@ function updateActionButtonStates() {
     setButtonGrey(toggleLoop, false);
     setButtonGrey(seekBackward, !canSeek);
     setButtonGrey(seekForward, !canSeek);
+    progressSlider.disabled = !canSeek;
     setButtonGrey(fadeInButton, !hasTimelineDuration || isRecording);
     setButtonGrey(fadeOutButton, !hasTimelineDuration || isRecording);
     setButtonGrey(normalizeButton, !hasTimelineDuration || isRecording);
@@ -2540,6 +2541,7 @@ audioPlayer.addEventListener('ended', async () => {
 });
 
 progressSlider.addEventListener('input', () => {
+    if (progressSlider.disabled) return;
     audioPlayer.currentTime = progressSlider.value;
     updateTimeFieldBars();
     updateActionButtonStates();

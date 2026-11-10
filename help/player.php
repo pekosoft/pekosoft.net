@@ -243,7 +243,7 @@
   </svg>
   <div class="justify">
     <h1>Progress <span class="object">slider</span></h1>
-    Sets and shows playhead position.
+    Sets and shows playhead position. Unavailable when the current audio cannot be seeked, matching the backward and forward buttons.
   </div>
 </div>
 

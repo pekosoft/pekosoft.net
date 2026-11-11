@@ -634,7 +634,8 @@ Reference links use the shared Reference preview image and a relevant descriptio
 
 Bitmap previews in `png/` and `png/og/` centre the visible artwork bounds within
 their existing canvas. Preserve artwork pixels and dimensions when adjusting
-alignment. Run `powershell.exe -NoProfile -ExecutionPolicy Bypass -File .dev\center-preview-images.ps1`
+alignment. Contact uses the TOC speech icon and Updates uses the TOC GitHub icon
+for their page-specific previews. Run `powershell.exe -NoProfile -ExecutionPolicy Bypass -File .dev\center-preview-images.ps1`
 to centre both sets, or add `-Check` to validate
 them without writing files. Opposite margins may differ by one pixel when the
 canvas and artwork dimensions have different parity.

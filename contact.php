@@ -136,6 +136,14 @@ if ($method === 'POST') {
 <body>
   <?php require($_SERVER['DOCUMENT_ROOT'] . '/elements/toc.php'); ?>
 
+  <div class="three-columns-container">
+    <div class="three-columns column-sides column-left hide-on-medium-screen" aria-hidden="true">
+      <svg class="speaker" viewBox="0 0 256 512">
+        <use href="/assets.svg#speaker" />
+      </svg>
+    </div>
+
+    <div class="three-columns column-middle">
   <main id="contact" class="standard padded border">
     <?php if ($messageSent): ?>
       <p class="contact-notice" role="status">Your message has been sent. Thank you.</p>
@@ -188,6 +196,14 @@ if ($method === 'POST') {
       </div>
     </form>
   </main>
+    </div>
+
+    <div class="three-columns column-sides column-right hide-on-medium-screen" aria-hidden="true">
+      <svg class="speaker" viewBox="0 0 256 512">
+        <use href="/assets.svg#speaker" />
+      </svg>
+    </div>
+  </div>
 
   <?php require($_SERVER['DOCUMENT_ROOT'] . '/elements/footer.php'); ?>
 </body>

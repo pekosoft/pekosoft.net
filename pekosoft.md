@@ -492,6 +492,7 @@ Special page note:
 - Contact submissions use server-side validation, session tokens, a honeypot and a one-minute session send limit. Mail failures are logged and shown explicitly, with the submitted text preserved.
 - Contact hides the tool-specific Tool, Help, History and About navigation, has no separate Help or About page, and is excluded from page-swiping loops. It remains available through the TOCs and Play sequences. The form has no introductory text or visible Message label. Keep the Message field accessible through its `aria-label`.
 - Contact Reset clears all form fields and submission feedback and restores General. It does not clear sitewide settings or bypass the session send limit.
+- Contact reuses Buy Us Coffee's responsive speaker columns, which repeat beside the form when the available content width permits.
 
 ### Icons
 

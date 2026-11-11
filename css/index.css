@@ -135,7 +135,8 @@ a:visited {
   color: var(--color2);
 }
 
-a:hover .icons {
+a:hover .icons,
+a:hover .assets {
   opacity: 0.8;
 }
 

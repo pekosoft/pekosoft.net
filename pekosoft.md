@@ -153,6 +153,8 @@ The project sits in the space between music production, web tools, and mathemati
 
 The front page focuses on the official tools without an updates feed. Updates remain available from the TOC. Share opens a sharing action rather than a page and is available in Settings after Fullscreen.
 
+Linked logos use the same hover opacity as linked icons. Unlinked artwork remains unchanged.
+
 Pekosoft favors:
 
 - immediate access

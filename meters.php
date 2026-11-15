@@ -134,7 +134,7 @@
     </button>
     <button id="meters-freeze-button" class="square" title="Toggle freeze" aria-label="Freeze" aria-pressed="false" data-help-release="index" data-help-entry="Meter freeze">
       <svg class="icons">
-        <use href="/icons.svg#pause" />
+        <use href="/icons.svg?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/icons.svg'); ?>#snowflake" />
       </svg>
       <span class="button-text">Freeze</span>
     </button>

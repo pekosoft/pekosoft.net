@@ -67,6 +67,16 @@ test('Bit meter tab and General Help use the dedicated Bit meter icon', () => {
   assert.match(help, /#bitmeter"><\/use><\/svg>\s*<div class="justify">\s*<h1>Bit /);
 });
 
+test('Meters Freeze and General Help use the snowflake icon', () => {
+  const icon = content('snowflake');
+  assert.doesNotMatch(icon, /<(?:text|use|image)\b|\b(?:fill|stroke|style)\s*=/i);
+  const template = fs.readFileSync(path.join(__dirname, '..', 'meters.php'), 'utf8');
+  const button = template.match(/<button id="meters-freeze-button"[\s\S]*?<\/button>/)[0];
+  assert.match(button, /<use href="\/icons\.svg[^"]*#snowflake"\s*\/>/);
+  const help = fs.readFileSync(path.join(__dirname, '..', 'help', 'index.php'), 'utf8');
+  assert.match(help, /#snowflake"><\/use><\/svg>\s*<div class="justify">\s*<h1>Meter freeze /);
+});
+
 test('UK uses a centered cross and matching counterchanged flag halves', () => {
   const icon = content('uk');
   assert.match(icon, /M224 96h64v128h224v64H288v128h-64V288H0v-64h224Z/);

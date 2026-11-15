@@ -41,6 +41,7 @@ Pekosoft uses a single SVG sprite file (`icons.svg`) for all interface icons. Ea
 - External uses square frame corners, a sharp arrowhead and flat line ends.
 - Pulse's horizontal sections share exact top and bottom coordinates, avoiding accumulated rounding differences from relative path commands.
 - `bitmeter` uses two equal columns of four rectangular cells in a portrait layout. The top pair uses transparent cutouts to form outlines, and the lower six cells are filled.
+- `snowflake` uses six matching branched arms for the Meters Freeze control.
 - `cassette` replaces `recorder` with a simple body, two reel cutouts, a central window and a lower tape opening, all in one standalone path.
 - Cassette reel centers are at x=128 and x=384; its central window is a 96-by-48 landscape rectangle.
 - `label` is a filled landscape rectangle with a centered point on its right edge, without lettering.

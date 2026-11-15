@@ -545,26 +545,67 @@ test('saved Bit meter selection is restored without changing other tools', () =>
   assert.equal(meter.storage.get('meters.piano.mode'), 'level');
 });
 
-test('Play cycles meters at 10-second intervals, wraps, and stops when toggled off', () => {
+test('Play advances immediately, cycles at 10-second intervals, wraps, and stops when toggled off', () => {
   const meter = createMeter();
   const play = meter.element('meters-play-button');
   assert.equal(meter.intervals.size, 0);
   meter.applyMode('phasescope');
   play.click();
   assert.equal(play.getAttribute('aria-pressed'), 'true');
-  assert.equal(meter.storage.get('meters.player.mode'), 'phasescope');
+  assert.equal(meter.storage.get('meters.player.mode'), 'bit_meter');
   assert.equal(meter.intervals.size, 1);
   const timer = [...meter.intervals.values()][0];
   assert.equal(timer.delay, 10000);
   timer.callback();
-  assert.equal(meter.storage.get('meters.player.mode'), 'bit_meter');
-  timer.callback();
   assert.equal(meter.storage.get('meters.player.mode'), 'spectroscope');
+  timer.callback();
+  assert.equal(meter.storage.get('meters.player.mode'), 'level');
   play.click();
   assert.equal(play.getAttribute('aria-pressed'), 'false');
+  assert.equal(meter.storage.get('meters.player.mode'), 'level');
   assert.equal(meter.intervals.size, 0);
   play.click();
+  assert.equal(meter.storage.get('meters.player.mode'), 'oscilloscope');
   assert.equal(meter.intervals.size, 1);
+});
+
+test('selecting any meter tab stops Play even when already selected, in single and All views', () => {
+  for (const all of [false, true]) {
+    const meter = createMeter();
+    meter.applyAllMetersMode(all);
+    meter.applyFreeze(true);
+    const play = meter.element('meters-play-button');
+    for (const [mode, button] of [
+      ['wavescope', 'tool-wavescope-button'],
+      ['oscilloscope', 'tool-oscilloscope-button'],
+      ['spectroscope', 'tool-spectroscope-button'],
+      ['level', 'tool-level-button'],
+      ['phasescope', 'tool-phasescope-button'],
+      ['bit_meter', 'tool-bit-meter-button']
+    ]) {
+      play.click();
+      assert.equal(meter.intervals.size, 1);
+      meter.element(button).click();
+      assert.equal(meter.storage.get('meters.player.mode'), mode);
+      assert.equal(meter.intervals.size, 0);
+      assert.equal(play.getAttribute('aria-pressed'), 'false');
+      assert.equal(play.classList.contains('button-on'), false);
+      assert.equal(play.title, 'Start cycling meters');
+      assert.equal(meter.element('meters-all-button').getAttribute('aria-pressed'), String(all));
+      assert.equal(meter.element('meters-freeze-button').getAttribute('aria-pressed'), 'true');
+    }
+  }
+});
+
+test('Next advances the meter without stopping Play', () => {
+  const meter = createMeter();
+  meter.element('meters-play-button').click();
+  meter.element('meters-next-button').click();
+  assert.equal(meter.storage.get('meters.player.mode'), 'phasescope');
+  assert.equal(meter.intervals.size, 1);
+  assert.equal(meter.element('meters-play-button').getAttribute('aria-pressed'), 'true');
+  [...meter.intervals.values()][0].callback();
+  assert.equal(meter.storage.get('meters.player.mode'), 'bit_meter');
 });
 
 test('Play preserves All mode and Freeze and Reset stops its timer', () => {
@@ -575,7 +616,7 @@ test('Play preserves All mode and Freeze and Reset stops its timer', () => {
   [...meter.intervals.values()][0].callback();
   assert.equal(meter.element('meters-all-button').getAttribute('aria-pressed'), 'true');
   assert.equal(meter.element('meters-freeze-button').getAttribute('aria-pressed'), 'true');
-  assert.equal(meter.storage.get('meters.player.mode'), 'wavescope');
+  assert.equal(meter.storage.get('meters.player.mode'), 'phasescope');
   meter.element('reset-button').click();
   assert.equal(meter.intervals.size, 0);
   assert.equal(meter.element('meters-play-button').getAttribute('aria-pressed'), 'false');

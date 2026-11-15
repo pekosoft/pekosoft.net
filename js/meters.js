@@ -1764,6 +1764,7 @@
 
   function applyMeterPlay(enabled) {
     if (meterCycleTimer !== null) clearInterval(meterCycleTimer);
+    if (enabled) nextMeter();
     meterCycleTimer = enabled ? setInterval(nextMeter, 10000) : null;
     playMetersButton.classList.toggle('button-on', enabled);
     playMetersButton.setAttribute('aria-pressed', String(enabled));
@@ -1772,7 +1773,10 @@
 
   Object.entries(buttonByMode).forEach(([mode, button]) => {
     if (!button) return;
-    button.addEventListener('click', () => applyMode(mode));
+    button.addEventListener('click', () => {
+      applyMeterPlay(false);
+      applyMode(mode);
+    });
   });
 
   nextButton.addEventListener('click', nextMeter);

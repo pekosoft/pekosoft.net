@@ -321,7 +321,7 @@
   <svg class="standard-image-help"><use href="/icons.svg#meter"></use></svg>
   <div class="justify">
     <h1>Meters <span class="object">module</span></h1>
-    Displays the current tool's audio signal. Choose Spectroscope, Level, Oscilloscope, Wavescope, Phasescope or Bit to inspect different aspects of the signal. Use All to show every meter view together. Freeze, Crosshair, Guides, Bright, Rulers and Color adjust the view without changing the audio.
+    Displays the current tool's audio signal. Choose Spectroscope, Level, Oscilloscope, Wavescope, Phasescope or Bit to inspect different aspects of the signal. Use All to show multiple meter views together and toggle each view with its meter button. Freeze, Crosshair, Guides, Bright, Rulers and Color adjust the view without changing the audio.
   </div>
 </div>
 
@@ -329,7 +329,7 @@
   <svg class="standard-image-help"><use href="/icons.svg#select_all"></use></svg>
   <div class="justify">
     <h1>All <span class="object">button</span></h1>
-    Shows all six Meters views together, each with its own rulers and crosshair. Select a meter tab to focus that view for Next, Save and Copy. Press All again to show only the selected meter. The choice is saved for the current tool and Reset restores the single-meter view. <span class="default">Default: off.</span>
+    Shows the enabled Meters views together, each with its own rulers and crosshair. Meter buttons toggle individual views in All mode. Play and Next are unavailable. Save and Copy use the selected single-meter view if it is visible, otherwise the first visible view. They are unavailable when all views are hidden. Press All again to return to the selected single meter. The view and enabled meters are saved for the current tool. Reset restores the single-meter view and enables all meters. <span class="default">Default: off.</span>
   </div>
 </div>
 
@@ -345,7 +345,7 @@
   <svg class="standard-image-help"><use href="/icons.svg#play"></use></svg>
   <div class="justify">
     <h1>Meter play <span class="object">button</span></h1>
-    The Play button in Meters selects the next meter immediately and then every 10 seconds, returning to Spectroscope after Bit. It does not start or stop audio playback. In All mode, it cycles the focused meter while keeping every view visible. Selecting a meter tab stops cycling. Next and Freeze do not stop the cycle. Press Play again to stop cycling. Reset and page reload stop cycling. <span class="default">Default: off.</span>
+    The Play button in Meters selects the next meter immediately and then every 10 seconds, returning to Spectroscope after Bit. It does not start or stop audio playback. Selecting a meter tab or switching to All mode stops cycling. Play is unavailable in All mode. Next and Freeze do not stop the cycle. Press Play again to stop cycling. Reset and page reload stop cycling. <span class="default">Default: off.</span>
   </div>
 </div>
 
@@ -353,7 +353,7 @@
   <svg class="standard-image-help"><use href="/icons.svg#skip_right"></use></svg>
   <div class="justify">
     <h1>Next meter <span class="object">button</span></h1>
-    Selects the next Meters view in tab order: Spectroscope, Level, Oscilloscope, Wavescope, Phasescope and Bit, then back to Spectroscope. Play, Freeze and audio playback are unchanged.
+    Selects the next Meters view in tab order: Spectroscope, Level, Oscilloscope, Wavescope, Phasescope and Bit, then back to Spectroscope. Unavailable in All mode. Play, Freeze and audio playback are unchanged.
   </div>
 </div>
 

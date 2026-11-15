@@ -366,7 +366,9 @@ function setupModuleTabTitle(container) {
   const titleElement = container.querySelector(":scope > .module-header .module-title");
   const updateTitle = () => {
     const activeTab = tabButtons.find((button) => button.classList.contains("button-on"));
-    const title = activeTab ? `${baseTitle}: ${activeTab.dataset.moduleTab}` : baseTitle;
+    const title = id === "meters" && container.classList.contains("meters-all-mode")
+      ? `${baseTitle}: All`
+      : activeTab ? `${baseTitle}: ${activeTab.dataset.moduleTab}` : baseTitle;
     if (titleElement.textContent !== title) titleElement.textContent = title;
   };
 
@@ -374,6 +376,7 @@ function setupModuleTabTitle(container) {
   tabButtons.forEach((button) => {
     observer.observe(button, { attributes: true, attributeFilter: ["class"] });
   });
+  if (id === "meters") observer.observe(container, { attributes: true, attributeFilter: ["class"] });
   updateTitle();
 }
 

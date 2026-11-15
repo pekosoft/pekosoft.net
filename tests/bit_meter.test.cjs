@@ -42,7 +42,7 @@ function createMeter(initialStorage = {}) {
       setAttribute(name, text) { attributes.set(name, text); },
       getAttribute: name => attributes.get(name),
       addEventListener(name, callback) { listeners.set(name, callback); },
-      click() { listeners.get('click')?.(); },
+      click() { if (!this.disabled) listeners.get('click')?.(); },
       querySelector: selector => element(selector),
       querySelectorAll: () => []
     };
@@ -503,7 +503,7 @@ test('Bit meter participates in mode persistence and Next cycles back to Spectro
   assert.ok(!meter.element('bit-meter').classList.contains('active'));
 });
 
-test('All mode displays each meter and keeps the selected mode for Next and bitmap export', () => {
+test('All mode toggles individual views and preserves the single-meter selection', () => {
   const meter = createMeter();
   meter.applyMode('phasescope');
   meter.element('meters-all-button').click();
@@ -512,18 +512,35 @@ test('All mode displays each meter and keeps the selected mode for Next and bitm
   assert.ok(meter.element('meters-container').classList.contains('meters-all-mode'));
   assert.equal(Object.keys(meter.frameByMode).length, 6);
   assert.ok(meter.frameByMode.phasescope.classList.contains('active'));
+  assert.equal(meter.element('meters-next-button').disabled, true);
+  assert.equal(meter.element('meters-play-button').disabled, true);
+  assert.ok(meter.element('meters-next-button').classList.contains('grey'));
+  assert.ok(meter.element('meters-play-button').classList.contains('grey'));
+  assert.ok(Object.keys(meter.frameByMode).every(mode => !meter.frameByMode[mode].classList.contains('meter-disabled')));
   meter.tick(100);
   assert.ok(Object.values(meter.canvasByMode).every(canvas => meter.contextReads.includes(canvas)));
 
-  meter.element('meters-next-button').click();
-  assert.equal(meter.storage.get('meters.player.mode'), 'bit_meter');
+  meter.element('tool-phasescope-button').click();
+  assert.equal(meter.storage.get('meters.player.visible.phasescope'), 'off');
+  assert.equal(meter.element('tool-phasescope-button').getAttribute('aria-pressed'), 'false');
+  assert.ok(meter.frameByMode.phasescope.classList.contains('meter-disabled'));
+  assert.ok(meter.frameByMode.spectroscope.classList.contains('active'));
+  meter.contextReads.length = 0;
+  meter.tick(120);
+  assert.ok(!meter.contextReads.includes(meter.canvasByMode.phasescope));
+  assert.equal(meter.storage.get('meters.player.mode'), 'phasescope');
   assert.equal(meter.element('meters-all-button').getAttribute('aria-pressed'), 'true');
   meter.element('meters-all-button').click();
   assert.equal(meter.storage.get('meters.player.view_mode'), 'one');
   assert.equal(meter.element('meters-all-button').getAttribute('aria-pressed'), 'false');
   assert.ok(!meter.element('meters-container').classList.contains('meters-all-mode'));
-  assert.ok(meter.frameByMode.bit_meter.classList.contains('active'));
-  assert.ok(Object.entries(meter.frameByMode).every(([mode, frame]) => mode === 'bit_meter' || !frame.classList.contains('active')));
+  assert.ok(meter.frameByMode.phasescope.classList.contains('active'));
+  assert.equal(meter.element('meters-next-button').disabled, false);
+  assert.equal(meter.element('meters-play-button').disabled, false);
+  meter.element('meters-all-button').click();
+  assert.equal(meter.element('tool-phasescope-button').getAttribute('aria-pressed'), 'false');
+  meter.element('tool-phasescope-button').click();
+  assert.equal(meter.element('tool-phasescope-button').getAttribute('aria-pressed'), 'true');
 });
 
 test('saved All mode is restored without changing the saved meter selection', () => {
@@ -569,10 +586,8 @@ test('Play advances immediately, cycles at 10-second intervals, wraps, and stops
   assert.equal(meter.intervals.size, 1);
 });
 
-test('selecting any meter tab stops Play even when already selected, in single and All views', () => {
-  for (const all of [false, true]) {
+test('selecting any meter tab stops Play even when already selected in single view', () => {
     const meter = createMeter();
-    meter.applyAllMetersMode(all);
     meter.applyFreeze(true);
     const play = meter.element('meters-play-button');
     for (const [mode, button] of [
@@ -591,10 +606,9 @@ test('selecting any meter tab stops Play even when already selected, in single a
       assert.equal(play.getAttribute('aria-pressed'), 'false');
       assert.equal(play.classList.contains('button-on'), false);
       assert.equal(play.title, 'Start cycling meters');
-      assert.equal(meter.element('meters-all-button').getAttribute('aria-pressed'), String(all));
+      assert.equal(meter.element('meters-all-button').getAttribute('aria-pressed'), 'false');
       assert.equal(meter.element('meters-freeze-button').getAttribute('aria-pressed'), 'true');
     }
-  }
 });
 
 test('Next advances the meter without stopping Play', () => {
@@ -608,18 +622,51 @@ test('Next advances the meter without stopping Play', () => {
   assert.equal(meter.storage.get('meters.player.mode'), 'bit_meter');
 });
 
-test('Play preserves All mode and Freeze and Reset stops its timer', () => {
+test('entering All stops Play and disables cycling until returning to one meter', () => {
   const meter = createMeter();
-  meter.applyAllMetersMode(true);
   meter.applyFreeze(true);
   meter.element('meters-play-button').click();
-  [...meter.intervals.values()][0].callback();
+  assert.equal(meter.intervals.size, 1);
+  meter.applyAllMetersMode(true);
+  assert.equal(meter.intervals.size, 0);
+  assert.equal(meter.element('meters-play-button').getAttribute('aria-pressed'), 'false');
+  meter.element('meters-play-button').click();
+  meter.element('meters-next-button').click();
+  assert.equal(meter.intervals.size, 0);
   assert.equal(meter.element('meters-all-button').getAttribute('aria-pressed'), 'true');
   assert.equal(meter.element('meters-freeze-button').getAttribute('aria-pressed'), 'true');
-  assert.equal(meter.storage.get('meters.player.mode'), 'phasescope');
+  assert.equal(meter.storage.get('meters.player.mode'), 'wavescope');
+  meter.applyAllMetersMode(false);
+  meter.element('meters-play-button').click();
+  assert.equal(meter.intervals.size, 1);
   meter.element('reset-button').click();
   assert.equal(meter.intervals.size, 0);
   assert.equal(meter.element('meters-play-button').getAttribute('aria-pressed'), 'false');
+});
+
+test('All visibility is restored per tool and Reset enables every meter', () => {
+  const meter = createMeter({ 'meters.player.view_mode': 'all', 'meters.player.visible.level': 'off', 'meters.piano.visible.level': 'off' });
+  assert.equal(meter.element('tool-level-button').getAttribute('aria-pressed'), 'false');
+  assert.ok(meter.frameByMode.level.classList.contains('meter-disabled'));
+  meter.element('reset-button').click();
+  assert.equal(meter.storage.has('meters.player.visible.level'), false);
+  assert.equal(meter.storage.get('meters.piano.visible.level'), 'off');
+  meter.element('meters-all-button').click();
+  assert.equal(meter.element('tool-level-button').getAttribute('aria-pressed'), 'true');
+});
+
+test('hiding every meter disables bitmap actions until a view is enabled', () => {
+  const meter = createMeter();
+  meter.applyAllMetersMode(true);
+  for (const id of ['tool-spectroscope-button', 'tool-level-button', 'tool-oscilloscope-button', 'tool-wavescope-button', 'tool-phasescope-button', 'tool-bit-meter-button']) {
+    meter.element(id).click();
+  }
+  assert.equal(meter.element('meters-save-button').disabled, true);
+  assert.equal(meter.element('meters-copy-button').disabled, true);
+  assert.ok(meter.element('meters-save-button').classList.contains('grey'));
+  meter.element('tool-level-button').click();
+  assert.equal(meter.element('meters-save-button').disabled, false);
+  assert.ok(meter.frameByMode.level.classList.contains('active'));
 });
 
 test('crosshair reports cached bit percentages and overload instead of time or decibels', () => {

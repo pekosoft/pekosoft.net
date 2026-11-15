@@ -193,7 +193,9 @@
   }
 
   function buildMeterBitmap() {
-    const bitmap = buildTimelineBitmap(meterPlotByMode[activeMode]);
+    const mode = getBitmapMode();
+    if (!mode) throw new Error('No Meters view is available to export.');
+    const bitmap = buildTimelineBitmap(meterPlotByMode[mode]);
     if (!bitmap) throw new Error('No Meters bitmap is available to export.');
     if (guidesOn && brightGuides) {
       const ctx = bitmap.getContext('2d');
@@ -528,6 +530,9 @@
   let meterNeedsRedraw = true;
   const wasMeterActiveByMode = Object.fromEntries(availableModes.map((mode) => [mode, false]));
   let allMetersOn = getSavedAllMetersMode();
+  const enabledModes = new Set(availableModes.filter((mode) =>
+    localStorage.getItem(`${storagePrefix}.visible.${mode}`) !== 'off'
+  ));
   let meterPalette = null;
   const meterReleaseMs = 350;
 
@@ -695,27 +700,51 @@
     meterNeedsRedraw = true;
   }
 
+  function getDisplayedModes() {
+    return allMetersOn ? availableModes.filter((mode) => enabledModes.has(mode)) : [activeMode];
+  }
+
+  function getBitmapMode() {
+    const modes = getDisplayedModes();
+    return modes.includes(activeMode) ? activeMode : modes[0];
+  }
+
+  function updateMeterControls() {
+    const bitmapMode = getBitmapMode();
+    availableModes.forEach((mode) => {
+      const selected = allMetersOn ? enabledModes.has(mode) : mode === activeMode;
+      const button = buttonByMode[mode];
+      frameByMode[mode].classList.toggle('meter-disabled', !enabledModes.has(mode));
+      frameByMode[mode].classList.toggle('active', mode === bitmapMode);
+      canvasByMode[mode].classList.toggle('active', mode === activeMode);
+      if (button) {
+        button.classList.toggle('button-on', selected);
+        button.setAttribute('aria-pressed', String(selected));
+      }
+    });
+    [nextButton, playMetersButton].forEach((button) => {
+      button.disabled = allMetersOn;
+      button.classList.toggle('grey', allMetersOn);
+    });
+    [saveButton, copyButton].forEach((button) => {
+      button.disabled = !bitmapMode;
+      button.classList.toggle('grey', !bitmapMode);
+    });
+  }
+
   function applyMode(nextMode) {
     if (!availableModes.includes(nextMode)) return;
     if (activeMode !== nextMode) wavescopeState.lastPushMs = 0;
     activeMode = nextMode;
     localStorage.setItem(`${storagePrefix}.mode`, activeMode);
 
-    Object.entries(canvasByMode).forEach(([mode, canvas]) => {
-      if (!canvas) return;
-      canvas.classList.toggle('active', mode === activeMode);
-      frameByMode[mode].classList.toggle('active', mode === activeMode);
-    });
-
-      Object.entries(buttonByMode).forEach(([mode, button]) => {
-      if (!button) return;
-      button.classList.toggle('button-on', mode === activeMode);
-    });
+    updateMeterControls();
     meterNeedsRedraw = true;
   }
 
   function applyAllMetersMode(nextState, persist = true) {
     allMetersOn = !!nextState;
+    if (allMetersOn) applyMeterPlay(false);
     metersContainer.classList.toggle('meters-all-mode', allMetersOn);
     allMetersButton.classList.toggle('button-on', allMetersOn);
     allMetersButton.setAttribute('aria-pressed', String(allMetersOn));
@@ -723,6 +752,7 @@
     if (persist) {
       localStorage.setItem(`${storagePrefix}.view_mode`, allMetersOn ? 'all' : 'one');
     }
+    updateMeterControls();
     meterNeedsRedraw = true;
     requestAnimationFrame(redrawMeterFrame);
   }
@@ -1674,7 +1704,7 @@
     const source = frozen
       ? (frozenSource ? { ...frozenSource, palette: getMeterPalette() } : null)
       : getSourceConfig();
-    const modes = allMetersOn ? availableModes : [activeMode];
+    const modes = getDisplayedModes();
     modes.forEach((mode) => {
       drawMeterRulers(source, mode);
       const canvas = canvasByMode[mode];
@@ -1710,7 +1740,7 @@
 
     const source = getSourceConfig();
     const sourceIsActive = Boolean(source && (!source.isActive || source.isActive()));
-    const modes = allMetersOn ? availableModes : [activeMode];
+    const modes = getDisplayedModes();
     modes.forEach((mode) => {
       drawMeterRulers(source, mode);
       const releaseIsActive = Boolean(source && !sourceIsActive && (
@@ -1759,10 +1789,12 @@
   let meterCycleTimer = null;
 
   function nextMeter() {
+    if (allMetersOn) return;
     applyMode(availableModes[(availableModes.indexOf(activeMode) + 1) % availableModes.length]);
   }
 
   function applyMeterPlay(enabled) {
+    enabled = !!enabled && !allMetersOn;
     if (meterCycleTimer !== null) clearInterval(meterCycleTimer);
     if (enabled) nextMeter();
     meterCycleTimer = enabled ? setInterval(nextMeter, 10000) : null;
@@ -1774,6 +1806,20 @@
   Object.entries(buttonByMode).forEach(([mode, button]) => {
     if (!button) return;
     button.addEventListener('click', () => {
+      if (allMetersOn) {
+        if (enabledModes.has(mode)) {
+          enabledModes.delete(mode);
+          clearCrosshair(mode);
+        } else {
+          enabledModes.add(mode);
+        }
+        if (mode === 'wavescope') wavescopeState.lastPushMs = 0;
+        localStorage.setItem(`${storagePrefix}.visible.${mode}`, enabledModes.has(mode) ? 'on' : 'off');
+        updateMeterControls();
+        meterNeedsRedraw = true;
+        requestAnimationFrame(redrawMeterFrame);
+        return;
+      }
       applyMeterPlay(false);
       applyMode(mode);
     });
@@ -1806,7 +1852,7 @@
       const now = new Date();
       const date = [now.getDate(), now.getMonth() + 1, now.getFullYear()].map(value => String(value).padStart(2, '0')).join('-');
       const time = [now.getHours(), now.getMinutes(), now.getSeconds()].map(value => String(value).padStart(2, '0')).join('-');
-      triggerDownloadFromCanvas(bitmap, `${release}_meters_${activeMode}_${date}_${time}.png`);
+      triggerDownloadFromCanvas(bitmap, `${release}_meters_${getBitmapMode()}_${date}_${time}.png`);
     } catch (error) {
       console.warn('Meters bitmap save failed:', error);
     }
@@ -1869,6 +1915,10 @@
       localStorage.removeItem(`${storagePrefix}.crosshair`);
       applyCrosshair(false, false);
       localStorage.removeItem(`${storagePrefix}.view_mode`);
+      availableModes.forEach((mode) => {
+        localStorage.removeItem(`${storagePrefix}.visible.${mode}`);
+        enabledModes.add(mode);
+      });
       applyAllMetersMode(false, false);
       applyFreeze(false);
       clearMeterFrame('wavescope');

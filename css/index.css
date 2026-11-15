@@ -800,6 +800,10 @@ html.modules-page body:not(.layout-two-columns) {
   background-color: var(--black);
 }
 
+#meters-container.meters-all-mode .meter-frame.meter-disabled {
+  display: none;
+}
+
 #meters-container.meters-all-mode .meter-frame.active .meter-mode-label {
   color: var(--color1);
 }

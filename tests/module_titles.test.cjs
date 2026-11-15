@@ -49,12 +49,14 @@ function createTitleUpdater(id, labels, selected = 0) {
   }));
   let title = '';
   let writes = 0;
+  let allMeters = false;
   const titleElement = {
     get textContent() { return title; },
     set textContent(value) { title = value; writes++; }
   };
   const container = {
     id: `${id}-container`,
+    classList: { contains: name => name === 'meters-all-mode' && allMeters },
     querySelectorAll: () => buttons,
     querySelector: () => titleElement
   };
@@ -69,6 +71,10 @@ function createTitleUpdater(id, labels, selected = 0) {
     buttons, observers, titleElement, writes: () => writes,
     select(index) {
       buttons.forEach((button, current) => { button.active = current === index; });
+      observers.forEach(observer => observer.callback());
+    },
+    setAllMeters(value) {
+      allMeters = value;
       observers.forEach(observer => observer.callback());
     }
   };
@@ -144,6 +150,16 @@ test('every module More menu keeps its container without a decorative background
 test('saved selections are reflected when headers are created, not only after clicks', () => {
   const updater = createTitleUpdater('meters', ['Spectroscope', 'Level meter', 'Oscilloscope'], 2);
   assert.equal(updater.titleElement.textContent, 'Meters: Oscilloscope');
+});
+
+test('Meters header shows All while individual meter toggles are active', () => {
+  const updater = createTitleUpdater('meters', ['Spectroscope', 'Level meter'], 1);
+  updater.setAllMeters(true);
+  assert.equal(updater.titleElement.textContent, 'Meters: All');
+  updater.select(0);
+  assert.equal(updater.titleElement.textContent, 'Meters: All');
+  updater.setAllMeters(false);
+  assert.equal(updater.titleElement.textContent, 'Meters: Spectroscope');
 });
 
 test('selection changes are observed without intercepting tab clicks or other controls', () => {
@@ -249,7 +265,7 @@ for (const group of tabSections) {
     const template = fs.readFileSync(path.join(__dirname, '..', ...group.file.split('\\')), 'utf8');
     const sections = Array.from(template.matchAll(/<div class="controls-buttons wrapper module-tabs">([\s\S]*?)<\/div>/g),
       match => Array.from(match[1].matchAll(/<button\b[^>]*\bid="([^"]+)"/g), button => button[1])
-        .filter(id => id !== 'meters-next-button'));
+        .filter(id => id !== 'meters-next-button' && id !== 'meters-play-button'));
     assert.ok(sections.some(tabs => JSON.stringify(tabs) === JSON.stringify(group.tabs.map(([id]) => id))));
     const fixture = createSkipSection(group.tabs.length, group.tabs.length - 1);
     setupSkipSections([fixture]);

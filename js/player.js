@@ -2488,12 +2488,14 @@ playButton.addEventListener('click', async () => {
         if (duration > 0 && (audioPlayer.ended || audioPlayer.currentTime >= duration)) {
             audioPlayer.currentTime = 0;
         }
+        playButton.classList.add('button-on');
         try {
             await startPlaybackWithResponse();
         } catch (error) {
             if (error?.name !== 'AbortError') throw error;
+        } finally {
+            playButton.classList.toggle('button-on', !audioPlayer.paused && !audioPlayer.ended);
         }
-        playButton.classList.toggle('button-on', !audioPlayer.paused && !audioPlayer.ended);
     } else {
         await pausePlaybackWithResponse();
     }

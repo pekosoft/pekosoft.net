@@ -11,6 +11,7 @@ const buttonGreySource = source.slice(source.indexOf('function setButtonGrey('),
 const soundSource = source.slice(source.indexOf('function updatePlayerMasterGain()'), source.indexOf('\nlet bassFilter'));
 const monitoringSource = source.slice(source.indexOf('async function setInputMonitoringEnabled('), source.indexOf('\nfunction clampVolumePercent('));
 const soundClickSource = source.slice(source.indexOf("toggleSound.addEventListener('click'"), source.indexOf('\nif (copyButton)'));
+const playClickSource = source.slice(source.indexOf("playButton.addEventListener('click'"), source.indexOf('\nfunction getAdjacentPlayableIndex('));
 
 function setup(duration) {
     const buttons = {};
@@ -41,6 +42,55 @@ test('unseekable audio disables the Progress playhead together with both seek bu
         app.context.progressSlider.input();
         assert.equal(app.context.audioPlayer.currentTime, 0);
     }
+});
+
+function setupPlayClick() {
+    const classes = new Set();
+    const button = {
+        classList: {
+            add: name => classes.add(name),
+            toggle(name, enabled) { if (enabled) classes.add(name); else classes.delete(name); },
+            contains: name => classes.has(name)
+        },
+        addEventListener(type, handler) { this[type] = handler; }
+    };
+    const audio = { paused: true, ended: false, duration: 10, currentTime: 0 };
+    let resolveStart, rejectStart;
+    const start = new Promise((resolve, reject) => { resolveStart = resolve; rejectStart = reject; });
+    const context = vm.createContext({
+        playButton: button, audioPlayer: audio,
+        startPlaybackWithResponse: () => start,
+        pausePlaybackWithResponse: async () => {},
+        syncVisualFreeze() {}, updateActionButtonStates() {}
+    });
+    vm.runInContext(playClickSource, context);
+    return { button, audio, resolveStart, rejectStart };
+}
+
+test('Play becomes active immediately while a fade is still pending', async () => {
+    const app = setupPlayClick();
+    const pending = app.button.click();
+    assert.equal(app.button.classList.contains('button-on'), true);
+    app.audio.paused = false;
+    app.resolveStart();
+    await pending;
+    assert.equal(app.button.classList.contains('button-on'), true);
+});
+
+test('Play reflects the actual state when starting fails or playback ends', async () => {
+    const failed = setupPlayClick();
+    const pending = failed.button.click();
+    assert.equal(failed.button.classList.contains('button-on'), true);
+    failed.rejectStart(new Error('Playback failed'));
+    await assert.rejects(pending, /Playback failed/);
+    assert.equal(failed.button.classList.contains('button-on'), false);
+
+    const ended = setupPlayClick();
+    const finished = ended.button.click();
+    ended.audio.ended = true;
+    ended.resolveStart();
+    await finished;
+    assert.equal(ended.button.classList.contains('button-on'), false);
 });
 
 function setupInputMonitoring() {

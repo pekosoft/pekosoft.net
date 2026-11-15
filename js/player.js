@@ -1266,10 +1266,17 @@ masterGain.connect(mainAudioContext.destination);
 let playerSoundMuted = false;
 
 function updatePlayerMasterGain() {
-    masterGain.gain.value = !playerSoundMuted && localStorage.getItem('global.sound') !== 'false' ? 1 : 0;
+    const inputActive = Boolean(inputSource);
+    masterGain.gain.value = !inputActive && !playerSoundMuted && localStorage.getItem('global.sound') !== 'false' ? 1 : 0;
+    toggleSound.disabled = inputActive;
+    setButtonGrey(toggleSound, inputActive);
+    toggleSound.classList.toggle('button-on', !inputActive && !playerSoundMuted);
 }
 
-window.addEventListener('pekosoft:global-sound-change', updatePlayerMasterGain);
+window.addEventListener('pekosoft:global-sound-change', (event) => {
+    if (inputSource) playerSoundMuted = !event.detail.enabled;
+    updatePlayerMasterGain();
+});
 
 let bassFilter = mainAudioContext.createBiquadFilter();
 bassFilter.type = 'lowshelf';
@@ -1808,6 +1815,7 @@ async function setInputMonitoringEnabled(enabled) {
         if (inputSource) {
             disconnectSourceFromMeters(inputSource);
             inputSource = null;
+            updatePlayerMasterGain();
         }
         const stream = inputStream;
         inputStream = null;
@@ -1839,6 +1847,7 @@ async function setInputMonitoringEnabled(enabled) {
         inputStream = stream;
         if (recordingSource && recordingStream === systemAudioStream) disconnectSourceFromMeters(recordingSource);
         inputSource = mainAudioContext.createMediaStreamSource(inputStream);
+        updatePlayerMasterGain();
         connectSourceToMeters(inputSource);
         loadedChannelCount = getInputChannelCount(inputSource);
         recreateChannelSplitter(loadedChannelCount);
@@ -2370,7 +2379,6 @@ window.addEventListener('load', () => {
     localStorage.removeItem('player.sound');
     playerSoundMuted = false;
     updatePlayerMasterGain();
-    toggleSound.classList.add('button-on');
 
     renderPanel();
     updateTimeFieldBars();

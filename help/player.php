@@ -127,7 +127,7 @@
   </svg>
   <div class="justify">
     <h1>Input <span class="object">button</span></h1>
-    Toggles live input monitoring. <span class="default">Default: off.</span>
+    Toggles live input monitoring. Sound is muted while Input is on and its previous setting returns when Input stops. <span class="default">Default: off.</span>
   </div>
 </div>
 
@@ -137,7 +137,7 @@
   </svg>
   <div class="justify">
     <h1>Sound <span class="object">button</span></h1>
-    Toggles speaker output. Playback and Meters continue while muted. <span class="default">Default: on.</span>
+    Toggles speaker output. Playback and Meters continue while muted. Sound cannot be turned on while Input is on. <span class="default">Default: on.</span>
   </div>
 </div>
 
@@ -157,7 +157,7 @@
   </svg>
   <div class="justify">
     <h1>Input <span class="object">menu</span></h1>
-    Selects the audio input device or System Audio. Microphone input requests two channels without echo cancellation, noise suppression or automatic gain control, and falls back to the channels supported by the selected device. System Audio opens the browser sharing dialog. On Windows, use Chrome or Edge, select a source with audio and enable its audio sharing option. Only audio is processed and recorded. System Audio requests stereo without echo cancellation, noise suppression or automatic gain control. Meters use the channels supplied by the capture, which may be mono depending on the browser and selected source. Turn Sound off to avoid feeding captured audio back into system output. Selecting another input or stopping sharing ends the capture. System Audio requires a new user action after reloading.
+    Selects the audio input device or System Audio. Microphone input requests two channels without echo cancellation, noise suppression or automatic gain control, and falls back to the channels supported by the selected device. System Audio opens the browser sharing dialog. On Windows, use Chrome or Edge, select a source with audio and enable its audio sharing option. Only audio is processed and recorded. System Audio requests stereo without echo cancellation, noise suppression or automatic gain control. Meters use the channels supplied by the capture, which may be mono depending on the browser and selected source. Selecting another input or stopping sharing ends the capture. System Audio requires a new user action after reloading.
   </div>
 </div>
 

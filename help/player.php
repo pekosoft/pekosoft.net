@@ -273,7 +273,7 @@
   </svg>
   <div class="justify">
     <h1>Timeline <span class="object">module</span></h1>
-    Shows waveform, selection and playhead. Includes destructive waveform edit tools. When no file is loaded, the rulers show a one-minute scale.
+    Shows waveform, selection and playhead. The time ruler shows WAV cue markers. Hover over a marker to see its name and position, or select it to seek. Markers follow waveform edits and are preserved in edited WAV downloads. Includes destructive waveform edit tools. When no file is loaded, the rulers show a one-minute scale.
   </div>
 </div>
 

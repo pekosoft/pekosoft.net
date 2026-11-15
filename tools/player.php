@@ -537,6 +537,7 @@
   <script src="/js/modules.js?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/js/modules.js'); ?>"></script>
   <script src="/js/drag.js?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/js/drag.js'); ?>"></script>
   <script src="/js/test_tones.js?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/js/test_tones.js'); ?>"></script>
+  <script src="/js/audio_markers.js?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/js/audio_markers.js'); ?>"></script>
   <script src="/js/<?php echo $release; ?>.js?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/js/' . $release . '.js'); ?>"></script>
   <?php require($_SERVER['DOCUMENT_ROOT'] . "/elements/beta_footer.php"); ?>
 </body>

@@ -148,7 +148,9 @@ const STORAGE = {
 };
 
 let loadedAudioBuffer = null;
+let timelineMarkers = [];
 let audioClipboardBuffer = null;
+let audioClipboardMarkers = [];
 let waveformCacheCanvas = null;
 let waveformCacheCtx = null;
 let waveformCacheDirty = true;
@@ -246,6 +248,7 @@ function captureBufferSnapshot() {
     if (!loadedAudioBuffer) return null;
     return {
         buffer: cloneAudioBuffer(loadedAudioBuffer),
+        markers: timelineMarkers.slice(),
         selectionStart: selectionStartTime,
         selectionEnd: selectionEndTime
     };
@@ -272,6 +275,7 @@ function pushUndoSnapshot() {
 async function restoreBufferSnapshot(snapshot) {
     if (!snapshot?.buffer) return;
     loadedAudioBuffer = cloneAudioBuffer(snapshot.buffer);
+    timelineMarkers = snapshot.markers.slice();
     selectionStartTime = snapshot.selectionStart;
     selectionEndTime = snapshot.selectionEnd;
     updateLoopPlaybackMode();
@@ -761,7 +765,7 @@ function writeStringToDataView(view, offset, text) {
     }
 }
 
-function encodeAudioBufferToWavBlob(audioBuffer) {
+function encodeAudioBufferToWavBlob(audioBuffer, markers = []) {
     const channelCount = audioBuffer.numberOfChannels;
     const sampleRate = audioBuffer.sampleRate;
     const frameCount = audioBuffer.length;
@@ -781,11 +785,12 @@ function encodeAudioBufferToWavBlob(audioBuffer) {
 
     const bytesPerSample = 2;
     const dataChunkSize = interleaved.length * bytesPerSample;
+    const markerChunks = window.AudioMarkers.encodeWavMarkerChunks(markers, sampleRate);
     const arrayBuffer = new ArrayBuffer(44 + dataChunkSize);
     const view = new DataView(arrayBuffer);
 
     writeStringToDataView(view, 0, 'RIFF');
-    view.setUint32(4, 36 + dataChunkSize, true);
+    view.setUint32(4, 36 + dataChunkSize + markerChunks.length, true);
     writeStringToDataView(view, 8, 'WAVE');
     writeStringToDataView(view, 12, 'fmt ');
     view.setUint32(16, 16, true);
@@ -806,7 +811,7 @@ function encodeAudioBufferToWavBlob(audioBuffer) {
         offset += bytesPerSample;
     }
 
-    return new Blob([arrayBuffer], { type: 'audio/wav' });
+    return new Blob([arrayBuffer, markerChunks], { type: 'audio/wav' });
 }
 
 async function refreshAudioSourceFromBuffer() {
@@ -814,7 +819,7 @@ async function refreshAudioSourceFromBuffer() {
 
     const wasPlaying = !audioPlayer.paused && !audioPlayer.ended && hasLoadedAudioSource();
     const targetTime = Math.max(0, Math.min(audioPlayer.currentTime || 0, loadedAudioBuffer.duration || 0));
-    const editedBlob = encodeAudioBufferToWavBlob(loadedAudioBuffer);
+    const editedBlob = encodeAudioBufferToWavBlob(loadedAudioBuffer, timelineMarkers);
 
     revokeGeneratedAudioUrl();
     generatedAudioObjectUrl = URL.createObjectURL(editedBlob);
@@ -919,6 +924,19 @@ function setTimelineCopyButtonsGrey(isGrey) {
     });
 }
 
+function replaceTimelineMarkerRange(markers, start, end, insertedMarkers, insertedLength, sampleRate) {
+    const shifted = markers.flatMap((marker) => {
+        const sample = Math.round(marker.time * sampleRate);
+        if (sample >= start && sample < end) return [];
+        const nextSample = sample >= end ? sample + insertedLength - (end - start) : sample;
+        return [{ ...marker, sampleOffset: nextSample, time: nextSample / sampleRate }];
+    });
+    return shifted.concat(insertedMarkers.map((marker) => {
+        const sample = start + Math.round(marker.time * sampleRate);
+        return { ...marker, sampleOffset: sample, time: sample / sampleRate };
+    })).sort((a, b) => a.time - b.time);
+}
+
 function copySelectionToAudioClipboard(bounds = getProcessSampleBounds()) {
     if (!loadedAudioBuffer || !bounds) {
         updateActionButtonStates();
@@ -932,6 +950,14 @@ function copySelectionToAudioClipboard(bounds = getProcessSampleBounds()) {
     }
 
     audioClipboardBuffer = copied;
+    const sampleRate = loadedAudioBuffer.sampleRate;
+    audioClipboardMarkers = timelineMarkers.filter((marker) => {
+        const sample = Math.round(marker.time * sampleRate);
+        return sample >= bounds.startSample && sample < bounds.endSample;
+    }).map((marker) => {
+        const sample = Math.round(marker.time * sampleRate) - bounds.startSample;
+        return { ...marker, sampleOffset: sample, time: sample / sampleRate };
+    });
     updateActionButtonStates();
     return true;
 }
@@ -947,6 +973,7 @@ async function deleteBufferRange(bounds = getProcessSampleBounds()) {
     pushUndoSnapshot();
 
     const sampleRate = loadedAudioBuffer.sampleRate;
+    timelineMarkers = replaceTimelineMarkerRange(timelineMarkers, removeStart, removeEnd, [], 0, sampleRate);
     const removeStartSeconds = removeStart / sampleRate;
     const removeDurationSeconds = removeLength / sampleRate;
     let targetTime = Math.max(0, audioPlayer.currentTime || 0);
@@ -1005,6 +1032,7 @@ async function pasteClipboardBuffer() {
 
     if (!loadedAudioBuffer) {
         loadedAudioBuffer = cloneAudioBuffer(audioClipboardBuffer);
+        timelineMarkers = audioClipboardMarkers.slice();
         selectionStartTime = 0;
         selectionEndTime = loadedAudioBuffer.duration;
         updateLoopPlaybackMode();
@@ -1066,6 +1094,9 @@ async function pasteClipboardBuffer() {
     }
 
     loadedAudioBuffer = editedBuffer;
+    timelineMarkers = replaceTimelineMarkerRange(
+        timelineMarkers, replaceStart, replaceEnd, audioClipboardMarkers, insertedLength, sampleRate
+    );
 
     const insertStartSeconds = insertAt / sampleRate;
     const insertEndSeconds = (insertAt + insertedLength) / sampleRate;
@@ -1156,6 +1187,14 @@ async function reverseBufferRange() {
     if (!bounds) return;
 
     pushUndoSnapshot();
+
+    const sampleRate = loadedAudioBuffer.sampleRate;
+    timelineMarkers = timelineMarkers.map((marker) => {
+        const sample = Math.round(marker.time * sampleRate);
+        if (sample < bounds.startSample || sample >= bounds.endSample) return marker;
+        const reversedSample = bounds.startSample + bounds.endSample - 1 - sample;
+        return { ...marker, sampleOffset: reversedSample, time: reversedSample / sampleRate };
+    }).sort((a, b) => a.time - b.time);
 
     for (let channel = 0; channel < loadedAudioBuffer.numberOfChannels; channel++) {
         const channelData = loadedAudioBuffer.getChannelData(channel);
@@ -3276,6 +3315,7 @@ function clearMetaInfo() {
 }
 
 function clearStaticWaveform() {
+    timelineMarkers = [];
     selectionStartTime = null;
     selectionEndTime = null;
     updateLoopPlaybackMode();
@@ -3521,8 +3561,9 @@ function displayFileInfo(file, buffer) {
 }
 
 // Static waveform
-function drawStaticWaveform(audioBuffer) {
+function drawStaticWaveform(audioBuffer, markers = []) {
     loadedAudioBuffer = audioBuffer;
+    timelineMarkers = markers;
     selectionStartTime = null;
     selectionEndTime = null;
     updateLoopPlaybackMode();
@@ -3923,6 +3964,38 @@ function drawTimelineRuler() {
         bright: window.PekoBrightGuides.getTimelineBright(),
         sideBorders: true,
         leftBorder: false
+    });
+    drawTimelineMarkers(duration, width, height);
+}
+
+function drawTimelineMarkers(duration, width, height) {
+    if (!Number.isFinite(duration) || duration <= 0) return;
+
+    timelineMarkers.forEach((marker) => {
+        if (!Number.isFinite(marker.time) || marker.time < 0 || marker.time > duration) return;
+        const x = marker.time / duration * width;
+        const markerElement = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        const description = `${marker.name || 'Marker'}: ${formatDurationForPanel(marker.time)}`;
+        markerElement.setAttribute('class', 'timeline-marker');
+        markerElement.setAttribute('role', 'button');
+        markerElement.setAttribute('tabindex', '0');
+        markerElement.setAttribute('aria-label', description);
+        const title = document.createElementNS('http://www.w3.org/2000/svg', 'title');
+        title.textContent = description;
+        const shape = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        shape.setAttribute('d', `M ${x - 6} ${height - 13} H ${x + 6} L ${x} ${height - 1} Z`);
+        markerElement.append(title, shape);
+        markerElement.addEventListener('pointerdown', (event) => {
+            if (event.button !== 0) return;
+            event.stopPropagation();
+            seekToTimelineRatio(marker.time / duration);
+        });
+        markerElement.addEventListener('keydown', (event) => {
+            if (event.key !== 'Enter' && event.key !== ' ') return;
+            event.preventDefault();
+            seekToTimelineRatio(marker.time / duration);
+        });
+        timelineRuler.appendChild(markerElement);
     });
 }
 
@@ -4585,13 +4658,18 @@ function playPlaylistItem(index) {
     const reader = new FileReader();
     reader.onload = (e) => {
         const arrayBuffer = e.target.result;
+        if (currentPlaylistItem !== item) return;
+        const parsedMarkers = window.AudioMarkers.parseAudioMarkers(arrayBuffer);
+        if (parsedMarkers.errors.length) {
+            console.warn('Audio marker parsing warnings:', parsedMarkers.errors);
+        }
         const offlineAudioContext = new OfflineAudioContext(2, 44100 * 40, 44100);
         offlineAudioContext.decodeAudioData(arrayBuffer).then(buffer => {
             if (currentPlaylistItem !== item) return;
             item.duration = buffer.duration;
             item.channels = buffer.numberOfChannels;
             item.waveformPeaks = createPlaylistWaveformPeaks(buffer);
-            drawStaticWaveform(buffer);
+            drawStaticWaveform(buffer, parsedMarkers.markers);
             displayFileInfo(item.file, buffer);
             renderPlaylist();
             savePlaylistToStorage();

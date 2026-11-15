@@ -218,6 +218,16 @@ canvas {
   touch-action: none;
 }
 
+#timeline-ruler .timeline-marker {
+  fill: var(--color1);
+  cursor: pointer;
+}
+
+#timeline-ruler .timeline-marker:hover,
+#timeline-ruler .timeline-marker:focus {
+  opacity: 0.8;
+}
+
 #bpm-ruler {
   display: block;
   width: 4096px;

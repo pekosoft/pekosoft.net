@@ -45,6 +45,14 @@
   </div>
 </div>
 
+<div class="feature-row border">
+  <svg class="standard-image-help"><use href="/icons.svg#pendulum_weight"></use></svg>
+  <div class="justify">
+    <h1>Weight <span class="object">button</span></h1>
+    Shows or hides the pendulum weight. Its position follows the selected BPM. <span class="default">Default: on.</span>
+  </div>
+</div>
+
 <div class="feature-row border"><svg class="standard-image-help">
     <use href="/icons.svg#beat_mute"></use>
   </svg>

@@ -92,7 +92,7 @@ $previewSlug = $releaseTitle !== '' && $sectionTitle !== ''
 if ($sectionTitle && $releaseTitle) {
 	$canonicalUrl .= '?t=' . rawurlencode($releaseSlug);
 }
-$previewDescription = 'Official website for the experimental audio software company Pekosoft.';
+$previewDescription = 'Free online audio tools.';
 $referenceTableTitles = [
 	'bpm' => 'BPM',
 	'tempi' => 'Italian tempi',

@@ -206,11 +206,20 @@
 </div>
 
 <div class="feature-row border"><svg class="standard-image-help">
+    <use href="/icons.svg#radio_button"></use>
+  </svg>
+  <div class="justify">
+    <h1>Standard <span class="object">button</span></h1>
+    Toggles the standard spindle hole. Selecting Standard turns off Jukebox. Pressing the active Standard button hides the hole. <span class="default">Default: on.</span>
+  </div>
+</div>
+
+<div class="feature-row border"><svg class="standard-image-help">
     <use href="/icons.svg#jukebox"></use>
   </svg>
   <div class="justify">
     <h1>Jukebox <span class="object">button</span></h1>
-    Toggles large spindle hole. These are used mainly for jukebox releases on 7" records. <span class="default">Default: off.</span>
+    Toggles large spindle hole. These are used mainly for jukebox releases on 7" records. Selecting Jukebox replaces the standard spindle hole. <span class="default">Default: off.</span>
   </div>
 </div>
 

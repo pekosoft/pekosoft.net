@@ -271,6 +271,41 @@ test('meter contextual Help targets the matching General Help entries', () => {
   }
 });
 
+test('launch introduction and shared previews use the approved product description', () => {
+  const frontPage = renderPhp('index.php');
+  const help = renderPhp('help.php', 't=index');
+  assert.equal(frontPage.status, 200);
+  assert.equal(help.status, 200);
+  assert.equal(frontPage.diagnostics, '');
+  assert.equal(help.diagnostics, '');
+  assert.match(frontPage.body, /<meta name="description" content="Free online audio tools\.">/);
+  assert.match(frontPage.body, /<meta property="og:description" content="Free online audio tools\.">/);
+  assert.match(help.body, /Pekosoft is free online audio tools\. Have fun with Metronome, BPM Calculator, Tap Pad and Turntable\./);
+  assert.doesNotMatch(help.body, /alpha versions|Not ready for real use|<h1>Open source<\/h1>/);
+  assert.match(help.body, /<h1>Source available<\/h1>/);
+});
+
+test('official controls and global Sound and Rulers have matching contextual Help destinations', () => {
+  for (const [release, heading] of [['metronome', 'Weight'], ['turntable', 'Standard']]) {
+    const help = renderPhp('help.php', `t=${release}`);
+    assert.equal(help.status, 200);
+    assert.equal(help.diagnostics, '');
+    assert.ok(help.body.includes(`<h1>${heading} <span class="object">button</span></h1>`), release);
+  }
+  const help = renderPhp('help.php', 't=index');
+  for (const release of ['metronome', 'bpm_calculator', 'tap_pad', 'turntable']) {
+    const tool = renderPhp(`tools\\${release}.php`);
+    assert.equal(tool.status, 200, release);
+    assert.equal(tool.diagnostics, '', release);
+    for (const name of ['Sound', 'Rulers']) {
+      const button = tool.body.match(new RegExp(`<button[^>]*data-setting-toggle="${name.toLowerCase()}"[^>]*>`))?.[0];
+      assert.match(button || '', /data-help-release="index"/, `${release}: ${name}`);
+      assert.ok(button.includes(`data-help-entry="${name}"`), `${release}: ${name}`);
+      assert.ok(help.body.includes(`<h1>${name} <span class="object">option</span></h1>`), name);
+    }
+  }
+});
+
 test('failed About metadata reads are logged and return only the 500 page', t => {
   const documentRoot = createFixture(t);
   fs.mkdirSync(path.join(documentRoot, 'about'));

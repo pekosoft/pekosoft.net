@@ -15,8 +15,8 @@ if (!in_array($requestPath, ['/', '/index.php'], true)) {
   $releaseName = "Pekosoft";
   $releasePage = "";
   ?>
-  <meta name="keywords" content="Pekosoft, BPM, BPM software, BPM experiments, audio software, audio web apps, audio web tools, online audio tools">
-  <meta name="description" content="Official website for the experimental audio software company Pekosoft.">
+  <meta name="keywords" content="Pekosoft, BPM, BPM software, audio software, audio web apps, audio web tools, free online audio tools">
+  <meta name="description" content="Free online audio tools.">
 </head>
 
 <body class="index-page">

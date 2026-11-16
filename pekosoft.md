@@ -1,6 +1,6 @@
 # Pekosoft
 
-**Free audio tools.**
+**Free online audio tools.**
 
 Pekosoft is a browser-based collection of audio tools built around clarity, speed, and restraint. The project focuses on practical timing, rhythm, and reference utilities that run directly on the web, with no installation, no subscriptions, no ads, and no unnecessary clutter.
 
@@ -39,7 +39,7 @@ The following tools are listed on `beta.php` as tests, experiments, and works in
 Pekosoft is built around a clear set of values:
 
 - **Free** — no paywall, no plans, no subscriptions
-- **Open source** — GitHub presence is in place, with the first public version being prepared
+- **Source available** — source code can be viewed on GitHub under the repository licence
 - **Ad-free** — no advertising, no third-party tracking, no noise
 - **Modern** — current standards and modern web practices
 - **Simple** — only essential features make the final cut
@@ -55,7 +55,7 @@ Pekosoft is built around a clear set of values:
 
 ## Brand voice
 
-Pekosoft is a collection of free audio tools.
+Use **Free online audio tools.** as Pekosoft's sole product description in site metadata, sharing previews and introductory copy. Keep functional descriptions of individual tools. General Help introduces the site with: "Pekosoft is free online audio tools. Have fun with Metronome, BPM Calculator, Tap Pad and Turntable."
 
 We are:
 

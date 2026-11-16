@@ -5,8 +5,7 @@
   </svg>
   <div class="justify">
     <h1>General</h1>
-    Pekosoft is BPM (beats per minute) experiments in alpha versions! Have fun with Metronome, BPM Calculator, Tap Pad and
-    Turntable. Music and mathematics! Not ready for real use!
+    Pekosoft is free online audio tools. Have fun with Metronome, BPM Calculator, Tap Pad and Turntable.
   </div>
 </div>
 
@@ -26,7 +25,7 @@
     <use href="/icons.svg#notepad"></use>
   </svg>
   <div class="justify">
-    <h1>Open source</h1>
+    <h1>Source available</h1>
     Pekosoft is available on <a href="https://github.com/pekosoft">GitHub</a> for transparency, documentation, review and discussion. Copyright &copy; Pekosoft. All rights reserved.
   </div>
 </div>
@@ -593,8 +592,18 @@
 </div>
 
 <div class="feature-row border">
+  <svg class="standard-image-help"><use href="/icons.svg#ruler"></use></svg>
+  <div class="justify"><h1>Rulers <span class="object">option</span></h1>Shows or hides rulers across supported Timeline and Meters modules. A module-local Rulers button overrides this setting for its own module only. <span class="default">Default: on.</span></div>
+</div>
+
+<div class="feature-row border">
   <svg class="standard-image-help"><use href="/icons.svg#sun"></use></svg>
   <div class="justify"><h1>Bright <span class="object">option</span></h1>Increases guide contrast across supported Timeline and Meters modules. A module-local Bright button overrides this setting for its own module only. <span class="default">Default: off.</span></div>
+</div>
+
+<div class="feature-row border">
+  <svg class="standard-image-help"><use href="/icons.svg#sound"></use></svg>
+  <div class="justify"><h1>Sound <span class="object">option</span></h1>Turns sound on or off across supported tools without stopping playback. A tool's Sound button controls its own output independently. <span class="default">Default: on.</span></div>
 </div>
 
 <div class="feature-row border">

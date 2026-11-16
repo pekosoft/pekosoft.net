@@ -9,7 +9,7 @@
   $releasePage = "";
   $availableModules = ["tool", "controls", "timeline", "panel", "meters"];
   ?>
-  <meta name="keywords" content="bpm calculator, tempo calculator, bpm calculators, calculate tempo, calculate bpm, bpm, bpm to ms, bpm to hz, hz to bpm, bpm to wavelength, frequency to wavelength, beats per minute calculator, bpm table, beats per minute table, bpm to bps, bps to bpm, beats per minute, beats per second, triplet notes, dotted notes, music calculator, bpm formulas, open source bpm">
+  <meta name="keywords" content="bpm calculator, tempo calculator, bpm calculators, calculate tempo, calculate bpm, bpm, bpm to ms, bpm to hz, hz to bpm, bpm to wavelength, frequency to wavelength, beats per minute calculator, bpm table, beats per minute table, bpm to bps, bps to bpm, beats per minute, beats per second, triplet notes, dotted notes, music calculator, bpm formulas">
   <link rel="stylesheet" type="text/css" href="/css/<?php echo $release; ?>.css?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/css/' . $release . '.css'); ?>">
 </head>
 

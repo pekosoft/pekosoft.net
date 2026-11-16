@@ -172,7 +172,7 @@ Pekosoft favors:
 - minimal distraction
 - real utility over feature bloat
 
-More menus use the same control layout and spacing as the regular module view. The More control indicates when its menu is open. More stays open until the user activates that module's More control again. Outside interactions and changes to module layout or visibility must preserve this mode.
+More menus use the same control layout and spacing as the regular module view. The More control indicates when its menu is open. More stays open until the user activates that module's More control again. Outside interactions and changes to module layout or visibility must preserve this mode. Global Reset is the exception and closes every module menu.
 
 ## Production deployment
 
@@ -368,7 +368,13 @@ RESET buttons inside tools must clear that tool completely:
 
 RESET buttons inside tools must not clear sitewide settings.
 
-Sitewide reset is only allowed from the Settings page.
+Sitewide reset is only allowed from the Reset button in Settings.
+
+Global Reset must restore everything to factory defaults, including module order,
+visibility, layout, open module menus, all tool data and settings, session storage
+and the selected background image. Wait for persistent background removal before
+reloading the page so no live tool or module state survives. Keep the reset storage
+lock active through reload to prevent stale state from being saved again.
 
 Clearing local Guides, Bright, Rulers and Multicolor overrides restores their global defaults. Bright returns to off when the global Bright setting is off.
 

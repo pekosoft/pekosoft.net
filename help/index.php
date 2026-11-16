@@ -679,7 +679,7 @@
 
 <div class="feature-row border">
   <svg class="standard-image-help"><use href="/icons.svg#reset"></use></svg>
-  <div class="justify"><h1>Reset <span class="object">button</span></h1>Restores global customization to factory defaults and clears the site's locally stored tool settings and data.</div>
+  <div class="justify"><h1>Reset <span class="object">button</span></h1>Restores all site settings and tools to factory defaults. Clears saved tool settings, session data and the selected background image. Restores module order, visibility and layout, closes open module menus and reloads the page.</div>
 </div>
 
 <div class="feature-row module">

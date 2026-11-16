@@ -329,8 +329,13 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   if (settings.resetButton) {
-    settings.resetButton.addEventListener("click", () => {
-      resetSettings();
+    settings.resetButton.addEventListener("click", async () => {
+      try {
+        await resetSettings();
+      } catch (error) {
+        console.error("Global reset failed:", error);
+        window.alert("Reset could not be completed. Please try again.");
+      }
     });
   }
 
@@ -605,7 +610,7 @@ document.addEventListener("DOMContentLoaded", () => {
         database.close();
         reject(transaction.error);
       });
-    })).catch(() => {});
+    }));
   }
 
   function loadBackgroundImageSetting() {
@@ -637,83 +642,18 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // Reset settings to defaults
-  function resetSettings() {
+  async function resetSettings() {
     const stopButton = document.getElementById("stop-button");
-    const toolResetButton = document.getElementById("reset-button");
 
+    sessionStorage.clear();
     sessionStorage.setItem("pekosoft.reset-storage-lock", "1");
-    stopButton?.click();
-    toolResetButton?.click();
-    if (!toolResetButton) window.PekoTables?.reset();
-
-    localStorage.clear();
-    localStorage.setItem("global.grid", defaults.grid);
-    localStorage.setItem("global.grid_size", defaults.gridSize);
-    localStorage.setItem("global.guides", defaults.guides);
-    if (window.PekoGuides) window.PekoGuides.setGlobal(defaults.guides);
-    localStorage.setItem("global.rulers", defaults.rulers);
-    if (window.PekoRulers) window.PekoRulers.setGlobal(defaults.rulers);
-    localStorage.setItem("global.bright_guides", defaults.brightGuides);
-    if (window.PekoBrightGuides) window.PekoBrightGuides.setGlobal(defaults.brightGuides);
-    if (window.PekoSound) {
-      window.PekoSound.setGlobal(defaults.sound);
-    } else {
-      localStorage.setItem("global.sound", defaults.sound);
-    }
-    if (window.PekoHaptics) {
-      window.PekoHaptics.setGlobal(defaults.haptics);
-    } else {
-      localStorage.setItem("global.haptics", defaults.haptics);
-    }
-    localStorage.setItem("global.headers", defaults.headers);
-    localStorage.setItem("global.footers", defaults.footers);
-    localStorage.setItem("global.layout", defaults.layout);
-    localStorage.setItem("global.toggle_button_text", defaults.toggleButtonText);
-    localStorage.setItem("global.font_size", defaults.fontSize);
-    localStorage.setItem("global.alpha", defaults.alpha);
-    setGlobalMulticolor(defaults.multicolor);
-    if (window.PekoWrap) {
-      window.PekoWrap.setGlobal(defaults.wrap);
-    } else {
-      localStorage.setItem("global.wrap", defaults.wrap);
-      clearPanelWrapOverrides();
-    }
-    localStorage.setItem("global.input_backgrounds_enabled", defaults.inputBackgroundsEnabled);
-    localStorage.setItem("global.theme", defaults.theme);
-    localStorage.setItem("global.footer", defaults.footer);
-    localStorage.setItem("global.default_bpm", defaults.defaultBPM);
-    localStorage.setItem("global.default_rpm", defaults.defaultRPM);
-    localStorage.setItem("global.a4_hz", defaults.a4Hz);
-    localStorage.setItem("global.speed_of_sound", defaults.speedOfSound);
-    clearBackgroundImageSetting();
-    dispatchGlobalDefaultsChange("all");
-
-    // Also apply immediately
-    window.enableInputBackgrounds = defaults.inputBackgroundsEnabled;
-    const toggle = document.getElementById("toggle-bars");
-    if (toggle) toggle.checked = defaults.inputBackgroundsEnabled;
-
-    document.querySelectorAll('input[type="number"]').forEach(input => {
-      const val = parseFloat(input.value) || 0;
-      input.style.backgroundSize = window.enableInputBackgrounds ? `${val}px 4px` : "0px 4px";
-    });
-
-    if (typeof applyColorTheme === "function") applyColorTheme(defaults.theme);
-    if (typeof updateFooterVisibility === "function") updateFooterVisibility();
     if (typeof stopSitePlay === "function") stopSitePlay();
-    loadSettings();
-    if (window.applySiteSettings) window.applySiteSettings();
-
-    window.resetModuleLayout?.();
+    stopButton?.click();
 
     localStorage.clear();
-
-    const resetSidebarsOpen = window.matchMedia("(min-width: 800px)").matches;
-    document.getElementById("toc")?.classList.toggle("toc-open", resetSidebarsOpen);
-    document.getElementById("settings-panel")?.classList.toggle("settings-panel-open", resetSidebarsOpen);
-    document.getElementById("toggle-settings-panel-button")?.setAttribute("aria-expanded", String(resetSidebarsOpen));
-    document.body.classList.toggle("toc-sidebar-open", resetSidebarsOpen);
-    document.body.classList.toggle("settings-sidebar-open", resetSidebarsOpen);
+    await clearBackgroundImageSetting();
+    localStorage.clear();
+    location.reload();
   }
 
   function normalizeGridSize(value) {

@@ -50,6 +50,19 @@ test('Markers follows Timeline without replacing the saved module order', () => 
   assert.deepEqual(visibleOrder(['panel', 'timeline', 'tool']), ['panel', 'timeline', 'markers', 'tool', 'controls', 'playlist', 'meters']);
 });
 
+test('missing, empty and invalid saved orders restore the full factory module order', () => {
+  const context = vm.createContext({});
+  vm.runInContext(
+    extractSource('const moduleIds =', 'const legacyModuleIds =') +
+    extractSource('function normalizeModuleOrder(', 'function isLegacyModuleOrder('),
+    context
+  );
+  for (const saved of [null, [], ['unknown']]) {
+    assert.deepEqual(Array.from(context.normalizeModuleOrder(saved)),
+      ['tool', 'controls', 'timeline', 'markers', 'playlist', 'history', 'panel', 'meters']);
+  }
+});
+
 function createLayout(savedStates, options = {}) {
   function element(classes = []) {
     const names = new Set(classes);

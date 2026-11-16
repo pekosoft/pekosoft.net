@@ -111,6 +111,8 @@ function normalizeModuleOrder(order) {
     }
   });
 
+  if (!normalized.length) return [...moduleIds];
+
   if (!seen.has("history")) {
     const playlistIndex = normalized.indexOf("playlist");
     const panelIndex = normalized.indexOf("panel");

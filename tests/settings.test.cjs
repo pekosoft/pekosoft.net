@@ -6,6 +6,65 @@ const vm = require('node:vm');
 
 const source = fs.readFileSync(path.join(__dirname, '..', 'js', 'settings.js'), 'utf8');
 
+function createResetEnvironment() {
+  class Storage {
+    constructor(entries) { this.values = new Map(Object.entries(entries)); }
+    getItem(key) { return this.values.get(key) ?? null; }
+    setItem(key, value) { this.values.set(key, String(value)); }
+    removeItem(key) { this.values.delete(key); }
+    clear() { this.values.clear(); }
+  }
+  const localStorage = new Storage({
+    'global.module_order': '["meters","tool"]',
+    'global.theme': 'light',
+    'module_tool_state': 'maximized',
+    'module_controls': 'hidden',
+    'player.volume': '20',
+    'notepad.text': 'Saved text'
+  });
+  const sessionStorage = new Storage({ 'player.recording': 'saved', 'meters.player.mode': 'level' });
+  const events = [];
+  const context = vm.createContext({
+    Storage, localStorage, sessionStorage,
+    document: {
+      addEventListener() {},
+      getElementById: id => id === 'stop-button' ? { click: () => events.push('stop') } : null
+    },
+    stopSitePlay: () => events.push('stop-site'),
+    location: { reload: () => events.push('reload') },
+    clearBackgroundImageSetting: () => new Promise(resolve => {
+      context.finishBackgroundRemoval = () => { events.push('background-cleared'); resolve(); };
+    })
+  });
+  const head = fs.readFileSync(path.join(__dirname, '..', 'elements', 'head.php'), 'utf8');
+  const guardStart = head.indexOf("const resetStorageLockKey =");
+  vm.runInContext(head.slice(guardStart, head.indexOf('} catch', guardStart)), context);
+  vm.runInContext(source.slice(source.indexOf('  // Reset settings to defaults'), source.indexOf('  function normalizeGridSize(')), context);
+  return { context, localStorage, sessionStorage, events };
+}
+
+test('Global Reset clears every stored scope and waits for background removal before reloading', async () => {
+  const { context, localStorage, sessionStorage, events } = createResetEnvironment();
+  const pending = context.resetSettings();
+  assert.deepEqual([...localStorage.values], []);
+  assert.deepEqual([...sessionStorage.values], [['pekosoft.reset-storage-lock', '1']]);
+  assert.deepEqual(events, ['stop-site', 'stop']);
+  localStorage.setItem('global.module_order', '["meters","tool"]');
+  localStorage.setItem('notepad.text', 'Stale unload save');
+  assert.deepEqual([...localStorage.values], []);
+  context.finishBackgroundRemoval();
+  await pending;
+  assert.deepEqual(events, ['stop-site', 'stop', 'background-cleared', 'reload']);
+  assert.deepEqual([...localStorage.values], []);
+});
+
+test('Global Reset does not reload before a failed background removal can be reported', async () => {
+  const { context, events } = createResetEnvironment();
+  context.clearBackgroundImageSetting = () => Promise.reject(new Error('Storage unavailable'));
+  await assert.rejects(context.resetSettings(), /Storage unavailable/);
+  assert.ok(!events.includes('reload'));
+});
+
 test('pages without the developer Size control retain the saved grid size', () => {
   const context = vm.createContext({
     settings: { gridSizeValue: null },

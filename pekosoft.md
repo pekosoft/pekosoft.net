@@ -376,6 +376,10 @@ The shared Meters Freeze button holds meter samples without stopping audio or re
 
 Meters All mode uses the shared 4px `--grey1` dividers between meter frames and below their non-selectable titles, without extra outer padding or doubled borders. Meter tabs independently toggle the visible views. Play and Next are disabled. The focused label identifies the view used for bitmap export.
 
+Shared Meters behavior and control descriptions live in General Help. Tool Help
+keeps a module summary and links to that section. Meters controls target General
+Help explicitly so contextual Help stays consistent without per-tool copies.
+
 ## Panel editability rule
 
 Panels are always input fields.

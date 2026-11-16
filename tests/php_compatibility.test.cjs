@@ -209,6 +209,44 @@ test('developer controls move out of Settings and render once on the clean Dev p
   }
 });
 
+test('tool Help links shared Meters documentation to General Help without legacy copies', () => {
+  for (const release of [
+    'bpm_calculator', 'bpm_circle', 'bpm_curve', 'circle_of_fifths', 'drum_machine',
+    'metronome', 'piano', 'player', 'tap_pad', 'tuner', 'turntable'
+  ]) {
+    const result = renderPhp('help.php', `t=${release}`);
+    assert.equal(result.status, 200, release);
+    assert.equal(result.diagnostics, '', release);
+    assert.match(result.body, /<h1>Meters <span class="object">module<\/span><\/h1>/, release);
+    assert.match(result.body, /href="\/help\?t=index&amp;e=meters&amp;k=module"/, release);
+    assert.doesNotMatch(result.body, /<h1>(Spectroscope|Level|Oscilloscope|Wavescope) <span class="object">button<\/span>/, release);
+  }
+});
+
+test('meter contextual Help targets the matching General Help entries', () => {
+  const help = renderPhp('help.php', 't=index');
+  const tool = renderPhp('tools\\metronome.php');
+  assert.equal(help.status, 200);
+  assert.equal(help.diagnostics, '');
+  assert.equal(tool.diagnostics, '');
+  for (const [id, heading] of [
+    ['tool-spectroscope-button', 'Spectroscope'], ['tool-level-button', 'Level'],
+    ['tool-oscilloscope-button', 'Oscilloscope'], ['tool-wavescope-button', 'Wavescope'],
+    ['tool-phasescope-button', 'Phasescope'], ['tool-bit-meter-button', 'Bit'],
+    ['meters-play-button', 'Meter play'], ['meters-next-button', 'Next meter'],
+    ['meters-all-button', 'All'], ['meters-freeze-button', 'Meter freeze'],
+    ['meters-crosshair-button', 'Meter crosshair'], ['tool-guides-button', 'Guides'],
+    ['tool-bright-button', 'Bright'], ['tool-rulers-button', 'Meter rulers'],
+    ['tool-color-button', 'Color'], ['meters-save-button', 'Meter bitmap'],
+    ['meters-copy-button', 'Meter bitmap']
+  ]) {
+    const button = tool.body.match(new RegExp(`<button id="${id}"[^>]*>`))?.[0];
+    assert.ok(button, id);
+    assert.match(button, /data-help-release="index"/, id);
+    assert.ok(help.body.includes(`<h1>${heading} <span class="object">button</span></h1>`), heading);
+  }
+});
+
 test('failed About metadata reads are logged and return only the 500 page', t => {
   const documentRoot = createFixture(t);
   fs.mkdirSync(path.join(documentRoot, 'about'));

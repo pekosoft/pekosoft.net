@@ -321,7 +321,39 @@
   <svg class="standard-image-help"><use href="/icons.svg#meter"></use></svg>
   <div class="justify">
     <h1>Meters <span class="object">module</span></h1>
-    Displays the current tool's audio signal. Choose Spectroscope, Level, Oscilloscope, Wavescope, Phasescope or Bit to inspect different aspects of the signal. Use All to show multiple meter views together and toggle each view with its meter button. Freeze, Crosshair, Guides, Bright, Rulers and Color adjust the view without changing the audio.
+    Displays the current tool's audio signal. Choose Spectroscope, Level, Oscilloscope, Wavescope, Phasescope or Bit to inspect different aspects of the signal. Visible meters update up to 60 times per second. Use All to show multiple meter views together and toggle each view with its meter button. Play cycles through single-meter views, and Next advances once. Freeze, Crosshair, Guides, Bright, Rulers and Color adjust the view without changing the audio. Save and Copy export the selected plot. <span class="default">Default: Oscilloscope.</span>
+  </div>
+</div>
+
+<div class="feature-row border">
+  <svg class="standard-image-help"><use href="/icons.svg#eq"></use></svg>
+  <div class="justify">
+    <h1>Spectroscope <span class="object">button</span></h1>
+    Shows signal levels across 32 logarithmic frequency bands from 20 Hz to the Nyquist frequency, which is half the audio sample rate. Peaks respond immediately and fall gradually between transient sounds. The rulers show frequency and decibels.
+  </div>
+</div>
+
+<div class="feature-row border">
+  <svg class="standard-image-help"><use href="/icons.svg#meter"></use></svg>
+  <div class="justify">
+    <h1>Level <span class="object">button</span></h1>
+    Shows RMS (root mean square) signal level with an immediate response to rising levels and a short release as they fall. Stereo signals have separate L and R meters, and mono uses M. The ruler measures dBFS (decibels relative to full scale), with 0 dBFS at full scale.
+  </div>
+</div>
+
+<div class="feature-row border">
+  <svg class="standard-image-help"><use href="/icons.svg#wavelength"></use></svg>
+  <div class="justify">
+    <h1>Oscilloscope <span class="object">button</span></h1>
+    Shows the signal's waveform over a short time window and holds the latest frame containing a signal between transient sounds. The rulers show milliseconds and amplitude in decibels.
+  </div>
+</div>
+
+<div class="feature-row border">
+  <svg class="standard-image-help"><use href="/icons.svg#pulse"></use></svg>
+  <div class="justify">
+    <h1>Wavescope <span class="object">button</span></h1>
+    Shows a scrolling history of minimum and maximum signal amplitudes, with separate L and R traces for stereo or M for mono. New samples enter at 0 s, and older samples move back through the history. Silence and paused updates do not extend the history. The rulers show seconds before the newest captured signal and amplitude in decibels.
   </div>
 </div>
 
@@ -329,7 +361,7 @@
   <svg class="standard-image-help"><use href="/icons.svg#select_all"></use></svg>
   <div class="justify">
     <h1>All <span class="object">button</span></h1>
-    Shows the enabled Meters views together, each with its own rulers and crosshair. Meter buttons toggle individual views in All mode. Play and Next are unavailable. Save and Copy use the selected single-meter view if it is visible, otherwise the first visible view. They are unavailable when all views are hidden. Press All again to return to the selected single meter. The view and enabled meters are saved for the current tool. Reset restores the single-meter view and enables all meters. <span class="default">Default: off.</span>
+    Shows the enabled Meters views together, each with its own rulers and crosshair. Meter buttons toggle individual views in All mode. Play and Next are unavailable. Save and Copy use the selected single-meter view if it is visible, otherwise the first visible view. They are unavailable when all views are hidden. Press All again to return to the selected single meter. Reset restores the single-meter view and enables all meters. <span class="default">Default: off.</span>
   </div>
 </div>
 
@@ -399,10 +431,34 @@
 </div>
 
 <div class="feature-row border">
+  <svg class="standard-image-help"><use href="/icons.svg#guides"></use></svg>
+  <div class="justify">
+    <h1>Guides <span class="object">button</span></h1>
+    Shows reference lines in each visible Meters plot. The local Guides button overrides the Settings Guides option for Meters only. Rulers and Crosshair are independent. <span class="default">Default: on.</span>
+  </div>
+</div>
+
+<div class="feature-row border">
+  <svg class="standard-image-help"><use href="/icons.svg#sun"></use></svg>
+  <div class="justify">
+    <h1>Bright <span class="object">button</span></h1>
+    Increases the contrast of meter guides and rulers. The local Bright button overrides the Settings Bright option for Meters only. It does not enable hidden guides or rulers. <span class="default">Default: off.</span>
+  </div>
+</div>
+
+<div class="feature-row border">
+  <svg class="standard-image-help"><use href="/icons.svg#alpha"></use></svg>
+  <div class="justify">
+    <h1>Color <span class="object">button</span></h1>
+    Toggles multicolor rendering in Meters. The local Color button overrides the Settings Multicolor option for Meters only. Phasescope's correlation readout and cursors are unchanged. <span class="default">Default: on.</span>
+  </div>
+</div>
+
+<div class="feature-row border">
   <svg class="standard-image-help"><use href="/icons.svg#photo"></use></svg>
   <div class="justify">
     <h1>Meter bitmap <span class="object">button</span></h1>
-    Save bitmap downloads the current Meters plot as a PNG. Copy bitmap copies the same image to the clipboard in supported browsers. The image includes the displayed trace, guides and readouts, but not the outer rulers, crosshair overlay or controls. With Guides and Bright on, the image has a complete bright outline even when Rulers is on. Freeze first to capture a held frame. Saving and copying do not change the selected view, Freeze or audio playback.
+    Save downloads the current Meters plot as a PNG. Copy copies the same image to the clipboard in supported browsers. The image includes the displayed trace, guides and readouts, but not the outer rulers, crosshair overlay or controls. Freeze first to capture a held frame. Saving and copying do not change the selected view, Freeze or audio playback. In All mode, one visible meter is exported, not the combined view.
   </div>
 </div>
 

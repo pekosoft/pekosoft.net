@@ -1,25 +1,25 @@
 <div id="meters-container" class="container">
   <div class="module-body standard border">
     <div class="controls-buttons wrapper module-tabs">
-      <button id="tool-spectroscope-button" class="square" title="Spectroscope" data-module-tab="Spectroscope">
+      <button id="tool-spectroscope-button" class="square" title="Spectroscope" data-module-tab="Spectroscope" data-help-release="index">
         <svg class="icons">
           <use href="/icons.svg#eq" />
         </svg>
         <span class="button-text">Spectroscope</span>
       </button>
-      <button id="tool-level-button" class="square" title="Level meter" data-module-tab="Level meter">
+      <button id="tool-level-button" class="square" title="Level meter" data-module-tab="Level meter" data-help-release="index">
         <svg class="icons">
           <use href="/icons.svg#meter" />
         </svg>
         <span class="button-text">Level</span>
       </button>
-      <button id="tool-oscilloscope-button" class="square" title="Oscilloscope" data-module-tab="Oscilloscope">
+      <button id="tool-oscilloscope-button" class="square" title="Oscilloscope" data-module-tab="Oscilloscope" data-help-release="index">
         <svg class="icons">
           <use href="/icons.svg#wavelength" />
         </svg>
         <span class="button-text">Oscilloscope</span>
       </button>
-      <button id="tool-wavescope-button" class="square" title="Wavescope" data-module-tab="Wavescope">
+      <button id="tool-wavescope-button" class="square" title="Wavescope" data-module-tab="Wavescope" data-help-release="index">
         <svg class="icons">
           <use href="/icons.svg#pulse" />
         </svg>
@@ -144,13 +144,13 @@
       </svg>
       <span class="button-text">Crosshair</span>
     </button>
-    <button id="tool-guides-button" class="square" title="Toggle guides">
+    <button id="tool-guides-button" class="square" title="Toggle guides" data-help-release="index">
       <svg class="icons">
         <use href="/icons.svg#guides" />
       </svg>
       <span class="button-text">Guides</span>
     </button>
-    <button id="tool-bright-button" class="square" title="Toggle bright guides and rulers">
+    <button id="tool-bright-button" class="square" title="Toggle bright guides and rulers" data-help-release="index">
       <svg class="icons">
         <use href="/icons.svg#sun" />
       </svg>
@@ -162,7 +162,7 @@
       </svg>
       <span class="button-text">Rulers</span>
     </button>
-    <button id="tool-color-button" class="square" title="Toggle multicolor">
+    <button id="tool-color-button" class="square" title="Toggle multicolor" data-help-release="index">
       <svg class="icons">
         <use href="/icons.svg#alpha" />
       </svg>

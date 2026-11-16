@@ -74,57 +74,7 @@
   </svg>
   <div class="justify">
     <h1>Meters <span class="object">module</span></h1>
-    Shows shared meter views: spectroscope, level meter, oscilloscope and wavescope. The active view updates up to 60 times per second.
-  </div>
-</div>
-
-<div class="feature-row border">
-  <svg class="standard-image-help">
-    <use href="/icons.svg#guides"></use>
-  </svg>
-  <div class="justify">
-    <h1>Guides <span class="object">button</span></h1>
-    Toggles meter guides. This local button overrides the Settings Guides option for Meters only. <span class="default">Default: on.</span>
-  </div>
-</div>
-
-<div class="feature-row border">
-  <svg class="standard-image-help">
-    <use href="/icons.svg#eq"></use>
-  </svg>
-  <div class="justify">
-    <h1>Spectroscope <span class="object">button</span></h1>
-    Shows 32 logarithmic frequency bands from 20 Hz to the analyser's Nyquist frequency, including frequencies through 20 kHz. New peaks respond immediately and decay briefly between transient sounds.
-  </div>
-</div>
-
-<div class="feature-row border">
-  <svg class="standard-image-help">
-    <use href="/icons.svg#meter"></use>
-  </svg>
-  <div class="justify">
-    <h1>Level <span class="object">button</span></h1>
-    Shows output level with immediate peak response and a short release between transient sounds.
-  </div>
-</div>
-
-<div class="feature-row border">
-  <svg class="standard-image-help">
-    <use href="/icons.svg#wavelength"></use>
-  </svg>
-  <div class="justify">
-    <h1>Oscilloscope <span class="object">button</span></h1>
-    Shows the waveform and holds the latest triggered frame between transient sounds.
-  </div>
-</div>
-
-<div class="feature-row border">
-  <svg class="standard-image-help">
-    <use href="/icons.svg#pulse"></use>
-  </svg>
-  <div class="justify">
-    <h1>Wavescope <span class="object">button</span></h1>
-    Shows the wavescope view.
+    Shows the current tool's audio signal. See <a href="/help?t=index&amp;e=meters&amp;k=module">Meters in General Help</a> for all meter views and controls.
   </div>
 </div>
 

@@ -12,6 +12,9 @@ RewriteRule ^ https://pekosoft.net%{REQUEST_URI} [R=301,L]
 RewriteCond %{HTTPS} off
 RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
 
+# Keep includes and stored records behind their public page endpoints
+RewriteRule ^(?:elements|data)(?:/|$) - [R=404,L]
+
 # Canonicalize implementation URLs
 RewriteCond %{THE_REQUEST} \s/+index\.php[\s?] [NC]
 RewriteRule ^index\.php$ / [R=301,L]

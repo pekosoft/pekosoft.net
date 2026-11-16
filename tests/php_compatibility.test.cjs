@@ -285,6 +285,19 @@ test('launch introduction and shared previews use the approved product descripti
   assert.match(help.body, /<h1>Source available<\/h1>/);
 });
 
+test('private route restriction leaves public pages, tool redirects and the Updates feed reachable', () => {
+  const routing = fs.readFileSync(path.join(__dirname, '..', '.htaccess'), 'utf8');
+  const rule = routing.match(/^RewriteRule (\S+) - \[R=404,L\]$/m)?.[1];
+  assert.ok(rule, 'A private-route restriction must be present');
+  const privatePath = new RegExp(rule);
+  for (const url of ['elements/head.php', 'elements/toc.php', 'data', 'data/updates.json']) {
+    assert.ok(privatePath.test(url), url);
+  }
+  for (const url of ['', 'index.php', 'metronome', 'tools/metronome.php', 'help', 'updates', 'updates_data.php', 'icons.svg', 'css/main.css']) {
+    assert.ok(!privatePath.test(url), url);
+  }
+});
+
 test('official controls and global Sound and Rulers have matching contextual Help destinations', () => {
   for (const [release, heading] of [['metronome', 'Weight'], ['turntable', 'Standard']]) {
     const help = renderPhp('help.php', `t=${release}`);

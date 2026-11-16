@@ -57,7 +57,7 @@
   </svg>
   <div class="justify">
     <h1>Simple</h1>
-    Fast and responsive. No bloat. Only essential features make the final cut.
+    Fast, responsive and straightforward to use. No distracting effects. Movement is reserved for timing, playback and other useful feedback.
   </div>
 </div>
 

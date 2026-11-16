@@ -149,6 +149,7 @@ const STORAGE = {
 
 let loadedAudioBuffer = null;
 let timelineMarkers = [];
+let markerChangesPending = false;
 let audioClipboardBuffer = null;
 let audioClipboardMarkers = [];
 let waveformCacheCanvas = null;
@@ -1221,7 +1222,7 @@ function updateActionButtonStates() {
     recordingFormatSelect.disabled = Boolean(recordingPending || recordingStream || isRecording);
     const isPlaying = !audioPlayer.paused && !audioPlayer.ended && hasLoadedAudioSource();
     const hasAudio = hasLoadedAudioSource();
-    const hasDownloadableRecording = Boolean(downloadButton && downloadButton.dataset.audioUrl);
+    const hasDownloadableRecording = Boolean(downloadButton && (downloadButton.dataset.audioUrl || (markerChangesPending && loadedAudioBuffer)));
     const canSeek = Number.isFinite(audioPlayer.duration) && audioPlayer.duration > 0;
     const hasPlayablePlaylist = playlist.some(item => Boolean(item?.file || item?.preset));
     const hasEditableBuffer = Boolean(loadedAudioBuffer);
@@ -2565,6 +2566,7 @@ audioPlayer.addEventListener('timeupdate', () => {
 audioPlayer.addEventListener('loadedmetadata', () => {
     setDurationDisplay(audioPlayer.duration || 0);
     updateActionButtonStates();
+    window.refreshMarkerModule?.();
 });
 
 audioPlayer.addEventListener('ended', async () => {
@@ -2904,6 +2906,7 @@ async function createWavRecorder(source, channelCount) {
         recorder.state = 'recording';
         node.port.postMessage('start');
     };
+    recorder.dropMarker = () => node.port.postMessage('marker');
     recorder.stop = () => {
         recorder.state = 'inactive';
         node.port.postMessage('stop');
@@ -2917,6 +2920,8 @@ async function createWavRecorder(source, channelCount) {
         if (data.type === 'data') {
             chunks.push(data.channels);
             frameCount += data.channels[0].length;
+        } else if (data.type === 'marker') {
+            recorder.dispatchEvent(new CustomEvent('marker', { detail: data.frame / mainAudioContext.sampleRate }));
         } else if (data.type === 'stop') {
             try {
                 if (!frameCount) throw new Error('No PCM audio was captured. Record for longer before stopping.');
@@ -2928,7 +2933,7 @@ async function createWavRecorder(source, channelCount) {
                     }
                     offset += chunk[0].length;
                 }
-                const blob = encodeAudioBufferToWavBlob(buffer);
+                const blob = encodeAudioBufferToWavBlob(buffer, recorder.markers);
                 recorder.audioBuffer = buffer;
                 recorder.dispose();
                 recorder.dispatchEvent(new BlobEvent('dataavailable', { data: blob }));
@@ -2997,9 +3002,15 @@ recordButton.addEventListener('click', async () => {
             currentPlaylistIndex = -1;
             renderPlaylist();
             clearMetaInfo();
+            loadedAudioBuffer = null;
             clearStaticWaveform();
             resetAnalyser();
 
+            recorder.markers = [];
+            timelineMarkers = recorder.markers;
+            recorder.addEventListener('marker', event => {
+                window.addRecordingMarker(recorder, event.detail);
+            });
             recordingStream = stream;
             recordingSource = source;
             connectSourceToMeters(recordingSource);
@@ -3034,6 +3045,8 @@ recordButton.addEventListener('click', async () => {
                     addedAt: timestamp,
                     file,
                     recording: true,
+                    markers: recorder.markers,
+                    markersModified: recorder.markers.length > 0 && recorder.mimeType !== 'audio/wav',
                     duration: null,
                     channels: null,
                     waveformPeaks: null
@@ -3056,7 +3069,7 @@ recordButton.addEventListener('click', async () => {
                     item.channels = buffer.numberOfChannels;
                     item.waveformPeaks = createPlaylistWaveformPeaks(buffer);
                     if (currentPlaylistItem === item) {
-                        drawStaticWaveform(buffer);
+                        drawStaticWaveform(buffer, item.markers);
                         displayFileInfo(file, buffer);
                     }
                     renderPlaylist();
@@ -3071,6 +3084,7 @@ recordButton.addEventListener('click', async () => {
                             console.error('Error decoding recording:', error);
                             alert('The recording was captured, but this browser could not decode it for editing.');
                             updateActionButtonStates();
+                            window.refreshMarkerModule?.();
                         });
                 }
                 updateActionButtonStates();
@@ -3079,6 +3093,7 @@ recordButton.addEventListener('click', async () => {
             startTimer();
             recorder.start();
             updateActionButtonStates();
+            window.refreshMarkerModule?.();
             syncVisualFreeze();
             updateAudioInfo();
         } catch (error) {
@@ -3096,6 +3111,7 @@ recordButton.addEventListener('click', async () => {
     } else {
         mediaRecorder.stop();
         updateActionButtonStates();
+        window.refreshMarkerModule?.();
     }
 });
 
@@ -3169,12 +3185,13 @@ function connectAudioElement(element) {
 
 // Download audio
 downloadButton.addEventListener('click', () => {
-    if (!downloadButton.dataset.audioUrl) return;
+    const exportMarkers = markerChangesPending && loadedAudioBuffer;
+    if (!downloadButton.dataset.audioUrl && !exportMarkers) return;
     const now = new Date();
     const timestamp = `${String(now.getDate()).padStart(2, '0')}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getFullYear())}-${String(now.getHours()).padStart(2, '0')}-${String(now.getMinutes()).padStart(2, '0')}-${String(now.getSeconds()).padStart(2, '0')}`;
     let extension;
     try {
-        extension = getAudioFileExtension(downloadButton.dataset.audioType || 'audio/wav');
+        extension = getAudioFileExtension(exportMarkers ? 'audio/wav' : (downloadButton.dataset.audioType || 'audio/wav'));
     } catch (error) {
         console.error('Error downloading audio:', error);
         alert(error.message);
@@ -3182,13 +3199,15 @@ downloadButton.addEventListener('click', () => {
     }
     const filename = `pekosoft_player_${timestamp}.${extension}`;
     const link = document.createElement('a');
-    link.href = downloadButton.dataset.audioUrl;
+    const markerUrl = exportMarkers ? URL.createObjectURL(encodeAudioBufferToWavBlob(loadedAudioBuffer, timelineMarkers)) : null;
+    link.href = markerUrl || downloadButton.dataset.audioUrl;
     link.download = typeof window.ensurePekosoftFilename === 'function'
         ? window.ensurePekosoftFilename(filename)
         : (filename.toLowerCase().startsWith('pekosoft_') ? filename : `pekosoft_${filename}`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    if (markerUrl) setTimeout(() => URL.revokeObjectURL(markerUrl), 1000);
     updateActionButtonStates();
 });
 
@@ -3318,6 +3337,7 @@ function clearMetaInfo() {
 
 function clearStaticWaveform() {
     timelineMarkers = [];
+    markerChangesPending = false;
     selectionStartTime = null;
     selectionEndTime = null;
     updateLoopPlaybackMode();
@@ -3566,6 +3586,7 @@ function displayFileInfo(file, buffer) {
 function drawStaticWaveform(audioBuffer, markers = []) {
     loadedAudioBuffer = audioBuffer;
     timelineMarkers = markers;
+    markerChangesPending = Boolean(currentPlaylistItem?.markersModified);
     selectionStartTime = null;
     selectionEndTime = null;
     updateLoopPlaybackMode();
@@ -3885,6 +3906,7 @@ function redrawTimelineCanvas() {
     drawTimelineRuler();
     drawBpmRuler();
     drawDbRuler();
+    window.refreshMarkerModule?.();
 }
 
 function drawDbRuler() {
@@ -3971,6 +3993,7 @@ function drawTimelineRuler() {
 }
 
 function drawTimelineMarkers(duration, width, height) {
+    if (typeof window !== 'undefined' && window.markerRulerVisible === false) return;
     if (!Number.isFinite(duration) || duration <= 0) return;
 
     timelineMarkers.forEach((marker) => {
@@ -4135,7 +4158,7 @@ async function playGeneratedTone(item) {
         clearStaticWaveform();
         const buffer = window.PekoTestTones.generateBuffer(mainAudioContext, item.preset);
         item.waveformPeaks = createPlaylistWaveformPeaks(buffer);
-        drawStaticWaveform(buffer);
+        drawStaticWaveform(buffer, item.markers || []);
         audioPlayer.currentTime = 0;
         await refreshAudioSourceFromBuffer();
         if (currentPlaylistItem !== item) return;
@@ -4671,7 +4694,7 @@ function playPlaylistItem(index) {
             item.duration = buffer.duration;
             item.channels = buffer.numberOfChannels;
             item.waveformPeaks = createPlaylistWaveformPeaks(buffer);
-            drawStaticWaveform(buffer, parsedMarkers.markers);
+            drawStaticWaveform(buffer, item.markers || parsedMarkers.markers);
             displayFileInfo(item.file, buffer);
             renderPlaylist();
             savePlaylistToStorage();

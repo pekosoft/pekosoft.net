@@ -5,11 +5,15 @@ class PcmRecorderProcessor extends AudioWorkletProcessor {
         super();
         this.channelCount = options.processorOptions.channelCount;
         this.recording = false;
+        this.totalFrames = 0;
         this.offset = 0;
         this.allocateChunk();
         this.port.onmessage = ({ data }) => {
             if (data === 'start') {
                 this.recording = true;
+                this.totalFrames = 0;
+            } else if (data === 'marker' && this.recording) {
+                this.port.postMessage({ type: 'marker', frame: this.totalFrames });
             } else if (data === 'stop') {
                 this.recording = false;
                 this.flushChunk();
@@ -39,6 +43,7 @@ class PcmRecorderProcessor extends AudioWorkletProcessor {
                 this.channels[channel][this.offset] = input[channel]?.[frame] ?? 0;
             }
             if (++this.offset === this.channels[0].length) this.flushChunk();
+            this.totalFrames++;
         }
         return true;
     }

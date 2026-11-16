@@ -37,6 +37,19 @@ const layoutSource = [
   extractSource('function disableMinimizeForTwoColumnLayout(', 'function getCurrentModuleOrder(')
 ].join('\n');
 
+test('Markers follows Timeline without replacing the saved module order', () => {
+  const context = vm.createContext({});
+  vm.runInContext(
+    extractSource('const moduleIds =', 'const legacyModuleIds =') +
+    extractSource('function normalizeModuleOrder(', 'function isLegacyModuleOrder('),
+    context
+  );
+  const playerModules = ['tool', 'controls', 'timeline', 'markers', 'playlist', 'panel', 'meters'];
+  const visibleOrder = order => Array.from(context.normalizeModuleOrder(order)).filter(id => playerModules.includes(id));
+  assert.deepEqual(visibleOrder(null), playerModules);
+  assert.deepEqual(visibleOrder(['panel', 'timeline', 'tool']), ['panel', 'timeline', 'markers', 'tool', 'controls', 'playlist', 'meters']);
+});
+
 function createLayout(savedStates, options = {}) {
   function element(classes = []) {
     const names = new Set(classes);

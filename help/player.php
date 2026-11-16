@@ -273,7 +273,7 @@
   </svg>
   <div class="justify">
     <h1>Timeline <span class="object">module</span></h1>
-    Shows waveform, selection and playhead. The time ruler shows WAV cue markers. Hover over a marker to see its name and position, or select it to seek. Markers follow waveform edits and are preserved in edited WAV downloads. Includes destructive waveform edit tools. When no file is loaded, the rulers show a one-minute scale.
+    Shows waveform, selection and playhead. The time ruler shows markers. Hover over a marker to see its name and position, or select it to seek. Markers follow waveform edits and are preserved in WAV downloads. Includes destructive waveform edit tools. When no file is loaded, the rulers show a one-minute scale.
   </div>
 </div>
 
@@ -464,6 +464,86 @@
   <div class="justify">
     <h1>Redo <span class="object">button</span></h1>
     Reapplies undone waveform edit state.
+  </div>
+</div>
+
+<div class="feature-row module">
+  <svg class="standard-image-help"><use href="/icons.svg#bookmark"></use></svg>
+  <div class="justify">
+    <h1>Markers <span class="object">module</span></h1>
+    Lists markers by position. Select rows to delete several markers, edit their names, play from a marker or delete it individually. WAV cue markers are read from files. Marker changes can be downloaded as WAV. Markers dropped during WAV recording are included in the recording. Markers in other recording formats can be saved in a WAV download when the browser can decode the recording.
+  </div>
+</div>
+
+<div class="feature-row border">
+  <svg class="standard-image-help"><use href="/icons.svg#plus"></use></svg>
+  <div class="justify">
+    <h1>Drop marker <span class="object">button</span></h1>
+    Adds a marker at the current position, including while recording.
+  </div>
+</div>
+
+<div class="feature-row border">
+  <svg class="standard-image-help"><use href="/icons.svg#skip_prev"></use></svg>
+  <div class="justify">
+    <h1>Previous marker <span class="object">button</span></h1>
+    Seeks to the marker before the last marker reached. Wraps to the last marker when there is no previous marker.
+  </div>
+</div>
+
+<div class="feature-row border">
+  <svg class="standard-image-help"><use href="/icons.svg#skip_next"></use></svg>
+  <div class="justify">
+    <h1>Next marker <span class="object">button</span></h1>
+    Seeks to the next marker. Wraps to the first marker when there is no next marker.
+  </div>
+</div>
+
+<div class="feature-row border">
+  <svg class="standard-image-help"><use href="/icons.svg#select_all"></use></svg>
+  <div class="justify">
+    <h1>Select all <span class="object">button</span></h1>
+    Selects every marker.
+  </div>
+</div>
+
+<div class="feature-row border">
+  <svg class="standard-image-help"><use href="/icons.svg#select_none"></use></svg>
+  <div class="justify">
+    <h1>Deselect all <span class="object">button</span></h1>
+    Clears the marker selection.
+  </div>
+</div>
+
+<div class="feature-row border">
+  <svg class="standard-image-help"><use href="/icons.svg#bookmark"></use></svg>
+  <div class="justify">
+    <h1>Show markers <span class="object">button</span></h1>
+    Toggles markers on the time ruler. <span class="default">Default: on.</span>
+  </div>
+</div>
+
+<div class="feature-row border">
+  <svg class="standard-image-help"><use href="/icons.svg#guides"></use></svg>
+  <div class="justify">
+    <h1>Show lines <span class="object">button</span></h1>
+    Toggles marker lines across the waveform. <span class="default">Default: off.</span>
+  </div>
+</div>
+
+<div class="feature-row border">
+  <svg class="standard-image-help"><use href="/icons.svg#delete"></use></svg>
+  <div class="justify">
+    <h1>Delete marker <span class="object">button</span></h1>
+    Deletes the selected markers.
+  </div>
+</div>
+
+<div class="feature-row border">
+  <svg class="standard-image-help"><use href="/icons.svg#lock"></use></svg>
+  <div class="justify">
+    <h1>Lock <span class="object">button</span></h1>
+    Prevents markers from being added, renamed or deleted. <span class="default">Default: off.</span>
   </div>
 </div>
 

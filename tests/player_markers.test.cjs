@@ -99,3 +99,149 @@ test('cut, paste, reverse and undo keep markers aligned to edited samples', asyn
     await vm.runInContext('restoreBufferSnapshot(undoBufferStack[0])', context);
     assert.deepEqual(markerValues(), [['Before', 1], ['Start', 2], ['Inside', 4], ['End', 5], ['After', 8]]);
 });
+
+function setupMarkerModule() {
+    function node() {
+        const classes = new Set();
+        return {
+            children: [], listeners: {}, attributes: {}, disabled: false,
+            classList: {
+                toggle(name, enabled) { if (enabled) classes.add(name); else classes.delete(name); },
+                contains: name => classes.has(name)
+            },
+            setAttribute(name, value) { this.attributes[name] = String(value); },
+            append(...children) { this.children.push(...children); },
+            appendChild(child) { this.children.push(child); },
+            replaceChildren(...children) { this.children = children; },
+            addEventListener(type, handler) { this.listeners[type] = handler; },
+            fire(type) { if (!this.disabled) this.listeners[type]?.(); }
+        };
+    }
+    const elements = new Map();
+    for (const id of ['marker-items', 'marker-lines', ...['drop', 'previous', 'next', 'select-all', 'deselect-all', 'show', 'lines', 'delete', 'lock'].map(name => `marker-${name}-button`)]) {
+        elements.set(id, node());
+    }
+    const storage = new Map();
+    const context = vm.createContext({
+        document: {
+            getElementById: id => elements.get(id),
+            createElement: node, createElementNS: node,
+            createTextNode: text => ({ textContent: text })
+        },
+        window: {}, localStorage: {
+            getItem: key => storage.get(key) ?? null,
+            setItem: (key, value) => storage.set(key, value)
+        },
+        timelineMarkers: [], markerChangesPending: false,
+        loadedAudioBuffer: { duration: 10 },
+        audioPlayer: { duration: 10, currentTime: 0, paused: true, ended: false },
+        mediaRecorder: null, currentPlaylistItem: {},
+        hasLoadedAudioSource: () => true,
+        formatDurationForPanel: value => String(value),
+        updateActionButtonStates() {},
+        playButton: { click() { context.played = true; } },
+        seekToTimelineRatio(ratio) { context.audioPlayer.currentTime = ratio * 10; },
+        redrawTimelineCanvas() { context.window.refreshMarkerModule(); }
+    });
+    vm.runInContext(fs.readFileSync(path.join(__dirname, '..', 'js', 'player_markers.js'), 'utf8'), context);
+    return { context, elements, click: name => elements.get(`marker-${name}-button`).fire('click') };
+}
+
+test('Markers controls create, rename, seek, display and delete selected markers', () => {
+    const app = setupMarkerModule();
+    app.context.audioPlayer.currentTime = 6;
+    app.click('drop');
+    app.context.audioPlayer.currentTime = 2;
+    app.click('drop');
+    assert.deepEqual(Array.from(app.context.timelineMarkers, marker => marker.time), [2, 6]);
+    const firstName = app.elements.get('marker-items').children[0].children[2].children[0];
+    firstName.value = 'Verse';
+    firstName.fire('change');
+    assert.equal(app.context.timelineMarkers[0].name, 'Verse');
+    app.click('lines');
+    assert.equal(app.elements.get('marker-lines').children.length, 2);
+    app.click('show');
+    assert.equal(app.context.window.markerRulerVisible, false);
+    app.click('next');
+    assert.equal(app.context.audioPlayer.currentTime, 6);
+    app.click('previous');
+    assert.equal(app.context.audioPlayer.currentTime, 2);
+    app.elements.get('marker-items').children[0].children[1].children[0].fire('click');
+    assert.equal(app.context.played, true);
+    app.click('select-all');
+    app.click('lock');
+    assert.equal(app.elements.get('marker-drop-button').disabled, true);
+    assert.equal(app.elements.get('marker-delete-button').disabled, true);
+    app.click('lock');
+    app.click('delete');
+    assert.equal(app.context.timelineMarkers.length, 0);
+    assert.equal(app.elements.get('marker-lines').children.length, 0);
+    assert.equal(app.context.markerChangesPending, true);
+    assert.equal(app.context.currentPlaylistItem.markersModified, true);
+});
+
+test('marker navigation wraps and skips the current marker during playback', () => {
+    const app = setupMarkerModule();
+    app.context.timelineMarkers = [
+        { time: 2, name: 'First' },
+        { time: 6, name: 'Second' },
+        { time: 6, name: 'Same position' },
+        { time: 8, name: 'Last' }
+    ];
+    app.context.window.refreshMarkerModule();
+    app.context.audioPlayer.currentTime = 6.25;
+    app.click('previous');
+    assert.equal(app.context.audioPlayer.currentTime, 2);
+    app.click('previous');
+    assert.equal(app.context.audioPlayer.currentTime, 8);
+    app.click('next');
+    assert.equal(app.context.audioPlayer.currentTime, 2);
+    app.context.audioPlayer.currentTime = 1;
+    app.click('previous');
+    assert.equal(app.context.audioPlayer.currentTime, 8);
+    app.context.audioPlayer.currentTime = 9;
+    app.click('next');
+    assert.equal(app.context.audioPlayer.currentTime, 2);
+});
+
+test('recording markers use the recorder position and remain editable without exporting stale audio', () => {
+    const app = setupMarkerModule();
+    const recorder = { state: 'recording', markers: [], dropMarker() { this.requested = true; } };
+    app.context.mediaRecorder = recorder;
+    app.context.currentPlaylistItem = null;
+    app.context.timelineMarkers = recorder.markers;
+    app.context.window.refreshMarkerModule();
+    app.click('drop');
+    assert.equal(recorder.requested, true);
+    app.context.window.addRecordingMarker(recorder, 1.25);
+    assert.equal(recorder.markers[0].time, 1.25);
+    assert.equal(app.context.markerChangesPending, false);
+    assert.equal(app.elements.get('marker-items').children[0].children[1].children[0].disabled, true);
+    app.click('select-all');
+    app.click('delete');
+    assert.equal(recorder.markers.length, 0);
+    assert.equal(app.context.markerChangesPending, false);
+});
+
+test('PCM recorder reports marker positions in captured frames before stopping', () => {
+    const messages = [];
+    let Processor;
+    class AudioWorkletProcessor {
+        constructor() { this.port = { postMessage: message => messages.push(message) }; }
+    }
+    const context = vm.createContext({
+        AudioWorkletProcessor, Float32Array,
+        registerProcessor(name, value) { Processor = value; }
+    });
+    vm.runInContext(fs.readFileSync(path.join(__dirname, '..', 'js', 'pcm_recorder.js'), 'utf8'), context);
+    const recorder = new Processor({ processorOptions: { channelCount: 1 } });
+    recorder.port.onmessage({ data: 'start' });
+    recorder.process([[new Float32Array(128)]]);
+    recorder.port.onmessage({ data: 'marker' });
+    recorder.process([[new Float32Array(128)]]);
+    recorder.port.onmessage({ data: 'marker' });
+    recorder.port.onmessage({ data: 'stop' });
+    assert.deepEqual(messages.filter(message => message.type === 'marker').map(message => message.frame), [128, 256]);
+    assert.equal(messages.find(message => message.type === 'data').channels[0].length, 256);
+    assert.equal(messages.at(-1).type, 'stop');
+});

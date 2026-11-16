@@ -18,7 +18,7 @@ function setup(duration) {
     const context = {
         mediaRecorder: null, recordingPending: false, recordingStream: null,
         recordingFormatSelect: {}, audioPlayer: { duration, paused: true, currentTime: 0 },
-        hasLoadedAudioSource: () => false, playlist: [], loadedAudioBuffer: null,
+        hasLoadedAudioSource: () => false, playlist: [], loadedAudioBuffer: null, markerChangesPending: false,
         hasActiveSelection: () => false, audioClipboardBuffer: null,
         progressSlider: { value: '5', addEventListener(type, handler) { this[type] = handler; } },
         updateTimeFieldBars() {},

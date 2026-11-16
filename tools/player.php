@@ -8,7 +8,7 @@
   $releaseName = "Player";
   $releasePage = "";
   $hasPlaylist = true;
-  $availableModules = ["tool", "controls", "timeline", "playlist", "panel", "meters"];
+  $availableModules = ["tool", "controls", "timeline", "markers", "playlist", "panel", "meters"];
   ?>
   <meta name="keywords" content="player, audio player, music player, audio file player, online audio player, online music player, web audio player, web music player">
   <link rel="stylesheet" type="text/css" href="/css/<?php echo $release; ?>.css?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/css/' . $release . '.css'); ?>">
@@ -331,6 +331,7 @@
         <div class="waveform-overlay">
           <canvas id="static-waveform" width="4096" height="256"></canvas>
           <canvas id="playhead" width="4096" height="256"></canvas>
+          <svg id="marker-lines" viewBox="0 0 4096 256" preserveAspectRatio="none" aria-hidden="true"></svg>
         </div>
         <div class="timeline-rulers">
           <svg id="bpm-ruler" viewBox="0 0 4096 24" aria-label="Beats ruler"></svg>
@@ -396,6 +397,31 @@
         <span class="button-text">Redo</span>
       </button>
     </div>
+  </div>
+
+  <!-- MARKERS -->
+
+  <div id="markers-container" class="container">
+    <div class="module-body standard border">
+      <div class="controls-buttons wrapper">
+        <button id="marker-drop-button" class="square" type="button" title="Drop marker"><svg class="icons"><use href="/icons.svg#plus" /></svg><span class="button-text">Drop marker</span></button>
+        <button id="marker-previous-button" class="square" type="button" title="Go to previous marker"><svg class="icons"><use href="/icons.svg#skip_prev" /></svg><span class="button-text">Previous marker</span></button>
+        <button id="marker-next-button" class="square" type="button" title="Go to next marker"><svg class="icons"><use href="/icons.svg#skip_next" /></svg><span class="button-text">Next marker</span></button>
+        <button id="marker-select-all-button" class="square" type="button" title="Select all markers"><svg class="icons"><use href="/icons.svg#select_all" /></svg><span class="button-text">Select all</span></button>
+        <button id="marker-deselect-all-button" class="square" type="button" title="Deselect all markers"><svg class="icons"><use href="/icons.svg#select_none" /></svg><span class="button-text">Deselect all</span></button>
+        <button id="marker-show-button" class="square" type="button" title="Toggle markers" aria-pressed="true"><svg class="icons"><use href="/icons.svg#bookmark" /></svg><span class="button-text">Show markers</span></button>
+        <button id="marker-lines-button" class="square" type="button" title="Toggle marker lines" aria-pressed="false"><svg class="icons"><use href="/icons.svg#guides" /></svg><span class="button-text">Show lines</span></button>
+        <button id="marker-delete-button" class="square" type="button" title="Delete selected markers"><svg class="icons"><use href="/icons.svg#delete" /></svg><span class="button-text">Delete marker</span></button>
+        <button id="marker-lock-button" class="square" type="button" title="Lock markers" aria-pressed="false"><svg class="icons"><use href="/icons.svg#lock" /></svg><span class="button-text">Lock</span></button>
+      </div>
+      <div class="marker-table scrollable">
+        <table class="marker-data">
+          <thead><tr><th scope="col">#</th><th scope="col">Play</th><th scope="col">Name</th><th scope="col">Time</th><th scope="col">Delete</th></tr></thead>
+          <tbody id="marker-items"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="module-footer wrapper colored"></div>
   </div>
 
   <!-- PLAYLIST -->
@@ -539,6 +565,7 @@
   <script src="/js/test_tones.js?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/js/test_tones.js'); ?>"></script>
   <script src="/js/audio_markers.js?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/js/audio_markers.js'); ?>"></script>
   <script src="/js/<?php echo $release; ?>.js?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/js/' . $release . '.js'); ?>"></script>
+  <script src="/js/player_markers.js?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/js/player_markers.js'); ?>"></script>
   <?php require($_SERVER['DOCUMENT_ROOT'] . "/elements/beta_footer.php"); ?>
 </body>
 

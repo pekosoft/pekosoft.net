@@ -108,6 +108,9 @@ $hasPlaylistModule = in_array('playlist', $availableModules, true);
           <?php if (in_array('timeline', $availableModules, true)): ?>
             <button class="toc-button" id="timeline-toggle-toc-button" title="Timeline" aria-label="Timeline"><svg class="icons" role="img"><use href="/icons.svg#timeline"></use></svg>Timeline</button>
           <?php endif; ?>
+          <?php if (in_array('markers', $availableModules, true)): ?>
+            <button class="toc-button" id="markers-toggle-toc-button" title="Markers" aria-label="Markers"><svg class="icons" role="img"><use href="/icons.svg#bookmark"></use></svg>Markers</button>
+          <?php endif; ?>
           <?php if ((isset($hasPlaylist) && $hasPlaylist) || $hasPlaylistModule): ?>
             <button class="toc-button" id="playlist-toggle-toc-button" title="Playlist" aria-label="Playlist"><svg class="icons" role="img"><use href="/icons.svg#view_list"></use></svg>Playlist</button>
           <?php endif; ?>

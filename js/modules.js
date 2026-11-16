@@ -1,7 +1,7 @@
 // Modules Toggles
 // pekosoft.net/js/modules.js
 
-const moduleIds = ["tool", "controls", "timeline", "playlist", "history", "panel", "meters"];
+const moduleIds = ["tool", "controls", "timeline", "markers", "playlist", "history", "panel", "meters"];
 const legacyModuleIds = ["tool", "meters", "controls", "timeline", "playlist", "panel"];
 const moduleOrderStorageKey = "global.module_order";
 
@@ -10,6 +10,7 @@ const moduleConfig = {
   meters:   { icon: "meter",    title: "Meters" },
   controls: { icon: "controls", title: "Controls" },
   timeline: { icon: "timeline", title: "Timeline" },
+  markers:  { icon: "bookmark", title: "Markers" },
   playlist: { icon: "view_list", title: "Playlist" },
   history:  { icon: "undo",     title: "History" },
   panel:    { icon: "panel",    title: "Panel" }
@@ -118,6 +119,12 @@ function normalizeModuleOrder(order) {
       : panelIndex >= 0 ? panelIndex : normalized.length;
     normalized.splice(insertIndex, 0, "history");
     seen.add("history");
+  }
+
+  if (!seen.has("markers") && normalized.includes("timeline")) {
+    const timelineIndex = normalized.indexOf("timeline");
+    normalized.splice(timelineIndex + 1, 0, "markers");
+    seen.add("markers");
   }
 
   moduleIds.forEach((id) => {
@@ -1171,6 +1178,7 @@ document.addEventListener("DOMContentLoaded", () => {
     "meters-toggle-toc-button": () => toggleModule("meters"),
     "controls-toggle-toc-button": () => toggleModule("controls"),
     "timeline-toggle-toc-button": () => toggleModule("timeline"),
+    "markers-toggle-toc-button": () => toggleModule("markers"),
     "playlist-toggle-toc-button": () => toggleModule("playlist"),
     "history-toggle-toc-button": () => toggleModule("history"),
     "panel-toggle-toc-button": () => toggleModule("panel")

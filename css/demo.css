@@ -159,6 +159,7 @@
   inset: 0;
   text-align: left;
   white-space: nowrap;
+  pointer-events: none;
 }
 
 .demo-url-typing,
@@ -169,6 +170,7 @@
 .demo-url-typing[data-demo-url-color],
 .demo-url-typing[data-demo-url-color]:visited {
   color: #0080ff;
+  pointer-events: auto;
 }
 
 .demo-caret {

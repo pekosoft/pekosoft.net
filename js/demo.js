@@ -283,18 +283,22 @@
       while (index < samples.length) {
         const { speedRatio } = getPlatterMotion(index / audioContext.sampleRate * 1000, end - start);
         for (let sample = 0; sample < burstLength && index + sample < samples.length; sample += 1) {
-          samples[index + sample] = (Math.random() * 2 - 1) * 0.12 * speedRatio * Math.exp(-6 * sample / burstLength);
+          samples[index + sample] = (Math.random() * 2 - 1) * 0.1 * speedRatio * Math.exp(-6 * sample / burstLength);
         }
         index += Math.ceil(audioContext.sampleRate * (0.035 + Math.random() * 0.09) / Math.max(speedRatio, 0.1));
       }
       const crackle = audioContext.createBufferSource();
       const crackleFilter = audioContext.createBiquadFilter();
+      const crackleHighpass = audioContext.createBiquadFilter();
       crackle.buffer = buffer;
       crackleFilter.type = 'lowpass';
       crackleFilter.frequency.value = 3500;
+      crackleHighpass.type = 'highpass';
+      crackleHighpass.frequency.value = 600;
       crackle.connect(crackleFilter);
-      crackleFilter.connect(playbackGain);
-      trackSource(crackle, [crackleFilter]);
+      crackleFilter.connect(crackleHighpass);
+      crackleHighpass.connect(playbackGain);
+      trackSource(crackle, [crackleFilter, crackleHighpass]);
       crackle.start(when, offset / 1000);
       crackle.stop(when + (end - start - offset) / 1000);
     }

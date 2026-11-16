@@ -1179,7 +1179,10 @@ function getStatusElementName(target, associatedLabel = getStatusAssociatedLabel
   const labelName = associatedLabel?.textContent?.trim().replace(/:\s*$/, '');
   if (labelName) return labelName;
 
-  const buttonText = target.querySelector?.('.button-text')?.textContent?.trim();
+  const buttonText = target.querySelector?.('.button-text')?.textContent?.trim()
+    || (target.tagName?.toLowerCase() === 'button' ? Array.from(target.childNodes || [])
+      .filter(node => node.nodeType === 3)
+      .map(node => node.textContent).join(' ').trim().replace(/\s+/g, ' ') : '');
   const ariaLabel = target.getAttribute?.('aria-label')?.trim();
   const title = target.getAttribute?.('title')?.trim();
   const nestedAccessibleName = target.querySelector?.('[aria-label], [title]')?.getAttribute('aria-label')?.trim()
@@ -1192,9 +1195,10 @@ function getStatusElementName(target, associatedLabel = getStatusAssociatedLabel
 }
 
 function getStatusDescriptor(target) {
-  if (!target) return null;
+  if (!target || target.hasAttribute('data-status-help')) return null;
 
   const tagName = target.tagName?.toLowerCase();
+  const isSettingsControl = !!target.closest('#settings-menu-container');
   const associatedLabel = getStatusAssociatedLabel(target);
   const iconHref = target.querySelector?.('use')?.getAttribute('href') || '';
   const iconFromButton = iconHref.split('#')[1];
@@ -1223,6 +1227,11 @@ function getStatusDescriptor(target) {
     entryTarget = range;
   }
 
+  if (isSettingsControl && (target.hasAttribute('data-setting-toggle')
+    || target.id === 'toggle-mode-button' || target.id === 'toggle-footer-button')) {
+    kind = 'option';
+  }
+
   const name = getStatusElementName(entryTarget, associatedLabel);
   const tooltip = target.getAttribute('title')?.trim()
     || associatedLabel?.getAttribute('title')?.trim()
@@ -1235,7 +1244,7 @@ function getStatusDescriptor(target) {
     icon,
     iconHref,
     entry: target.dataset.helpEntry?.trim() || name,
-    release: target.dataset.helpRelease?.trim(),
+    release: target.dataset.helpRelease?.trim() || (isSettingsControl ? 'index' : undefined),
     kind,
     label: statusLabel || (sentenceTooltip ? (matchesTooltip ? sentenceTooltip : `${name}: ${sentenceTooltip}`) : name),
   };

@@ -430,9 +430,12 @@ test('meter contextual Help targets the matching General Help entries', () => {
     ['tool-color-button', 'Color'], ['meters-save-button', 'Meter bitmap'],
     ['meters-copy-button', 'Meter bitmap']
   ]) {
-    const button = tool.body.match(new RegExp(`<button id="${id}"[^>]*>`))?.[0];
+    const button = tool.body.match(new RegExp(`<button id="${id}"[^>]*>[\\s\\S]*?</button>`))?.[0];
     assert.ok(button, id);
     assert.match(button, /data-help-release="index"/, id);
+    const entry = button.match(/data-help-entry="([^"]+)"/)?.[1]
+      || button.match(/class="button-text">([^<]+)<\/span>/)?.[1];
+    assert.equal(entry?.toLowerCase(), heading.toLowerCase(), `${id}: Help entry`);
     assert.ok(help.body.includes(`<h1>${heading} <span class="object">button</span></h1>`), heading);
   }
 });

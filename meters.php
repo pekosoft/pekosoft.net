@@ -1,7 +1,7 @@
 <div id="meters-container" class="container">
   <div class="module-body standard border">
     <div class="controls-buttons wrapper module-tabs">
-      <button id="tool-spectroscope-button" class="square" title="Spectroscope" data-module-tab="Spectroscope" data-help-release="index">
+      <button id="tool-spectroscope-button" class="square" title="Spectroscope" data-module-tab="Spectroscope" data-help-release="index" data-help-entry="Spectroscope">
         <svg class="icons">
           <use href="/icons.svg#eq" />
         </svg>
@@ -13,13 +13,13 @@
         </svg>
         <span class="button-text">Level</span>
       </button>
-      <button id="tool-oscilloscope-button" class="square" title="Oscilloscope" data-module-tab="Oscilloscope" data-help-release="index">
+      <button id="tool-oscilloscope-button" class="square" title="Oscilloscope" data-module-tab="Oscilloscope" data-help-release="index" data-help-entry="Oscilloscope">
         <svg class="icons">
           <use href="/icons.svg#wavelength" />
         </svg>
         <span class="button-text">OSCILLO</span>
       </button>
-      <button id="tool-wavescope-button" class="square" title="Wavescope" data-module-tab="Wavescope" data-help-release="index">
+      <button id="tool-wavescope-button" class="square" title="Wavescope" data-module-tab="Wavescope" data-help-release="index" data-help-entry="Wavescope">
         <svg class="icons">
           <use href="/icons.svg#pulse" />
         </svg>

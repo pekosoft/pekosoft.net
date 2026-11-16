@@ -77,6 +77,13 @@
         </svg>
         <span class="button-text">Weight</span>
       </button>
+
+      <button id="base-emulate-button" class="square" type="button" title="Toggle emulated motion" aria-label="Emulate" aria-pressed="true">
+        <svg class="icons">
+          <use href="/icons.svg?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/icons.svg'); ?>#pendulum_motion" />
+        </svg>
+        <span class="button-text">Emulate</span>
+      </button>
     </div>
   </div>
 

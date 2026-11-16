@@ -54,6 +54,16 @@
   </div>
 </div>
 
+<div class="feature-row border">
+  <svg class="standard-image-help">
+    <use href="/icons.svg?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/icons.svg'); ?>#pendulum_motion"></use>
+  </svg>
+  <div class="justify">
+    <h1>Emulate <span class="object">button</span></h1>
+    Toggles emulated pendulum motion. When on, the pendulum follows a smooth sine wave, moving fastest through the center and slowing at the ends. When off, it swings linearly from one end to the other in 0.1 seconds and holds at each end between swings. Both pass through the center on each beat. <span class="default">Default: on.</span>
+  </div>
+</div>
+
 <div class="feature-row module">
   <svg class="standard-image-help">
     <use href="/icons.svg#controls"></use>
@@ -99,7 +109,7 @@
   </svg>
   <div class="justify">
     <h1>Play <span class="object">button</span></h1>
-    Toggles play. <span class="default">Default: off.</span>
+    Toggles play. Pausing keeps the pendulum in place. <span class="default">Default: off.</span>
   </div>
 </div>
 
@@ -108,7 +118,7 @@
   </svg>
   <div class="justify">
     <h1>Stop <span class="object">button</span></h1>
-    Stops playback and clears current session data in Panel and Timeline.
+    Stops playback, returns the pendulum to center and clears current session data in Panel and Timeline.
   </div>
 </div>
 
@@ -172,7 +182,7 @@
   </svg>
   <div class="justify">
     <h1>Reset <span class="object">button</span></h1>
-    Resets session data and tool-specific settings without changing Settings preferences.
+    Resets session data and tool-specific settings without changing Settings preferences. Returns the pendulum to center.
   </div>
 </div>
 

@@ -47,7 +47,7 @@
   background-color: var(--white);
   position: absolute;
   transform-origin: bottom;
-  transform: rotate(-30deg);
+  transform: rotate(0deg);
   transition: transform 0.3s ease-in-out;
   z-index: 3;
   bottom: calc(60px * var(--metronome-scale, 1));

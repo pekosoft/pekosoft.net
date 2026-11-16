@@ -35,6 +35,7 @@ const baseBpmButton = document.getElementById("base-bpm-button");
 const baseTempiButton = document.getElementById("base-tempi-button");
 const baseSignatureButton = document.getElementById("base-signature-button");
 const baseWeightButton = document.getElementById("base-weight-button");
+const baseEmulateButton = document.getElementById("base-emulate-button");
 const baseBpmText = document.getElementById('base-bpm-text');
 const baseTempiText = document.getElementById('base-tempi-text');
 const metronomeWeight = document.getElementById('metronome-weight');
@@ -56,10 +57,15 @@ let showBaseBpm = false;
 let showBaseTempi = false;
 let showBaseSignature = true;
 let showMetronomeWeight = true;
+let emulatePendulum = true;
 let showPanelTempi = false;
 let mutedBeatIndexes = new Set();
 let beatsPanelText = '';
 let pendulumDirection = -30;
+let pendulumBeatTime = null;
+let pendulumBeatInterval = 0;
+let pendulumPreviousInterval = 0;
+let pendulumFrame = null;
 let metronomeTimer = null;
 let beatCount = 0;
 let beatInBar = -1;
@@ -420,6 +426,10 @@ function updateToggleButtons() {
   if (baseWeightButton) {
     baseWeightButton.classList.toggle('button-on', showMetronomeWeight);
   }
+  if (baseEmulateButton) {
+    baseEmulateButton.classList.toggle('button-on', emulatePendulum);
+    baseEmulateButton.setAttribute('aria-pressed', String(emulatePendulum));
+  }
   if (panelBeatsButton) {
     panelBeatsButton.classList.toggle('button-on', !showPanelTempi);
   }
@@ -507,13 +517,30 @@ function playClick(when, accented = false) {
   updateMetersSourceBridge();
 }
 
-function tick(time) {
+function schedulePendulumBeat(time, interval) {
+  pendulumPreviousInterval = pendulumBeatTime === null ? interval : time - pendulumBeatTime;
+  pendulumBeatTime = time;
+  pendulumBeatInterval = interval;
+  pendulumDirection *= -1;
+}
+
+function animatePendulum() {
+  if (!isPlaying || pendulumBeatTime === null) return;
+  const elapsed = audioContext.currentTime - pendulumBeatTime;
+  const interval = elapsed < 0 ? pendulumPreviousInterval : pendulumBeatInterval;
+  const motion = emulatePendulum
+    ? Math.sin(Math.PI * elapsed / interval)
+    : Math.max(-1, Math.min(1, elapsed / 0.05));
+  const angle = pendulumDirection * motion;
+  pendulum.style.transform = `rotate(${angle}deg)`;
+  pendulumFrame = window.requestAnimationFrame(animatePendulum);
+}
+
+function tick(time, interval) {
   const signature = getSignatureValue();
   beatCount = beatHistory.length + 1;
   beatInBar = (beatCount - 1) % signature.beatsPerBar;
-  pendulumDirection *= -1;
-  pendulum.style.transition = 'transform 0.1s linear';
-  pendulum.style.transform = `rotate(${pendulumDirection}deg)`;
+  schedulePendulumBeat(time, interval);
   if (!isBeatMuted(beatInBar)) {
     playClick(time, accentOn && beatInBar === 0);
   }
@@ -554,7 +581,7 @@ function playMetronome() {
     const tickInterval = 60 / bpm;
     const currentTime = audioContext.currentTime;
     while (nextTickTime < currentTime + scheduleAheadTime) {
-      tick(nextTickTime);
+      tick(nextTickTime, tickInterval);
       nextTickTime += tickInterval;
     }
     metronomeTimer = setTimeout(scheduler, 25);
@@ -574,8 +601,9 @@ function stopMetronome() {
   beatInBar = -1;
   lastTickTime = null;
   clearBlink();
-  pendulum.style.transition = 'none';
-  pendulum.style.transform = `rotate(${pendulumDirection}deg)`;
+  if (pendulumFrame !== null) window.cancelAnimationFrame(pendulumFrame);
+  pendulumFrame = null;
+  pendulumBeatTime = null;
   togglePlayButton.classList.remove("button-on");
   updateBaseSignatureCircles();
   updateMetersSourceBridge();
@@ -591,7 +619,7 @@ function clearBeatSessionData() {
   lastTop = { x: METRONOME_GRAPH_OFFSET, y: 0 };
   pendulumDirection = -30;
   pendulum.style.transition = 'none';
-  pendulum.style.transform = 'rotate(-30deg)';
+  pendulum.style.transform = 'rotate(0deg)';
   localStorage.removeItem("metronome.panel");
   localStorage.removeItem("metronome.beat_history");
   metronomeTimelineFollow?.reset();
@@ -620,6 +648,8 @@ async function startMetronome() {
   togglePlayButton.classList.add("button-on");
   updateMetersSourceBridge();
   playMetronome();
+  pendulum.style.transition = 'none';
+  animatePendulum();
 }
 
 function getMetronomeTimelineHeight() {
@@ -848,6 +878,7 @@ function loadSettings() {
   const savedAccent = localStorage.getItem('metronome.accent_on');
   const savedMutedBeats = localStorage.getItem('metronome.muted_beats');
   const savedWeight = localStorage.getItem('metronome.show_weight');
+  const savedEmulate = localStorage.getItem('metronome.emulate_pendulum');
   const savedTimelinePlayhead = localStorage.getItem('metronome.timeline_playhead');
   const savedTimelineFollow = localStorage.getItem('metronome.timeline_follow');
   const hasSavedBaseMode = savedShowBaseBpm !== null || savedShowBaseTempi !== null || savedShowBaseSignature !== null;
@@ -889,6 +920,9 @@ function loadSettings() {
   }
   if (savedWeight !== null) {
     showMetronomeWeight = JSON.parse(savedWeight);
+  }
+  if (savedEmulate !== null) {
+    emulatePendulum = JSON.parse(savedEmulate);
   }
   if (savedTimelinePlayhead !== null) {
     showTimelinePlayhead = savedTimelinePlayhead === 'true';
@@ -993,6 +1027,14 @@ if (baseWeightButton) {
   });
 }
 
+if (baseEmulateButton) {
+  baseEmulateButton.addEventListener('click', () => {
+    emulatePendulum = !emulatePendulum;
+    localStorage.setItem('metronome.emulate_pendulum', JSON.stringify(emulatePendulum));
+    updateToggleButtons();
+  });
+}
+
 if (toggleAccentButton) {
   toggleAccentButton.addEventListener('click', () => {
     accentOn = !accentOn;
@@ -1055,6 +1097,7 @@ resetButton.addEventListener('click', () => {
   localStorage.removeItem('metronome.accent_on');
   localStorage.removeItem('metronome.muted_beats');
   localStorage.removeItem('metronome.show_weight');
+  localStorage.removeItem('metronome.emulate_pendulum');
   localStorage.removeItem('metronome.rulers');
   localStorage.removeItem('metronome.timeline_playhead');
   localStorage.removeItem('metronome.timeline_follow');
@@ -1068,6 +1111,7 @@ resetButton.addEventListener('click', () => {
   showBaseTempi = false;
   showBaseSignature = true;
   showMetronomeWeight = true;
+  emulatePendulum = true;
   showPanelTempi = false;
   showTimelinePlayhead = true;
   followTimeline = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;

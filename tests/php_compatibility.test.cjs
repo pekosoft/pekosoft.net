@@ -271,6 +271,21 @@ test('meter contextual Help targets the matching General Help entries', () => {
   }
 });
 
+test('Meters tabs display the requested abbreviated labels', () => {
+  const meters = renderPhp('meters.php');
+  assert.equal(meters.status, 200);
+  assert.equal(meters.diagnostics, '');
+  const labels = Array.from(meters.body.matchAll(
+    /<button\b[^>]*\bid="(tool-(?:spectroscope|oscilloscope|wavescope|phasescope)-button)"[^>]*>[\s\S]*?<span class="button-text">([^<]+)<\/span>/g
+  ), match => [match[1], match[2]]);
+  assert.deepEqual(labels, [
+    ['tool-spectroscope-button', 'SPECTRO'],
+    ['tool-oscilloscope-button', 'OSCILLO'],
+    ['tool-wavescope-button', 'WAVE'],
+    ['tool-phasescope-button', 'PHASE']
+  ]);
+});
+
 test('launch introduction and shared previews use the approved product description', () => {
   const frontPage = renderPhp('index.php');
   const help = renderPhp('help.php', 't=index');

@@ -5,7 +5,7 @@
         <svg class="icons">
           <use href="/icons.svg#eq" />
         </svg>
-        <span class="button-text">Spectroscope</span>
+        <span class="button-text">SPECTRO</span>
       </button>
       <button id="tool-level-button" class="square" title="Level meter" data-module-tab="Level meter" data-help-release="index">
         <svg class="icons">
@@ -17,19 +17,19 @@
         <svg class="icons">
           <use href="/icons.svg#wavelength" />
         </svg>
-        <span class="button-text">Oscilloscope</span>
+        <span class="button-text">OSCILLO</span>
       </button>
       <button id="tool-wavescope-button" class="square" title="Wavescope" data-module-tab="Wavescope" data-help-release="index">
         <svg class="icons">
           <use href="/icons.svg#pulse" />
         </svg>
-        <span class="button-text">Wavescope</span>
+        <span class="button-text">WAVE</span>
       </button>
       <button id="tool-phasescope-button" class="square" title="Phasescope" data-module-tab="Phasescope" data-help-release="index" data-help-entry="Phasescope">
         <svg class="icons">
           <use href="/icons.svg?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/icons.svg'); ?>#phasescope" />
         </svg>
-        <span class="button-text">Phasescope</span>
+        <span class="button-text">PHASE</span>
       </button>
       <button id="tool-bit-meter-button" class="square" title="Bit meter" data-module-tab="Bit meter" data-help-release="index" data-help-entry="Bit">
         <svg class="icons">

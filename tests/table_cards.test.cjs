@@ -323,7 +323,7 @@ test('History cycles List, Cards, JSON and JavaScript while retaining restoratio
   assert.equal(restoredHistory.viewMode, 'cards');
 });
 
-test('all data-table surfaces load the shared view or retain Reference Cards', () => {
+test('supported tables retain Cards while Updates remains table-only', () => {
   const root = path.join(__dirname, '..');
   for (const [file, key, button] of [
     ['bpm_calculator.php', 'bpm_calculator.table_view', 'table-view-button'],
@@ -336,8 +336,8 @@ test('all data-table surfaces load the shared view or retain Reference Cards', (
     assert.ok(template.includes(`id="${button}"`));
   }
   const updates = fs.readFileSync(path.join(root, 'updates.php'), 'utf8');
-  assert.match(updates, /data-cards-key="updates.table_view"/);
-  assert.match(updates, /id="updates-view-button"/);
+  assert.match(updates, /<table id="updates-table" class="over scrollable-table">/);
+  assert.doesNotMatch(updates, /data-cards-|updates-view-button/);
   const reference = fs.readFileSync(path.join(root, 'tools', 'reference.php'), 'utf8');
   assert.match(reference, /id="cards-view"/);
   const head = fs.readFileSync(path.join(root, 'elements', 'head.php'), 'utf8');

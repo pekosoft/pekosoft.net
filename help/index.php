@@ -221,7 +221,7 @@
   <svg class="standard-image-help"><use href="/icons.svg#github"></use></svg>
   <div class="justify">
     <h1>Updates <span class="object">button</span></h1>
-    Opens a list of recent Pekosoft updates. Use Previous and Next to browse the list, and select an update title to view the change on GitHub.
+    Opens a table of recent Pekosoft updates. Use Previous and Next to browse the table, and select an update title to view the change on GitHub.
   </div>
 </div>
 

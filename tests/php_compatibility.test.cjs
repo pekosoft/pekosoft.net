@@ -188,6 +188,30 @@ test('Share appears once in Settings instead of the TOC on official and beta pag
   }
 });
 
+test('TOC omits empty groups on standalone pages and preserves release and module navigation', () => {
+  for (const [file, query, hasReleaseMenu, hasModules] of [
+    ['bitcoin.php', '', false, false],
+    ['contact.php', '', false, false],
+    ['updates.php', '', false, false],
+    ['help.php', 't=index', true, false],
+    ['tools\\metronome.php', '', true, true]
+  ]) {
+    const result = renderPhp(file, query);
+    assert.equal(result.status, 200, file);
+    assert.equal(result.diagnostics, '', file);
+    const toc = result.body.slice(result.body.indexOf('<div id="toc"'), result.body.indexOf('<div id="settings-menu-container"'));
+    assert.doesNotMatch(toc, /<div(?: id="toc-module-items")? class="toc-column">\s*<\/div>/, file);
+    for (const label of ['Tool', 'Help', 'History', 'About']) {
+      assert.equal(toc.includes(`aria-label="${label}"`), hasReleaseMenu, `${file}: ${label}`);
+    }
+    assert.equal(toc.includes('id="toc-module-items"'), hasModules, file);
+    if (hasModules) assert.match(toc, /id="tool-toggle-toc-button"/, file);
+    for (const href of ['/bitcoin', '/contact', '/updates']) {
+      assert.ok(toc.includes(`data-href="${href}"`), `${file}: ${href}`);
+    }
+  }
+});
+
 test('developer controls move out of Settings and render once on the clean Dev page', () => {
   const controlIds = ['grid', 'grid-size-value', 'settings-grid-size-knob', 'toggle-alpha', 'background-image', 'background-image-picker'];
   for (const file of ['index.php', 'tools\\metronome.php', 'beta.php', 'dev.php']) {

@@ -85,17 +85,17 @@ $hasPlaylistModule = in_array('playlist', $availableModules, true);
     <?php endif; ?>
       </div>
 
+      <?php if (empty($hideReleaseMenu) && $release !== ''): ?>
       <div class="toc-column">
-        <?php if (empty($hideReleaseMenu) && $release !== ''): ?>
           <button class="toc-button" data-href="<?php echo $releaseHref; ?>" title="Tool" aria-label="Tool"><svg class="icons" role="img"><use href="/icons.svg#release"></use></svg>Tool</button>
           <button class="toc-button" data-href="/help?t=<?php echo $release; ?>" title="Help" aria-label="Help"><svg class="icons" role="img"><use href="/icons.svg#help"></use></svg>Help</button>
           <button class="toc-button" data-href="/history?t=<?php echo $release; ?>" title="History" aria-label="History"><svg class="icons" role="img"><use href="/icons.svg#clock"></use></svg>History</button>
           <button class="toc-button" data-href="/about?t=<?php echo $release; ?>" title="About" aria-label="About"><svg class="icons" role="img"><use href="/icons.svg#about"></use></svg>About</button>
-        <?php endif; ?>
       </div>
+      <?php endif; ?>
 
+      <?php if ($hasModules): ?>
       <div id="toc-module-items" class="toc-column">
-        <?php if ($hasModules): ?>
           <?php if (in_array('tool', $availableModules, true)): ?>
             <button class="toc-button" id="tool-toggle-toc-button" title="Instrument" aria-label="Instrument"><svg class="icons" role="img"><use href="/icons.svg#tool"></use></svg>Instrument</button>
           <?php endif; ?>
@@ -120,8 +120,8 @@ $hasPlaylistModule = in_array('playlist', $availableModules, true);
           <?php if (in_array('panel', $availableModules, true)): ?>
             <button class="toc-button" id="panel-toggle-toc-button" title="Panel" aria-label="Panel"><svg class="icons" role="img"><use href="/icons.svg#panel"></use></svg>Panel</button>
           <?php endif; ?>
-        <?php endif; ?>
       </div>
+      <?php endif; ?>
 
       <div class="toc-column">
         <button class="toc-button" data-href="/bitcoin" title="Buy Us Coffee" aria-label="Buy Us Coffee">

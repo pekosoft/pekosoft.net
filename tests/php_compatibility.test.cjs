@@ -162,16 +162,40 @@ test('normal release pages, missing entries and standalone pages retain their re
   assert.equal(result.diagnostics, '');
 });
 
-test('front page omits the updates feed while retaining official tools and Updates navigation', () => {
+test('front page embeds the paused Demo above tool captions and bordered site credits', () => {
   const result = renderPhp('index.php', '', { setup: "$_SERVER['REQUEST_URI'] = '/';" });
   assert.equal(result.status, 200);
   assert.equal(result.diagnostics, '');
-  assert.doesNotMatch(result.body, /Latest updates|github-actions|index_page\.js/);
+  assert.doesNotMatch(result.body, /Latest updates|github-actions|index_page\.js|See the demo/);
   for (const slug of ['tap_pad', 'bpm_calculator', 'metronome', 'turntable']) {
     assert.ok(result.body.includes(`href="/${slug}"`), slug);
   }
-  assert.ok(result.body.includes('href="/demo"'));
+  assert.match(result.body, /<iframe src="\/demo\?embedded=1" title="Pekosoft demo"[^>]*allowfullscreen/);
+  assert.ok(result.body.indexOf('<iframe') < result.body.indexOf('<div class="releases">'));
+  const releases = result.body.slice(result.body.indexOf('<div class="releases">'), result.body.indexOf('<div class="index-site-info'));
+  const captions = [...releases.matchAll(/<a href="\/([^"]+)"[^>]*>\s*<svg[\s\S]*?<\/svg>\s*<h1>([^<]+)<\/h1>\s*<\/a>\s*<p>([^<]+)<\/p>/g)]
+    .map(([, slug, title, description]) => [slug, title, description]);
+  assert.deepEqual(captions, [
+    ['tap_pad', 'Tap Pad', 'For tapping tempo.'],
+    ['bpm_calculator', 'BPM Calculator', 'For tempo calculations.'],
+    ['metronome', 'Metronome', 'For keeping time.'],
+    ['turntable', 'Turntable', 'For visualizing RPM.']
+  ]);
+  assert.match(result.body, /<div class="index-site-info border">[\s\S]*class="index-socials"[\s\S]*Copyright[\s\S]*class="index-focus"/);
   assert.match(result.body, /data-href="\/updates"/);
+});
+
+test('embedded Demo renders its start button and paused controls without changing standalone autoplay', () => {
+  const result = renderPhp('demo.php', 'embedded=1', {
+    setup: "$_SERVER['REQUEST_URI'] = '/demo?embedded=1';"
+  });
+  assert.equal(result.status, 200);
+  assert.equal(result.diagnostics, '');
+  assert.match(result.body, /<body class="demo-page demo-embedded">/);
+  assert.match(result.body, /<base target="_top">/);
+  assert.match(result.body, /data-demo-start aria-label="Play" title="Play demo"/);
+  assert.match(result.body, /data-demo-controls hidden/);
+  assert.match(result.body, /data-demo-play aria-label="Play"[^>]*aria-pressed="false"/);
 });
 
 test('demo presents the four official tools with only playback controls and clean metadata', () => {
@@ -233,11 +257,13 @@ test('demo presents the four official tools with only playback controls and clea
   assert.ok(metronomeSlide.indexOf(filledBase) > metronomeSlide.indexOf(pendulum) + pendulum.length);
   assert.ok(metronomeSlide.indexOf('data-demo-signature-beat') > metronomeSlide.indexOf(filledBase));
   const buttons = [...result.body.matchAll(/<button\b[^>]*aria-label="([^"]+)"[^>]*>/g)];
-  assert.deepEqual(buttons.map(([, label]) => label), ['More', 'Dark mode', 'Sound', 'Play', 'Loop', 'Download', 'Fullscreen']);
+  assert.deepEqual(buttons.map(([, label]) => label), ['More', 'Dark mode', 'Sound', 'Play', 'Replay', 'Loop', 'Download', 'Fullscreen']);
   assert.match(result.body, /data-demo-more[^>]*aria-expanded="false"[^>]*aria-controls="demo-playback"/);
   assert.match(result.body, /id="demo-playback"[^>]*hidden/);
+  assert.match(result.body, /id="demo-playback"[^>]*>\s*<a[^>]*href="\/"[^>]*aria-label="Pekosoft"[^>]*>\s*<svg[^>]*><use href="\/icons\.svg#index"/);
   assert.match(result.body, /data-demo-dark-mode[^>]*title="Toggle dark mode"[^>]*>\s*<svg[^>]*><use href="\/icons\.svg#moon"/);
   assert.match(result.body, /data-demo-download[^>]*title="Download video with audio"/);
+  assert.match(result.body, /data-demo-replay[^>]*aria-label="Replay"[^>]*title="Restart demo"[^>]*>\s*<svg[^>]*><use href="\/icons\.svg#reset"/);
   assert.match(result.body, /src="\/js\/demo-video\.js\?v=/);
   assert.deepEqual(buttons.filter(([markup]) => markup.includes('aria-pressed')).map(([markup]) => markup.match(/aria-pressed="([^"]+)"/)[1]),
     ['true', 'true', 'true', 'false', 'false']);
@@ -248,6 +274,9 @@ test('demo presents the four official tools with only playback controls and clea
   assert.equal((result.body.match(/Free online audio tools\.<\/p>/g) || []).length, 1);
   const turntableSlide = result.body.match(/<section\b[^>]*aria-labelledby="demo-turntable"[\s\S]*?<\/section>/)[0];
   assert.match(turntableSlide, /#turntable"/);
+  const platter = turntableSlide.match(/<g\b[^>]*data-demo-platter[^>]*>[\s\S]*?<\/g>/)[0];
+  assert.match(platter, /<line x1="218\.125" y1="97" x2="218\.125" y2="256" stroke="currentColor"/);
+  assert.doesNotMatch(platter, /<circle/);
   assert.doesNotMatch(turntableSlide, /data-demo-tonearm|<rect/);
   const ending = [...result.body.matchAll(/<section\b[^>]*data-demo-slide[\s\S]*?<\/section>/g)]
     .slice(-7).map(([markup]) => markup);
@@ -277,7 +306,7 @@ test('demo presents the four official tools with only playback controls and clea
   for (const [, content] of buttonContent) {
     assert.equal(content.replace(/<svg\b[\s\S]*?<\/svg>/g, '').trim(), '');
   }
-  assert.equal((result.body.match(/<a\b/g) || []).length, 1);
+  assert.equal((result.body.match(/<a\b/g) || []).length, 2);
   assert.doesNotMatch(result.body, /<input\b|<linearGradient\b|See sound in motion|Find your next sound/);
 
   const routing = fs.readFileSync(path.join(root, '.htaccess'), 'utf8');
@@ -307,7 +336,7 @@ test('demo Calculator scrolls its original double note after the individual note
   assert.doesNotMatch(calculatorSlide[0], /data-demo-final-note|data-demo-tempo/);
 });
 
-test('Demo appears above Buy Us Coffee and Share stays in Settings on official and beta pages', () => {
+test('TOC omits Demo and Share stays in Settings on official and beta pages', () => {
   for (const file of ['index.php', 'tools\\metronome.php', 'beta.php', 'tools\\player.php']) {
     const result = renderPhp(file, '', {
       setup: file === 'index.php' ? "$_SERVER['REQUEST_URI'] = '/';" : ''
@@ -315,8 +344,8 @@ test('Demo appears above Buy Us Coffee and Share stays in Settings on official a
     assert.equal(result.status, 200, file);
     assert.equal(result.diagnostics, '', file);
     const toc = result.body.slice(result.body.indexOf('<div id="toc"'), result.body.indexOf('<div id="settings-menu-container"'));
-    assert.equal((toc.match(/data-href="\/demo"/g) || []).length, 1, file);
-    assert.match(toc, /data-href="\/demo" title="Demo" aria-label="Demo">[\s\S]*?<\/svg>\s*Demo\s*<\/button>\s*<button[^>]*data-href="\/bitcoin"/, file);
+    assert.doesNotMatch(toc, /data-href="\/demo"/, file);
+    assert.match(toc, /data-href="\/bitcoin"[\s\S]*data-href="\/contact"[\s\S]*data-href="\/updates"/, file);
     assert.match(result.body, /id="settings-panel"[\s\S]*id="toggle-fullscreen-button"[\s\S]*id="share-settings-button"[\s\S]*id="play-site-button"/, file);
     const shareButton = result.body.match(/<button id="share-settings-button"[^>]*>/)[0];
     assert.doesNotMatch(shareButton, /data-href=/, file);

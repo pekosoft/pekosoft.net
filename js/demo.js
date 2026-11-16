@@ -5,6 +5,8 @@
   const playbackControls = document.querySelector('[data-demo-playback]');
   const darkModeButton = document.querySelector('[data-demo-dark-mode]');
   const playButton = document.querySelector('[data-demo-play]');
+  const replayButton = document.querySelector('[data-demo-replay]');
+  const startButton = document.querySelector('[data-demo-start]');
   const soundButton = document.querySelector('[data-demo-sound]');
   const loopButton = document.querySelector('[data-demo-loop]');
   const downloadButton = document.querySelector('[data-demo-download]');
@@ -18,6 +20,8 @@
   const openingSlogan = document.querySelector('[data-demo-slogan]');
   const closingIcon = document.querySelector('[data-demo-floppy]');
   const closingIconDelay = 300;
+  const closingIconHoldDuration = 1000;
+  const closingIconZoomDuration = 1000;
   const closingUrl = document.querySelector('[data-demo-url]');
   const closingUrlLink = closingUrl.querySelector('[data-demo-url-link]');
   const closingUrlHref = closingUrlLink.getAttribute('data-demo-url-link');
@@ -26,7 +30,7 @@
   const closingUrlLabel = closingUrl.getAttribute('aria-label');
   const typingInterval = 90;
   const caretBlinkInterval = 250;
-  const closingUrlColorDelay = 50;
+  const closingUrlColorDelay = 200;
   const logoFadeInDuration = 300;
   const logoFadeOutDuration = 600;
   const logoBlinkTimes = [900, 1160];
@@ -47,11 +51,14 @@
   const beatDuration = 60000 / 120;
   const audioTailDuration = 600;
   const platterRpm = 100 / 3;
-  const windDownRatio = 8;
+  const platterFrequency = 65.4064;
+  const platterGain = 0.1;
+  const platterStartDuration = 1000;
+  const platterStopDuration = 2000;
   const playbackFadeDuration = 0.02;
   const activeSources = new Set();
   const audioNodes = new Set();
-  let playing = true;
+  let playing = !startButton;
   let sound = true;
   let loop = false;
   let position = 0;
@@ -70,6 +77,7 @@
   let downloadController = null;
   let downloadMessage = '';
   let controlsTimer = null;
+  let videoClickTimer = null;
 
   function closeControls() {
     playbackControls.hidden = true;
@@ -77,11 +85,12 @@
   }
 
   function showControls() {
-    controls.hidden = false;
+    controls.hidden = Boolean(startButton && !startButton.hidden);
+    if (controls.hidden) return;
     clearTimeout(controlsTimer);
     controlsTimer = setTimeout(() => {
+      if (!playbackControls.hidden) return;
       if (controls.contains(document.activeElement) && document.activeElement.matches(':focus-visible')) return;
-      closeControls();
       controls.hidden = true;
     }, 3000);
   }
@@ -124,7 +133,7 @@
     playButton.setAttribute('aria-pressed', String(playing));
     soundButton.setAttribute('aria-pressed', String(sound));
     loopButton.setAttribute('aria-pressed', String(loop));
-    for (const button of [darkModeButton, soundButton, playButton, loopButton, downloadButton]) {
+    for (const button of [darkModeButton, soundButton, playButton, replayButton, loopButton, downloadButton]) {
       button.disabled = downloading;
     }
     fullscreenButton.disabled = downloading || !document.fullscreenEnabled;
@@ -205,9 +214,22 @@
     oscillator.stop(now + remaining);
   }
 
-  function scheduleWindDown(start, end, elapsed, audioNow) {
+  function getPlatterMotion(sceneTime, sceneDuration) {
+    const time = Math.max(0, Math.min(sceneTime, sceneDuration)) / 1000;
+    const startDuration = platterStartDuration / 1000;
+    const stopDuration = platterStopDuration / 1000;
+    const startingTime = Math.min(time, startDuration);
+    const cruisingTime = Math.max(0, Math.min(time, (sceneDuration - platterStopDuration) / 1000) - startDuration);
+    const brakingTime = Math.max(0, time - (sceneDuration - platterStopDuration) / 1000);
+    const speedRatio = Math.max(0, Math.min(time / startDuration, 1, (sceneDuration / 1000 - time) / stopDuration));
+    const angle = 6 * platterRpm * (startingTime ** 2 / (2 * startDuration) + cruisingTime
+      + brakingTime - brakingTime ** 2 / (2 * stopDuration));
+    return { speedRatio, angle };
+  }
+
+  function schedulePlatter(start, end, elapsed, audioNow) {
     const offset = Math.max(0, elapsed - start);
-    const progress = Math.min(1, offset / (end - start));
+    const motion = getPlatterMotion(offset, end - start);
     const when = audioNow + Math.max(0, start - elapsed) / 1000;
     const tailEnd = end + audioTailDuration;
     const remaining = (tailEnd - Math.max(start, elapsed)) / 1000;
@@ -217,21 +239,23 @@
     const filter = audioContext.createBiquadFilter();
     const envelope = audioContext.createGain();
     oscillator.type = 'sawtooth';
-    oscillator.frequency.setValueAtTime(130.8128 / windDownRatio ** progress, when);
+    oscillator.frequency.setValueAtTime(platterFrequency * motion.speedRatio, when);
     filter.type = 'lowpass';
-    filter.frequency.setValueAtTime(900 / windDownRatio ** progress, when);
-    if (elapsed < end) {
-      const pitchEnd = audioNow + (end - elapsed) / 1000;
-      oscillator.frequency.exponentialRampToValueAtTime(130.8128 / windDownRatio, pitchEnd);
-      filter.frequency.exponentialRampToValueAtTime(900 / windDownRatio, pitchEnd);
+    filter.frequency.setValueAtTime(900 * motion.speedRatio, when);
+    for (const time of [start + platterStartDuration, end - platterStopDuration, end]) {
+      if (time <= Math.max(start, elapsed)) continue;
+      const { speedRatio } = getPlatterMotion(time - start, end - start);
+      const rampWhen = audioNow + (time - elapsed) / 1000;
+      oscillator.frequency.linearRampToValueAtTime(platterFrequency * speedRatio, rampWhen);
+      filter.frequency.linearRampToValueAtTime(900 * speedRatio, rampWhen);
     }
     envelope.gain.setValueAtTime(0, when);
     envelope.gain.linearRampToValueAtTime(
-      0.2 * Math.min(1, (remaining - attack) * 1000 / (tailEnd - fadeStart)),
+      platterGain * Math.min(1, (remaining - attack) * 1000 / (tailEnd - fadeStart)),
       when + attack
     );
     if (elapsed < fadeStart) {
-      envelope.gain.setValueAtTime(0.2, audioNow + (fadeStart - elapsed) / 1000);
+      envelope.gain.setValueAtTime(platterGain, audioNow + (fadeStart - elapsed) / 1000);
     }
     envelope.gain.linearRampToValueAtTime(0, when + remaining);
     oscillator.connect(filter);
@@ -240,6 +264,29 @@
     trackSource(oscillator, [filter, envelope]);
     oscillator.start(when);
     oscillator.stop(when + remaining);
+    if (offset < end - start) {
+      const buffer = audioContext.createBuffer(1, Math.ceil(audioContext.sampleRate * (end - start) / 1000), audioContext.sampleRate);
+      const samples = buffer.getChannelData(0);
+      const burstLength = Math.ceil(audioContext.sampleRate * 0.002);
+      let index = 0;
+      while (index < samples.length) {
+        const { speedRatio } = getPlatterMotion(index / audioContext.sampleRate * 1000, end - start);
+        for (let sample = 0; sample < burstLength && index + sample < samples.length; sample += 1) {
+          samples[index + sample] = (Math.random() * 2 - 1) * 0.15 * speedRatio * Math.exp(-6 * sample / burstLength);
+        }
+        index += Math.ceil(audioContext.sampleRate * (0.035 + Math.random() * 0.09) / Math.max(speedRatio, 0.1));
+      }
+      const crackle = audioContext.createBufferSource();
+      const crackleFilter = audioContext.createBiquadFilter();
+      crackle.buffer = buffer;
+      crackleFilter.type = 'lowpass';
+      crackleFilter.frequency.value = 3500;
+      crackle.connect(crackleFilter);
+      crackleFilter.connect(envelope);
+      trackSource(crackle, [crackleFilter]);
+      crackle.start(when, offset / 1000);
+      crackle.stop(when + (end - start - offset) / 1000);
+    }
   }
 
   function createReverbInput(durationSec, wetLevel) {
@@ -293,6 +340,24 @@
     trackSource(event.stopNode);
   }
 
+  function schedulePointPling(when, destination) {
+    for (const [ratio, gain, duration] of [[1, 0.075, 0.32], [2.756, 0.022, 0.16], [5.404, 0.008, 0.08]]) {
+      const oscillator = audioContext.createOscillator();
+      const envelope = audioContext.createGain();
+      oscillator.type = 'sine';
+      oscillator.frequency.setValueAtTime(1046.5023 * ratio, when);
+      envelope.gain.setValueAtTime(0, when);
+      envelope.gain.linearRampToValueAtTime(gain, when + 0.002);
+      envelope.gain.exponentialRampToValueAtTime(0.0001, when + duration - 0.006);
+      envelope.gain.linearRampToValueAtTime(0, when + duration);
+      oscillator.connect(envelope);
+      envelope.connect(destination);
+      trackSource(oscillator, [envelope]);
+      oscillator.start(when);
+      oscillator.stop(when + duration);
+    }
+  }
+
   function scheduleAudio() {
     if (audioScheduled) return;
     const elapsed = currentPosition();
@@ -305,6 +370,7 @@
     playOpeningNote(elapsed);
     logoBlinkTimes.forEach(time => scheduleBlinkClick(time, elapsed, audioNow));
     let start = 0;
+    let pointReverbInput = null;
     for (const slide of slides) {
       const end = start + Number(slide.dataset.duration);
       if (end > elapsed || (slide.contains(platter) && end + audioTailDuration > elapsed)) {
@@ -319,8 +385,11 @@
             });
             trackSource(event.stopNode);
           }
+        } else if (slide.querySelector('[data-demo-point-icon]') && start >= elapsed) {
+          if (!pointReverbInput) pointReverbInput = createReverbInput(0.35, 0.12);
+          schedulePointPling(audioNow + (start - elapsed) / 1000, pointReverbInput);
         } else if (slide.contains(platter)) {
-          scheduleWindDown(start, end, elapsed, audioNow);
+          schedulePlatter(start, end, elapsed, audioNow);
         } else if (slide.contains(tapFeedback) || slide.contains(noteStream) || slide.contains(pendulum)) {
           const delayInput = slide.contains(noteStream)
             ? createTripletDelay(audioNow + (end + audioTailDuration - elapsed) / 1000)
@@ -397,6 +466,9 @@
         const sceneTime = elapsed - start;
         if (slide.contains(closingIcon)) {
           closingIcon.style.opacity = sceneTime < closingIconDelay ? '0' : '1';
+          const zoomStart = closingIconDelay + closingIconHoldDuration;
+          const progress = Math.max(0, Math.min(1, (sceneTime - zoomStart) / closingIconZoomDuration));
+          closingIcon.style.transform = `scale(${64 ** progress})`;
         }
         if (slide.contains(closingUrl)) {
           const characters = Math.min(closingUrlLabel.length, Math.floor(sceneTime / typingInterval));
@@ -452,8 +524,7 @@
           });
         }
         if (slide.contains(platter)) {
-          const decayRate = Math.log(windDownRatio) / (end - start);
-          const angle = platterRpm * 360 / 60000 * (1 - Math.exp(-decayRate * sceneTime)) / decayRate;
+          const { angle } = getPlatterMotion(sceneTime, end - start);
           platter.setAttribute('transform', `rotate(${angle % 360} 218.125 256)`);
         }
       }
@@ -502,6 +573,7 @@
   });
 
   playButton.addEventListener('click', () => {
+    clearTimeout(videoClickTimer);
     if (playing) {
       position = Math.min(duration, currentPosition());
       playing = false;
@@ -516,7 +588,41 @@
       if (sound) enableAudio();
       tick();
     }
+    if (startButton && playing) {
+      startButton.hidden = true;
+      showControls();
+    }
     updateControls();
+  });
+
+  startButton?.addEventListener('click', () => {
+    playButton.click();
+    moreButton.focus();
+  });
+
+  document.addEventListener('click', event => {
+    if (downloading || controls.contains(event.target) || event.target.closest('button, a[href]')) return;
+    clearTimeout(videoClickTimer);
+    videoClickTimer = setTimeout(() => {
+      if (!downloading) playButton.click();
+    }, 320);
+  });
+
+  document.addEventListener('dblclick', event => {
+    if (downloading || controls.contains(event.target) || event.target.closest('button, a[href]')) return;
+    event.preventDefault();
+    clearTimeout(videoClickTimer);
+    if (!fullscreenButton.disabled) fullscreenButton.click();
+  });
+
+  replayButton.addEventListener('click', () => {
+    audioRequest += 1;
+    cancelAnimationFrame(frame);
+    frame = null;
+    stopAudio(true);
+    position = 0;
+    playing = false;
+    playButton.click();
   });
 
   soundButton.addEventListener('click', () => {
@@ -537,6 +643,7 @@
 
   downloadButton.addEventListener('click', async () => {
     if (downloading) return;
+    clearTimeout(videoClickTimer);
     const savedPosition = Math.min(duration, currentPosition());
     const wasPlaying = playing;
     const controller = new AbortController();
@@ -550,6 +657,7 @@
     stopAudio();
     updateControls();
     try {
+      if (!audioContext) await enableAudio();
       if (!audioContext) throw new Error('This browser does not support Web Audio.');
       await audioContext.resume();
       if (audioContext.state !== 'running') throw new Error('Sound could not start for the video.');
@@ -588,6 +696,7 @@
   });
 
   fullscreenButton.addEventListener('click', async () => {
+    clearTimeout(videoClickTimer);
     fullscreenError = '';
     try {
       if (document.fullscreenElement) {
@@ -605,6 +714,7 @@
 
   window.addEventListener('pagehide', () => {
     clearTimeout(controlsTimer);
+    clearTimeout(videoClickTimer);
     downloadController?.abort();
     position = Math.min(duration, currentPosition());
     playing = false;
@@ -622,6 +732,9 @@
 
   showControls();
   render(0);
-  enableAudio();
-  frame = requestAnimationFrame(tick);
+  updateControls();
+  if (playing) {
+    enableAudio();
+    frame = requestAnimationFrame(tick);
+  }
 })();

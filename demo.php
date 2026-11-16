@@ -2,17 +2,19 @@
 $release = "demo";
 $releaseName = "Demo";
 $iconVersion = filemtime($_SERVER['DOCUMENT_ROOT'] . '/icons.svg');
+$embedded = ($_GET['embedded'] ?? '') === '1';
 ?>
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
   <?php require($_SERVER['DOCUMENT_ROOT'] . "/elements/head.php"); ?>
+  <?php if ($embedded): ?><base target="_top"><?php endif; ?>
   <meta name="description" content="Free online audio tools.">
   <link rel="stylesheet" href="/css/demo.css?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/css/demo.css'); ?>">
 </head>
 
-<body class="demo-page">
+<body class="demo-page<?php echo $embedded ? ' demo-embedded' : ''; ?>">
   <svg class="demo-static" data-demo-static aria-hidden="true">
     <defs>
       <pattern id="demo-static-pattern" width="640" height="480" patternUnits="userSpaceOnUse" data-demo-noise>
@@ -32,6 +34,11 @@ $iconVersion = filemtime($_SERVER['DOCUMENT_ROOT'] . '/icons.svg');
     <rect width="100%" height="100%" fill="url(#demo-static-pattern)"></rect>
   </svg>
   <main class="demo-main" aria-label="Pekosoft demo">
+    <?php if ($embedded): ?>
+      <button class="square icon-only demo-start" type="button" data-demo-start aria-label="Play" title="Play demo">
+        <svg class="icons" aria-hidden="true"><use href="/icons.svg#play"></use></svg>
+      </button>
+    <?php endif; ?>
     <div class="demo-screen" aria-label="Presentation">
       <section class="demo-slide demo-brand" data-demo-slide data-duration="6000" aria-label="Pekosoft">
         <svg class="demo-logo" data-demo-opening-logo viewBox="0 0 512 101.87" role="img" aria-label="Pekosoft">
@@ -114,7 +121,7 @@ $iconVersion = filemtime($_SERVER['DOCUMENT_ROOT'] . '/icons.svg');
         <svg class="demo-icon" viewBox="0 0 512 512" aria-hidden="true">
           <use href="/icons.svg?v=<?php echo $iconVersion; ?>#turntable"></use>
           <g class="demo-moving-part" data-demo-platter>
-            <circle cx="218.125" cy="130" r="12"></circle>
+            <line x1="218.125" y1="97" x2="218.125" y2="256" stroke="currentColor" stroke-width="6"></line>
           </g>
         </svg>
         <div class="demo-caption">
@@ -122,7 +129,7 @@ $iconVersion = filemtime($_SERVER['DOCUMENT_ROOT'] . '/icons.svg');
           <p data-demo-description>For visualizing RPM.</p>
         </div>
       </section>
-      <section class="demo-slide demo-brand" data-demo-slide data-duration="3300" aria-label="Floppy icon" hidden>
+      <section class="demo-slide demo-brand" data-demo-slide data-duration="2300" aria-label="Floppy icon" hidden>
         <svg class="demo-icon" data-demo-floppy viewBox="0 0 512 512" aria-hidden="true">
           <use href="/icons.svg?v=<?php echo $iconVersion; ?>#index"></use>
         </svg>
@@ -161,19 +168,25 @@ $iconVersion = filemtime($_SERVER['DOCUMENT_ROOT'] . '/icons.svg');
         <p class="demo-tagline demo-url" data-demo-url aria-label="pekosoft.net"><a class="demo-url-typing" data-demo-url-link="/" aria-label="pekosoft.net"><span data-demo-url-text aria-hidden="true"></span><span class="demo-caret" data-demo-url-caret aria-hidden="true"></span></a></p>
       </section>
     </div>
-    <div class="demo-controls" data-demo-controls>
+    <div class="demo-controls" data-demo-controls<?php echo $embedded ? ' hidden' : ''; ?>>
       <button class="square icon-only" type="button" data-demo-more aria-label="More" title="Toggle playback controls" aria-expanded="false" aria-controls="demo-playback">
         <svg class="icons" aria-hidden="true"><use href="/icons.svg#more"></use></svg>
       </button>
       <div class="demo-playback" id="demo-playback" data-demo-playback role="group" aria-label="Playback" hidden>
+        <a class="square icon-only" href="/" aria-label="Pekosoft" title="Go to front page">
+          <svg class="icons" aria-hidden="true"><use href="/icons.svg#index"></use></svg>
+        </a>
         <button class="square icon-only" type="button" data-demo-dark-mode aria-label="Dark mode" title="Toggle dark mode" aria-pressed="true">
           <svg class="icons" aria-hidden="true"><use href="/icons.svg#moon"></use></svg>
         </button>
         <button class="square icon-only" type="button" data-demo-sound aria-label="Sound" title="Toggle sound" aria-pressed="true">
           <svg class="icons" aria-hidden="true"><use href="/icons.svg#sound"></use></svg>
         </button>
-        <button class="square icon-only" type="button" data-demo-play aria-label="Play" title="Toggle playback" aria-pressed="true">
+        <button class="square icon-only" type="button" data-demo-play aria-label="Play" title="Toggle playback" aria-pressed="<?php echo $embedded ? 'false' : 'true'; ?>">
           <svg class="icons" aria-hidden="true"><use href="/icons.svg#play"></use></svg>
+        </button>
+        <button class="square icon-only" type="button" data-demo-replay aria-label="Replay" title="Restart demo">
+          <svg class="icons" aria-hidden="true"><use href="/icons.svg#reset"></use></svg>
         </button>
         <button class="square icon-only" type="button" data-demo-loop aria-label="Loop" title="Toggle loop" aria-pressed="false">
           <svg class="icons" aria-hidden="true"><use href="/icons.svg#loop"></use></svg>

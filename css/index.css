@@ -1339,7 +1339,56 @@ li h1 img {
 }
 
 .index-page .releases {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.index-demo {
   margin-top: 0;
+  padding: 0;
+  container-type: inline-size;
+}
+
+.index-demo iframe {
+  display: block;
+  width: 100%;
+  max-height: 450px;
+  aspect-ratio: 16 / 9;
+  border: 0;
+}
+
+.index-page .item > a {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.index-page .item h1 {
+  color: var(--color1);
+}
+
+.index-page .item > p {
+  margin: 8px 0 0;
+  color: var(--white);
+  font-weight: normal;
+}
+
+@container (max-width: 600px) {
+  .index-demo iframe {
+    aspect-ratio: 4 / 5;
+  }
+}
+
+@container site-content (min-width: 520px) {
+  .index-page .releases {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@container site-content (min-width: 1040px) {
+  .index-page .releases {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
 }
 
 @media (min-width: 320px) {
@@ -1943,7 +1992,7 @@ html.invert-colors .container:fullscreen {
 .index-site-info {
   max-width: var(--maxwidth);
   margin: 16px auto 0;
-  padding: 24px 8px 80px;
+  padding: 24px 8px;
   text-align: center;
 }
 
@@ -2156,6 +2205,7 @@ html.show-grid body::before {
   pointer-events: none;
 }
 
+.invert-colors .index-demo iframe:not(:fullscreen),
 .invert-colors .bitmap,
 .invert-colors img:not([src*=".svg" i]) {
   filter: invert(1) hue-rotate(180deg);

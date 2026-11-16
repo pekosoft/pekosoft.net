@@ -5,6 +5,7 @@
   place-items: center;
   background: #000;
   color: #fff;
+  overflow: hidden;
 }
 
 .demo-static {
@@ -23,6 +24,33 @@
   width: min(1200px, 100%, calc((100dvh - 140px) * 16 / 9 + 32px));
   min-width: 0;
   padding: 16px;
+}
+
+.demo-embedded .demo-main {
+  width: min(100%, calc(100dvh * 16 / 9));
+  padding: 0;
+}
+
+.demo-start {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  background: #000;
+}
+
+.demo-start[hidden] {
+  display: none;
+}
+
+.demo-start .icons {
+  width: clamp(128px, 18vw, 224px);
+  height: clamp(128px, 18vw, 224px);
+  fill: currentColor;
 }
 
 .demo-page,
@@ -83,6 +111,7 @@
 .demo-icon[data-demo-floppy] {
   width: 38cqw;
   height: 38cqw;
+  color: #fff;
 }
 
 .demo-feedback {
@@ -159,18 +188,20 @@
   position: fixed;
   top: 16px;
   right: 16px;
+  left: 16px;
   z-index: 1;
   display: flex;
   flex-direction: row-reverse;
   align-items: flex-start;
-  gap: 8px;
+  gap: max(8px, calc((100vw - 428px) / 8));
   max-width: calc(100vw - 32px);
 }
 
 .demo-playback {
   display: flex;
+  flex: 1;
   flex-wrap: wrap;
-  justify-content: flex-end;
+  justify-content: space-between;
   gap: 8px;
   min-width: 0;
 }
@@ -180,7 +211,8 @@
   display: none;
 }
 
-.demo-controls button {
+.demo-controls button,
+.demo-controls a {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -188,6 +220,11 @@
   min-width: 44px;
   height: 44px;
   padding: 10px;
+}
+
+.demo-controls a,
+.demo-controls a:visited {
+  color: #fff;
 }
 
 .demo-controls button[aria-pressed="true"] {
@@ -219,6 +256,10 @@
 
   .demo-main {
     width: min(100%, calc((100dvh - 140px) * 4 / 5 + 32px));
+  }
+
+  .demo-embedded .demo-main {
+    width: min(100%, calc(100dvh * 4 / 5));
   }
 
   .demo-screen {

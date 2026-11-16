@@ -22,57 +22,55 @@ if (!in_array($requestPath, ['/', '/index.php'], true)) {
 <body class="index-page">
   <?php require($_SERVER['DOCUMENT_ROOT'] . "/elements/toc.php"); ?>
 
+  <div class="standard border index-demo">
+    <iframe src="/demo?embedded=1" title="Pekosoft demo" allowfullscreen></iframe>
+  </div>
+
   <div class="releases">
 
     <div class="item">
       <a href="/tap_pad" title="Tap Pad">
-        <svg class="large-icon" role="img" aria-label="Tap Pad">
+        <svg class="large-icon" aria-hidden="true">
           <use href="/icons.svg#tap_pad" />
         </svg>
+        <h1>Tap Pad</h1>
       </a>
+      <p>For tapping tempo.</p>
     </div>
 
     <div class="item">
       <a href="/bpm_calculator" title="BPM Calculator">
-        <svg class="large-icon" role="img" aria-label="BPM Calculator">
+        <svg class="large-icon" aria-hidden="true">
           <use href="/icons.svg#bpm_calculator" />
         </svg>
+        <h1>BPM Calculator</h1>
       </a>
+      <p>For tempo calculations.</p>
     </div>
 
     <div class="item">
       <a href="/metronome" title="Metronome">
-        <svg class="large-icon" role="img" aria-label="Metronome">
+        <svg class="large-icon" aria-hidden="true">
           <use href="/icons.svg#metronome" />
         </svg>
+        <h1>Metronome</h1>
       </a>
+      <p>For keeping time.</p>
     </div>
 
     <div class="item">
       <a href="/turntable" title="Turntable">
-        <svg class="large-icon" role="img" aria-label="Turntable">
+        <svg class="large-icon" aria-hidden="true">
           <use href="/icons.svg#turntable" />
         </svg>
+        <h1>Turntable</h1>
       </a>
+      <p>For visualizing RPM.</p>
     </div>
 
   </div>
 
-  <div class="standard padded border">
-    <h1>
-      <a href="/tap_pad" title="Tap Pad">Tap Pad - For tapping tempo.</a><br>
-
-      <a href="/bpm_calculator" title="BPM Calculator">BPM Calculator - For tempo calculations.</a><br>
-
-      <a href="/metronome" title="Metronome">Metronome - For keeping time.</a><br>
-
-      <a href="/turntable" title="Turntable">Turntable - For visualizing RPM.</a>
-    </h1>
-    <p class="index-demo-link"><a href="/demo">See the demo</a></p>
-
-  </div>
-
-  <div class="index-site-info">
+  <div class="index-site-info border">
     <div class="index-socials">
       <a href="https://github.com/pekosoft" title="GitHub">
         <svg class="icons" role="img" aria-label="GitHub"><use href="/icons.svg#github"></use></svg>

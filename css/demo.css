@@ -7,21 +7,13 @@
   color: #fff;
 }
 
-.demo-glitch-frame {
-  position: fixed;
-  inset: 0;
-  z-index: 2;
-  background: var(--grey1);
-  pointer-events: none;
-}
-
 .demo-static {
   position: fixed;
   inset: 0;
   width: 100%;
   height: 100%;
   display: none;
-  opacity: 0.65;
+  opacity: 1;
   pointer-events: none;
 }
 
@@ -169,7 +161,23 @@
   right: 16px;
   z-index: 1;
   display: flex;
+  flex-direction: row-reverse;
+  align-items: flex-start;
   gap: 8px;
+  max-width: calc(100vw - 32px);
+}
+
+.demo-playback {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+  min-width: 0;
+}
+
+.demo-controls[hidden],
+.demo-playback[hidden] {
+  display: none;
 }
 
 .demo-controls button {
@@ -204,7 +212,8 @@
 }
 
 @media (max-width: 600px) {
-  .demo-controls {
+  .demo-controls,
+  .demo-playback {
     gap: 4px;
   }
 

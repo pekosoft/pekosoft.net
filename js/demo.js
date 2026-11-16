@@ -1,5 +1,8 @@
 (() => {
   const slides = [...document.querySelectorAll('[data-demo-slide]')];
+  const controls = document.querySelector('[data-demo-controls]');
+  const moreButton = document.querySelector('[data-demo-more]');
+  const playbackControls = document.querySelector('[data-demo-playback]');
   const darkModeButton = document.querySelector('[data-demo-dark-mode]');
   const playButton = document.querySelector('[data-demo-play]');
   const soundButton = document.querySelector('[data-demo-sound]');
@@ -14,12 +17,7 @@
   const openingLogo = document.querySelector('[data-demo-opening-logo]');
   const openingSlogan = document.querySelector('[data-demo-slogan]');
   const closingIcon = document.querySelector('[data-demo-floppy]');
-  const glitchFrame = document.querySelector('[data-demo-glitch-frame]');
   const closingIconDelay = 300;
-  const glitchInterval = 1100;
-  const glitchDelay = 220;
-  const glitchStepDuration = 40;
-  const glitchStepCount = 3;
   const closingUrl = document.querySelector('[data-demo-url]');
   const closingUrlLink = closingUrl.querySelector('[data-demo-url-link]');
   const closingUrlHref = closingUrlLink.getAttribute('data-demo-url-link');
@@ -60,7 +58,6 @@
   let startedAt = performance.now();
   let frame = null;
   let audioContext = null;
-  let floppySoundBuffer = null;
   let analyser = null;
   let masterGain = null;
   let playbackGain = null;
@@ -72,6 +69,43 @@
   let downloading = false;
   let downloadController = null;
   let downloadMessage = '';
+  let controlsTimer = null;
+
+  function closeControls() {
+    playbackControls.hidden = true;
+    moreButton.setAttribute('aria-expanded', 'false');
+  }
+
+  function showControls() {
+    controls.hidden = false;
+    clearTimeout(controlsTimer);
+    controlsTimer = setTimeout(() => {
+      if (controls.contains(document.activeElement) && document.activeElement.matches(':focus-visible')) return;
+      closeControls();
+      controls.hidden = true;
+    }, 3000);
+  }
+
+  moreButton.addEventListener('click', () => {
+    const expanded = playbackControls.hidden;
+    playbackControls.hidden = !expanded;
+    moreButton.setAttribute('aria-expanded', String(expanded));
+    showControls();
+  });
+  document.addEventListener('pointermove', showControls, { passive: true });
+  document.addEventListener('pointerdown', event => {
+    if (!controls.contains(event.target)) closeControls();
+    showControls();
+  }, { passive: true });
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape' && !playbackControls.hidden) {
+      closeControls();
+      moreButton.focus();
+    }
+    showControls();
+  });
+  controls.addEventListener('focusin', showControls);
+  controls.addEventListener('focusout', showControls);
 
   function currentPosition() {
     return playing ? position + performance.now() - startedAt : position;
@@ -249,45 +283,7 @@
     return input;
   }
 
-  function createFloppySoundBuffer() {
-    const sampleRate = audioContext.sampleRate;
-    const buffer = audioContext.createBuffer(1, Math.ceil(sampleRate * 1.6), sampleRate);
-    const samples = buffer.getChannelData(0);
-    let slowNoise = 0;
-    let fastNoise = 0;
-    for (let index = 0; index < samples.length; index += 1) {
-      const time = index / sampleRate;
-      const noise = Math.random() * 2 - 1;
-      slowNoise += 0.025 * (noise - slowNoise);
-      fastNoise += 0.22 * (noise - fastNoise);
-      const flutter = 0.78 + 0.12 * Math.sin(2 * Math.PI * 5 * time)
-        + 0.1 * Math.sin(2 * Math.PI * 97 * time);
-      const envelope = Math.min(1, time / 0.05, (1.6 - time) / 0.25);
-      samples[index] = ((fastNoise - slowNoise) * 0.035 + slowNoise * 0.055) * flutter * envelope;
-    }
-
-    return buffer;
-  }
-
-  function scheduleFloppySound(start, elapsed, audioNow) {
-    const offset = Math.max(0, elapsed - start) / 1000;
-    if (offset >= 1.6) return;
-    if (!floppySoundBuffer) floppySoundBuffer = createFloppySoundBuffer();
-    const when = audioNow + Math.max(0, start - elapsed) / 1000;
-    const remaining = floppySoundBuffer.duration - offset;
-    const source = audioContext.createBufferSource();
-    const envelope = audioContext.createGain();
-    source.buffer = floppySoundBuffer;
-    envelope.gain.setValueAtTime(0, when);
-    envelope.gain.linearRampToValueAtTime(1, when + Math.min(0.003, remaining / 2));
-    source.connect(envelope);
-    envelope.connect(playbackGain);
-    trackSource(source, [envelope]);
-    source.start(when, offset);
-    source.stop(when + remaining);
-  }
-
-  function scheduleGlitchClick(time, elapsed, audioNow) {
+  function scheduleBlinkClick(time, elapsed, audioNow) {
     if (time < elapsed) return;
     const event = window.playTransientSound({
       audioContext, destinationNode: playbackGain, tone: 'click',
@@ -307,7 +303,7 @@
     playbackGain.gain.linearRampToValueAtTime(1, audioNow + playbackFadeDuration);
     playbackGain.connect(analyser);
     playOpeningNote(elapsed);
-    logoBlinkTimes.forEach(time => scheduleGlitchClick(time, elapsed, audioNow));
+    logoBlinkTimes.forEach(time => scheduleBlinkClick(time, elapsed, audioNow));
     let start = 0;
     for (const slide of slides) {
       const end = start + Number(slide.dataset.duration);
@@ -323,11 +319,6 @@
             });
             trackSource(event.stopNode);
           }
-        } else if (slide.contains(closingIcon)) {
-          scheduleFloppySound(start + closingIconDelay, elapsed, audioNow);
-          for (let time = start + closingIconDelay + glitchDelay; time < end; time += glitchInterval) {
-            scheduleGlitchClick(time, elapsed, audioNow);
-          }
         } else if (slide.contains(platter)) {
           scheduleWindDown(start, end, elapsed, audioNow);
         } else if (slide.contains(tapFeedback) || slide.contains(noteStream) || slide.contains(pendulum)) {
@@ -337,8 +328,7 @@
           const destination = delayInput || (slide.contains(tapFeedback)
             ? createReverbInput((beatDuration + audioTailDuration) / 1000, 0.65)
             : playbackGain);
-          const beatWindowEnd = end + (slide.contains(pendulum) ? beatDuration : 0);
-          for (let beat = 0, time = start; time < beatWindowEnd; beat += 1, time += beatDuration) {
+          for (let beat = 0, time = start; time < end; beat += 1, time += beatDuration) {
             if (time < elapsed) continue;
             const when = audioNow + (time - elapsed) / 1000;
             if (slide.contains(tapFeedback)) {
@@ -399,8 +389,7 @@
 
   function render(elapsed) {
     let start = 0;
-    let showingTool = false;
-    let glitching = false;
+    const showingGrain = elapsed >= openingPartDuration && elapsed < openingPartDuration * 2;
     slides.forEach((slide, index) => {
       const end = start + Number(slide.dataset.duration);
       slide.hidden = !(elapsed >= start && (elapsed < end || index === slides.length - 1));
@@ -408,9 +397,6 @@
         const sceneTime = elapsed - start;
         if (slide.contains(closingIcon)) {
           closingIcon.style.opacity = sceneTime < closingIconDelay ? '0' : '1';
-          const glitchTime = (sceneTime - closingIconDelay) % glitchInterval;
-          const glitchStep = Math.floor((glitchTime - glitchDelay) / glitchStepDuration);
-          glitching = glitchStep >= 0 && glitchStep < glitchStepCount;
         }
         if (slide.contains(closingUrl)) {
           const characters = Math.min(closingUrlLabel.length, Math.floor(sceneTime / typingInterval));
@@ -435,7 +421,6 @@
         const beatPhase = (sceneTime % beatDuration) / beatDuration;
         const description = slide.querySelector('[data-demo-description]');
         if (description) {
-          showingTool = true;
           slide.querySelector('h1').style.visibility = sceneTime < descriptionDelay ? 'visible' : 'hidden';
           description.style.opacity = String(Math.max(0, Math.min(1,
             (sceneTime - descriptionDelay) / descriptionFadeDuration
@@ -474,11 +459,10 @@
       }
       start = end;
     });
-    glitchFrame.hidden = !glitching;
-    staticBackground.style.display = showingTool ? 'block' : 'none';
+    staticBackground.style.display = showingGrain ? 'block' : 'none';
     const noiseFrame = Math.floor(elapsed / 120);
     const noiseTransform = `translate(${noiseFrame * 73 % 320} ${noiseFrame * 137 % 320})`;
-    if (showingTool && staticNoise.getAttribute('patternTransform') !== noiseTransform) {
+    if (showingGrain && staticNoise.getAttribute('patternTransform') !== noiseTransform) {
       staticNoise.setAttribute('patternTransform', noiseTransform);
     }
     openingLogo.style.display = elapsed < openingPartDuration ? '' : 'none';
@@ -620,6 +604,7 @@
   document.addEventListener('fullscreenchange', updateControls);
 
   window.addEventListener('pagehide', () => {
+    clearTimeout(controlsTimer);
     downloadController?.abort();
     position = Math.min(duration, currentPosition());
     playing = false;
@@ -635,6 +620,7 @@
     updateControls();
   }, { once: true });
 
+  showControls();
   render(0);
   enableAudio();
   frame = requestAnimationFrame(tick);

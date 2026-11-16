@@ -233,7 +233,9 @@ test('demo presents the four official tools with only playback controls and clea
   assert.ok(metronomeSlide.indexOf(filledBase) > metronomeSlide.indexOf(pendulum) + pendulum.length);
   assert.ok(metronomeSlide.indexOf('data-demo-signature-beat') > metronomeSlide.indexOf(filledBase));
   const buttons = [...result.body.matchAll(/<button\b[^>]*aria-label="([^"]+)"[^>]*>/g)];
-  assert.deepEqual(buttons.map(([, label]) => label), ['Dark mode', 'Sound', 'Play', 'Loop', 'Download', 'Fullscreen']);
+  assert.deepEqual(buttons.map(([, label]) => label), ['More', 'Dark mode', 'Sound', 'Play', 'Loop', 'Download', 'Fullscreen']);
+  assert.match(result.body, /data-demo-more[^>]*aria-expanded="false"[^>]*aria-controls="demo-playback"/);
+  assert.match(result.body, /id="demo-playback"[^>]*hidden/);
   assert.match(result.body, /data-demo-dark-mode[^>]*title="Toggle dark mode"[^>]*>\s*<svg[^>]*><use href="\/icons\.svg#moon"/);
   assert.match(result.body, /data-demo-download[^>]*title="Download video with audio"/);
   assert.match(result.body, /src="\/js\/demo-video\.js\?v=/);

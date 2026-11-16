@@ -35,7 +35,8 @@ window.downloadDemoVideo = async ({ duration, audioContext, destinationNode, ren
   const screen = document.querySelector('.demo-screen');
   const background = document.querySelector('[data-demo-static]');
   const pattern = document.querySelector('[data-demo-noise]');
-  const glitch = document.querySelector('[data-demo-glitch-frame]');
+  const patternWidth = Number(pattern.getAttribute('width'));
+  const patternHeight = Number(pattern.getAttribute('height'));
 
   async function drawIcon(svg) {
     const style = getComputedStyle(svg);
@@ -117,18 +118,17 @@ window.downloadDemoVideo = async ({ duration, audioContext, destinationNode, ren
     render(elapsed);
     context.resetTransform();
     context.globalAlpha = 1;
-    context.fillStyle = glitch.hidden ? '#000' : getComputedStyle(glitch).backgroundColor;
+    context.fillStyle = '#000';
     context.fillRect(0, 0, canvas.width, canvas.height);
-    if (!glitch.hidden) return;
     if (background.style.display !== 'none') {
       const [offsetX, offsetY] = pattern.getAttribute('patternTransform').match(/\d+/g).map(Number);
       context.globalAlpha = Number(getComputedStyle(background).opacity);
       for (const grain of pattern.querySelectorAll('rect')) {
         context.fillStyle = getComputedStyle(grain).fill;
-        const x = (Number(grain.getAttribute('x')) + offsetX) % 320;
-        const y = (Number(grain.getAttribute('y')) + offsetY) % 320;
-        for (let left = x; left < canvas.width; left += 320) {
-          for (let top = y; top < canvas.height; top += 320) {
+        const x = (Number(grain.getAttribute('x')) + offsetX) % patternWidth;
+        const y = (Number(grain.getAttribute('y')) + offsetY) % patternHeight;
+        for (let left = x; left < canvas.width; left += patternWidth) {
+          for (let top = y; top < canvas.height; top += patternHeight) {
             context.fillRect(left, top, Number(grain.getAttribute('width')), Number(grain.getAttribute('height')));
           }
         }

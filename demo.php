@@ -13,14 +13,20 @@ $iconVersion = filemtime($_SERVER['DOCUMENT_ROOT'] . '/icons.svg');
 </head>
 
 <body class="demo-page">
-  <div class="demo-glitch-frame" data-demo-glitch-frame aria-hidden="true" hidden></div>
   <svg class="demo-static" data-demo-static aria-hidden="true">
     <defs>
-      <pattern id="demo-static-pattern" width="320" height="320" patternUnits="userSpaceOnUse" data-demo-noise>
-        <rect x="31" y="57" width="1" height="1" fill="var(--grey1)"></rect>
-        <rect x="243" y="197" width="1" height="1" fill="var(--grey2)"></rect>
-        <rect x="137" y="124" width="1" height="1" fill="var(--grey2)"></rect>
-        <rect x="79" y="276" width="2" height="1" fill="var(--grey1)"></rect>
+      <pattern id="demo-static-pattern" width="640" height="480" patternUnits="userSpaceOnUse" data-demo-noise>
+        <rect x="37" y="61" width="2" height="2" fill="var(--grey2)"></rect>
+        <rect x="59" y="74" width="1" height="1" fill="var(--grey1)"></rect>
+        <rect x="274" y="38" width="3" height="2" fill="var(--grey1)"></rect>
+        <rect x="489" y="183" width="2" height="1" fill="var(--grey2)"></rect>
+        <rect x="511" y="201" width="2" height="2" fill="var(--grey1)"></rect>
+        <rect x="176" y="318" width="1" height="1" fill="var(--grey2)"></rect>
+        <rect x="398" y="429" width="2" height="3" fill="var(--grey1)"></rect>
+        <rect x="604" y="397" width="2" height="2" fill="var(--grey2)"></rect>
+        <rect x="108" y="237" width="4" height="1" fill="var(--grey1)"></rect>
+        <rect x="353" y="126" width="6" height="1" fill="var(--grey2)"></rect>
+        <rect x="547" y="342" width="1" height="4" fill="var(--grey1)"></rect>
       </pattern>
     </defs>
     <rect width="100%" height="100%" fill="url(#demo-static-pattern)"></rect>
@@ -50,7 +56,7 @@ $iconVersion = filemtime($_SERVER['DOCUMENT_ROOT'] . '/icons.svg');
           <p data-demo-description>For tapping tempo.</p>
         </div>
       </section>
-      <section class="demo-slide" data-demo-slide data-duration="6000" aria-labelledby="demo-bpm-calculator" hidden>
+      <section class="demo-slide" data-demo-slide data-duration="4000" aria-labelledby="demo-bpm-calculator" hidden>
         <svg class="demo-icon" viewBox="0 0 512 512" aria-hidden="true">
           <defs>
             <clipPath id="demo-calculator-display"><rect x="104" y="48" width="304" height="256"></rect></clipPath>
@@ -155,25 +161,30 @@ $iconVersion = filemtime($_SERVER['DOCUMENT_ROOT'] . '/icons.svg');
         <p class="demo-tagline demo-url" data-demo-url aria-label="pekosoft.net"><a class="demo-url-typing" data-demo-url-link="/" aria-label="pekosoft.net"><span data-demo-url-text aria-hidden="true"></span><span class="demo-caret" data-demo-url-caret aria-hidden="true"></span></a></p>
       </section>
     </div>
-    <div class="demo-controls" role="group" aria-label="Playback">
-      <button class="square icon-only" type="button" data-demo-dark-mode aria-label="Dark mode" title="Toggle dark mode" aria-pressed="true">
-        <svg class="icons" aria-hidden="true"><use href="/icons.svg#moon"></use></svg>
+    <div class="demo-controls" data-demo-controls>
+      <button class="square icon-only" type="button" data-demo-more aria-label="More" title="Toggle playback controls" aria-expanded="false" aria-controls="demo-playback">
+        <svg class="icons" aria-hidden="true"><use href="/icons.svg#more"></use></svg>
       </button>
-      <button class="square icon-only" type="button" data-demo-sound aria-label="Sound" title="Toggle sound" aria-pressed="true">
-        <svg class="icons" aria-hidden="true"><use href="/icons.svg#sound"></use></svg>
-      </button>
-      <button class="square icon-only" type="button" data-demo-play aria-label="Play" title="Toggle playback" aria-pressed="true">
-        <svg class="icons" aria-hidden="true"><use href="/icons.svg#play"></use></svg>
-      </button>
-      <button class="square icon-only" type="button" data-demo-loop aria-label="Loop" title="Toggle loop" aria-pressed="false">
-        <svg class="icons" aria-hidden="true"><use href="/icons.svg#loop"></use></svg>
-      </button>
-      <button class="square icon-only" type="button" data-demo-download aria-label="Download" title="Download video with audio">
-        <svg class="icons" aria-hidden="true"><use href="/icons.svg#download"></use></svg>
-      </button>
-      <button class="square icon-only" type="button" data-demo-fullscreen aria-label="Fullscreen" title="Toggle full screen" aria-pressed="false">
-        <svg class="icons" aria-hidden="true"><use href="/icons.svg#full_screen"></use></svg>
-      </button>
+      <div class="demo-playback" id="demo-playback" data-demo-playback role="group" aria-label="Playback" hidden>
+        <button class="square icon-only" type="button" data-demo-dark-mode aria-label="Dark mode" title="Toggle dark mode" aria-pressed="true">
+          <svg class="icons" aria-hidden="true"><use href="/icons.svg#moon"></use></svg>
+        </button>
+        <button class="square icon-only" type="button" data-demo-sound aria-label="Sound" title="Toggle sound" aria-pressed="true">
+          <svg class="icons" aria-hidden="true"><use href="/icons.svg#sound"></use></svg>
+        </button>
+        <button class="square icon-only" type="button" data-demo-play aria-label="Play" title="Toggle playback" aria-pressed="true">
+          <svg class="icons" aria-hidden="true"><use href="/icons.svg#play"></use></svg>
+        </button>
+        <button class="square icon-only" type="button" data-demo-loop aria-label="Loop" title="Toggle loop" aria-pressed="false">
+          <svg class="icons" aria-hidden="true"><use href="/icons.svg#loop"></use></svg>
+        </button>
+        <button class="square icon-only" type="button" data-demo-download aria-label="Download" title="Download video with audio">
+          <svg class="icons" aria-hidden="true"><use href="/icons.svg#download"></use></svg>
+        </button>
+        <button class="square icon-only" type="button" data-demo-fullscreen aria-label="Fullscreen" title="Toggle full screen" aria-pressed="false">
+          <svg class="icons" aria-hidden="true"><use href="/icons.svg#full_screen"></use></svg>
+        </button>
+      </div>
     </div>
     <p class="demo-status" data-demo-status role="status" aria-live="polite"></p>
     <noscript>Enable JavaScript to play the demo.</noscript>

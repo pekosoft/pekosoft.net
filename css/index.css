@@ -794,7 +794,7 @@ html.modules-page body:not(.layout-two-columns) {
   align-content: stretch;
   gap: 4px;
   overflow: auto;
-  background-color: var(--grey1);
+  background-color: var(--black);
   box-sizing: border-box;
 }
 
@@ -802,6 +802,7 @@ html.modules-page body:not(.layout-two-columns) {
   display: flex;
   min-height: 180px;
   background-color: var(--black);
+  box-shadow: 0 0 0 4px var(--grey1);
 }
 
 #meters-container.meters-all-mode .meter-frame.meter-disabled {

@@ -1339,13 +1339,12 @@ li h1 img {
 }
 
 .index-page .releases {
-  grid-template-columns: minmax(0, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .index-demo {
   margin-top: 0;
   padding: 0;
-  container-type: inline-size;
 }
 
 .index-demo iframe {
@@ -1371,18 +1370,6 @@ li h1 img {
   margin: 8px 0 0;
   color: var(--white);
   font-weight: normal;
-}
-
-@container (max-width: 600px) {
-  .index-demo iframe {
-    aspect-ratio: 4 / 5;
-  }
-}
-
-@container site-content (min-width: 520px) {
-  .index-page .releases {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
 }
 
 @container site-content (min-width: 1040px) {

@@ -56,7 +56,7 @@ $embedded = ($_GET['embedded'] ?? '') === '1';
             </mask>
           </defs>
           <use href="/icons.svg?v=<?php echo $iconVersion; ?>#tap_pad" mask="url(#demo-tap-hand)"></use>
-          <circle class="demo-feedback" data-demo-tap cx="209.179" cy="80.782" r="92"></circle>
+          <circle class="demo-feedback" data-demo-tap cx="209.179" cy="80.782" r="88"></circle>
         </svg>
         <div class="demo-caption">
           <h1 id="demo-tap-pad">Tap Pad</h1>

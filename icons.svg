@@ -269,9 +269,7 @@
   <path fill-rule="evenodd" d="M104 0h304a40 40 0 0 1 40 40v432a40 40 0 0 1-40 40H104a40 40 0 0 1-40-40V40a40 40 0 0 1 40-40ZM104 32a8 8 0 0 0-8 8v432a8 8 0 0 0 8 8h304a8 8 0 0 0 8-8V40a8 8 0 0 0-8-8Z" />
   <path d="M96 320h320v32H96ZM192 352h16v128h-16ZM304 352h16v128h-16Z" />
   <path d="M132 380h24v24h24v24h-24v24h-24v-24h-24v-24h24ZM224 404h64v24h-64ZM336 380h64v24h-64ZM336 428h64v24h-64Z" />
-  <path d="M192 80h160v160h-24V104H216v136h-24Z" />
-  <ellipse cx="184" cy="240" rx="32" ry="24" transform="rotate(-20 184 240)" />
-  <ellipse cx="320" cy="240" rx="32" ry="24" transform="rotate(-20 320 240)" />
+  <path d="M192 80H351.170402V235.380732A32 24 -20 1 1 328 215.001004V104H215.170402V235.380732A32 24 -20 1 1 192 215.001004V80Z" />
 </symbol>
 
 <symbol id="bpm_circle" viewBox="0 0 512 512">
@@ -1261,8 +1259,7 @@
 </symbol>
 
 <symbol id="lock" viewBox="0 0 512 512">
-  <path d="M128 224v-48a128 128 0 0 1 256 0v48h-48v-48a80 80 0 0 0-160 0v48h-48Z" />
-  <path d="M96 224h320v240H96V224Z" />
+  <path fill-rule="evenodd" d="M96 224h32v-48a128 128 0 0 1 256 0v48h32v240H96V224ZM176 224h160v-48a80 80 0 0 0-160 0v48Z" />
 </symbol>
 
 <symbol id="loop" viewBox="0 0 512 512">

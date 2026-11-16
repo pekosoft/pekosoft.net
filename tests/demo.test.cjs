@@ -9,7 +9,7 @@ const script = fs.readFileSync(path.join(__dirname, '..', 'js', 'demo.js'), 'utf
 const audioScript = fs.readFileSync(path.join(__dirname, '..', 'js', 'audio.js'), 'utf8');
 const template = fs.readFileSync(path.join(__dirname, '..', 'demo.php'), 'utf8');
 
-function createDemo({ blocked = false, embedded = false, fullscreenFailure = false, theme = 'dark', random = Math.random } = {}) {
+function createDemo({ blocked = false, embedded = false, fullscreenFailure = false, theme = 'dark', random = Math.random, audioRate = 1, outputLatency = 0 } = {}) {
   let now = 0;
   let nextFrame = 0;
   const frames = new Map();
@@ -134,7 +134,10 @@ function createDemo({ blocked = false, embedded = false, fullscreenFailure = fal
       this.sampleRate = 48000;
       contexts.push(this);
     }
-    get currentTime() { return now / 1000; }
+    get currentTime() { return now / 1000 * audioRate; }
+    getOutputTimestamp() {
+      return { contextTime: Math.max(0, this.currentTime - outputLatency), performanceTime: now };
+    }
     createAnalyser() { this.analyser = node(); return this.analyser; }
     createGain() {
       const gain = node();
@@ -284,10 +287,10 @@ test('embedded Demo waits for Play without audio or progress, then supports paus
   assert.equal(demo.play.attributes['aria-pressed'], 'true');
   assert.ok(demo.contexts[0].sources.length > 0);
   demo.advance(150);
-  assert.equal(demo.slides[0].style.opacity, '0.5');
+  assert.ok(Math.abs(Number(demo.slides[0].style.opacity) - 0.5) < 1e-9);
   demo.play.click();
   demo.advance(10000);
-  assert.equal(demo.slides[0].style.opacity, '0.5');
+  assert.ok(Math.abs(Number(demo.slides[0].style.opacity) - 0.5) < 1e-9);
   assert.equal(demo.start.hidden, true);
   demo.play.click();
   demo.advance(150);
@@ -399,7 +402,7 @@ test('video download explicitly rejects unsupported recording without starting c
   await assert.rejects(window.downloadDemoVideo({}), /does not support video downloads/);
 });
 
-test('sparse background grains animate only during the product description card and freeze when paused', () => {
+test('sparse background grains repeat during the floppy scene and freeze when paused', () => {
   const demo = createDemo();
   assert.equal(demo.staticBackground.style.display, 'none');
   demo.advance(2999);
@@ -423,9 +426,21 @@ test('sparse background grains animate only during the product description card 
     assert.equal(demo.staticBackground.style.display, 'none');
     demo.advance(duration);
   }
+  assert.equal(demo.staticBackground.style.display, 'block');
+  const floppyFrame = demo.staticNoise.getAttribute('patternTransform');
+  demo.advance(120);
+  const nextFloppyFrame = demo.staticNoise.getAttribute('patternTransform');
+  assert.notEqual(nextFloppyFrame, floppyFrame);
+  demo.play.click();
+  demo.advance(1000);
+  assert.equal(demo.staticBackground.style.display, 'block');
+  assert.equal(demo.staticNoise.getAttribute('patternTransform'), nextFloppyFrame);
+  demo.play.click();
+  demo.advance(2180);
+  assert.equal(demo.active(), 6);
   assert.equal(demo.staticBackground.style.display, 'none');
   const closingFrame = demo.staticNoise.getAttribute('patternTransform');
-  demo.advance(12300);
+  demo.advance(9000);
   assert.equal(demo.staticBackground.style.display, 'none');
   assert.equal(demo.staticNoise.getAttribute('patternTransform'), closingFrame);
   demo.play.click();
@@ -738,7 +753,7 @@ test('opening logo briefly blinks twice and freezes its blink when paused', () =
   assert.equal(demo.openingSlogan.hidden, false);
 });
 
-test('floppy waits 300 ms after Turntable and yields to the next content when its zoom ends', () => {
+test('floppy fades in after 300 ms, pauses mid-fade and yields when its zoom ends', () => {
   const demo = createDemo();
   demo.advance(22999);
   assert.equal(demo.active(), 4);
@@ -752,8 +767,16 @@ test('floppy waits 300 ms after Turntable and yields to the next content when it
   assert.equal(demo.closingIcon.style.opacity, '0');
   demo.play.click();
   demo.advance(1);
+  assert.equal(demo.closingIcon.style.opacity, '0');
+  demo.advance(75);
+  assert.equal(demo.closingIcon.style.opacity, '0.5');
+  demo.play.click();
+  demo.advance(1000);
+  assert.equal(demo.closingIcon.style.opacity, '0.5');
+  demo.play.click();
+  demo.advance(75);
   assert.equal(demo.closingIcon.style.opacity, '1');
-  demo.advance(1999);
+  demo.advance(1849);
   assert.equal(demo.active(), 5);
   demo.advance(1);
   assert.equal(demo.active(), 6);
@@ -974,12 +997,12 @@ test('Replay restarts playing, paused and finished demos without changing settin
       assert.ok(sources.every(source => Math.abs(source.stops.at(-1) - 8.02) < 1e-9));
     }
     demo.advance(150);
-    assert.equal(demo.slides[0].style.opacity, '0.5');
+    assert.ok(Math.abs(Number(demo.slides[0].style.opacity) - 0.5) < 1e-9);
     assert.deepEqual(demo.errors, []);
   }
 });
 
-test('closing URL becomes clickable after its caret and turns blue later, including pause and restart', () => {
+test('closing URL becomes clickable only when it turns blue, including pause and restart', () => {
   const demo = createDemo();
   demo.advance(30300);
   assert.equal(demo.active(), 11);
@@ -1015,15 +1038,18 @@ test('closing URL becomes clickable after its caret and turns blue later, includ
   assert.equal(demo.closingUrlLink.attributes.href, undefined);
   demo.advance(1);
   assert.equal(demo.closingUrlCaret.style.visibility, 'hidden');
-  assert.equal(demo.closingUrlLink.attributes.href, '/');
+  assert.equal(demo.closingUrlLink.attributes.href, undefined);
   assert.equal(demo.closingUrlLink.attributes['data-demo-url-color'], undefined);
   demo.advance(199);
+  assert.equal(demo.closingUrlLink.attributes.href, undefined);
   assert.equal(demo.closingUrlLink.attributes['data-demo-url-color'], undefined);
   demo.play.click();
   demo.advance(1000);
+  assert.equal(demo.closingUrlLink.attributes.href, undefined);
   assert.equal(demo.closingUrlLink.attributes['data-demo-url-color'], undefined);
   demo.play.click();
   demo.advance(1);
+  assert.equal(demo.closingUrlLink.attributes.href, '/');
   assert.equal(demo.closingUrlLink.attributes['data-demo-url-color'], '');
   demo.advance(1720);
   assert.equal(demo.play.attributes['aria-pressed'], 'false');
@@ -1102,27 +1128,90 @@ test('blocked audio does not stall autoplay and pausing before resume prevents a
   assert.equal(demo.play.attributes['aria-pressed'], 'false');
 });
 
+test('Tap Pad starts on its first audible kick and stays synchronized despite clock drift and output latency', async () => {
+  for (const { audioRate, outputLatency, timestamps } of [
+    { audioRate: 1.02, outputLatency: 0.08, timestamps: true },
+    { audioRate: 0.98, outputLatency: 0, timestamps: false }
+  ]) {
+    const demo = createDemo({ audioRate, outputLatency });
+    await settleAudio();
+    const context = demo.contexts[0];
+    if (!timestamps) context.getOutputTimestamp = undefined;
+    const kicks = context.oscillators.filter(source => source.type === 'sine'
+      && source.frequency.events[0]?.value === 48 * 3.1);
+    assert.equal(kicks.length, 8);
+    demo.advance((kicks[0].startTime + outputLatency) * 1000 / audioRate - 1);
+    assert.equal(demo.active(), 0);
+    demo.advance(1.001);
+    for (let beat = 0; beat < kicks.length; beat += 1) {
+      if (beat) demo.advance(500 / audioRate);
+      assert.equal(demo.active(), 1);
+      assert.equal(demo.parts[0].style.visibility, 'visible');
+      assert.ok(Math.abs(Number(demo.parts[0].attributes.r) - 88) < 0.001);
+      assert.equal(kicks[beat].startTime, 6 + beat * 0.5);
+    }
+    assert.deepEqual(demo.errors, []);
+  }
+});
+
+test('resuming Tap Pad preserves its phase until the resumed sound reaches the output', async () => {
+  const audioRate = 1.02;
+  const outputLatency = 0.08;
+  const demo = createDemo({ audioRate, outputLatency });
+  await settleAudio();
+  demo.advance((6.09 + outputLatency) * 1000 / audioRate);
+  assert.ok(Math.abs(Number(demo.parts[0].attributes.r) - 106) < 0.001);
+  demo.play.click();
+  demo.advance(1000);
+  assert.ok(Math.abs(Number(demo.parts[0].attributes.r) - 106) < 0.001);
+  const context = demo.contexts[0];
+  const count = context.sources.length;
+  demo.play.click();
+  await settleAudio();
+  const kicks = context.sources.slice(count).filter(source => source.type === 'sine'
+    && source.frequency.events[0]?.value === 48 * 3.1);
+  assert.equal(kicks.length, 7);
+  assert.ok(Math.abs(kicks[0].startTime - context.currentTime - 0.41) < 0.00001);
+  demo.advance(outputLatency * 1000 / audioRate - 1);
+  assert.ok(Math.abs(Number(demo.parts[0].attributes.r) - 106) < 0.001);
+  demo.advance(1 + 45 / audioRate);
+  assert.ok(Math.abs(Number(demo.parts[0].attributes.r) - 115) < 0.001);
+  assert.equal(demo.parts[0].style.visibility, 'visible');
+  assert.deepEqual(demo.errors, []);
+});
+
 test('icon feedback follows the beat, calculator notes scroll, and Turntable winds down', () => {
   const demo = createDemo();
   const [tap, notes, pendulum, platter] = demo.parts;
   demo.advance(6000);
-  assert.equal(tap.attributes.r, '92');
+  assert.equal(tap.attributes.r, '88');
+  assert.equal(tap.style.visibility, 'visible');
   assert.equal(Number(tap.style.opacity ?? 1), 1);
-  demo.advance(125);
-  assert.equal(Number(tap.attributes.r), 99);
+  demo.advance(90);
+  assert.equal(Number(tap.attributes.r), 106);
+  assert.equal(tap.style.visibility, 'visible');
   assert.equal(Number(tap.style.opacity ?? 1), 1);
   demo.play.click();
   demo.advance(1000);
-  assert.equal(Number(tap.attributes.r), 99);
+  assert.equal(Number(tap.attributes.r), 106);
   demo.play.click();
-  demo.advance(250);
-  assert.equal(Number(tap.attributes.r), 113);
-  assert.equal(Number(tap.style.opacity ?? 1), 1);
-  demo.advance(124);
-  assert.ok(Number(tap.attributes.r) > 119);
+  demo.advance(89);
+  assert.ok(Number(tap.attributes.r) > 123);
+  assert.equal(tap.style.visibility, 'visible');
   assert.equal(Number(tap.style.opacity ?? 1), 1);
   demo.advance(1);
-  assert.equal(Number(tap.attributes.r), 92);
+  assert.equal(Number(tap.attributes.r), 124);
+  assert.equal(tap.style.visibility, 'hidden');
+  assert.equal(Number(tap.style.opacity ?? 1), 1);
+  demo.play.click();
+  demo.advance(1000);
+  assert.equal(tap.style.visibility, 'hidden');
+  demo.play.click();
+  demo.advance(319);
+  assert.equal(tap.style.visibility, 'hidden');
+  demo.advance(1);
+  assert.equal(Number(tap.attributes.r), 88);
+  assert.equal(tap.style.visibility, 'visible');
   assert.equal(Number(tap.style.opacity ?? 1), 1);
   demo.advance(3500);
   assert.equal(demo.active(), 2);
@@ -1283,7 +1372,7 @@ test('resuming in Turntable does not schedule a metronome tail', async () => {
   assert.equal(resumedEchoes.length, 0);
 });
 
-test('Turntable adds quiet sparse crackle that follows its envelope, resumes in place and stops with the platter', async () => {
+test('Turntable mixes sparse crackle independently of its quieter tone, resumes in place and stops with the platter', async () => {
   const demo = createDemo({ random: () => 0.75 });
   await settleAudio();
   const context = demo.contexts[0];
@@ -1294,13 +1383,13 @@ test('Turntable adds quiet sparse crackle that follows its envelope, resumes in 
   assert.equal(crackle.offset, 0);
   const samples = crackle.buffer.getChannelData(0);
   assert.ok(samples.some(value => value !== 0));
-  assert.ok(samples.every(value => Math.abs(value) <= 0.15));
-  assert.ok(samples.some(value => Math.abs(value) > 0.07));
+  assert.ok(samples.every(value => Math.abs(value) <= 0.12));
+  assert.ok(samples.some(value => Math.abs(value) > 0.055));
   assert.ok(samples.filter(value => value !== 0).length < samples.length * 0.05);
   const filter = crackle.outputs[0];
   assert.equal(filter.type, 'lowpass');
   assert.equal(filter.frequency.value, 3500);
-  assert.equal(filter.outputs[0], wind.outputs[0].outputs[0]);
+  assert.equal(filter.outputs[0], wind.outputs[0].outputs[0].outputs[0]);
   demo.advance(21000);
   demo.play.click();
   assert.equal(crackle.stopTime, 21.02);
@@ -1330,6 +1419,7 @@ test('tool tails overlap transitions without adding beats or delaying the scenes
   const toolReverbs = context.convolvers.filter(reverb => reverb.buffer.duration > 1);
   assert.equal(toolReverbs.length, 1);
   for (const reverb of toolReverbs) {
+    assert.equal(reverb.outputs[0].gain.value, 0.5);
     const samples = reverb.buffer.getChannelData(0);
     assert.ok(Math.abs(samples.length / context.sampleRate - 1.1) < 0.0001);
     assert.ok(samples.slice(-4800).some(value => Math.abs(value) > 0.001));
@@ -1337,9 +1427,9 @@ test('tool tails overlap transitions without adding beats or delaying the scenes
   const wet = context.delays[0].outputs[1];
   assert.deepEqual(wet.gain.events.at(-1), { value: 0, time: 14.6 });
   const wind = context.oscillators.find(source => source.type === 'sawtooth');
-  assert.equal(wind.outputs[0].outputs[0].gain.events[1].value, 0.1);
+  assert.equal(wind.outputs[0].outputs[0].gain.events[1].value, 0.04);
   assert.deepEqual(wind.outputs[0].outputs[0].gain.events.slice(-2), [
-    { value: 0.1, time: 21.8 },
+    { value: 0.04, time: 21.8 },
     { value: 0, time: 23.6 }
   ]);
   for (const [time, slide] of [[10000, 2], [14000, 3], [18000, 4], [23000, 5]]) {
@@ -1373,7 +1463,7 @@ test('resuming during the wind-down tail preserves its stopped pitch and remaini
       assert.equal(wind.stopTime, 23.6);
       assert.equal(wind.frequency.events[0].value, 0);
       const envelope = wind.outputs[0].outputs[0].gain.events;
-      assert.ok(Math.abs(envelope[1].value - 0.0125) < 0.00001);
+      assert.ok(Math.abs(envelope[1].value - 0.005) < 0.00001);
       assert.deepEqual(envelope.at(-1), { value: 0, time: 23.6 });
     }
     assert.deepEqual(demo.errors, []);

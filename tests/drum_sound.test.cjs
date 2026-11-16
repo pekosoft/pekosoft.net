@@ -21,7 +21,7 @@ function createAudio() {
       kind,
       connections: [],
       gain: parameter(),
-      frequency: parameter(),
+      frequency: { ...parameter(), value: 440 },
       Q: parameter(),
       pan: parameter(),
       connect(target) { this.connections.push(target); },
@@ -129,6 +129,20 @@ test('PERC limits brightness below Nyquist at lower sample rates', () => {
   play({ voice: 'perc', tone: 1 });
   const lowPass = nodes.find(node => node.kind === 'filter' && node.type === 'lowpass');
   assert.equal(lowPass.frequency.events[0][1], 22050 * 0.45);
+});
+
+test('scheduled kicks initialize their attack pitch consistently across repeated hits', () => {
+  for (const [frequency, tone] of [[48, 0.5], [55, 0], [90, 1]]) {
+    const { play } = createAudio();
+    for (const when of [6.001, 6.501]) {
+      const hit = play({ voice: 'kick', when, frequency, tone, decay: 0.3 });
+      const oscillator = hit.sources[0];
+      assert.equal(oscillator.frequency.value, oscillator.frequency.events[0][1]);
+      assert.equal(oscillator.frequency.events[0][2], when);
+      assert.deepEqual(oscillator.frequency.events[1], ['exponential', frequency, when + 0.09]);
+      assert.deepEqual(oscillator.started, [when]);
+    }
+  }
 });
 
 test('other drum voices keep their source types and default durations', () => {

@@ -157,9 +157,12 @@
       const oscillator = audioContext.createOscillator();
       const envelope = audioContext.createGain();
       const clickLevel = clampDrumValue(tone, 0, 1, 0.5);
+      const attackFrequency = baseFrequency * (2.6 + clickLevel);
 
       oscillator.type = "sine";
-      oscillator.frequency.setValueAtTime(baseFrequency * (2.6 + clickLevel), startTime);
+      // Avoid render-block-dependent phase shifts before the scheduled attack.
+      oscillator.frequency.value = attackFrequency;
+      oscillator.frequency.setValueAtTime(attackFrequency, startTime);
       oscillator.frequency.exponentialRampToValueAtTime(baseFrequency, startTime + Math.min(0.09, duration * 0.35));
       envelope.gain.setValueAtTime(1, startTime);
       envelope.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);

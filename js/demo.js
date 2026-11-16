@@ -20,6 +20,7 @@
   const openingSlogan = document.querySelector('[data-demo-slogan]');
   const closingIcon = document.querySelector('[data-demo-floppy]');
   const closingIconDelay = 300;
+  const closingIconFadeDuration = 150;
   const closingIconHoldDuration = 1000;
   const closingIconZoomDuration = 1000;
   const closingUrl = document.querySelector('[data-demo-url]');
@@ -49,10 +50,11 @@
   const noteScrollDuration = 5000;
   const noteScrollDistance = 1280;
   const beatDuration = 60000 / 120;
+  const tapFeedbackDuration = 180;
   const audioTailDuration = 600;
   const platterRpm = 100 / 3;
   const platterFrequency = 65.4064;
-  const platterGain = 0.1;
+  const platterGain = 0.04;
   const platterStartDuration = 1000;
   const platterStopDuration = 2000;
   const playbackFadeDuration = 0.02;
@@ -69,6 +71,7 @@
   let masterGain = null;
   let playbackGain = null;
   let playbackStartedAt = 0;
+  let playbackPosition = 0;
   let audioScheduled = false;
   let audioRequest = 0;
   let audioError = '';
@@ -117,7 +120,15 @@
   controls.addEventListener('focusout', showControls);
 
   function currentPosition() {
-    return playing ? position + performance.now() - startedAt : position;
+    if (!playing) return position;
+    if (audioScheduled && audioContext.state === 'running') {
+      const timestamp = audioContext.getOutputTimestamp?.();
+      const audioTime = timestamp?.performanceTime > 0
+        ? timestamp.contextTime + (performance.now() - timestamp.performanceTime) / 1000
+        : audioContext.currentTime;
+      return Math.max(position, playbackPosition + (audioTime - playbackStartedAt) * 1000);
+    }
+    return position + performance.now() - startedAt;
   }
 
   function getOpeningOpacity(elapsed, fadeDuration = openingDuration, fadeOutDuration = logoFadeOutDuration) {
@@ -272,7 +283,7 @@
       while (index < samples.length) {
         const { speedRatio } = getPlatterMotion(index / audioContext.sampleRate * 1000, end - start);
         for (let sample = 0; sample < burstLength && index + sample < samples.length; sample += 1) {
-          samples[index + sample] = (Math.random() * 2 - 1) * 0.15 * speedRatio * Math.exp(-6 * sample / burstLength);
+          samples[index + sample] = (Math.random() * 2 - 1) * 0.12 * speedRatio * Math.exp(-6 * sample / burstLength);
         }
         index += Math.ceil(audioContext.sampleRate * (0.035 + Math.random() * 0.09) / Math.max(speedRatio, 0.1));
       }
@@ -282,7 +293,7 @@
       crackleFilter.type = 'lowpass';
       crackleFilter.frequency.value = 3500;
       crackle.connect(crackleFilter);
-      crackleFilter.connect(envelope);
+      crackleFilter.connect(playbackGain);
       trackSource(crackle, [crackleFilter]);
       crackle.start(when, offset / 1000);
       crackle.stop(when + (end - start - offset) / 1000);
@@ -364,6 +375,7 @@
     const audioNow = audioContext.currentTime;
     playbackGain = audioContext.createGain();
     playbackStartedAt = audioNow;
+    playbackPosition = elapsed;
     playbackGain.gain.setValueAtTime(0, audioNow);
     playbackGain.gain.linearRampToValueAtTime(1, audioNow + playbackFadeDuration);
     playbackGain.connect(analyser);
@@ -395,7 +407,7 @@
             ? createTripletDelay(audioNow + (end + audioTailDuration - elapsed) / 1000)
             : null;
           const destination = delayInput || (slide.contains(tapFeedback)
-            ? createReverbInput((beatDuration + audioTailDuration) / 1000, 0.65)
+            ? createReverbInput((beatDuration + audioTailDuration) / 1000, 0.5)
             : playbackGain);
           for (let beat = 0, time = start; time < end; beat += 1, time += beatDuration) {
             if (time < elapsed) continue;
@@ -458,14 +470,17 @@
 
   function render(elapsed) {
     let start = 0;
-    const showingGrain = elapsed >= openingPartDuration && elapsed < openingPartDuration * 2;
+    let showingGrain = elapsed >= openingPartDuration && elapsed < openingPartDuration * 2;
     slides.forEach((slide, index) => {
       const end = start + Number(slide.dataset.duration);
       slide.hidden = !(elapsed >= start && (elapsed < end || index === slides.length - 1));
       if (!slide.hidden) {
         const sceneTime = elapsed - start;
         if (slide.contains(closingIcon)) {
-          closingIcon.style.opacity = sceneTime < closingIconDelay ? '0' : '1';
+          showingGrain = true;
+          closingIcon.style.opacity = String(Math.max(0, Math.min(1,
+            (sceneTime - closingIconDelay) / closingIconFadeDuration
+          )));
           const zoomStart = closingIconDelay + closingIconHoldDuration;
           const progress = Math.max(0, Math.min(1, (sceneTime - zoomStart) / closingIconZoomDuration));
           closingIcon.style.transform = `scale(${64 ** progress})`;
@@ -475,14 +490,11 @@
           closingUrlText.textContent = closingUrlLabel.slice(0, characters);
           const caretTime = sceneTime - closingUrlLabel.length * typingInterval;
           const caretFinishedTime = caretBlinkInterval * 4;
-          if (caretTime >= caretFinishedTime) {
-            closingUrlLink.setAttribute('href', closingUrlHref);
-          } else {
-            closingUrlLink.removeAttribute('href');
-          }
           if (caretTime >= caretFinishedTime + closingUrlColorDelay) {
+            closingUrlLink.setAttribute('href', closingUrlHref);
             closingUrlLink.setAttribute('data-demo-url-color', '');
           } else {
+            closingUrlLink.removeAttribute('href');
             closingUrlLink.removeAttribute('data-demo-url-color');
           }
           const caretVisible = caretTime < 0 || (
@@ -490,7 +502,6 @@
           );
           closingUrlCaret.style.visibility = caretVisible ? 'visible' : 'hidden';
         }
-        const beatPhase = (sceneTime % beatDuration) / beatDuration;
         const description = slide.querySelector('[data-demo-description]');
         if (description) {
           slide.querySelector('h1').style.visibility = sceneTime < descriptionDelay ? 'visible' : 'hidden';
@@ -508,7 +519,9 @@
           pointIcon.style.opacity = String(entrance - exit);
         }
         if (slide.contains(tapFeedback)) {
-          tapFeedback.setAttribute('r', String(92 + 28 * beatPhase));
+          const feedbackTime = sceneTime % beatDuration;
+          tapFeedback.style.visibility = feedbackTime < tapFeedbackDuration ? 'visible' : 'hidden';
+          tapFeedback.setAttribute('r', String(88 + 36 * Math.min(1, feedbackTime / tapFeedbackDuration)));
         }
         if (slide.contains(noteStream)) {
           const progress = (sceneTime % noteScrollDuration) / noteScrollDuration;

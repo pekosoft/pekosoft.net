@@ -180,7 +180,7 @@
 }
 
 .demo-slide [data-demo-description] {
-  color: var(--color2);
+  color: #fff;
   opacity: 0;
 }
 
@@ -252,45 +252,5 @@
   .demo-controls,
   .demo-playback {
     gap: 4px;
-  }
-
-  .demo-main {
-    width: min(100%, calc((100dvh - 140px) * 4 / 5 + 32px));
-  }
-
-  .demo-embedded .demo-main {
-    width: min(100%, calc(100dvh * 4 / 5));
-  }
-
-  .demo-screen {
-    aspect-ratio: 4 / 5;
-  }
-
-  .demo-icon {
-    width: 30cqw;
-    height: 30cqw;
-  }
-
-  .demo-slide:has(.demo-caption) .demo-icon {
-    width: 42cqw;
-    height: 42cqw;
-  }
-
-  .demo-icon[data-demo-floppy] {
-    width: 56cqw;
-    height: 56cqw;
-  }
-
-  .demo-logo {
-    width: 90%;
-  }
-
-  .demo-slide h1 {
-    font-size: 8cqw;
-  }
-
-  .demo-slide p,
-  .demo-slide .demo-tagline {
-    font-size: 5cqw;
   }
 }

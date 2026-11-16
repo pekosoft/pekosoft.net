@@ -41,6 +41,7 @@ function createRenderer(mode, savedSettings = {}, href = 'https://pekosoft.net/r
   const table = element();
   const elements = new Map();
   const document = {
+    title: 'Pekosoft',
     getElementById(id) {
       if (!elements.has(id)) {
         const node = element();

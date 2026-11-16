@@ -55,6 +55,10 @@ Pekosoft is built around a clear set of values:
 
 ## Brand voice
 
+Use `Pekosoft` as the front page's HTML title and `Pekosoft - Page` on other
+pages, including `Pekosoft - Tap Pad`. Keep Open Graph titles in the same
+brand-first order. This title convention applies to every registered site.
+
 Use **Free online audio tools.** as Pekosoft's sole product description in site metadata, sharing previews and introductory copy. Keep functional descriptions of individual tools. General Help introduces the site with: "Pekosoft is free online audio tools. Have fun with Metronome, BPM Calculator, Tap Pad and Turntable."
 
 We are:

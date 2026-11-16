@@ -1760,7 +1760,7 @@ html.invert-colors .container:fullscreen {
   flex-shrink: 0;
 }
 
-.settings-panel .toc-button {
+:is(.settings-panel, .dev-controls) .toc-button {
   box-sizing: border-box;
   min-width: 0;
 }
@@ -1773,7 +1773,7 @@ html.invert-colors .container:fullscreen {
   fill: var(--color1);
 }
 
-.settings-panel .setting-row {
+:is(.settings-panel, .dev-controls) .setting-row {
   display: grid;
   grid-template-columns: minmax(120px, 1fr) minmax(160px, 320px);
   align-items: center;
@@ -1786,14 +1786,14 @@ html.invert-colors .container:fullscreen {
   padding: 0 10px;
 }
 
-.settings-panel .background-image-row {
+:is(.settings-panel, .dev-controls) .background-image-row {
   grid-template-columns: minmax(0, 1fr);
   gap: 4px;
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-.settings-panel .settings-control-label {
+:is(.settings-panel, .dev-controls) .settings-control-label {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1802,7 +1802,7 @@ html.invert-colors .container:fullscreen {
   text-align: center;
 }
 
-.settings-panel .knob-wrap {
+:is(.settings-panel, .dev-controls) .knob-wrap {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -1810,17 +1810,17 @@ html.invert-colors .container:fullscreen {
   width: 100%;
 }
 
-.settings-panel .knob-wrap > :is(input, select) {
+:is(.settings-panel, .dev-controls) .knob-wrap > :is(input, select) {
   flex: 1;
   min-width: 0;
 }
 
-.settings-panel .background-image-picker {
+:is(.settings-panel, .dev-controls) .background-image-picker {
   min-width: 0;
   width: 100%;
 }
 
-.settings-panel .knob-value {
+:is(.settings-panel, .dev-controls) .knob-value {
   width: 40px;
   text-align: center;
   background-color: var(--field-background);
@@ -1833,20 +1833,28 @@ html.invert-colors .container:fullscreen {
   -moz-appearance: textfield;
 }
 
-.settings-panel .knob-value::-webkit-inner-spin-button,
-.settings-panel .knob-value::-webkit-outer-spin-button {
+:is(.settings-panel, .dev-controls) .knob-value::-webkit-inner-spin-button,
+:is(.settings-panel, .dev-controls) .knob-value::-webkit-outer-spin-button {
   display: none;
 }
 
+.dev-controls .setting-row {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+
+.dev-controls .background-image-row {
+  grid-template-columns: minmax(0, 1fr);
+}
+
 @media (max-width: 360px) {
-  .settings-panel .setting-row {
+  :is(.settings-panel, .dev-controls) .setting-row {
     grid-template-columns: minmax(0, 1fr);
     gap: 4px;
     padding-top: 4px;
     padding-bottom: 4px;
   }
 
-  .settings-panel .knob-wrap {
+  :is(.settings-panel, .dev-controls) .knob-wrap {
     min-width: 0;
   }
 }

@@ -84,7 +84,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const phoneSettingsQuery = window.matchMedia("(max-width: 799px)");
   let suppressPhoneFieldClick = false;
 
-  document.querySelectorAll(".settings-panel .setting-row:not(.background-image-row) :is(label, input, select)").forEach((field) => {
+  document.querySelectorAll(":is(.settings-panel, .dev-controls) .setting-row:not(.background-image-row) :is(label, input, select)").forEach((field) => {
     field.addEventListener("pointerdown", (event) => {
       if (!phoneSettingsQuery.matches) return;
 
@@ -745,7 +745,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function getCurrentGridSize() {
-    return normalizeGridSize(parseInt(settings.gridSizeValue?.value || `${defaults.gridSize}`, 10));
+    return normalizeGridSize(parseInt(settings.gridSizeValue?.value || localStorage.getItem("global.grid_size") || `${defaults.gridSize}`, 10));
   }
 
   function setGridSize(value, persist = true) {

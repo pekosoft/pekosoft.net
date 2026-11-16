@@ -528,7 +528,7 @@
 
 <div class="feature-row border">
   <svg class="standard-image-help"><use href="/icons.svg#view_grid"></use></svg>
-  <div class="justify"><h1>Grid <span class="object">option</span></h1>Toggles the background grid.</div>
+  <div class="justify"><h1>Grid <span class="object">option</span></h1>Toggles the background grid. Available on the <a href="/dev">Dev page</a>.</div>
 </div>
 
 <div class="feature-row border">
@@ -568,7 +568,7 @@
 
 <div class="feature-row border">
   <svg class="standard-image-help"><use href="/icons.svg#color_depth"></use></svg>
-  <div class="justify"><h1>Alpha <span class="object">option</span></h1>Applies transparency to selected interface surfaces. Sticky table headers remain opaque so scrolling rows cannot show through. Timeline rulers have no separate opaque background.</div>
+  <div class="justify"><h1>Alpha <span class="object">option</span></h1>Applies transparency to selected interface surfaces. Sticky table headers remain opaque so scrolling rows cannot show through. Timeline rulers have no separate opaque background. Available on the <a href="/dev">Dev page</a>.</div>
 </div>
 
 <div class="feature-row border">
@@ -588,7 +588,12 @@
 
 <div class="feature-row border">
   <svg class="standard-image-help"><use href="/icons.svg#knob"></use></svg>
-  <div class="justify"><h1>Size <span class="object">knob</span></h1>Sets the background-grid size.</div>
+  <div class="justify"><h1>Size <span class="object">knob</span></h1>Sets the background-grid size. Available on the <a href="/dev">Dev page</a>.</div>
+</div>
+
+<div class="feature-row border">
+  <svg class="standard-image-help"><use href="/icons.svg#photo"></use></svg>
+  <div class="justify"><h1>Background <span class="object">field</span></h1>Chooses a background bitmap for the site. The image is saved in this browser. Available on the <a href="/dev">Dev page</a>.</div>
 </div>
 
 <div class="feature-row border">

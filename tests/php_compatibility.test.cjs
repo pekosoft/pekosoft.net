@@ -188,6 +188,27 @@ test('Share appears once in Settings instead of the TOC on official and beta pag
   }
 });
 
+test('developer controls move out of Settings and render once on the clean Dev page', () => {
+  const controlIds = ['grid', 'grid-size-value', 'settings-grid-size-knob', 'toggle-alpha', 'background-image', 'background-image-picker'];
+  for (const file of ['index.php', 'tools\\metronome.php', 'beta.php', 'dev.php']) {
+    const result = renderPhp(file, '', {
+      setup: file === 'dev.php' ? "$_SERVER['REQUEST_URI'] = '/dev';" : ''
+    });
+    assert.equal(result.status, 200, file);
+    assert.equal(result.diagnostics, '', file);
+    const settings = result.body.slice(result.body.indexOf('<div id="settings-panel"'), result.body.indexOf('id="toggle-settings-panel-close-button"'));
+    for (const id of controlIds) {
+      assert.ok(!settings.includes(`id="${id}"`), `${id} must not appear in Settings`);
+      assert.equal(result.body.split(`id="${id}"`).length - 1, file === 'dev.php' ? 1 : 0, `${file}: ${id}`);
+    }
+    if (file === 'dev.php') {
+      assert.match(result.body, /<title>Pekosoft - Dev<\/title>/);
+      assert.match(result.body, /rel="canonical" href="https:\/\/pekosoft.net\/dev"/);
+      assert.match(result.body, /src="\/js\/settings\.js\?v=/);
+    }
+  }
+});
+
 test('failed About metadata reads are logged and return only the 500 page', t => {
   const documentRoot = createFixture(t);
   fs.mkdirSync(path.join(documentRoot, 'about'));

@@ -66,12 +66,10 @@
       </button>
 
       <div class="settings-panel-content">
-        <div class="settings-toggle-row"><input type="checkbox" name="grid" id="grid" hidden><button type="button" data-setting-toggle="grid" title="Background grid" class="toc-button"><svg class="icons"><use href="/icons.svg#grid" /></svg>Grid</button></div>
         <div class="settings-toggle-row"><input type="checkbox" name="headers" id="headers" hidden><button type="button" data-setting-toggle="headers" title="Module headers" class="toc-button"><svg class="icons"><use href="/icons.svg?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/icons.svg'); ?>#header" /></svg>Headers</button></div>
         <div class="settings-toggle-row"><input type="checkbox" name="footers" id="footers" hidden><button type="button" data-setting-toggle="footers" title="Module footers" class="toc-button"><svg class="icons"><use href="/icons.svg?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/icons.svg'); ?>#footer" /></svg>Footers</button></div>
         <div class="settings-toggle-row"><input type="checkbox" name="layout" id="layout" hidden><button type="button" data-setting-toggle="layout" title="Two modules per row" class="toc-button"><svg class="icons"><use href="/icons.svg#view_grid" /></svg>Layout</button></div>
         <div class="settings-toggle-row"><input type="checkbox" name="toggle-button-text" id="toggle-button-text" hidden><button type="button" data-setting-toggle="toggle-button-text" title="Button text" class="toc-button"><svg class="icons"><use href="/icons.svg#text" /></svg>Text</button></div>
-        <div class="settings-toggle-row"><input type="checkbox" name="toggle-alpha" id="toggle-alpha" hidden><button type="button" data-setting-toggle="toggle-alpha" title="Alpha transparency" class="toc-button"><svg class="icons"><use href="/icons.svg#color_depth" /></svg>Alpha</button></div>
         <div class="settings-toggle-row"><input type="checkbox" name="toggle-bars" id="toggle-bars" hidden><button type="button" data-setting-toggle="toggle-bars" title="Number field bars" class="toc-button"><svg class="icons"><use href="/icons.svg#bars" /></svg>Bars</button></div>
         <div class="settings-toggle-row settings-reset-row"><button id="reset-settings-button" class="toc-button" type="button" title="Reset to default"><svg class="icons"><use href="/icons.svg#reset" /></svg>Reset</button></div>
         <div class="settings-toggle-row"><input type="checkbox" name="guides" id="guides" hidden><button type="button" data-setting-toggle="guides" title="Timeline guides" class="toc-button"><svg class="icons"><use href="/icons.svg#guides" /></svg>Guides</button></div>
@@ -83,10 +81,6 @@
         <div class="settings-toggle-row"><input type="checkbox" name="toggle-wrap" id="toggle-wrap" hidden><button type="button" data-setting-toggle="toggle-wrap" title="Panel text wrap" class="toc-button"><svg class="icons"><use href="/icons.svg#wrap_text" /></svg>Wrap</button></div>
 
         <div class="setting-row settings-controls-start">
-          <label for="grid-size-value" title="Grid size" class="settings-control-label">Size:</label>
-          <div class="knob-wrap"><input type="number" id="grid-size-value" class="knob-value" value="16" readonly><button id="settings-grid-size-knob" class="knob-control" type="button" title="Grid size" aria-label="Size"></button></div>
-        </div>
-        <div class="setting-row">
           <label for="font_size_selector" title="Default font size" class="settings-control-label">Font:</label>
           <div class="knob-wrap"><select id="font_size_selector"><option value="small">Small</option><option value="medium">Medium</option><option value="large">Large</option></select><button id="font-size-knob" class="knob-control" type="button" title="Default font size" aria-label="Font"></button></div>
         </div>
@@ -105,11 +99,6 @@
         <div class="setting-row">
           <label for="speed_of_sound" title="Speed Of Sound in meters per second" class="settings-control-label">SOS:</label>
           <div class="knob-wrap"><input type="number" id="speed_of_sound" name="speed_of_sound" value="343" min="300" max="380" step="1"><button id="speed-of-sound-knob" class="knob-control" type="button" title="Speed Of Sound in meters per second" aria-label="SOS"></button></div>
-        </div>
-        <div class="setting-row background-image-row">
-          <label for="background-image" title="Background image" class="settings-control-label">Background:</label>
-          <button id="background-image-picker" class="background-image-picker" type="button" title="Choose background image">Choose bitmap</button>
-          <input type="file" id="background-image" accept="image/png,image/jpeg,image/webp,image/gif,image/bmp" aria-label="Choose background image">
         </div>
 
       </div>

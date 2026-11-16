@@ -379,7 +379,11 @@ th {
   min-width: 110px;
 }
 
-th {
+th,
+th.left,
+th.right,
+th.justify {
+  text-align: center;
   user-select: none;
 }
 
@@ -1967,7 +1971,11 @@ html.invert-colors .container:fullscreen {
   white-space: nowrap;
 }
 
-#updates-table:not(.table-cards) .updates-col-title {
+#updates-table {
+  border-top-width: 1px;
+}
+
+#updates-table:not(.table-cards) td.updates-col-title {
   text-align: left;
 }
 

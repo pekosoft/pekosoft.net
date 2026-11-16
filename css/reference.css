@@ -182,12 +182,10 @@
   white-space: nowrap;
 }
 
-#tool-container td.right,
-#tool-container th.right {
+#tool-container td.right {
   text-align: right;
 }
 
-#tool-container td.left,
-#tool-container th.left {
+#tool-container td.left {
   text-align: left;
 }

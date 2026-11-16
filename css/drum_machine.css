@@ -412,6 +412,9 @@
 .history-col-label {
   width: 100%;
   min-width: 320px;
+}
+
+td.history-col-label {
   text-align: left;
 }
 
@@ -451,6 +454,9 @@
 
 .recording-col-name {
   width: 180px;
+}
+
+td.recording-col-name {
   text-align: left;
 }
 

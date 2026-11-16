@@ -112,6 +112,10 @@ Never wrap or break text in tables. Keep table cells on one line with
 `white-space: nowrap` so rows retain a uniform height. Use horizontal scrolling
 and column resizing for long values. Cards may wrap text.
 
+Always center table header text, independently of the table or column's body-cell
+alignment. Scope column-specific alignment rules to `td` so they never override
+headers.
+
 ## Root CSS variables
 
 The main shared `:root` variables currently defined in `css/index.css` are:

@@ -400,6 +400,9 @@ canvas {
 .col-name {
   flex: 1;
   min-width: 200px;
+}
+
+td.col-name {
   text-align: left;
 }
 

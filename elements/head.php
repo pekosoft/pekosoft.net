@@ -61,6 +61,8 @@ $releaseTitleMap = [
 	'updates.php' => 'Updates',
 	'contact' => 'Contact',
 	'contact.php' => 'Contact',
+	'demo' => 'Demo',
+	'demo.php' => 'Demo',
 ];
 
 if ($releaseName === '') {

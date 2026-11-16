@@ -110,6 +110,48 @@ The visual language is based on:
 
 That stripped-down look is part of the product identity.
 
+Calculator icons use portrait housings with subtly rounded corners.
+
+After the site's floppy icon (`icons.svg#index`), flash five separate one-second icon-and-text scenes: Simple (`star`), Documented (`reference`, the book icon), Secure (`lock`), Open source (`github`) and Customizable (`settings`). Then show the `pekosoft.net` URL. The Demo uses the explicitly requested "Open source" wording. This does not change the repository licence. Do not repeat the logo at the end or combine the ending scenes. Keep the URL white and inactive throughout typing and both caret blinks. Enable its link when the caret disappears permanently, then turn it site blue 50 ms later (about three frames at 60 fps). Keep the presentation artwork white.
+
+Keep all Demo text non-selectable. Make the closing URL a keyboard-accessible link to `/` only after the caret finishes, retaining its presentation color after visiting. Type the closing URL in place with a filled white square caret and a soft synthesized keyboard tap for each character. After typing, blink the caret twice and remove it, then activate the complete URL. Typing, keyboard sound and caret timing follow playback, including pause and resume. Sound mutes the keyboard along with the rest of the presentation.
+
+Center the final URL horizontally and vertically in the viewport. Position status messages outside the presentation's layout so their reserved space or contents cannot shift its center.
+
+Fade demo audio in and out over 20 ms when Play starts, resumes or pauses, without delaying visual playback or changing the timeline. Give each scheduled playback batch its own gain before the shared analyser and Sound mute control. On pause, ramp from the current attack level, stop sources on the audio clock after the fade, then disconnect their graph when they end. A rapid resume must use an independent gain so earlier fade cleanup cannot cut off the new sound. Preserve intentional sound-effect clicks, tool transitions, mute behavior and audio in video downloads.
+
+Include an icon-only Download button in the playback row, using `icons.svg#download`. Export the complete current presentation from its beginning, without controls or status text, as 1920-by-1080 video targeting 60 fps, requesting 16 Mbps video and 256 kbps audio. Prefer supported MP4 (H.264/AAC), otherwise WebM (VP9/Opus or VP8/Opus). Use the existing animation renderer, inline the shared SVG artwork for canvas capture, and record the synthesized audio before the monitor mute gain so downloaded videos always include sound. Fit the current presentation layout without stretching. Double-buffer the canvas so capture never sees partially painted frames. Preserve symbol dimensions when padding the SVG viewBox for overflowing artwork. Show progress, require the tab to remain visible, disable playback controls while exporting, and restore the previous position, playback and sound settings afterward, including after failure. Report unsupported browsers and export failures explicitly. Keep the six controls within phone widths.
+
+Include the shared moon icon as a Dark mode toggle in the Demo control row. Use the existing `global.theme` preference and root `invert-colors` class, restoring the saved mode without interrupting playback.
+
+Briefly blink the opening logo twice without interrupting its fade or opening tone. Play eight Metronome ticks at 120 BPM, plus an accented ninth click on Turntable's opening beat. After Turntable, wait 300 ms before showing the floppy for 3 seconds. Make the floppy larger than the tool icons. Its glitches are just a few blank full-viewport `--grey1` frames, with the intact white floppy returning between glitches. Do not slice or distort the artwork. These effects follow playback, including pause and resume.
+
+Start a synthesized floppy-drive sound exactly when the floppy appears. Keep only the generated filtered spindle-friction texture; omit noise bursts, which add electrical crackle over glitches. Omit pitched housing resonances, ringing and oscillator drones. Never use a recorded clip or audio file. Sound mutes it with the rest of the presentation. Pause cancels it, and resume continues at the correct offset in the same generated waveform.
+
+Match both opening-logo blinks and each floppy glitch with the same quiet, generated mouse-click sound. Play one click per glitch, not a crackle. Share the click timing with the visual effects. Sound mutes the clicks, pause cancels them and resume skips clicks already passed.
+
+Rotate the first four selling-point icons into place over their first 200 ms and out over their final 200 ms, fading with the rotation. Fade the final Customizable icon with the same timing but never rotate it. Hold the icons upright between transitions and keep the text upright throughout. Preserve the one-second scenes. Rotation and fading follow playback, including pause, resume and restart.
+
+For each tool, start the icon, title and sound together. Place the title and one-line tool description in the same caption area below the icon, with their centers aligned. Render the description in `var(--color2)`. Show the title for the first 2500 ms, then hide it before fading in the description over 500 ms. Never show the title and description together. Keep the description with the icon until the next scene, preserving the layout when the title disappears. Title and description timing follows playback, including pause and resume.
+
+Use larger artwork for all four animated tool icons and the floppy on desktop and phones. Keep the floppy larger than the tools. Preserve the playback control and feature-point icon sizes.
+
+During the four tool scenes only, scatter sparse tiny grains across the full viewport behind the presentation using `--grey1` and `--grey2`. Use three single-pixel grains and one two-pixel dash per 320-by-320 tile, leaving the rest transparent so the background stays black. Shift the tile every 120 ms of playback and freeze it when paused. Keep the opening and closing backgrounds plain.
+
+In the Demo, outline the Metronome body so the moving pendulum remains visible, keeping its base filled. Keep the outline inside the original silhouette so its sloping sides align with the base. Omit the static vertical tempo center line. Retain four signature circles on the base, indicating the current beat. Use the shared `icons.svg#pendulum_weight` shape for its moving weight, never a plain rectangle.
+
+Extend the pendulum arm to its pivot inside the base and draw the filled base and signature circles in front of it.
+
+Mask the static circle out of the Demo's shared Tap Pad artwork while preserving the complete hand. Only the animated feedback ring remains, extending slightly beyond the pad face. Keep it fully opaque throughout each outward expansion, resetting its radius on the next beat without fading.
+
+Fade the opening Low C out from 5.4 to 6.6 seconds, overlapping the first 600 ms of Tap Pad. Keep the first kick and visual transition at 6 seconds. Pause and resume preserve the remaining fade rather than restarting the note.
+
+Do not play background music. Keep the opening Low C, individual tool sounds, floppy noise and keyboard taps, including their existing transition tails.
+
+Let tool audio decay into the following scene without moving scene transitions or adding beats. Keep Metronome clicks dry, without reverb. Use a short, quiet reverb for Tap Pad, allow Calculator's triplet echoes through 600 ms after its scene and extend Turntable's fade by 600 ms into the floppy scene. Keep Turntable's pitch descent aligned with its visible motion. Pause cancels voices and effect nodes, and resuming during Turntable's tail preserves its final pitch and remaining fade.
+
+The Demo is a timed presentation of the logo, approved product description and four official tools with their exact front-page descriptions. Keep the opening visuals at 6 seconds, showing the logo for the first 3 seconds and "Free online audio tools." for the next 3 seconds, never together. Fade each visual in and out separately while Low C sustains across both. Its only controls are icon-only Dark mode, Sound, Play, Loop and Fullscreen buttons in the upper-right corner. Fullscreen follows the browser's current fullscreen state, including exits with Escape, without interrupting playback. Disable it when the browser does not support fullscreen. Start with a sustained C1 and a logo fade, playing with sound enabled and Loop disabled. Use eight synthesized kick taps for Tap Pad, a triplet-delay phrase for BPM Calculator, four-beat accented clicks for Metronome, including one on Turntable's opening beat, and a deep wind-down for Turntable. Icon motion follows the audio timing. Move to BPM Calculator after Tap Pad's eighth beat. Calculator notes scroll continuously right to left inside its stationary display window for the entire scene, with a note visible immediately and no final hold. Scroll half, quarter, eighth and sixteenth notes, followed by the double-note motif cropped from the actual Calculator sprite. Repeat the five-symbol sequence seamlessly at the existing speed, without stopping on the double note. The turntable slows from 33 1/3 RPM with its falling pitch, keeping its original static tonearm. Pause freezes motion and stops all scheduled audio. Sound only mutes the master output. Do not add promotional slogans or unrelated decorative motion.
+
 ### Table rows
 
 Never wrap or break text in tables. Keep table cells on one line with
@@ -507,7 +549,7 @@ Examples of root-level tool and site files include:
 
 Special page note:
 
-- Shared TOC links use this order: Buy Us Coffee, Contact, Updates. Share is in Settings, not the TOC. Preserve this arrangement in both official and Beta navigation.
+- Shared TOC links use this order: Demo, Buy Us Coffee, Contact, Updates. Demo opens `/demo` and uses the shared `film` icon. Share is in Settings, not the TOC. Preserve this arrangement in both official and Beta navigation.
 - `bitcoin.php` is a standalone donation page linked from the main TOC as **BUY US COFFEE**.
 - On `bitcoin.php`, the tool menu (Tool, Help, History, About) is intentionally hidden.
 - `contact.php` is a standalone Contact page at `/contact`, linked from both the official and Beta TOCs and included in their Play sequences. It uses General, Bug report and Feature request categories and sends to `ole@peko.net`. Its implementation URL redirects with HTTP 308 to preserve form POSTs.

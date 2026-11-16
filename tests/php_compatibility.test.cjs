@@ -170,16 +170,151 @@ test('front page omits the updates feed while retaining official tools and Updat
   for (const slug of ['tap_pad', 'bpm_calculator', 'metronome', 'turntable']) {
     assert.ok(result.body.includes(`href="/${slug}"`), slug);
   }
+  assert.ok(result.body.includes('href="/demo"'));
   assert.match(result.body, /data-href="\/updates"/);
 });
 
-test('Share appears once in Settings instead of the TOC on official and beta pages', () => {
+test('demo presents the four official tools with only playback controls and clean metadata', () => {
+  const result = renderPhp('demo.php', '', {
+    setup: "$_SERVER['REQUEST_URI'] = '/demo';"
+  });
+  assert.equal(result.status, 200);
+  assert.equal(result.diagnostics, '');
+  assert.match(result.body, /<link rel="canonical" href="https:\/\/pekosoft\.net\/demo">/);
+  assert.match(result.body, /<meta name="description" content="Free online audio tools\.">/);
+  assert.match(result.body, /src="\/js\/demo\.js\?v=/);
+  const captions = [...result.body.matchAll(/<\/svg>\s*<div class="demo-caption">\s*<h1\b[^>]*>([^<]+)<\/h1>\s*<p data-demo-description>([^<]+)<\/p>\s*<\/div>/g)]
+    .map(([, name, description]) => [name, description]);
+  assert.deepEqual(captions, [
+    ['Tap Pad', 'For tapping tempo.'],
+    ['BPM Calculator', 'For tempo calculations.'],
+    ['Metronome', 'For keeping time.'],
+    ['Turntable', 'For visualizing RPM.']
+  ]);
+  const tapSlide = result.body.match(/<section\b[^>]*aria-labelledby="demo-tap-pad"[\s\S]*?<\/section>/)[0];
+  assert.match(tapSlide, /#tap_pad" mask="url\(#demo-tap-hand\)"/);
+  const handMask = tapSlide.match(/<mask id="demo-tap-hand"[\s\S]*?<\/mask>/)[0];
+  assert.match(handMask, /<circle\b[^>]*fill="#000"/);
+  assert.match(handMask, /<circle\b[^>]*>[\s\S]*<rect\b[^>]*x="184\.112"[^>]*fill="#fff"/);
+  assert.match(tapSlide, /<circle class="demo-feedback" data-demo-tap/);
+  const metronomeSlide = result.body.match(/<section\b[^>]*aria-labelledby="demo-metronome"[\s\S]*?<\/section>/)[0];
+  assert.match(metronomeSlide, /#metronome" clip-path="url\(#demo-metronome-base\)"/);
+  assert.match(metronomeSlide, /<path data-demo-metronome-body fill-rule="evenodd"/);
+  assert.doesNotMatch(metronomeSlide, /data-demo-tempo-line|M248\.486 22\.261h11\.13v360\.801h-11\.13Z/);
+  const outline = metronomeSlide.match(/<path data-demo-metronome-body[^>]*>/)[0];
+  assert.doesNotMatch(outline, /\bstroke(?:-width)?=/);
+  const [leftTop, top, rightTop, rightBottom, bottom, leftBottom] = outline
+    .match(/d="M([\d.]+) ([\d.]+)H([\d.]+)L([\d.]+) ([\d.]+)H([\d.]+)Z/).slice(1).map(Number);
+  const sprite = fs.readFileSync(path.join(root, 'icons.svg'), 'utf8');
+  const original = sprite.match(/<symbol id="metronome"[\s\S]*?<\/symbol>/)[0];
+  const base = original.match(/<polygon points="([^"]+)"/)[1].split(/\s+/).map(Number);
+  const baseTop = base[1];
+  const leftSlope = (leftTop - leftBottom) / (bottom - top);
+  const rightSlope = (rightBottom - rightTop) / (bottom - top);
+  assert.ok(Math.abs(leftBottom - leftSlope * (baseTop - bottom) - base[2]) < 0.001);
+  assert.ok(Math.abs(rightBottom + rightSlope * (baseTop - bottom) - base[0]) < 0.001);
+  const circles = [...metronomeSlide.matchAll(/<circle data-demo-signature-beat cx="([^"]+)" cy="([^"]+)" r="([^"]+)"/g)]
+    .map(([, x, y, radius]) => [Number(x), Number(y), Number(radius)]);
+  assert.equal(circles.length, 4);
+  const center = (base[4] + base[6]) / 2;
+  assert.ok(Math.abs((circles[0][0] + circles[3][0]) / 2 - center) < 0.001);
+  for (const [index, [x, y, radius]] of circles.entries()) {
+    assert.ok(y - radius > baseTop && y + radius < base[5]);
+    if (index > 0) assert.ok(Math.abs(x - circles[index - 1][0] - 44) < 0.001);
+  }
+  assert.match(metronomeSlide, /data-demo-pendulum/);
+  const pendulum = metronomeSlide.match(/<g\b[^>]*data-demo-pendulum>[\s\S]*?<\/g>/)[0];
+  assert.match(pendulum, /href="\/icons\.svg\?v=\d+#pendulum_weight"/);
+  assert.doesNotMatch(pendulum, /<rect/);
+  const [armTop, armLength] = pendulum.match(/<path d="M[\d.]+ ([\d.]+)h[\d.]+v([\d.]+)h-[\d.]+Z"/).slice(1).map(Number);
+  const armBottom = armTop + armLength;
+  assert.ok(armBottom > baseTop && armBottom < base[5]);
+  const filledBase = metronomeSlide.match(/<use\b[^>]*#metronome"[^>]*>/)[0];
+  assert.ok(metronomeSlide.indexOf(filledBase) > metronomeSlide.indexOf(pendulum) + pendulum.length);
+  assert.ok(metronomeSlide.indexOf('data-demo-signature-beat') > metronomeSlide.indexOf(filledBase));
+  const buttons = [...result.body.matchAll(/<button\b[^>]*aria-label="([^"]+)"[^>]*>/g)];
+  assert.deepEqual(buttons.map(([, label]) => label), ['Dark mode', 'Sound', 'Play', 'Loop', 'Download', 'Fullscreen']);
+  assert.match(result.body, /data-demo-dark-mode[^>]*title="Toggle dark mode"[^>]*>\s*<svg[^>]*><use href="\/icons\.svg#moon"/);
+  assert.match(result.body, /data-demo-download[^>]*title="Download video with audio"/);
+  assert.match(result.body, /src="\/js\/demo-video\.js\?v=/);
+  assert.deepEqual(buttons.filter(([markup]) => markup.includes('aria-pressed')).map(([markup]) => markup.match(/aria-pressed="([^"]+)"/)[1]),
+    ['true', 'true', 'true', 'false', 'false']);
+  const opening = result.body.match(/<section\b[^>]*data-demo-slide[\s\S]*?<\/section>/)[0];
+  assert.match(opening, /data-duration="6000"/);
+  assert.match(opening, /#logo/);
+  assert.match(opening, /<p class="demo-tagline" data-demo-slogan hidden>Free online audio tools\.<\/p>/);
+  assert.equal((result.body.match(/Free online audio tools\.<\/p>/g) || []).length, 1);
+  const turntableSlide = result.body.match(/<section\b[^>]*aria-labelledby="demo-turntable"[\s\S]*?<\/section>/)[0];
+  assert.match(turntableSlide, /#turntable"/);
+  assert.doesNotMatch(turntableSlide, /data-demo-tonearm|<rect/);
+  const ending = [...result.body.matchAll(/<section\b[^>]*data-demo-slide[\s\S]*?<\/section>/g)]
+    .slice(-7).map(([markup]) => markup);
+  assert.match(ending[0], /href="\/icons\.svg\?v=\d+#index"/);
+  assert.doesNotMatch(ending[0], /#logo|pekosoft\.net/);
+  for (const [index, [label, icon]] of [
+    ['Simple', 'star'],
+    ['Documented', 'reference'],
+    ['Secure', 'lock'],
+    ['Open source', 'github'],
+    ['Customizable', 'settings']
+  ].entries()) {
+    const point = ending[index + 1];
+    assert.match(point, /data-duration="1000"/);
+    assert.match(point, index === 4
+      ? /<svg class="demo-icon" data-demo-point-icon="fade"/
+      : /<svg class="demo-icon" data-demo-point-icon viewBox/);
+    assert.ok(point.includes(`>${label}</h1>`), label);
+    assert.ok(point.includes(`#${icon}"`), icon);
+  }
+  assert.match(ending[6], /<p class="demo-tagline demo-url" data-demo-url aria-label="pekosoft\.net">/);
+  assert.match(ending[6], /<a class="demo-url-typing" data-demo-url-link="\/" aria-label="pekosoft\.net"><span data-demo-url-text aria-hidden="true"><\/span><span class="demo-caret" data-demo-url-caret aria-hidden="true"><\/span><\/a>/);
+  assert.doesNotMatch(ending[6], /<a\b[^>]*\shref=/);
+  assert.doesNotMatch(ending[6], /<svg/);
+  assert.equal((result.body.match(/href="\/assets\.svg#logo"/g) || []).length, 1);
+  const buttonContent = [...result.body.matchAll(/<button\b[^>]*>([\s\S]*?)<\/button>/g)];
+  for (const [, content] of buttonContent) {
+    assert.equal(content.replace(/<svg\b[\s\S]*?<\/svg>/g, '').trim(), '');
+  }
+  assert.equal((result.body.match(/<a\b/g) || []).length, 1);
+  assert.doesNotMatch(result.body, /<input\b|<linearGradient\b|See sound in motion|Find your next sound/);
+
+  const routing = fs.readFileSync(path.join(root, '.htaccess'), 'utf8');
+  assert.match(routing, /RewriteRule \^demo\\\.php\$ \/demo \[R=301,L\]/);
+  assert.match(routing, /RewriteRule \^\(beta\|bitcoin\|contact\|updates\|about\|help\|history\|dev\|demo\)\$ \/\$1\.php \[END\]/);
+});
+
+test('demo Calculator scrolls its original double note after the individual notes and repeats seamlessly', () => {
+  const result = renderPhp('demo.php', '', {
+    setup: "$_SERVER['REQUEST_URI'] = '/demo';"
+  });
+  assert.equal(result.status, 200);
+  assert.equal(result.diagnostics, '');
+  const calculatorSlide = result.body.match(/<section\b[^>]*aria-labelledby="demo-bpm-calculator"[\s\S]*?<\/section>/);
+  assert.ok(calculatorSlide);
+  assert.match(calculatorSlide[0], /<g clip-path="url\(#demo-calculator-display\)">\s*<g class="demo-moving-part" data-demo-notes>/);
+  assert.match(calculatorSlide[0], /#bpm_calculator" mask="url\(#demo-calculator-housing\)"/);
+  const noteStream = calculatorSlide[0].match(/<g class="demo-moving-part" data-demo-notes>([\s\S]*?)<\/g>/)[1];
+  const noteSymbols = [...noteStream.matchAll(/href="\/icons\.svg\?v=\d+#([^"]+)"/g)]
+    .map(([, symbol]) => symbol);
+  assert.deepEqual(noteSymbols, ['1_2', '1_4', '1_8', '1_16', 'bpm_calculator', '1_2', '1_4']);
+  assert.match(noteStream, /<svg x="1128"[^>]*viewBox="144 64 224 224">\s*<use[^>]*#bpm_calculator" width="512" height="512"><\/use>\s*<\/svg>/);
+  const notePositions = [...noteStream.matchAll(/<(?:use|svg)\b[^>]*\bx="(\d+)"/g)].map(([, x]) => Number(x));
+  assert.equal(notePositions[0], 104);
+  assert.equal(notePositions[5] - notePositions[0], 1280);
+  assert.equal(notePositions[6] - notePositions[1], 1280);
+  assert.doesNotMatch(calculatorSlide[0], /data-demo-final-note|data-demo-tempo/);
+});
+
+test('Demo appears above Buy Us Coffee and Share stays in Settings on official and beta pages', () => {
   for (const file of ['index.php', 'tools\\metronome.php', 'beta.php', 'tools\\player.php']) {
     const result = renderPhp(file, '', {
       setup: file === 'index.php' ? "$_SERVER['REQUEST_URI'] = '/';" : ''
     });
     assert.equal(result.status, 200, file);
     assert.equal(result.diagnostics, '', file);
+    const toc = result.body.slice(result.body.indexOf('<div id="toc"'), result.body.indexOf('<div id="settings-menu-container"'));
+    assert.equal((toc.match(/data-href="\/demo"/g) || []).length, 1, file);
+    assert.match(toc, /data-href="\/demo" title="Demo" aria-label="Demo">[\s\S]*?<\/svg>\s*Demo\s*<\/button>\s*<button[^>]*data-href="\/bitcoin"/, file);
     assert.match(result.body, /id="settings-panel"[\s\S]*id="toggle-fullscreen-button"[\s\S]*id="share-settings-button"[\s\S]*id="play-site-button"/, file);
     const shareButton = result.body.match(/<button id="share-settings-button"[^>]*>/)[0];
     assert.doesNotMatch(shareButton, /data-href=/, file);
@@ -206,7 +341,7 @@ test('TOC omits empty groups on standalone pages and preserves release and modul
     }
     assert.equal(toc.includes('id="toc-module-items"'), hasModules, file);
     if (hasModules) assert.match(toc, /id="tool-toggle-toc-button"/, file);
-    for (const href of ['/bitcoin', '/contact', '/updates']) {
+    for (const href of ['/demo', '/bitcoin', '/contact', '/updates']) {
       assert.ok(toc.includes(`data-href="${href}"`), `${file}: ${href}`);
     }
   }

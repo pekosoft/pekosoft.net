@@ -68,6 +68,7 @@ if (!in_array($requestPath, ['/', '/index.php'], true)) {
 
       <a href="/turntable" title="Turntable">Turntable - For visualizing RPM.</a>
     </h1>
+    <p class="index-demo-link"><a href="/demo">See the demo</a></p>
 
   </div>
 

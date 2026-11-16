@@ -124,6 +124,12 @@ $hasPlaylistModule = in_array('playlist', $availableModules, true);
       <?php endif; ?>
 
       <div class="toc-column">
+        <button class="toc-button" data-href="/demo" title="Demo" aria-label="Demo">
+          <svg class="icons" role="img">
+            <use href="/icons.svg#film"></use>
+          </svg>
+          Demo
+        </button>
         <button class="toc-button" data-href="/bitcoin" title="Buy Us Coffee" aria-label="Buy Us Coffee">
           <svg class="icons" role="img">
             <use href="/icons.svg#qr"></use>

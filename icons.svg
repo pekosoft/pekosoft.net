@@ -183,34 +183,10 @@
 </symbol>
 
 <symbol id="audio_calculator" viewBox="0 0 512 512">
-  <rect y="0" width="512" height="32" />
-  <rect y="480" width="512" height="32" />
-  <rect y="32" width="32" height="448" />
-  <rect x="480" y="32" width="32" height="448" />
-  <rect y="320" width="512" height="32" />
-  <rect x="160" y="320" width="32" height="160" />
-  <rect x="320" y="320" width="32" height="160" />
-  <rect x="64" y="64" width="64" height="32" />
-  <rect x="64" y="128" width="64" height="32" />
-  <rect x="64" y="192" width="64" height="32" />
-  <rect x="64" y="256" width="64" height="32" />
-  <rect x="160" y="64" width="64" height="32" />
-  <rect x="160" y="128" width="64" height="32" />
-  <rect x="160" y="192" width="64" height="32" />
-  <rect x="160" y="256" width="64" height="32" />
-  <rect x="288" y="64" width="64" height="32" />
-  <rect x="288" y="128" width="64" height="32" />
-  <rect x="288" y="192" width="64" height="32" />
-  <rect x="288" y="256" width="64" height="32" />
-  <rect x="384" y="64" width="64" height="32" />
-  <rect x="384" y="128" width="64" height="32" />
-  <rect x="384" y="192" width="64" height="32" />
-  <rect x="384" y="256" width="64" height="32" />
-  <rect x="48" y="400" width="96" height="32" />
-  <rect x="80" y="368" width="32" height="96" />
-  <rect x="208" y="400" width="96" height="32" />
-  <rect x="368" y="368" width="96" height="32" />
-  <rect x="368" y="432" width="96" height="32" />
+  <path fill-rule="evenodd" d="M104 0h304a40 40 0 0 1 40 40v432a40 40 0 0 1-40 40H104a40 40 0 0 1-40-40V40a40 40 0 0 1 40-40ZM104 32a8 8 0 0 0-8 8v432a8 8 0 0 0 8 8h304a8 8 0 0 0 8-8V40a8 8 0 0 0-8-8Z" />
+  <path d="M96 320h320v32H96ZM192 352h16v128h-16ZM304 352h16v128h-16Z" />
+  <path d="M128 80h32v24h-32ZM192 80h32v24h-32ZM288 80h32v24h-32ZM352 80h32v24h-32ZM128 144h32v24h-32ZM192 144h32v24h-32ZM288 144h32v24h-32ZM352 144h32v24h-32ZM128 208h32v24h-32ZM192 208h32v24h-32ZM288 208h32v24h-32ZM352 208h32v24h-32ZM128 272h32v24h-32ZM192 272h32v24h-32ZM288 272h32v24h-32ZM352 272h32v24h-32Z" />
+  <path d="M132 380h24v24h24v24h-24v24h-24v-24h-24v-24h24ZM224 404h64v24h-64ZM336 380h64v24h-64ZM336 428h64v24h-64Z" />
 </symbol>
 
 <symbol id="band" viewBox="0 0 512 512">
@@ -290,23 +266,12 @@
 </symbol>
 
 <symbol id="bpm_calculator" viewBox="0 0 512 512">
-  <rect y="0" width="512" height="32" />
-  <rect y="480" width="512" height="32" />
-  <rect y="32" width="32" height="448" />
-  <rect x="480" y="32" width="32" height="448" />
-  <rect y="320" width="512" height="32" />
-  <rect x="160" y="320" width="32" height="160" />
-  <rect x="320" y="320" width="32" height="160" />
-  <rect x="48" y="400" width="96" height="32" />
-  <rect x="80" y="368" width="32" height="96" />
-  <rect x="208" y="400" width="96" height="32" />
-  <rect x="368" y="368" width="96" height="32" />
-  <rect x="368" y="432" width="96" height="32" />
-  <rect x="160" y="64" width="192" height="32" />
-  <rect x="160" y="96" width="32" height="128" />
-  <rect x="320" y="96" width="32" height="128" />
-  <ellipse cx="153.067" cy="229" rx="40" ry="32" transform="translate(-76.228 76.375) rotate(-22.592)" />
-  <ellipse cx="313.067" cy="229" rx="40" ry="32" transform="translate(-63.95 137.842) rotate(-22.592)" />
+  <path fill-rule="evenodd" d="M104 0h304a40 40 0 0 1 40 40v432a40 40 0 0 1-40 40H104a40 40 0 0 1-40-40V40a40 40 0 0 1 40-40ZM104 32a8 8 0 0 0-8 8v432a8 8 0 0 0 8 8h304a8 8 0 0 0 8-8V40a8 8 0 0 0-8-8Z" />
+  <path d="M96 320h320v32H96ZM192 352h16v128h-16ZM304 352h16v128h-16Z" />
+  <path d="M132 380h24v24h24v24h-24v24h-24v-24h-24v-24h24ZM224 404h64v24h-64ZM336 380h64v24h-64ZM336 428h64v24h-64Z" />
+  <path d="M192 80h160v160h-24V104H216v136h-24Z" />
+  <ellipse cx="184" cy="240" rx="32" ry="24" transform="rotate(-20 184 240)" />
+  <ellipse cx="320" cy="240" rx="32" ry="24" transform="rotate(-20 320 240)" />
 </symbol>
 
 <symbol id="bpm_circle" viewBox="0 0 512 512">

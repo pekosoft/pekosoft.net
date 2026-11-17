@@ -35,6 +35,12 @@
         </svg>
         <span class="button-text">Blink</span>
       </button>
+      <button id="tap-bright-button" data-help-entry="Instrument bright" class="square" title="Toggle bright BPM" aria-pressed="false">
+        <svg class="icons">
+          <use href="/icons.svg#sun" />
+        </svg>
+        <span class="button-text">Bright</span>
+      </button>
       <button id="tap-copy-button" class="square" title="Copy BPM">
         <svg class="icons">
           <use href="/icons.svg#copy" />

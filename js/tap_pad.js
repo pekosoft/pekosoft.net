@@ -36,6 +36,7 @@ const copyButton = document.getElementById("copy-button");
 const tapPlayButton = document.getElementById("tap-play-button");
 const tapCopyButton = document.getElementById("tap-copy-button");
 const tapBlinkButton = document.getElementById("tap-blink-button");
+const tapBrightButton = document.getElementById("tap-bright-button");
 const targetInput = document.getElementById("target");
 const targetKnob = document.getElementById("target-knob");
 const timerButton = document.getElementById("timer-button");
@@ -75,6 +76,7 @@ const tapTimelineRulers = timelineUtils?.createRulerLayout?.({
 let timerEnabled = readBoolFromStorage("tap_pad.timer_enabled", TIMER_DEFAULT_ENABLED);
 let hapticMode = false;
 let blinkMode = readBoolFromStorage("tap_pad.blink", false);
+let brightMode = readBoolFromStorage("tap_pad.bright", false);
 let blinkTimeout = null;
 let isTapPlaybackOn = false;
 let tapPlaybackBpm = 0;
@@ -101,6 +103,7 @@ applyLineButtonsUI();
 applyTimelineControlButtons();
 applySoundButtonUI();
 applyBlinkButtonUI();
+applyBrightButtonUI();
 applyTapPlaybackButtonUI();
 applySetDefaultBpmButtonUI();
 if (btnGuides) btnGuides.classList.toggle('button-on', showGuides);
@@ -311,6 +314,15 @@ if (tapBlinkButton) {
   makeKeyboardActivatable(tapBlinkButton, () => tapBlinkButton.click());
 }
 
+if (tapBrightButton) {
+  tapBrightButton.addEventListener("click", () => {
+    brightMode = !brightMode;
+    localStorage.setItem("tap_pad.bright", brightMode ? "1" : "0");
+    applyBrightButtonUI();
+  });
+  makeKeyboardActivatable(tapBrightButton, () => tapBrightButton.click());
+}
+
 document.getElementById("reset-button").addEventListener("click", () => {
   stopTapPlayback();
 
@@ -336,6 +348,7 @@ document.getElementById("reset-button").addEventListener("click", () => {
   localStorage.removeItem("tap_pad.show_guides");
   localStorage.removeItem("tap_pad.haptic");
   localStorage.removeItem("tap_pad.blink");
+  localStorage.removeItem("tap_pad.bright");
   localStorage.removeItem("tap_pad.sound_on");
   localStorage.removeItem("tap_pad.beat_sound");
   localStorage.removeItem("tap_pad.volume");
@@ -351,6 +364,7 @@ document.getElementById("reset-button").addEventListener("click", () => {
   showGuides = localStorage.getItem('global.guides') !== 'false';
   hapticMode = false;
   blinkMode = false;
+  brightMode = false;
   isSoundOn = true;
   beatSound = "click";
   soundVolume = 100;
@@ -371,6 +385,7 @@ document.getElementById("reset-button").addEventListener("click", () => {
   tapTimelineRulers?.setVisible(true, false);
   applyTimelineControlButtons();
   applyBlinkButtonUI();
+  applyBrightButtonUI();
   btnGuides.classList.remove('button-on');
   btnHaptic.classList.remove('button-on');
   applySoundButtonUI();
@@ -529,6 +544,13 @@ function applyBlinkButtonUI() {
   if (!tapBlinkButton) return;
   tapBlinkButton.classList.toggle("button-on", blinkMode);
   tapBlinkButton.setAttribute("aria-pressed", blinkMode ? "true" : "false");
+}
+
+function applyBrightButtonUI() {
+  tapButton.classList.toggle("pad-bright-active", brightMode);
+  if (!tapBrightButton) return;
+  tapBrightButton.classList.toggle("button-on", brightMode);
+  tapBrightButton.setAttribute("aria-pressed", brightMode ? "true" : "false");
 }
 
 function applyTapPlaybackButtonUI() {

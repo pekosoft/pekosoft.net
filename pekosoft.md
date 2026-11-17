@@ -428,6 +428,7 @@ See the shared [deployment procedure](../SITES.md#deployment).
 - Use uppercase words only for displayed text-button labels and in-grid labels such as `BEAT` and `NOTE`, apart from standard acronyms. References quoting those grid labels retain their spelling.
 - Keep the surfaces distinct: button text `RESET`, tooltip `Reset to default`, Help heading `Reset button`, and statusbar message `Reset: Reset to default`.
 - Help headings and references must identify the same control. Preserve contextual Help links: names and feature kinds must continue to match the existing Help lookup. Use supported heading aliases when needed rather than silently breaking navigation.
+- When modules share a control name, set the same explicit `data-help-entry` on the control and its Help heading to distinguish the destination without changing the displayed name.
 - The status-bar Help link retains the last control's destination while hovered, focused or activated. Never describe that link as a new control or rebuild its destination from its own accessible name.
 - Shared Settings controls always target General Help, using their authored control names. Settings toggles target option entries, not similarly named tool or Meters buttons. Tool-local controls retain their own Help targets.
 - If names conflict in the interface, record the discrepancy for a separately scoped UI pass. Do not invent a new Help-only name or change runtime behavior during an editorial pass.

@@ -37,6 +37,15 @@
 </div>
 
 <div class="feature-row border"><svg class="standard-image-help">
+    <use href="/icons.svg#sun"></use>
+  </svg>
+  <div class="justify">
+    <h1 data-help-entry="Instrument bright">Bright <span class="object">button</span></h1>
+    Toggles enhanced contrast for the pad's BPM readout. <span class="default">Default: off.</span>
+  </div>
+</div>
+
+<div class="feature-row border"><svg class="standard-image-help">
     <use href="/icons.svg#copy"></use>
   </svg>
   <div class="justify">

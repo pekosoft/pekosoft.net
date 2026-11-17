@@ -23,6 +23,10 @@
   color: var(--grey1);
 }
 
+.pad.pad-bright-active {
+  color: var(--white);
+}
+
 #tool-container.module-maximized .pad-container {
   height: 100%;
   margin: 0;

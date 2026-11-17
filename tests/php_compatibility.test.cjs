@@ -262,7 +262,7 @@ test('demo presents the four official tools with only playback controls and clea
   assert.match(result.body, /id="demo-playback"[^>]*hidden/);
   assert.match(result.body, /id="demo-playback"[^>]*>\s*<a[^>]*href="\/"[^>]*aria-label="Pekosoft"[^>]*>\s*<svg[^>]*><use href="\/icons\.svg#index"/);
   assert.match(result.body, /data-demo-dark-mode[^>]*title="Toggle dark mode"[^>]*>\s*<svg[^>]*><use href="\/icons\.svg#moon"/);
-  assert.match(result.body, /data-demo-download[^>]*title="Download video with audio"/);
+  assert.match(result.body, /data-demo-download[^>]*title="Download video"/);
   assert.match(result.body, /data-demo-replay[^>]*aria-label="Replay"[^>]*title="Restart demo"[^>]*>\s*<svg[^>]*><use href="\/icons\.svg#reset"/);
   assert.match(result.body, /src="\/js\/demo-video\.js\?v=/);
   assert.deepEqual(buttons.filter(([markup]) => markup.includes('aria-pressed')).map(([markup]) => markup.match(/aria-pressed="([^"]+)"/)[1]),
@@ -372,7 +372,8 @@ test('TOC omits empty groups on standalone pages and preserves release and modul
     }
     assert.equal(toc.includes('id="toc-module-items"'), hasModules, file);
     if (hasModules) assert.match(toc, /id="tool-toggle-toc-button"/, file);
-    for (const href of ['/demo', '/bitcoin', '/contact', '/updates']) {
+    assert.doesNotMatch(toc, /data-href="\/demo"/, file);
+    for (const href of ['/bitcoin', '/contact', '/updates']) {
       assert.ok(toc.includes(`data-href="${href}"`), `${file}: ${href}`);
     }
   }

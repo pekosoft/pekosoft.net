@@ -1278,7 +1278,7 @@ function scrollToRequestedHelpEntry() {
 
   const normalizedEntry = entry.trim().replace(/:\s*$/, '').toLocaleLowerCase();
   const headings = Array.from(document.querySelectorAll('.feature-row h1')).filter((element) => {
-    const headingName = (element.childNodes[0]?.textContent || element.textContent || '').trim().replace(/:\s*$/, '').toLocaleLowerCase();
+    const headingName = (element.dataset.helpEntry || element.childNodes[0]?.textContent || element.textContent || '').trim().replace(/:\s*$/, '').toLocaleLowerCase();
     return headingName.split('/').map((name) => name.trim()).includes(normalizedEntry);
   });
   const heading = headings.find((element) => element.querySelector('.object')?.textContent?.trim().replace(/s$/, '').toLocaleLowerCase() === kind)

@@ -95,9 +95,9 @@ function createHelp(url) {
       listeners.get(type)?.forEach(handler => handler(event));
       return event;
     },
-    addHeading(name, kind) {
+    addHeading(name, kind, entry) {
       const object = createElement('span', { class: 'object' }, kind);
-      const heading = createElement('h1', {}, `${name} ${kind}`, [object]);
+      const heading = createElement('h1', entry ? { 'data-help-entry': entry } : {}, `${name} ${kind}`, [object]);
       heading.childNodes = [{ textContent: `${name} ` }, object];
       const row = createElement('div', { class: 'feature-row' }, '', [heading]);
       row.scrollIntoView = () => { row.scrolled = true; };
@@ -134,6 +134,22 @@ test('status Help retains the control destination through hover, focus and click
     const row = help.addHeading('Reset', 'button');
     help.scrollToRequestedHelpEntry();
     assert.equal(row.scrolled, true);
+  }
+});
+
+test('Instrument Bright has its own Help target without changing the existing Timeline Bright target', () => {
+  const control = createElement('button', { title: 'Toggle bright BPM', 'data-help-entry': 'Instrument bright' }, 'Bright',
+    [createElement('span', { class: 'button-text' }, 'Bright')]);
+  const help = createHelp('/tap_pad');
+  assert.equal(help.getStatusHelpHref(help.getStatusDescriptor(control)), '/help?t=tap_pad&e=instrument+bright&k=button');
+
+  for (const entry of ['instrument+bright', 'bright']) {
+    const page = createHelp(`/help?t=tap_pad&e=${entry}&k=button`);
+    const instrument = page.addHeading('Bright', 'button', 'Instrument bright');
+    const timeline = page.addHeading('Bright', 'button');
+    page.scrollToRequestedHelpEntry();
+    assert.equal(Boolean(instrument.scrolled), entry === 'instrument+bright');
+    assert.equal(Boolean(timeline.scrolled), entry === 'bright');
   }
 });
 

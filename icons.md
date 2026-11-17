@@ -31,6 +31,7 @@ Pekosoft uses a single SVG sprite file (`icons.svg`) for all interface icons. Ea
 - Bars retains its filled section with a 32-unit outline around the remaining track.
 - Loop rounds only its two right-angle bends, with concentric inner and outer arcs. Arrowheads and shaft ends stay sharp and flat.
 - Beat keeps its lower cutout horizontally centered in the body, preserving the cutout's size and vertical position.
+- Blink curves the bulb smoothly into the screw base without a straight-sided neck.
 - Drum Machine uses a moderate 32-unit outline and an open shell with three lugs for Snare. Hi-hat uses a flat side view: two separated cymbal silhouettes with rounded corners on a shaft and stand, with no perspective ellipses or interior contours. Percussion uses Maraca, with an outlined shaker head, a zigzag band with rounded bends and a filled handle. Beat remains unchanged.
 - Tambourine uses a flat 32-unit circular frame, simple rounded jingles and a rounded grip, all built from fill-based geometry.
 - Bongos keeps its tapered shells and open heads, with approximately 32-unit outlines.

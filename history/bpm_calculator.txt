@@ -169,14 +169,14 @@ Released this change-log.
 24-01-2014
 </h1>
 
-Help file for bpm calculator out now.
+Help file for BPM Calculator out now.
 
 
 <h1>1.6
 24-01-2014
 </h1>
 
-Added BPS.
+Added BPS (beats per second).
 
 
 <h1>1.5

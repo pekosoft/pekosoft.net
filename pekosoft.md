@@ -61,6 +61,15 @@ brand-first order. This title convention applies to every registered site.
 
 Use **Free online audio tools.** as Pekosoft's sole product description in site metadata, sharing previews and introductory copy. Keep functional descriptions of individual tools. General Help introduces the site with: "Pekosoft is free online audio tools. Have fun with Metronome, BPM Calculator, Tap Pad and Turntable."
 
+Keep social posts and other promotional copy minimal. Use only the existing front-page one-liners for tool descriptions. Do not invent descriptions, slogans or calls to action such as "Try it at pekosoft.net".
+
+- Tap Pad: "For tapping tempo."
+- BPM Calculator: "For tempo calculations."
+- Metronome: "For keeping time."
+- Turntable: "For visualizing RPM."
+
+Use these launch hashtags: #Pekosoft #AudioTools #OnlineAudioTools #MusicProduction #Beatmaking #MusicTools #TapPad #Metronome #MetronomeEmulator #BPMCalculator #Turntable #TurntableEmulator #BPM #RPM #FocusStudios
+
 We are:
 
 - practical

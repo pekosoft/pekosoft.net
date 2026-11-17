@@ -1,4 +1,4 @@
 <h1>1.0
-XX-XX-2026
+17-11-2026
 </h1>
 Introducing: Pekosoft Metronome. An emulated timekeeper with click sounds, blinking background, signatures, accent, tempo and volume sliders and Italian tempi. Initial release. Released with the launch of pekosoft.net.

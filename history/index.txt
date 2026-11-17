@@ -1,4 +1,9 @@
-<h1>1.0
-XX-XX-2026
+<h1>2.0
+17-11-2026
 </h1>
 Pekosoft is back! Welcome to the new site and tools on pekosoft.net.
+
+<h1>1.0
+14-01-2014
+</h1>
+Welcome to Pekosoft! Have fun with BPM Calculator.

@@ -1,4 +1,4 @@
 <h1>1.0
-XX-XX-2026
+17-11-2026
 </h1>
 Introducing: Pekosoft Turntable. An emulated record player with five standard speeds, freeform speed, reverse, SPR (seconds per round) and DPS (degrees per second). Initial release. Released with the launch of pekosoft.net.

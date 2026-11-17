@@ -1,4 +1,4 @@
 Pekosoft
 Turntable
-1.0 Beta
-XX-XX-2026
+1.0
+17-11-2026

@@ -1,4 +1,4 @@
 Pekosoft
 BPM Calculator
-3.0 Beta
-XX-XX-2026
+3.0
+17-11-2026

@@ -1,4 +1,4 @@
 Pekosoft
 Pekosoft
-1.0 Beta
-XX-XX-2026
+2.0
+17-11-2026

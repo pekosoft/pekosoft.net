@@ -146,7 +146,7 @@
       </div>
 
       <div class="pair">
-        <label for="bytes-field" title="Total kilo bytes">KB:</label>
+        <label for="bytes-field" title="Total kilobytes">KB:</label>
         <input type="number" id="bytes-field" readonly>
       </div>
 

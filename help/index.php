@@ -517,7 +517,7 @@
   </svg>
   <div class="justify">
     <h1>Menu</h1>
-    Appears as dropdown menus on desktop, and as popup menus on mobile. Have two or more options.
+    Appears as a dropdown menu on desktop and a popup menu on mobile. Has two or more options.
   </div>
 </div>
 

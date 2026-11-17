@@ -191,7 +191,7 @@ $embedded = ($_GET['embedded'] ?? '') === '1';
         <button class="square icon-only" type="button" data-demo-loop aria-label="Loop" title="Toggle loop" aria-pressed="false">
           <svg class="icons" aria-hidden="true"><use href="/icons.svg#loop"></use></svg>
         </button>
-        <button class="square icon-only" type="button" data-demo-download aria-label="Download" title="Download video with audio">
+        <button class="square icon-only" type="button" data-demo-download aria-label="Download" title="Download video">
           <svg class="icons" aria-hidden="true"><use href="/icons.svg#download"></use></svg>
         </button>
         <button class="square icon-only" type="button" data-demo-fullscreen aria-label="Fullscreen" title="Toggle full screen" aria-pressed="false">

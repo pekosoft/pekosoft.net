@@ -168,6 +168,16 @@
 
 <div class="feature-row border">
   <svg class="standard-image-help">
+    <use href="/icons.svg#release"></use>
+  </svg>
+  <div class="justify">
+    <h1>Tool <span class="object">pages</span></h1>
+    The Tool button opens the page where you can use the current tool.
+  </div>
+</div>
+
+<div class="feature-row border">
+  <svg class="standard-image-help">
     <use href="/icons.svg#help"></use>
   </svg>
   <div class="justify">

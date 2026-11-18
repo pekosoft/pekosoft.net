@@ -807,15 +807,20 @@ function getColorTheme() {
 }
 
 function applyColorTheme(theme) {
-  const normalizedTheme = theme === 'light' ? 'light' : 'dark';
-  localStorage.setItem(COLOR_THEME_STORAGE_KEY, normalizedTheme);
-  document.documentElement.classList.toggle('invert-colors', normalizedTheme === 'light');
+  document.documentElement.classList.toggle('invert-colors', theme === 'light');
   updateModeButtonState();
 }
 
 function toggleMode() {
-  applyColorTheme(getColorTheme() === 'dark' ? 'light' : 'dark');
+  const theme = getColorTheme() === 'dark' ? 'light' : 'dark';
+  localStorage.setItem(COLOR_THEME_STORAGE_KEY, theme);
+  applyColorTheme(theme);
 }
+
+window.addEventListener('storage', (event) => {
+  if (event.storageArea !== localStorage || (event.key !== COLOR_THEME_STORAGE_KEY && event.key !== null)) return;
+  applyColorTheme(getColorTheme());
+});
 
 function updateModeButtonState() {
   const toggleModeButton = document.getElementById('toggle-mode-button');
@@ -1199,6 +1204,7 @@ function getStatusDescriptor(target) {
 
   const tagName = target.tagName?.toLowerCase();
   const isSettingsControl = !!target.closest('#settings-menu-container');
+  const toolRelease = target.closest('[data-toc-tools]') && target.dataset.href?.slice(1);
   const associatedLabel = getStatusAssociatedLabel(target);
   const iconHref = target.querySelector?.('use')?.getAttribute('href') || '';
   const iconFromButton = iconHref.split('#')[1];
@@ -1244,8 +1250,9 @@ function getStatusDescriptor(target) {
     icon,
     iconHref,
     entry: target.dataset.helpEntry?.trim() || name,
-    release: target.dataset.helpRelease?.trim() || (isSettingsControl ? 'index' : undefined),
-    kind,
+    release: toolRelease || target.dataset.helpRelease?.trim() || (isSettingsControl ? 'index' : undefined),
+    pageOnly: Boolean(toolRelease),
+    kind: target.dataset.helpKind?.trim() || kind,
     label: statusLabel || (sentenceTooltip ? (matchesTooltip ? sentenceTooltip : `${name}: ${sentenceTooltip}`) : name),
   };
 }
@@ -1262,7 +1269,7 @@ function getCurrentHelpRelease() {
 
 function getStatusHelpHref(descriptor) {
   const parameters = new URLSearchParams({ t: descriptor?.release || getCurrentHelpRelease() });
-  if (descriptor?.entry) {
+  if (descriptor?.entry && !descriptor.pageOnly) {
     parameters.set('e', descriptor.entry.toLocaleLowerCase());
     parameters.set('k', descriptor.kind.toLocaleLowerCase());
   }

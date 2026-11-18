@@ -107,6 +107,50 @@ function createHelp(url) {
   };
 }
 
+test('TOC page buttons open their General Help entries from tools and documentation', () => {
+  for (const page of ['/bpm_calculator', '/about?t=bpm_calculator', '/help?t=index', '/history?t=piano']) {
+    const help = createHelp(page);
+    for (const name of ['Tool', 'Help', 'History', 'About']) {
+      const button = createElement('button', {
+        title: name, 'data-help-release': 'index', 'data-help-kind': 'page'
+      }, name);
+      const destination = `/help?t=index&e=${name.toLowerCase()}&k=page`;
+      help.dispatch('mouseover', button);
+      assert.equal(help.link.href, destination);
+      assert.equal(help.dispatch('click', button).prevented, undefined);
+      assert.equal(help.dispatch('click', button, { ctrlKey: true }).prevented, true);
+      assert.equal(help.dispatch('keydown', button, { key: 'Enter', ctrlKey: true }).prevented, true);
+      assert.deepEqual(help.assigned.slice(-2), [destination, destination]);
+    }
+  }
+
+  const help = createHelp('/help?t=index&e=history&k=page');
+  const module = help.addHeading('History', 'module');
+  const page = help.addHeading('History', 'pages');
+  help.scrollToRequestedHelpEntry();
+  assert.equal(page.scrolled, true);
+  assert.equal(module.scrolled, undefined);
+});
+
+test('TOC tools link to the top of the destination Help for mouse and keyboard shortcuts', () => {
+  for (const [page, slug, name] of [['/', 'tap_pad', 'Tap Pad'], ['/piano', 'drum_machine', 'Drum Machine']]) {
+    const help = createHelp(page);
+    const tool = createElement('button', { 'data-href': `/${slug}`, title: name }, name);
+    const icon = createElement('svg');
+    tool.children.push(icon);
+    icon.parentElement = tool;
+    createElement('div', { 'data-toc-tools': '' }, '', [tool]);
+    const destination = `/help?t=${slug}`;
+    help.dispatch('mouseover', icon);
+    assert.equal(help.link.href, destination);
+    assert.equal(help.link.getAttribute('aria-label'), `Open Help for ${name}`);
+    assert.equal(help.dispatch('click', icon).prevented, undefined);
+    assert.equal(help.dispatch('click', icon, { ctrlKey: true }).prevented, true);
+    assert.equal(help.dispatch('keydown', tool, { key: 'Enter', ctrlKey: true }).prevented, true);
+    assert.deepEqual(help.assigned, [destination, destination]);
+  }
+});
+
 test('status Help retains the control destination through hover, focus and clicking its icon', () => {
   for (const [page, release] of [['/tap_pad', 'tap_pad'], ['/drum_machine', 'drum_machine'], ['/help?t=metronome', 'metronome']]) {
     const help = createHelp(page);

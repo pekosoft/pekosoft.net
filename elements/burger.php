@@ -36,7 +36,7 @@ $hasPlaylistModule = in_array('playlist', $availableModules, true);
 
       </div>
 
-      <div class="toc-column">
+      <div class="toc-column" data-toc-tools>
 
     <?php if ($isBetaRelease): ?>
       <button class="toc-button" data-href="/player" title="Player" aria-label="Player"><svg class="icons" role="img"><use href="/icons.svg#player"></use></svg>Player</button>
@@ -87,10 +87,10 @@ $hasPlaylistModule = in_array('playlist', $availableModules, true);
 
       <?php if (empty($hideReleaseMenu) && $release !== ''): ?>
       <div class="toc-column">
-          <button class="toc-button" data-href="<?php echo $releaseHref; ?>" title="Tool" aria-label="Tool"><svg class="icons" role="img"><use href="/icons.svg#release"></use></svg>Tool</button>
-          <button class="toc-button" data-href="/help?t=<?php echo $release; ?>" title="Help" aria-label="Help"><svg class="icons" role="img"><use href="/icons.svg#help"></use></svg>Help</button>
-          <button class="toc-button" data-href="/history?t=<?php echo $release; ?>" title="History" aria-label="History"><svg class="icons" role="img"><use href="/icons.svg#clock"></use></svg>History</button>
-          <button class="toc-button" data-href="/about?t=<?php echo $release; ?>" title="About" aria-label="About"><svg class="icons" role="img"><use href="/icons.svg#about"></use></svg>About</button>
+          <button class="toc-button" data-href="<?php echo $releaseHref; ?>" title="Tool" aria-label="Tool" data-help-release="index" data-help-kind="page"><svg class="icons" role="img"><use href="/icons.svg#release"></use></svg>Tool</button>
+          <button class="toc-button" data-href="/help?t=<?php echo $release; ?>" title="Help" aria-label="Help" data-help-release="index" data-help-kind="page"><svg class="icons" role="img"><use href="/icons.svg#help"></use></svg>Help</button>
+          <button class="toc-button" data-href="/history?t=<?php echo $release; ?>" title="History" aria-label="History" data-help-release="index" data-help-kind="page"><svg class="icons" role="img"><use href="/icons.svg#clock"></use></svg>History</button>
+          <button class="toc-button" data-href="/about?t=<?php echo $release; ?>" title="About" aria-label="About" data-help-release="index" data-help-kind="page"><svg class="icons" role="img"><use href="/icons.svg#about"></use></svg>About</button>
       </div>
       <?php endif; ?>
 

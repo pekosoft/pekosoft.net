@@ -247,7 +247,7 @@
     <use href="/icons.svg#menu"></use>
   </svg>
   <div class="justify">
-    <h1>Pattern <span class="object">menu</span></h1>Replaces hits in the displayed pattern or recording with Basic, Four On Floor, Breakbeat, Electro or Empty. Presets repeat across recordings longer than sixteen steps. Length and voice settings are preserved. Replacing hits also clears hits outside the current length. Edited rhythms are marked Custom. Changes can be undone.
+    <h1>Pattern <span class="object">menu</span></h1>Replaces hits in the displayed pattern or recording with Basic, Four On Floor, Breakbeat, Electro, Hip hop, Lofi, Punk, House, Pop, Dream pop or Empty. Each rhythm loads its preset BPM. Lofi uses the Hip hop groove at a slower tempo with a percussion accent. Empty clears the hits without changing the tempo. Presets repeat across recordings longer than sixteen steps. The length in steps, swing and voice settings stay the same. Replacing hits also clears hits outside the current length. Edited rhythms are marked Custom. Hits and tempo can be undone together.
   </div>
 </div>
 

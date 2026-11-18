@@ -130,6 +130,12 @@
             <option value="four_floor">Four On Floor</option>
             <option value="breakbeat">Breakbeat</option>
             <option value="electro">Electro</option>
+            <option value="hip_hop">Hip hop</option>
+            <option value="lofi">Lofi</option>
+            <option value="punk">Punk</option>
+            <option value="house">House</option>
+            <option value="pop">Pop</option>
+            <option value="dream_pop">Dream pop</option>
             <option value="empty">Empty</option>
             <option value="custom">Custom</option>
           </select>

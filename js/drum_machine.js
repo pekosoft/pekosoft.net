@@ -38,6 +38,13 @@
     ["pan", "pan", 0.01, "%"]
   ];
 
+  const HIP_HOP_PATTERN = {
+    kick:  [2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0],
+    snare: [0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0],
+    hat:   [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0],
+    perc:  Array(STEP_COUNT).fill(0)
+  };
+
   const PATTERN_PRESETS = {
     basic: {
       kick:  [2, 0, 0, 0, 1, 0, 0, 0, 2, 0, 0, 0, 1, 0, 0, 0],
@@ -52,10 +59,10 @@
       perc:  [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
     },
     breakbeat: {
-      kick:  [2, 0, 0, 1, 0, 0, 2, 0, 0, 0, 1, 0, 0, 1, 0, 0],
-      snare: [0, 0, 0, 0, 2, 0, 0, 1, 0, 0, 0, 0, 2, 0, 1, 0],
-      hat:   [1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 2, 1],
-      perc:  [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1]
+      kick:  [2, 0, 0, 0, 0, 0, 1, 0, 2, 0, 0, 1, 0, 0, 0, 0],
+      snare: [0, 0, 0, 1, 2, 0, 0, 0, 0, 1, 0, 0, 2, 0, 0, 1],
+      hat:   [1, 0, 0, 1, 2, 0, 0, 1, 1, 0, 0, 1, 2, 0, 0, 1],
+      perc:  Array(STEP_COUNT).fill(0)
     },
     electro: {
       kick:  [2, 0, 0, 0, 0, 0, 1, 0, 2, 0, 0, 0, 0, 0, 1, 0],
@@ -63,12 +70,46 @@
       hat:   [1, 0, 1, 0, 1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 2, 0],
       perc:  [0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1]
     },
+    hip_hop: HIP_HOP_PATTERN,
+    lofi: {
+      ...HIP_HOP_PATTERN,
+      perc: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0]
+    },
+    punk: {
+      kick:  [2, 0, 1, 0, 0, 0, 0, 0, 2, 0, 1, 0, 0, 0, 0, 0],
+      snare: [0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0],
+      hat:   [2, 0, 1, 0, 2, 0, 1, 0, 2, 0, 1, 0, 2, 0, 1, 0],
+      perc:  Array(STEP_COUNT).fill(0)
+    },
+    house: {
+      kick:  [2, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0],
+      snare: [0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0],
+      hat:   [0, 0, 2, 0, 0, 1, 2, 0, 0, 0, 2, 0, 0, 1, 2, 1],
+      perc:  [0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1]
+    },
+    pop: {
+      kick:  [2, 0, 0, 0, 0, 0, 1, 0, 2, 0, 1, 0, 0, 0, 0, 0],
+      snare: [0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 1],
+      hat:   [2, 0, 1, 0, 1, 0, 1, 0, 2, 0, 1, 0, 1, 0, 1, 0],
+      perc:  Array(STEP_COUNT).fill(0)
+    },
+    dream_pop: {
+      kick:  [2, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0],
+      snare: [0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0],
+      hat:   [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0],
+      perc:  Array(STEP_COUNT).fill(0)
+    },
     empty: {
       kick:  Array(STEP_COUNT).fill(0),
       snare: Array(STEP_COUNT).fill(0),
       hat:   Array(STEP_COUNT).fill(0),
       perc:  Array(STEP_COUNT).fill(0)
     }
+  };
+
+  const PATTERN_TEMPOS = {
+    basic: 120, four_floor: 128, breakbeat: 96, electro: 112,
+    hip_hop: 95, lofi: 75, punk: 192, house: 124, pop: 108, dream_pop: 120
   };
 
   const KIT_PRESETS = {
@@ -2558,7 +2599,13 @@
       const before = this.patternSnapshot();
       const recording = this.getGridRecording();
       const source = this.getSourceSettings();
+      const bpm = PATTERN_TEMPOS[name] ?? source.bpm;
       if (recording) {
+        const steps = stepAtTime(recording.durationMs / 1000, recording.bpm, recording.swing);
+        if (bpm !== recording.bpm) {
+          recording.bpm = bpm;
+          recording.durationMs = timeAtStep(steps, bpm, recording.swing) * 1000;
+        }
         recording.events = [];
         recording.hiddenEvents = [];
         recording.fixedDuration = true;
@@ -2570,6 +2617,7 @@
         }
         recording.events = recording.events.filter((event) => event.timestampMs < recording.durationMs);
       } else {
+        this.state.bpm = bpm;
         this.state.pattern = clone(PATTERN_PRESETS[name]);
         this.state.freeHits = [];
       }

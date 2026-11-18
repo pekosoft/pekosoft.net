@@ -2339,7 +2339,67 @@ test('Recorded voice edits affect only the chosen property, reach hidden hits an
   assert.equal(machine.recordings[0].voices.kick.pan, -0.5);
 });
 
-test('Kit, preset and Random operate on the selected take without switching Source or changing its duration', () => {
+test('Rhythm presets load grooves and tempos without changing the kit or step count', () => {
+  const { machine, edits } = createEditor();
+  const tempos = { basic: 120, four_floor: 128, breakbeat: 96, electro: 112, hip_hop: 95, lofi: 75, punk: 192, house: 124, pop: 108, dream_pop: 120 };
+  machine.setLength(8);
+  const voices = JSON.stringify(machine.state.voices);
+  const grooves = new Set();
+  for (const [name, bpm] of Object.entries(tempos)) {
+    machine.setBpm(90);
+    machine.loadPatternPreset(name);
+    assert.equal(machine.state.bpm, bpm, name);
+    assert.equal(machine.state.patternName, name);
+    assert.equal(machine.getGridLength(), 8);
+    assert.equal(JSON.stringify(machine.state.voices), voices);
+    grooves.add(JSON.stringify(machine.state.pattern));
+    const edit = edits.at(-1);
+    machine.restoreGridSnapshot(edit.before);
+    assert.equal(machine.state.bpm, 90);
+    machine.restoreGridSnapshot(edit.after);
+    assert.equal(machine.state.bpm, bpm);
+  }
+  assert.equal(grooves.size, Object.keys(tempos).length);
+  machine.loadPatternPreset('empty');
+  assert.equal(machine.state.bpm, tempos.dream_pop);
+  assert.equal(machine.getPatternHits().length, 0);
+});
+
+test('Hip hop, Lofi and Dream pop layer hi-hat over every hit without changing their kick and snare grooves', () => {
+  const { machine } = createEditor();
+  const hits = voice => Array.from(machine.getPatternHits().filter(hit => hit.voice === voice), hit => hit.step);
+  for (const name of ['hip_hop', 'lofi']) {
+    machine.loadPatternPreset(name);
+    assert.deepEqual(hits('kick'), [0, 10]);
+    assert.deepEqual(hits('snare'), [4, 12]);
+    assert.deepEqual(hits('hat'), [0, 2, 4, 6, 8, 10, 12, 14]);
+    assert.deepEqual(hits('perc'), name === 'lofi' ? [14] : []);
+  }
+  machine.loadPatternPreset('dream_pop');
+  assert.deepEqual(hits('kick'), [0, 4, 12]);
+  assert.deepEqual(hits('snare'), [8]);
+  assert.deepEqual(hits('hat'), [0, 4, 8, 12]);
+  assert.deepEqual(hits('perc'), []);
+});
+
+test('A rhythm preset retimes the selected take without changing its length in steps', () => {
+  const result = createEditor();
+  const { machine, edits } = result;
+  const recording = selectEditableTake(result, { durationMs: 4000 });
+  const length = machine.getGridLength();
+  const originalBpm = recording.bpm;
+  machine.loadPatternPreset('house');
+  assert.equal(recording.bpm, 124);
+  assert.equal(machine.getGridLength(), length);
+  assert.ok(Math.abs(recording.durationMs - 4000 * originalBpm / 124) < 1e-8);
+  assert.ok(recording.events.some(event => Math.abs(event.timestampMs - 16 * 15000 / 124) < 1e-8));
+  assert.ok(recording.events.every(event => event.timestampMs < recording.durationMs));
+  machine.restoreGridSnapshot(edits.at(-1).before);
+  assert.equal(machine.getGridRecording().bpm, originalBpm);
+  assert.equal(machine.getGridRecording().durationMs, 4000);
+});
+
+test('Kit, preset and Random operate on the selected take without switching Source or changing its duration at the same BPM', () => {
   const result = createEditor();
   const { machine, api } = result;
   const recording = selectEditableTake(result, { durationMs: 4000 });

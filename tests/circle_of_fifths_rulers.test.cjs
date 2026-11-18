@@ -24,7 +24,7 @@ for (const rulers of [true, false]) {
       const context = {
         setTransform() {}, clearRect() {}, beginPath() {},
         moveTo(x, y) { lines.push([x, y]); },
-        lineTo() {}, stroke() {}, closePath() {},
+        lineTo(x, y) { lines.at(-1)?.push(x, y); }, stroke() {}, closePath() {},
         fillText(text) { labels.push(text); },
         fillRect(x) { blocks.push(x); },
       };
@@ -42,7 +42,10 @@ for (const rulers of [true, false]) {
         midiToTimelineNoteName: (midi) => String(midi),
       });
       assert.equal(labels.length, rulers ? 25 : 0);
-      assert.equal(lines.length > 0, guides);
+      assert.equal(lines.length > 0, guides || rulers);
+      if (rulers && !guides) {
+        assert.ok(lines.every(([x1, y1, x2, y2]) => x1 === 34 && x2 === 500 && y1 === y2));
+      }
       assert.equal(blocks.length, 1);
     });
   }

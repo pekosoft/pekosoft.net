@@ -12,9 +12,11 @@ Timeline rulers and plots are separate SVG roots. Each visible edge has one owne
 
 Timeline ruler cells have no separate opaque background. They occupy dedicated layout cells, so plots do not scroll behind them. Let the containing surface control their background and Alpha transparency.
 
+When Rulers is on, draw each tick across its own ruler band. With Guides also on, extend the tick to the opposite plot edge using the same coordinate. Player's time and beat extensions do not continue through the other ruler's labels. Do not duplicate seams or coincident ticks. With Guides off, keep the ruler bands but leave the plot free of guide lines.
+
 All ruler and guide lines must use the same explicit SVG contract:
 
-- `stroke-width: 1`
+- `stroke-width`: one physical pixel for shared SVG rulers and their plot extensions, using the current device pixel ratio
 - `shape-rendering: crispEdges`
 - `vector-effect: non-scaling-stroke`
 - `stroke-linecap: butt`
@@ -25,6 +27,7 @@ All ruler and guide lines must use the same explicit SVG contract:
 - Corner titles use the same text baseline as the horizontal ruler labels. Use the shared `cornerTitle` option rather than positioning text independently.
 - Use the shared 48 px Y-ruler width unless a specific requirement justifies an exception. Confirm that signed labels fit without clipping.
 - BPM titles in Tap Pad and Metronome are placed between the highest two 30-BPM guides. This remains valid for every timeline height.
+- Tap Pad omits a value tick and its plot extension if it is less than 4 CSS pixels from the top ruler seam, so it does not read as a second border.
 - Tick labels default above their guide. A tick may request `labelPosition: 'below'` when it describes the lower region, such as BPM Calculator's `NOTE` label.
 - Every horizontal guide must have an aligned ruler tick. Numbers may be omitted at endpoints or at intermediate ticks when space is tight. Retain the guides and ticks.
 - Audio Calculator uses FS in the corner, omits the -0.031 and 0.031 endpoint numbers, and reduces intermediate label density on short timelines. Its signed amplitude scale stays in FS, not dBFS.
@@ -41,14 +44,14 @@ All ruler and guide lines must use the same explicit SVG contract:
 - Meters bitmap exports capture the active canvas without its outer SVG rulers. With Guides and Bright on, complete all four outline edges in the exported copy at one backing pixel thick, regardless of Rulers. Do not alter the on-screen frame or cached signal.
 - Meter backing dimensions scale with `devicePixelRatio`. Replacing them with CSS dimensions clears the signal and transform, causing flashing with live signals and shrunken guides with idle signals.
 - SVG rulers use the plot's CSS dimensions and must remain aligned with its full-size canvas guides after clicks, mode changes and Timeline resizing.
-- In Spectroscope, Level, Oscilloscope and Wavescope, Rulers draws tick-aligned lines across the plot even when Guides is off. Guides continues to control the remaining reference lines and Bright boundary.
+- This rule applies to all Meters scales, including the retained Phasescope and Bit meter. Guides continues to control non-ruler references such as the phase diagonals and correlation scale.
 - The corner ruler owns the seam above Meters' vertical ruler. A tick at the vertical ruler's top retains its label but uses `drawLine: false` to avoid a second adjacent seam line.
 - Oscilloscope's horizontal time scale uses its sample count and source sample rate, in milliseconds. Wavescope's horizontal time scale uses its 90 Hz capture history, in seconds before the newest signal at 0 s. Silence and paused updates do not advance that history.
 - Wavescope keeps fractional capture intervals between frames. Resizing preserves the newest history samples at their original time spacing instead of stretching them.
 - Level's left ruler names the channels with L and R for stereo or M for mono. Place labels beside their bars independently of guide ticks, with M above the mono center guide to avoid a line through the label.
 - Bit meter converts float analyser samples to signed 32-bit PCM using rounded, saturated sample × 2^31. Row 1 is the sign bit and row 32 is the least significant bit. Each channel measures the fraction of samples with that bit set. The separate Over row counts samples outside [-1, +1] before saturation. Use independent float L/R analysers for stereo and one M lane for mono. Never infer the original file's bit depth or floating-point format. Match Spectroscope's immediate attack and 350 ms exponential release for displayed activity, using the shared 60 Hz refresh loop. Clear each channel immediately on digital silence rather than decaying. Cache activity and advance smoothing only when sampling, never during Freeze or presentation redraws. Unless Freeze is on, continue sampling after stop or pause and during silence even when the source reports inactive. Show residual activity until the analyser becomes silent. Do not hold the last active frame or force values to zero on transport stop. Keep this behavior specific to Bit meter. Mirror the L percentage scale towards the center and the R scale away from the center. Thin row labels when the plot is short without hiding any bit bars.
-- Phasescope plots (R - L) / 2 horizontally and (L + R) / 2 vertically, using equal physical scales so channel diagonals remain 45 degrees at every aspect ratio. Center the phase origin in the canvas with equal reserved top and bottom bands. Place L and R inside the upper corners of the guide bounds, away from the diagonals and canvas corners. Its M/S rulers show normalized amplitude, not time or decibels. Place the correlation readout above the trace and its scale below, with 0 centered on the scale. Clip the trace between the reserved bands so it cannot overlap these labels. Use a blue current-value cursor and magenta one-second rolling min/max cursors, each 1 CSS pixel wide, without a filled bar. Keep the correlation text blue regardless of Color. Rulers toggles only the outer M/S scales, while Guides toggles the phase axes and the grey bottom correlation scale, ticks and labels. The correlation readout and coloured cursors remain independent of both toggles. Cache float channel samples, correlation and extrema together for Freeze and paused redraws. Only live sampling advances the range. Undefined correlation and Reset clear it.
-- Level's horizontal ruler separates its label band from its short tick band. Include each reference as a complete tick, value and guide group, or omit the entire group. Never leave an unlabeled tick or guide.
+- Phasescope plots (R - L) / 2 horizontally and (L + R) / 2 vertically, using equal physical scales so channel diagonals remain 45 degrees at every aspect ratio. Center the phase origin in the canvas with equal reserved top and bottom bands. Place L and R inside the upper corners of the guide bounds, away from the diagonals and canvas corners. Its M/S rulers show normalized amplitude, not time or decibels. Place the correlation readout above the trace and its scale below, with 0 centered on the scale. Clip the trace between the reserved bands so it cannot overlap these labels. Use a blue current-value cursor and magenta one-second rolling min/max cursors, each 1 CSS pixel wide, without a filled bar. Keep the correlation text blue regardless of Color. Rulers toggles the outer M/S scales and their plot extensions. Guides toggles the diagonals, the shorter phase axes when Rulers is off, and the bottom correlation scale, ticks and labels. The correlation readout and coloured cursors remain independent of both toggles. Cache float channel samples, correlation and extrema together for Freeze and paused redraws. Only live sampling advances the range. Undefined correlation and Reset clear it.
+- Level's horizontal ruler places its labels beside the full-height ticks. Include each reference as a complete tick, value and guide group, or omit the entire group. Never leave an unlabeled tick or guide.
 - Include -3 dB among Level's reference values. Omit crowded groups based on label widths and groups within 12 CSS pixels of the left edge on its linear amplitude scale. Rulers and canvas guides must use the same filtered references, including after resizing.
 
 ## State Model
@@ -67,6 +70,8 @@ Verify each ruler-enabled timeline (Audio Calculator, BPM Calculator, Metronome,
 | Guides on, Bright off | One-pixel guide and ruler lines with no doubled seams |
 | Guides on, Bright on | Complete outer frame and exactly one internal seam per ruler/plot join |
 | Rulers off, Bright on | Plot owns the complete Bright frame |
+| Rulers on, Guides off | Ticks span only their ruler bands and plot guides are hidden |
+| Rulers on, Guides on | Plot guides align with the ticks and continue to the opposite edge of the plot |
 | Rulers on, horizontal scroll | Vertical ruler remains fixed. Horizontal ruler and labels track plot scroll |
 | Timeline resized or maximized | Titles remain in their corner cell or guide gap with no label strike-through or crowded labels |
 | Selecting or dragging across labels | Text associated with guides and rulers stays unselected in every Meters mode and Timeline layout. Seeking, dragging and scrolling still work |

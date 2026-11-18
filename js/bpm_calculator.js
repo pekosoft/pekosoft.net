@@ -929,6 +929,8 @@ function drawCanvas() {
   }
   timelineRenderKey = renderKey;
   syncTimelineViewport(h);
+  const horizontal = getBpmTimelineHorizontalTicks();
+  const vertical = [{ position: h / 2, label: 'NOTE', labelPosition: 'below' }];
   bpmTimelineRulers?.render({
     width: w,
     height: h,
@@ -938,14 +940,14 @@ function drawCanvas() {
       timelineUtils.drawVerticalRuler(svg, {
         ...dimensions,
         title: 'BEAT',
-        ticks: [{ position: h / 2, label: 'NOTE', labelPosition: 'below' }],
+        ticks: vertical,
         color: guideColor
       });
     },
     drawHorizontal: (svg, dimensions) => {
       timelineUtils.drawHorizontalRuler(svg, {
         ...dimensions,
-        ticks: getBpmTimelineHorizontalTicks(),
+        ticks: horizontal,
         color: guideColor
       });
     }
@@ -957,17 +959,19 @@ function drawCanvas() {
   timelineMarkers = [];
   timelinePlayhead = null;
   timelineSvg.replaceChildren(layer);
-  if (state.showGuides) {
+  if (bpmTimelineRulers?.getVisible() && state.showGuides) {
+    timelineUtils.drawTickExtensions(layer, { width: w, height: h, horizontal, vertical, color: guideColor });
+  } else if (state.showGuides) {
     const middleY = (h / 2) + 0.5;
     layer.appendChild(createTimelineLine(0, middleY, w, middleY, guideColor));
-    if (isBright) {
-      const boundary = bpmTimelineRulers?.getVisible()
-        ? [[w, 0, w, h], [w, h, 0, h]]
-        : [[0, 0, w, 0], [w, 0, w, h], [w, h, 0, h], [0, h, 0, 0]];
-      boundary.forEach(([x1, y1, x2, y2]) => {
-        layer.appendChild(createTimelineLine(x1, y1, x2, y2, guideColor, false));
-      });
-    }
+  }
+  if (isBright) {
+    const boundary = bpmTimelineRulers?.getVisible()
+      ? [[w, 0, w, h], [w, h, 0, h]]
+      : [[0, 0, w, 0], [w, 0, w, h], [w, h, 0, h], [0, h, 0, 0]];
+    boundary.forEach(([x1, y1, x2, y2]) => {
+      layer.appendChild(createTimelineLine(x1, y1, x2, y2, guideColor, false));
+    });
   }
 
   if (state.showPlayhead) {

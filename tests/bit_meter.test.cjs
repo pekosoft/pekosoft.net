@@ -27,7 +27,7 @@ function createMeter(initialStorage = {}) {
   const context2d = new Proxy({
     measureText: text => ({ width: text.length * 6 }),
     fillRect: (...args) => draws.push({ args, color: context2d.fillStyle }),
-    fillText: text => draws.push({ text }),
+    fillText: (text, ...position) => draws.push({ text, position }),
     beginPath() { currentPath = []; },
     moveTo(x, y) { currentPath.push(['moveTo', x, y]); },
     lineTo(x, y) { currentPath.push(['lineTo', x, y]); },
@@ -93,6 +93,9 @@ function createMeter(initialStorage = {}) {
     console: { error: text => errors.push(text), warn: text => errors.push(text) },
     Float32Array, Uint8Array
   });
+  const rulerStubs = window.PekoSvgTimeline;
+  vm.runInContext(fs.readFileSync(path.join(__dirname, '..', 'js', 'svg_timeline.js'), 'utf8'), context);
+  Object.assign(window.PekoSvgTimeline, rulerStubs);
   vm.runInContext(source.replace(/\}\)\(\);(?=\s*\/\/ END OF FILE)/, `
     globalThis.meter = {
       getBitActivity, getBitMeterGeometry, getMeterTicks, getCrosshairReadout,
@@ -749,30 +752,33 @@ test('rulers retain all bit bars while thinning labels for short plots', () => {
   assert.equal(short.horizontal.length, 4);
 });
 
-test('Rulers extend standard meter tick lines across the plot without Guides', () => {
+test('Guides extend every meter mode’s ruler ticks only when enabled', () => {
   const meter = createMeter();
   const width = 320;
   const height = 200;
   const source = { sampleRate: 48000, channelCount: 2 };
-  meter.applyGuides(false);
   meter.applyRulers(true);
-  const ticks = meter.getMeterTicks('oscilloscope', width, height, source);
-  meter.drawGuidesBehind('oscilloscope', meter.context2d, width, height, source);
-  const lines = meter.strokes.map(commands => {
-    const start = commands.find(([type]) => type === 'moveTo');
-    const end = commands.find(([type]) => type === 'lineTo');
-    return [start, end];
-  });
-  const expectedLines = ticks.horizontal.filter(({ position }) => position !== 0).length
-    + ticks.vertical.filter(({ position }) => position !== 0).length;
-  assert.equal(lines.length, expectedLines);
-  assert.ok(lines.length > 0);
-  assert.ok(lines.every(([start, end]) =>
-    (start[1] === end[1] && start[2] === 0 && end[2] === height)
-    || (start[2] === end[2] && start[1] === 0 && end[1] === width)
-  ));
+  for (const mode of ['spectroscope', 'level', 'oscilloscope', 'wavescope', 'bit_meter', 'phasescope']) {
+    meter.strokes.length = 0;
+    meter.applyGuides(false);
+    meter.drawGuidesBehind(mode, meter.context2d, width, height, source);
+    assert.equal(meter.strokes.length, 0, `${mode} has no plot guides with Guides off`);
+    meter.applyGuides(true);
+    meter.drawGuidesBehind(mode, meter.context2d, width, height, source);
+    const commands = meter.strokes[0].filter(([type]) => type === 'moveTo' || type === 'lineTo');
+    let vertical = 0;
+    let horizontal = 0;
+    for (let index = 0; index < commands.length; index += 2) {
+      const [start, end] = commands.slice(index, index + 2);
+      if (start[1] === end[1] && start[2] === 0 && end[2] === height) vertical++;
+      else if (start[2] === end[2] && start[1] === 0 && end[1] === width) horizontal++;
+      else assert.fail(`${mode} has a tick line that stops inside the plot`);
+    }
+    assert.ok(vertical > 0 && horizontal > 0, `${mode} extends ticks on both axes`);
+  }
 
   meter.strokes.length = 0;
+  meter.applyGuides(false);
   meter.applyRulers(false);
   meter.drawGuidesBehind('oscilloscope', meter.context2d, width, height, source);
   assert.equal(meter.strokes.length, 0);

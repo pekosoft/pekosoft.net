@@ -672,6 +672,8 @@ function redrawTimeline() {
     height: timelineHeight
   });
   const guideColor = window.PekoBrightGuides?.getTimelineGuideColor(getCssVariable('--grey1')) || getCssVariable('--grey1');
+  const horizontal = getMetronomeTimelineHorizontalTicks();
+  const vertical = getMetronomeTimelineVerticalTicks(timelineHeight);
   metronomeTimelineRulers?.render({
     width: METRONOME_TIMELINE_WIDTH,
     height: timelineHeight,
@@ -682,14 +684,14 @@ function redrawTimeline() {
         ...dimensions,
         title: 'BPM',
         titleY: getMetronomeTimelineTitleY(timelineHeight),
-        ticks: getMetronomeTimelineVerticalTicks(timelineHeight),
+        ticks: vertical,
         color: guideColor
       });
     },
     drawHorizontal: (svg, dimensions) => {
       metronomeSvgTimeline.drawHorizontalRuler(svg, {
         ...dimensions,
-        ticks: getMetronomeTimelineHorizontalTicks(),
+        ticks: horizontal,
         color: guideColor
       });
     }
@@ -698,6 +700,11 @@ function redrawTimeline() {
   lastTop = { x: METRONOME_GRAPH_OFFSET, y: timelineHeight };
 
   drawReferenceLines(timelineHeight);
+  if (show_guides && metronomeTimelineRulers?.getVisible()) {
+    metronomeSvgTimeline.drawTickExtensions(metronomeTimelineSvg, {
+      width: METRONOME_TIMELINE_WIDTH, height: timelineHeight, horizontal, vertical, color: guideColor
+    });
+  }
 
   const barsLayer = document.createElementNS('http://www.w3.org/2000/svg', 'g');
   const lineLayer = document.createElementNS('http://www.w3.org/2000/svg', 'g');
@@ -779,6 +786,7 @@ function drawReferenceLines(timelineHeight) {
     });
   }
 
+  if (metronomeTimelineRulers?.getVisible()) return;
   for (let bpm = 30; bpm <= maxGuide; bpm += 30) {
     const y = Math.floor(timelineHeight - Math.min(timelineHeight, bpm)) + 0.5;
     guidesLayer.appendChild(metronomeSvgUtils.createLine({

@@ -928,6 +928,10 @@ function redrawTimeline() {
   const baseGuideColor = getCssVariable("--grey1");
   const guideColor = window.PekoBrightGuides?.getTimelineGuideColor(baseGuideColor) || baseGuideColor;
 
+  const rulersVisible = tapTimelineRulers?.getVisible();
+  const horizontal = getTapTimelineHorizontalTicks();
+  const vertical = getTapTimelineVerticalTicks(timelineHeight)
+    .filter(tick => !rulersVisible || tick.position >= 4);
   tapTimelineRulers?.render({
     width: TIMELINE_WIDTH,
     height: timelineHeight,
@@ -938,14 +942,14 @@ function redrawTimeline() {
         ...dimensions,
         title: "BPM",
         titleY: getTapTimelineTitleY(timelineHeight),
-        ticks: getTapTimelineVerticalTicks(timelineHeight),
+        ticks: vertical,
         color: guideColor
       });
     },
     drawHorizontal: (svg, dimensions) => {
       timelineUtils.drawHorizontalRuler(svg, {
         ...dimensions,
-        ticks: getTapTimelineHorizontalTicks(),
+        ticks: horizontal,
         color: guideColor
       });
     }
@@ -969,21 +973,23 @@ function redrawTimeline() {
     drawTargetLine(targetLayer, whiteColor, timelineHeight);
   }
 
-  drawReferenceLines(guidesLayer, guideColor, timelineHeight);
+  if (rulersVisible && showGuides) {
+    timelineUtils.drawTickExtensions(guidesLayer, {
+      width: TIMELINE_WIDTH, height: timelineHeight, horizontal, vertical, color: guideColor
+    });
+  } else if (showGuides) {
+    drawReferenceLines(guidesLayer, guideColor, timelineHeight);
+  }
   if (showGuides && window.PekoBrightGuides?.getTimelineBright()) {
-    const boundary = tapTimelineRulers?.getVisible()
-      ? [
-      [TIMELINE_WIDTH, 0, TIMELINE_WIDTH, timelineHeight],
-          [TIMELINE_WIDTH, timelineHeight, 0, timelineHeight]
-        ]
-      : [
-          [0, 0, TIMELINE_WIDTH, 0],
-          [TIMELINE_WIDTH, 0, TIMELINE_WIDTH, timelineHeight],
-          [TIMELINE_WIDTH, timelineHeight, 0, timelineHeight],
-          [0, timelineHeight, 0, 0]
-        ];
+    const inset = timelineUtils.getGuideStrokeWidth() / 2;
+    const right = TIMELINE_WIDTH - inset;
+    const bottom = timelineHeight - inset;
+    const boundary = [[right, 0, right, timelineHeight], [0, bottom, TIMELINE_WIDTH, bottom]];
+    if (!rulersVisible) {
+      boundary.push([0, inset, TIMELINE_WIDTH, inset], [inset, 0, inset, timelineHeight]);
+    }
     boundary.forEach(([x1, y1, x2, y2]) => {
-      guidesLayer.appendChild(createTimelineLine(x1, y1, x2, y2, guideColor, false));
+      guidesLayer.appendChild(createTimelineLine(x1, y1, x2, y2, guideColor, false, timelineUtils.getGuideStrokeWidth()));
     });
   }
 
@@ -1037,7 +1043,7 @@ function drawReferenceLines(layer, color, timelineHeight) {
 
   for (let bpm = 30; bpm <= maxGuide; bpm += 30) {
     const y = Math.round(timelineHeight - bpm) + 0.5;
-    layer.appendChild(createTimelineLine(0, y, TIMELINE_WIDTH, y, color, false));
+    layer.appendChild(createTimelineLine(0, y, TIMELINE_WIDTH, y, color, false, timelineUtils.getGuideStrokeWidth()));
   }
 }
 
@@ -1109,14 +1115,14 @@ function setupTimelineFollow() {
   timelineFollow.setEnabled(followTimeline);
 }
 
-function createTimelineLine(x1, y1, x2, y2, color, snap = true) {
+function createTimelineLine(x1, y1, x2, y2, color, snap = true, strokeWidth = 1) {
   return svgUtils.createLine({
     x1,
     y1,
     x2,
     y2,
     stroke: color,
-    strokeWidth: 1,
+    strokeWidth,
     crisp: true,
     snap
   });

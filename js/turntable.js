@@ -452,6 +452,8 @@ function redrawTimeline() {
     height: timelineHeight
   });
   const guideColor = window.PekoBrightGuides?.getTimelineGuideColor(getCssVariable('--grey1')) || getCssVariable('--grey1');
+  const horizontal = getTurntableTimelineHorizontalTicks();
+  const vertical = getTurntableTimelineVerticalTicks(timelineHeight);
   turntableTimelineRulers?.render({
     width: TURNTABLE_TIMELINE_WIDTH,
     height: timelineHeight,
@@ -461,14 +463,14 @@ function redrawTimeline() {
       turntableSvgTimeline.drawVerticalRuler(svg, {
         ...dimensions,
         title: 'RPM',
-        ticks: getTurntableTimelineVerticalTicks(timelineHeight),
+        ticks: vertical,
         color: guideColor
       });
     },
     drawHorizontal: (svg, dimensions) => {
       turntableSvgTimeline.drawHorizontalRuler(svg, {
         ...dimensions,
-        ticks: getTurntableTimelineHorizontalTicks(),
+        ticks: horizontal,
         color: guideColor
       });
     }
@@ -476,6 +478,11 @@ function redrawTimeline() {
   turntableTimelineSvg.innerHTML = '';
 
   drawReferenceLines(timelineHeight);
+  if (showGuides && turntableTimelineRulers?.getVisible()) {
+    turntableSvgTimeline.drawTickExtensions(turntableTimelineSvg, {
+      width: TURNTABLE_TIMELINE_WIDTH, height: timelineHeight, horizontal, vertical, color: guideColor
+    });
+  }
 
   const rpmLayer = document.createElementNS('http://www.w3.org/2000/svg', 'g');
   const speedLayer = document.createElementNS('http://www.w3.org/2000/svg', 'g');
@@ -559,6 +566,7 @@ function drawReferenceLines(timelineHeight) {
     });
   }
 
+  if (turntableTimelineRulers?.getVisible()) return;
   refSpeeds.forEach(rpm => {
     const y = Math.floor(getTimelineY(rpm, timelineHeight)) + 0.5;
     guidesLayer.appendChild(turntableSvgUtils.createLine({

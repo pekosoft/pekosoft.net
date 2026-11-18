@@ -346,7 +346,11 @@ window.addEventListener('DOMContentLoaded', () => {
       })
     });
 
-    if (timelineGuidesVisible) {
+    if (rulersVisible && timelineGuidesVisible) {
+      timelineUtils.drawTickExtensions(refs.timeline, {
+        width, height, horizontal: xTicks, vertical: yTicks, color: guideColor
+      });
+    } else if (timelineGuidesVisible) {
       xTicks.forEach(({ position }) => {
         refs.timeline.appendChild(svgUtils.createLine({
           x1: position + 0.5, y1: 0, x2: position + 0.5, y2: height,
@@ -360,14 +364,14 @@ window.addEventListener('DOMContentLoaded', () => {
           color: guideColor, snap: false
         }));
       });
-      if (bright) {
-        const edges = rulersVisible
-          ? [[width, 0, width, height], [width, height, 0, height]]
-          : [[0, 0, width, 0], [width, 0, width, height], [width, height, 0, height], [0, height, 0, 0]];
-        edges.forEach(([x1, y1, x2, y2]) => {
-          refs.timeline.appendChild(svgUtils.createLine({ x1, y1, x2, y2, color: guideColor, snap: false }));
-        });
-      }
+    }
+    if (bright) {
+      const edges = rulersVisible
+        ? [[width, 0, width, height], [width, height, 0, height]]
+        : [[0, 0, width, 0], [width, 0, width, height], [width, height, 0, height], [0, height, 0, 0]];
+      edges.forEach(([x1, y1, x2, y2]) => {
+        refs.timeline.appendChild(svgUtils.createLine({ x1, y1, x2, y2, color: guideColor, snap: false }));
+      });
     }
 
     const segmentCount = Math.max(128, Math.min(2048, Math.ceil(plotWidth)), Math.ceil(frequency * duration * 64));

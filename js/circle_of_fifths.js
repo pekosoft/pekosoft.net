@@ -1039,24 +1039,24 @@
       ctx.setTransform(this.timelineScaleX || 1, 0, 0, this.timelineScaleY || 1, 0, 0);
       ctx.clearRect(0, 0, width, height);
 
-      if (this.guidesOn) {
+      if (this.guidesOn || this.timelineRulers) {
         ctx.strokeStyle = this.timelineBright ? colors.white : colors.grey1;
         ctx.lineWidth = 1;
         for (let row = 0; row <= TIMELINE_ROW_COUNT; row++) {
           const y = Math.min(height - 0.5, Math.max(0.5, Math.round(row * rowHeight) + 0.5));
           ctx.beginPath();
-          ctx.moveTo(0, y);
+          ctx.moveTo(this.guidesOn ? 0 : labelGutter, y);
           ctx.lineTo(width, y);
           ctx.stroke();
         }
-        for (let i = 0; i <= 10; i++) {
+        for (let i = 0; this.guidesOn && i <= 10; i++) {
           const x = Math.round(labelGutter + (plotWidth / 10) * i) + 0.5;
           ctx.beginPath();
           ctx.moveTo(x, 0);
           ctx.lineTo(x, height);
           ctx.stroke();
         }
-        if (this.timelineBright) {
+        if (this.guidesOn && this.timelineBright) {
           ctx.beginPath();
           ctx.moveTo(0.5, 0.5);
           ctx.lineTo(width - 0.5, 0.5);

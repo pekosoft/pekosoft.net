@@ -88,10 +88,10 @@
       syncViewBox(verticalRuler, axisWidth, height);
       syncViewBox(horizontalRuler, width, horizontalHeight);
       horizontalRuler.style.width = `${width}px`;
-      drawRulerCorner(cornerRuler, { width: axisWidth, height: horizontalHeight, color, bright, title: cornerTitle });
+      drawRulerCorner(cornerRuler, { width: axisWidth, height: horizontalHeight, color, bright, title: cornerTitle, sideBorders: true });
 
       if (typeof drawVertical === 'function') {
-        drawVertical(verticalRuler, { width: axisWidth, height, bright });
+        drawVertical(verticalRuler, { width: axisWidth, height, bright, sideBorders: true });
       }
       if (typeof drawHorizontal === 'function') {
         drawHorizontal(horizontalRuler, {
@@ -118,11 +118,15 @@
     };
   }
 
+  function getGuideStrokeWidth() {
+    return 1 / (window.devicePixelRatio || 1);
+  }
+
   function createRulerElement(name, attributes, text = '') {
     const element = document.createElementNS('http://www.w3.org/2000/svg', name);
     const lineAttributes = name === 'line'
       ? {
-          'stroke-width': 1,
+          'stroke-width': getGuideStrokeWidth(),
           'shape-rendering': 'crispEdges',
           'vector-effect': 'non-scaling-stroke',
           'stroke-linecap': 'butt',
@@ -134,6 +138,31 @@
     });
     element.textContent = text;
     return element;
+  }
+
+  function horizontalTickX(position, width) {
+    return Math.max(0.5, Math.min(width - 0.5, Math.round(position) + 0.5));
+  }
+
+  function verticalTickY(position, height) {
+    return Math.max(0.5, Math.min(height + 0.5, Math.floor(position) + 0.5));
+  }
+
+  function getTickExtensionLines({ width, height, horizontal = [], vertical = [] }) {
+    const xs = new Set(horizontal.filter(tick => tick.position > 0 && tick.drawLine !== false)
+      .map(tick => horizontalTickX(tick.position, width)));
+    const ys = new Set(vertical.filter(tick => tick.position > 0 && tick.position < height && tick.drawLine !== false)
+      .map(tick => verticalTickY(tick.position, height)));
+    return [
+      ...Array.from(xs, x => [x, 0, x, height]),
+      ...Array.from(ys, y => [0, y, width, y])
+    ];
+  }
+
+  function drawTickExtensions(plot, { color, ...options }) {
+    getTickExtensionLines(options).forEach(([x1, y1, x2, y2]) => {
+      plot.appendChild(createRulerElement('line', { x1, y1, x2, y2, stroke: color }));
+    });
   }
 
   function drawVerticalRuler(svg, options) {
@@ -200,7 +229,7 @@
     });
 
     ticks.forEach(({ position, label, labelPosition = 'above', drawLine = true }) => {
-      const y = Math.max(0.5, Math.min(height + 0.5, Math.floor(position) + 0.5));
+      const y = verticalTickY(position, height);
       if (drawLine) {
         svg.appendChild(createRulerElement('line', {
           x1: Math.max(0, width - tickLength),
@@ -278,7 +307,7 @@
   function drawHorizontalRuler(svg, options) {
     if (!svg) return;
     const { width, height, ticks = [], color, bright = false, axisPosition = 'bottom', sideBorders = false, leftBorder = true,
-      tickLength, labelBaseline } = options || {};
+      labelBaseline } = options || {};
     const inset = sideBorders ? 0.5 : 0;
     const axisAtTop = axisPosition === 'top';
     const axisY = axisAtTop ? inset : Math.max(0, height - inset);
@@ -305,18 +334,18 @@
       stroke: color
     }));
 
-    ticks.forEach(({ position, label, labelPosition = 'after' }) => {
+    ticks.forEach(({ position, label, labelPosition = 'after', drawLine = true }) => {
       if (Number(position) <= 0) return;
-      const x = Math.max(0.5, Math.min(width - 0.5, Math.round(position) + 0.5));
-      svg.appendChild(createRulerElement('line', {
-        x1: x,
-        y1: axisY,
-        x2: x,
-        y2: tickLength === undefined
-          ? (axisAtTop ? Math.ceil(height * 0.55) : Math.min(axisY, Math.floor(height * 0.45)))
-          : axisY + (axisAtTop ? 1 : -1) * tickLength,
-        stroke: color
-      }));
+      const x = horizontalTickX(position, width);
+      if (drawLine && !(bright && sideBorders && x === width - 0.5)) {
+        svg.appendChild(createRulerElement('line', {
+          x1: x,
+          y1: axisY,
+          x2: x,
+          y2: axisAtTop ? height : 0,
+          stroke: color
+        }));
+      }
       if (label === undefined || label === null || label === '') return;
       svg.appendChild(createRulerElement('text', {
         x: labelPosition === 'before' ? x - 3 : x + 3,
@@ -532,7 +561,10 @@
     createRulerLayout,
     drawHorizontalRuler,
     drawRulerCorner,
+    drawTickExtensions,
     drawVerticalRuler,
+    getGuideStrokeWidth,
+    getTickExtensionLines,
     getHeight,
     resolveHeight: getHeight,
     syncViewBox,

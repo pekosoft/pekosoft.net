@@ -381,13 +381,12 @@
     timelineUtils.drawVerticalRuler(verticalRuler, {
       width: 48, height, ticks: ticks.vertical.map(tick => ({ ...tick, drawLine: tick.position > 0 })),
       labels: ticks.labels, color: guideColor, bright: brightGuides, sideBorders: true,
-      topBorder: false, tickLength: mode === 'bit_meter' ? 5 : undefined
+      topBorder: false
     });
     timelineUtils.syncViewBox(horizontalRuler, width, 24);
     timelineUtils.drawHorizontalRuler(horizontalRuler, {
       width, height: 24, ticks: ticks.horizontal, color: guideColor,
       bright: brightGuides, sideBorders: true, leftBorder: false,
-      tickLength: mode === 'level' ? 5 : undefined,
       labelBaseline: mode === 'level' ? 14 : undefined
     });
     if (mode !== 'level') {
@@ -973,7 +972,7 @@
     ctx.fillText(channels > 1 ? 'L' : 'M', channelWidth / 2, rowTop / 2);
     if (channels > 1) ctx.fillText('R', rightStart + channelWidth / 2, rowTop / 2);
     ctx.beginPath();
-    for (let row = 0; row <= 33; row++) {
+    for (let row = 0; !rulersOn && row <= 33; row++) {
       const y = snapGuideCoordinate(rowTop + row * rowHeight);
       ctx.moveTo(0, y);
       ctx.lineTo(channelWidth, y);
@@ -982,7 +981,7 @@
         ctx.lineTo(width, y);
       }
     }
-    [0, channelWidth, ...(channels > 1 ? [rightStart, width] : [])].forEach((value) => {
+    (rulersOn ? [] : [0, channelWidth, ...(channels > 1 ? [rightStart, width] : [])]).forEach((value) => {
       const x = snapGuideCoordinate(Math.min(width - 0.5, value));
       ctx.moveTo(x, rowTop);
       ctx.lineTo(x, rowTop + 33 * rowHeight);
@@ -1589,17 +1588,37 @@
   }
 
   function drawGuidesBehind(mode, ctx, width, height, source) {
-    if (!guidesOn && !rulersOn) {
+    if (!guidesOn) {
       return;
     }
 
+    if (rulersOn) {
+      const { horizontal, vertical } = getMeterTicks(mode, width, height, source);
+      ctx.save();
+      ctx.strokeStyle = guideColor;
+      setCrispGuideStroke(ctx);
+      ctx.beginPath();
+      for (const [x1, y1, x2, y2] of timelineUtils.getTickExtensionLines({ width, height, horizontal, vertical })) {
+        if (x1 === x2) {
+          const x = snapGuideCoordinate(x1);
+          ctx.moveTo(x, 0);
+          ctx.lineTo(x, height);
+        } else {
+          const y = snapGuideCoordinate(y1);
+          ctx.moveTo(0, y);
+          ctx.lineTo(width, y);
+        }
+      }
+      ctx.stroke();
+      ctx.restore();
+    }
+
     if (mode === 'bit_meter') {
-      if (guidesOn) drawBitMeterGuides(ctx, width, height, source);
+      drawBitMeterGuides(ctx, width, height, source);
       return;
     }
 
     if (mode === 'phasescope') {
-      if (!guidesOn) return;
       const { centerX, centerY, radius } = getPhasescopeGeometry(width, height);
       const diagonal = radius * Math.SQRT1_2;
       ctx.save();
@@ -1608,10 +1627,12 @@
       ctx.beginPath();
       const x = snapGuideCoordinate(centerX);
       const y = snapGuideCoordinate(centerY);
-      ctx.moveTo(centerX - radius, y);
-      ctx.lineTo(centerX + radius, y);
-      ctx.moveTo(x, centerY - radius);
-      ctx.lineTo(x, centerY + radius);
+      if (!rulersOn) {
+        ctx.moveTo(centerX - radius, y);
+        ctx.lineTo(centerX + radius, y);
+        ctx.moveTo(x, centerY - radius);
+        ctx.lineTo(x, centerY + radius);
+      }
       ctx.moveTo(centerX - diagonal, centerY - diagonal);
       ctx.lineTo(centerX + diagonal, centerY + diagonal);
       ctx.moveTo(centerX - diagonal, centerY + diagonal);
@@ -1628,12 +1649,16 @@
       return;
     }
 
+    if (rulersOn) {
+      drawBrightGuideBoundary(ctx, width, height);
+      return;
+    }
+
     const ticks = getMeterTicks(mode, width, height, source);
     ctx.save();
     ctx.strokeStyle = guideColor;
     setCrispGuideStroke(ctx);
     ticks.horizontal.forEach(({ position }) => {
-      if (rulersOn && position === 0) return;
       const x = snapGuideCoordinate(position + 0.5);
       ctx.beginPath();
       ctx.moveTo(x, 0);
@@ -1641,7 +1666,6 @@
       ctx.stroke();
     });
     ticks.vertical.forEach(({ position }) => {
-      if (rulersOn && mode !== 'level' && position === 0) return;
       const y = snapGuideCoordinate(position + 0.5);
       ctx.beginPath();
       ctx.moveTo(0, y);

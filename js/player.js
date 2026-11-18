@@ -431,7 +431,7 @@ function setBpmValue(value, persist = true) {
     if (persist) {
         localStorage.setItem(STORAGE.bpm, String(bpmValue));
     }
-    drawBpmRuler();
+    redrawTimelineCanvas();
 }
 
 function updateRulersButtonState() {
@@ -3620,7 +3620,7 @@ function drawReferenceLines() {
     staticCanvasCtx.strokeStyle = grey1;
     staticCanvasCtx.setLineDash([]);
 
-    if (window.PekoBrightGuides?.getTimelineBright()) {
+    if (showGuides && window.PekoBrightGuides?.getTimelineBright()) {
         staticCanvasCtx.beginPath();
         if (showRulers) {
             staticCanvasCtx.moveTo(staticCanvas.width - 0.5, 0);
@@ -3891,6 +3891,22 @@ function redrawTimelineCanvas() {
     staticCanvasCtx.clearRect(0, 0, staticCanvas.width, staticCanvas.height);
     drawReferenceLines();
     drawSelectionFill();
+    const timeTicks = drawTimelineRuler();
+    const beatTicks = drawBpmRuler();
+    if (showGuides && showRulers) {
+        staticCanvasCtx.save();
+        staticCanvasCtx.lineWidth = 1;
+        staticCanvasCtx.strokeStyle = window.PekoBrightGuides.getTimelineGuideColor(colorGrey1);
+        staticCanvasCtx.beginPath();
+        for (const [x1, y1, x2, y2] of timelineUtils.getTickExtensionLines({
+            width: staticCanvas.width, height: staticCanvas.height, horizontal: [...timeTicks, ...beatTicks]
+        })) {
+            staticCanvasCtx.moveTo(x1, y1);
+            staticCanvasCtx.lineTo(x2, y2);
+        }
+        staticCanvasCtx.stroke();
+        staticCanvasCtx.restore();
+    }
 
     if (loadedAudioBuffer) {
         if (waveformCacheDirty) {
@@ -3903,8 +3919,6 @@ function redrawTimelineCanvas() {
     }
 
     drawPanLine();
-    drawTimelineRuler();
-    drawBpmRuler();
     drawDbRuler();
     window.refreshMarkerModule?.();
 }
@@ -3968,7 +3982,7 @@ function getRulerMajorStep(durationSeconds, widthPx) {
 }
 
 function drawTimelineRuler() {
-    if (!showRulers || !timelineRuler) return;
+    if (!showRulers || !timelineRuler) return [];
 
     const { width, height } = timelineRuler.viewBox.baseVal;
     const duration = loadedAudioBuffer?.duration ?? PLAYER_TIMELINE_EMPTY_DURATION;
@@ -3990,6 +4004,7 @@ function drawTimelineRuler() {
         leftBorder: false
     });
     drawTimelineMarkers(duration, width, height);
+    return ticks;
 }
 
 function drawTimelineMarkers(duration, width, height) {
@@ -4025,7 +4040,7 @@ function drawTimelineMarkers(duration, width, height) {
 }
 
 function drawBpmRuler() {
-    if (!showRulers || !bpmRuler) return;
+    if (!showRulers || !bpmRuler) return [];
 
     const { width, height } = bpmRuler.viewBox.baseVal;
     const duration = loadedAudioBuffer?.duration ?? PLAYER_TIMELINE_EMPTY_DURATION;
@@ -4057,6 +4072,7 @@ function drawBpmRuler() {
         selection.setAttribute('fill', colorGrey2);
         bpmRuler.prepend(selection);
     }
+    return ticks;
 }
 
 // Playhead

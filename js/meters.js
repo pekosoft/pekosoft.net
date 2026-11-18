@@ -43,6 +43,12 @@
   const frameByMode = Object.fromEntries(availableModes.map((mode) => [
     mode, document.getElementById(`meters-frame-${mode}`)
   ]));
+  const visibleModes = availableModes.filter((mode) => {
+    const button = buttonByMode[mode];
+    const frame = frameByMode[mode];
+    return button && frame && !button.hidden && !frame.hidden;
+  });
+  if (!visibleModes.length) return;
   const rulerLayoutByMode = Object.fromEntries(availableModes.map((mode) => [
     mode, frameByMode[mode].querySelector('.meters-ruler-layout')
   ]));
@@ -70,7 +76,8 @@
 
   function getSavedMode() {
     const saved = localStorage.getItem(`${storagePrefix}.mode`);
-    return availableModes.includes(saved) ? saved : 'oscilloscope';
+    if (visibleModes.includes(saved)) return saved;
+    return visibleModes.includes('oscilloscope') ? 'oscilloscope' : visibleModes[0];
   }
 
   function getSavedAllMetersMode() {
@@ -515,8 +522,8 @@
   }
 
   let activeMode = getSavedMode();
-  if (!availableModes.includes(activeMode)) {
-    activeMode = availableModes[0];
+  if (!visibleModes.includes(activeMode)) {
+    activeMode = visibleModes[0];
   }
 
   let guidesOn = getSavedGuides();
@@ -530,7 +537,7 @@
   let meterNeedsRedraw = true;
   const wasMeterActiveByMode = Object.fromEntries(availableModes.map((mode) => [mode, false]));
   let allMetersOn = getSavedAllMetersMode();
-  const enabledModes = new Set(availableModes.filter((mode) =>
+  const enabledModes = new Set(visibleModes.filter((mode) =>
     localStorage.getItem(`${storagePrefix}.visible.${mode}`) !== 'off'
   ));
   let meterPalette = null;
@@ -701,7 +708,7 @@
   }
 
   function getDisplayedModes() {
-    return allMetersOn ? availableModes.filter((mode) => enabledModes.has(mode)) : [activeMode];
+    return allMetersOn ? visibleModes.filter((mode) => enabledModes.has(mode)) : [activeMode];
   }
 
   function getBitmapMode() {
@@ -711,7 +718,7 @@
 
   function updateMeterControls() {
     const bitmapMode = getBitmapMode();
-    availableModes.forEach((mode) => {
+    visibleModes.forEach((mode) => {
       const selected = allMetersOn ? enabledModes.has(mode) : mode === activeMode;
       const button = buttonByMode[mode];
       frameByMode[mode].classList.toggle('meter-disabled', !enabledModes.has(mode));
@@ -1582,16 +1589,17 @@
   }
 
   function drawGuidesBehind(mode, ctx, width, height, source) {
-    if (!guidesOn) {
+    if (!guidesOn && !rulersOn) {
       return;
     }
 
     if (mode === 'bit_meter') {
-      drawBitMeterGuides(ctx, width, height, source);
+      if (guidesOn) drawBitMeterGuides(ctx, width, height, source);
       return;
     }
 
     if (mode === 'phasescope') {
+      if (!guidesOn) return;
       const { centerX, centerY, radius } = getPhasescopeGeometry(width, height);
       const diagonal = radius * Math.SQRT1_2;
       ctx.save();
@@ -1641,7 +1649,7 @@
       ctx.stroke();
     });
     ctx.restore();
-    drawBrightGuideBoundary(ctx, width, height);
+    if (guidesOn) drawBrightGuideBoundary(ctx, width, height);
   }
 
   function drawIdleMeterFrame(canvas, ctx, source, mode = activeMode) {
@@ -1790,7 +1798,7 @@
 
   function nextMeter() {
     if (allMetersOn) return;
-    applyMode(availableModes[(availableModes.indexOf(activeMode) + 1) % availableModes.length]);
+    applyMode(visibleModes[(visibleModes.indexOf(activeMode) + 1) % visibleModes.length]);
   }
 
   function applyMeterPlay(enabled) {
@@ -1803,8 +1811,8 @@
     playMetersButton.title = enabled ? 'Stop cycling meters' : 'Start cycling meters';
   }
 
-  Object.entries(buttonByMode).forEach(([mode, button]) => {
-    if (!button) return;
+  visibleModes.forEach((mode) => {
+    const button = buttonByMode[mode];
     button.addEventListener('click', () => {
       if (allMetersOn) {
         if (enabledModes.has(mode)) {

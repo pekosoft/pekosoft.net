@@ -264,13 +264,20 @@ for (const group of tabSections) {
   test(`${group.file} ${group.module} has an isolated tab section and cycles through every tab`, () => {
     const template = fs.readFileSync(path.join(__dirname, '..', ...group.file.split('\\')), 'utf8');
     const sections = Array.from(template.matchAll(/<div class="controls-buttons wrapper module-tabs">([\s\S]*?)<\/div>/g),
-      match => Array.from(match[1].matchAll(/<button\b[^>]*\bid="([^"]+)"/g), button => button[1])
-        .filter(id => id !== 'meters-next-button' && id !== 'meters-play-button'));
-    assert.ok(sections.some(tabs => JSON.stringify(tabs) === JSON.stringify(group.tabs.map(([id]) => id))));
-    const fixture = createSkipSection(group.tabs.length, group.tabs.length - 1);
+      match => Array.from(match[1].matchAll(/<button\b[^>]*>/g), button => button[0])
+        .filter(button => !/\shidden(?:\s|>)/.test(button))
+        .map(button => button.match(/\bid="([^"]+)"/)?.[1])
+        .filter(id => id && id !== 'meters-next-button' && id !== 'meters-play-button'));
+    const tabs = group.tabs.filter(([id]) => {
+      const button = template.match(new RegExp(`<button\\b[^>]*\\bid="${id}"[^>]*>`))?.[0];
+      return button && !/\shidden(?:\s|>)/.test(button);
+    });
+    const tabIds = tabs.map(([id]) => id);
+    assert.ok(sections.some(sectionTabs => JSON.stringify(sectionTabs) === JSON.stringify(tabIds)));
+    const fixture = createSkipSection(tabs.length, tabs.length - 1);
     setupSkipSections([fixture]);
     assert.deepEqual(fixture.clicks, []);
-    for (let index = 0; index < group.tabs.length; index++) {
+    for (let index = 0; index < tabs.length; index++) {
       fixture.skip().click();
       assert.equal(fixture.clicks.at(-1), index);
     }

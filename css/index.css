@@ -809,6 +809,10 @@ html.modules-page body:not(.layout-two-columns) {
   display: none;
 }
 
+#meters-container .meter-frame[hidden] {
+  display: none;
+}
+
 #meters-container.meters-all-mode .meter-frame.active .meter-mode-label {
   color: var(--color1);
 }
@@ -2415,6 +2419,10 @@ button.grey .icons {
   scroll-margin-top: 64px;
   text-align: left;
   padding: 16px;
+}
+
+.feature-row[hidden] {
+  display: none;
 }
 
 .three-columns-container .column-middle > .feature-row:last-child {

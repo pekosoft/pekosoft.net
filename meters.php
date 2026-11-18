@@ -25,13 +25,13 @@
         </svg>
         <span class="button-text">WAVE</span>
       </button>
-      <button id="tool-phasescope-button" class="square" title="Phasescope" data-module-tab="Phasescope" data-help-release="index" data-help-entry="Phasescope">
+      <button id="tool-phasescope-button" class="square" title="Phasescope" hidden data-module-tab="Phasescope" data-help-release="index" data-help-entry="Phasescope">
         <svg class="icons">
           <use href="/icons.svg?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/icons.svg'); ?>#phasescope" />
         </svg>
         <span class="button-text">PHASE</span>
       </button>
-      <button id="tool-bit-meter-button" class="square" title="Bit meter" data-module-tab="Bit meter" data-help-release="index" data-help-entry="Bit">
+      <button id="tool-bit-meter-button" class="square" title="Bit meter" hidden data-module-tab="Bit meter" data-help-release="index" data-help-entry="Bit">
         <svg class="icons">
           <use href="/icons.svg?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/icons.svg'); ?>#bitmeter" />
         </svg>
@@ -99,7 +99,7 @@
           </div>
         </div>
       </div>
-      <div id="meters-frame-phasescope" class="meter-frame">
+      <div id="meters-frame-phasescope" class="meter-frame" hidden>
         <div class="meter-mode-label">Phasescope</div>
         <div class="timeline-ruler-layout meters-ruler-layout">
           <div class="meters-ruler-corner"><svg id="meters-ruler-corner-phasescope" aria-hidden="true"></svg></div>
@@ -111,7 +111,7 @@
           </div>
         </div>
       </div>
-      <div id="meters-frame-bit_meter" class="meter-frame">
+      <div id="meters-frame-bit_meter" class="meter-frame" hidden>
         <div class="meter-mode-label">Bit</div>
         <div class="timeline-ruler-layout meters-ruler-layout">
           <div class="meters-ruler-corner"><svg id="meters-ruler-corner-bit_meter" aria-hidden="true"></svg></div>

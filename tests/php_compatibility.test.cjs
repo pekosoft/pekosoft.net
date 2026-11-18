@@ -456,6 +456,27 @@ test('Meters tabs display the requested abbreviated labels', () => {
   ]);
 });
 
+test('Phasescope and Bit meter remain in the markup but hidden for launch', () => {
+  const meters = renderPhp('meters.php');
+  const help = renderPhp('help.php', 't=index');
+  const css = fs.readFileSync(path.join(root, 'css', 'index.css'), 'utf8');
+  assert.equal(meters.status, 200);
+  assert.equal(help.status, 200);
+  for (const [buttonId, frameId, canvasId, heading] of [
+    ['tool-phasescope-button', 'meters-frame-phasescope', 'phasescope', 'Phasescope'],
+    ['tool-bit-meter-button', 'meters-frame-bit_meter', 'bit-meter', 'Bit']
+  ]) {
+    const button = meters.body.match(new RegExp(`<button\\b[^>]*\\bid="${buttonId}"[^>]*>[\\s\\S]*?<\\/button>`))?.[0];
+    const frame = meters.body.match(new RegExp(`<div\\b[^>]*\\bid="${frameId}"[^>]*>`))?.[0];
+    assert.match(button || '', /\shidden(?:\s|>)/);
+    assert.match(frame || '', /\shidden(?:\s|>)/);
+    assert.ok(meters.body.includes(`id="${canvasId}"`));
+    assert.match(help.body, new RegExp(`<div class="feature-row border" hidden>[\\s\\S]*?<h1>${heading} `));
+  }
+  assert.match(css, /#meters-container \.meter-frame\[hidden\]\s*\{\s*display: none;/);
+  assert.match(css, /\.feature-row\[hidden\]\s*\{\s*display: none;/);
+});
+
 test('launch introduction and shared previews use the approved product description', () => {
   const frontPage = renderPhp('index.php');
   const help = renderPhp('help.php', 't=index');

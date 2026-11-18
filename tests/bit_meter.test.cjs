@@ -5,11 +5,17 @@ const test = require('node:test');
 const vm = require('node:vm');
 
 const source = fs.readFileSync(path.join(__dirname, '..', 'js', 'meters.js'), 'utf8');
+const markup = fs.readFileSync(path.join(__dirname, '..', 'meters.php'), 'utf8');
+const hiddenElements = new Set(Array.from(
+  markup.matchAll(/<(?:button|div)\b[^>]*\bid="([^"]+)"[^>]*\shidden(?:\s|>)[^>]*>/g),
+  match => match[1]
+));
 
 function createMeter(initialStorage = {}) {
   const elements = new Map();
   const storage = new Map(Object.entries(initialStorage));
   const draws = [];
+  const strokes = [];
   const contextReads = [];
   const errors = [];
   const rulers = {};
@@ -17,10 +23,15 @@ function createMeter(initialStorage = {}) {
   const intervals = new Map();
   let nextTimerId = 0;
   let nowMs = 100;
+  let currentPath = [];
   const context2d = new Proxy({
     measureText: text => ({ width: text.length * 6 }),
     fillRect: (...args) => draws.push({ args, color: context2d.fillStyle }),
-    fillText: text => draws.push({ text })
+    fillText: text => draws.push({ text }),
+    beginPath() { currentPath = []; },
+    moveTo(x, y) { currentPath.push(['moveTo', x, y]); },
+    lineTo(x, y) { currentPath.push(['lineTo', x, y]); },
+    stroke() { strokes.push(currentPath.slice()); }
   }, {
     get(target, key) { return key in target ? target[key] : () => {}; }
   });
@@ -31,7 +42,7 @@ function createMeter(initialStorage = {}) {
     const attributes = new Map();
     const value = {
       width: 600, height: 512, clientWidth: 600, clientHeight: 512,
-      hidden: false, textContent: '', offsetWidth: 160, offsetHeight: 80,
+      hidden: hiddenElements.has(id), textContent: '', offsetWidth: 160, offsetHeight: 80,
       style: { setProperty() {} },
       classList: {
         toggle(name, enabled) { if (enabled) classes.add(name); else classes.delete(name); },
@@ -87,11 +98,12 @@ function createMeter(initialStorage = {}) {
       getBitActivity, getBitMeterGeometry, getMeterTicks, getCrosshairReadout,
       applyMode, applyAllMetersMode, applyFreeze, applyGuides, applyBright, applyRulers, applyMulticolor,
       renderBitMeter, redrawMeterFrame, tick, bitMeterState, spectrumDisplayState, levelDisplayState,
-      getSourceConfig, buildMeterBitmap, canvasByMode, frameByMode
+      getSourceConfig, buildMeterBitmap, drawGuidesBehind, getDisplayedModes,
+      canvasByMode, frameByMode, visibleModes
     };
   })();`), context);
   return {
-    ...context.meter, window, element, draws, contextReads, errors, rulers, storage, frames, intervals, context2d,
+    ...context.meter, window, element, draws, strokes, contextReads, errors, rulers, storage, frames, intervals, context2d,
     tick(timestamp) { nowMs = timestamp; context.meter.tick(timestamp); }
   };
 }
@@ -492,55 +504,77 @@ test('Reset clears all Bit meter activity and Freeze', () => {
   assert.ok(meter.bitMeterState.right.every(value => value === 0));
 });
 
-test('Bit meter participates in mode persistence and Next cycles back to Spectroscope', () => {
-  const meter = createMeter();
-  meter.applyMode('phasescope');
-  meter.element('meters-next-button').click();
-  assert.equal(meter.storage.get('meters.player.mode'), 'bit_meter');
-  assert.ok(meter.element('bit-meter').classList.contains('active'));
-  meter.element('meters-next-button').click();
-  assert.equal(meter.storage.get('meters.player.mode'), 'spectroscope');
-  assert.ok(!meter.element('bit-meter').classList.contains('active'));
+test('hidden meter implementations remain in markup but are excluded from launch modes', () => {
+  const meter = createMeter({ 'meters.player.mode': 'bit_meter' });
+  assert.ok(meter.canvasByMode.phasescope);
+  assert.ok(meter.canvasByMode.bit_meter);
+  assert.equal(meter.element('tool-phasescope-button').hidden, true);
+  assert.equal(meter.element('tool-bit-meter-button').hidden, true);
+  assert.equal(meter.element('meters-frame-phasescope').hidden, true);
+  assert.equal(meter.element('meters-frame-bit_meter').hidden, true);
+  assert.deepEqual(Array.from(meter.visibleModes), ['spectroscope', 'level', 'oscilloscope', 'wavescope']);
+  assert.equal(meter.storage.get('meters.player.mode'), 'oscilloscope');
+
+  meter.applyAllMetersMode(true);
+  assert.deepEqual(Array.from(meter.getDisplayedModes()), ['spectroscope', 'level', 'oscilloscope', 'wavescope']);
+  meter.element('tool-phasescope-button').click();
+  meter.element('tool-bit-meter-button').click();
+  assert.equal(meter.storage.get('meters.player.mode'), 'oscilloscope');
+  assert.equal(meter.storage.get('meters.player.visible.phasescope'), undefined);
+  assert.equal(meter.storage.get('meters.player.visible.bit_meter'), undefined);
+});
+
+test('Next cycles through only the four visible meter modes', () => {
+  const meter = createMeter({ 'meters.player.mode': 'phasescope' });
+  assert.equal(meter.storage.get('meters.player.mode'), 'oscilloscope');
+  for (const mode of ['wavescope', 'spectroscope', 'level', 'oscilloscope']) {
+    meter.element('meters-next-button').click();
+    assert.equal(meter.storage.get('meters.player.mode'), mode);
+  }
 });
 
 test('All mode toggles individual views and preserves the single-meter selection', () => {
   const meter = createMeter();
-  meter.applyMode('phasescope');
+  meter.applyMode('oscilloscope');
   meter.element('meters-all-button').click();
   assert.equal(meter.storage.get('meters.player.view_mode'), 'all');
   assert.equal(meter.element('meters-all-button').getAttribute('aria-pressed'), 'true');
   assert.ok(meter.element('meters-container').classList.contains('meters-all-mode'));
   assert.equal(Object.keys(meter.frameByMode).length, 6);
-  assert.ok(meter.frameByMode.phasescope.classList.contains('active'));
+  assert.deepEqual(Array.from(meter.getDisplayedModes()), ['spectroscope', 'level', 'oscilloscope', 'wavescope']);
   assert.equal(meter.element('meters-next-button').disabled, true);
   assert.equal(meter.element('meters-play-button').disabled, true);
   assert.ok(meter.element('meters-next-button').classList.contains('grey'));
   assert.ok(meter.element('meters-play-button').classList.contains('grey'));
-  assert.ok(Object.keys(meter.frameByMode).every(mode => !meter.frameByMode[mode].classList.contains('meter-disabled')));
+  assert.ok(meter.visibleModes.every(mode => !meter.frameByMode[mode].classList.contains('meter-disabled')));
   meter.tick(100);
-  assert.ok(Object.values(meter.canvasByMode).every(canvas => meter.contextReads.includes(canvas)));
+  assert.ok(meter.visibleModes.every(mode => meter.contextReads.includes(meter.canvasByMode[mode])));
+  assert.ok(!meter.contextReads.includes(meter.canvasByMode.phasescope));
+  assert.ok(!meter.contextReads.includes(meter.canvasByMode.bit_meter));
 
-  meter.element('tool-phasescope-button').click();
-  assert.equal(meter.storage.get('meters.player.visible.phasescope'), 'off');
-  assert.equal(meter.element('tool-phasescope-button').getAttribute('aria-pressed'), 'false');
-  assert.ok(meter.frameByMode.phasescope.classList.contains('meter-disabled'));
-  assert.ok(meter.frameByMode.spectroscope.classList.contains('active'));
+  meter.element('tool-level-button').click();
+  assert.equal(meter.storage.get('meters.player.visible.level'), 'off');
+  assert.equal(meter.element('tool-level-button').getAttribute('aria-pressed'), 'false');
+  assert.ok(meter.frameByMode.level.classList.contains('meter-disabled'));
+  assert.ok(meter.frameByMode.oscilloscope.classList.contains('active'));
   meter.contextReads.length = 0;
   meter.tick(120);
-  assert.ok(!meter.contextReads.includes(meter.canvasByMode.phasescope));
-  assert.equal(meter.storage.get('meters.player.mode'), 'phasescope');
+  assert.ok(!meter.contextReads.includes(meter.canvasByMode.level));
+  assert.equal(meter.storage.get('meters.player.mode'), 'oscilloscope');
   assert.equal(meter.element('meters-all-button').getAttribute('aria-pressed'), 'true');
   meter.element('meters-all-button').click();
   assert.equal(meter.storage.get('meters.player.view_mode'), 'one');
   assert.equal(meter.element('meters-all-button').getAttribute('aria-pressed'), 'false');
   assert.ok(!meter.element('meters-container').classList.contains('meters-all-mode'));
-  assert.ok(meter.frameByMode.phasescope.classList.contains('active'));
+  assert.ok(meter.frameByMode.oscilloscope.classList.contains('active'));
   assert.equal(meter.element('meters-next-button').disabled, false);
   assert.equal(meter.element('meters-play-button').disabled, false);
   meter.element('meters-all-button').click();
-  assert.equal(meter.element('tool-phasescope-button').getAttribute('aria-pressed'), 'false');
   meter.element('tool-phasescope-button').click();
-  assert.equal(meter.element('tool-phasescope-button').getAttribute('aria-pressed'), 'true');
+  assert.equal(meter.storage.get('meters.player.mode'), 'oscilloscope');
+  assert.equal(meter.element('tool-phasescope-button').hidden, true);
+  meter.element('tool-phasescope-button').click();
+  assert.equal(meter.element('tool-phasescope-button').getAttribute('aria-pressed'), undefined);
 });
 
 test('saved All mode is restored without changing the saved meter selection', () => {
@@ -551,14 +585,17 @@ test('saved All mode is restored without changing the saved meter selection', ()
   });
   assert.equal(meter.element('meters-all-button').getAttribute('aria-pressed'), 'true');
   assert.ok(meter.element('meters-container').classList.contains('meters-all-mode'));
-  assert.ok(meter.frameByMode.bit_meter.classList.contains('active'));
+  assert.equal(meter.storage.get('meters.player.mode'), 'oscilloscope');
+  assert.ok(meter.frameByMode.oscilloscope.classList.contains('active'));
+  assert.equal(meter.frameByMode.bit_meter.classList.contains('active'), false);
   assert.equal(meter.storage.get('meters.piano.view_mode'), 'one');
 });
 
-test('saved Bit meter selection is restored without changing other tools', () => {
+test('saved hidden meter selection falls back without changing other tools', () => {
   const meter = createMeter({ 'meters.player.mode': 'bit_meter', 'meters.piano.mode': 'level' });
-  assert.ok(meter.element('bit-meter').classList.contains('active'));
-  assert.ok(meter.element('tool-bit-meter-button').classList.contains('button-on'));
+  assert.equal(meter.storage.get('meters.player.mode'), 'oscilloscope');
+  assert.ok(meter.element('waveform').classList.contains('active'));
+  assert.equal(meter.element('tool-bit-meter-button').classList.contains('button-on'), false);
   assert.equal(meter.storage.get('meters.piano.mode'), 'level');
 });
 
@@ -566,10 +603,9 @@ test('Play advances immediately, cycles at 10-second intervals, wraps, and stops
   const meter = createMeter();
   const play = meter.element('meters-play-button');
   assert.equal(meter.intervals.size, 0);
-  meter.applyMode('phasescope');
   play.click();
   assert.equal(play.getAttribute('aria-pressed'), 'true');
-  assert.equal(meter.storage.get('meters.player.mode'), 'bit_meter');
+  assert.equal(meter.storage.get('meters.player.mode'), 'wavescope');
   assert.equal(meter.intervals.size, 1);
   const timer = [...meter.intervals.values()][0];
   assert.equal(timer.delay, 10000);
@@ -594,9 +630,7 @@ test('selecting any meter tab stops Play even when already selected in single vi
       ['wavescope', 'tool-wavescope-button'],
       ['oscilloscope', 'tool-oscilloscope-button'],
       ['spectroscope', 'tool-spectroscope-button'],
-      ['level', 'tool-level-button'],
-      ['phasescope', 'tool-phasescope-button'],
-      ['bit_meter', 'tool-bit-meter-button']
+      ['level', 'tool-level-button']
     ]) {
       play.click();
       assert.equal(meter.intervals.size, 1);
@@ -609,17 +643,24 @@ test('selecting any meter tab stops Play even when already selected in single vi
       assert.equal(meter.element('meters-all-button').getAttribute('aria-pressed'), 'false');
       assert.equal(meter.element('meters-freeze-button').getAttribute('aria-pressed'), 'true');
     }
+    play.click();
+    assert.equal(meter.intervals.size, 1);
+    const activeMode = meter.storage.get('meters.player.mode');
+    meter.element('tool-phasescope-button').click();
+    assert.equal(meter.storage.get('meters.player.mode'), activeMode);
+    assert.equal(meter.intervals.size, 1);
+    play.click();
 });
 
 test('Next advances the meter without stopping Play', () => {
   const meter = createMeter();
   meter.element('meters-play-button').click();
   meter.element('meters-next-button').click();
-  assert.equal(meter.storage.get('meters.player.mode'), 'phasescope');
+  assert.equal(meter.storage.get('meters.player.mode'), 'spectroscope');
   assert.equal(meter.intervals.size, 1);
   assert.equal(meter.element('meters-play-button').getAttribute('aria-pressed'), 'true');
   [...meter.intervals.values()][0].callback();
-  assert.equal(meter.storage.get('meters.player.mode'), 'bit_meter');
+  assert.equal(meter.storage.get('meters.player.mode'), 'level');
 });
 
 test('entering All stops Play and disables cycling until returning to one meter', () => {
@@ -658,7 +699,7 @@ test('All visibility is restored per tool and Reset enables every meter', () => 
 test('hiding every meter disables bitmap actions until a view is enabled', () => {
   const meter = createMeter();
   meter.applyAllMetersMode(true);
-  for (const id of ['tool-spectroscope-button', 'tool-level-button', 'tool-oscilloscope-button', 'tool-wavescope-button', 'tool-phasescope-button', 'tool-bit-meter-button']) {
+  for (const id of ['tool-spectroscope-button', 'tool-level-button', 'tool-oscilloscope-button', 'tool-wavescope-button']) {
     meter.element(id).click();
   }
   assert.equal(meter.element('meters-save-button').disabled, true);
@@ -697,4 +738,37 @@ test('rulers retain all bit bars while thinning labels for short plots', () => {
   assert.ok(short.labels.length < tall.labels.length);
   assert.equal(short.labels.at(-1).label, '32');
   assert.equal(short.horizontal.length, 4);
+});
+
+test('Rulers extend standard meter tick lines across the plot without Guides', () => {
+  const meter = createMeter();
+  const width = 320;
+  const height = 200;
+  const source = { sampleRate: 48000, channelCount: 2 };
+  meter.applyGuides(false);
+  meter.applyRulers(true);
+  const ticks = meter.getMeterTicks('oscilloscope', width, height, source);
+  meter.drawGuidesBehind('oscilloscope', meter.context2d, width, height, source);
+  const lines = meter.strokes.map(commands => {
+    const start = commands.find(([type]) => type === 'moveTo');
+    const end = commands.find(([type]) => type === 'lineTo');
+    return [start, end];
+  });
+  const expectedLines = ticks.horizontal.filter(({ position }) => position !== 0).length
+    + ticks.vertical.filter(({ position }) => position !== 0).length;
+  assert.equal(lines.length, expectedLines);
+  assert.ok(lines.length > 0);
+  assert.ok(lines.every(([start, end]) =>
+    (start[1] === end[1] && start[2] === 0 && end[2] === height)
+    || (start[2] === end[2] && start[1] === 0 && end[1] === width)
+  ));
+
+  meter.strokes.length = 0;
+  meter.applyRulers(false);
+  meter.drawGuidesBehind('oscilloscope', meter.context2d, width, height, source);
+  assert.equal(meter.strokes.length, 0);
+
+  meter.applyGuides(true);
+  meter.drawGuidesBehind('oscilloscope', meter.context2d, width, height, source);
+  assert.ok(meter.strokes.length > 0);
 });

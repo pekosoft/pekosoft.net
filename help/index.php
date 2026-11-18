@@ -320,7 +320,7 @@
   <svg class="standard-image-help"><use href="/icons.svg#meter"></use></svg>
   <div class="justify">
     <h1>Meters <span class="object">module</span></h1>
-    Displays the current tool's audio signal. Choose Spectroscope, Level, Oscilloscope, Wavescope, Phasescope or Bit to inspect different aspects of the signal. Visible meters update up to 60 times per second. Use All to show multiple meter views together and toggle each view with its meter button. Play cycles through single-meter views, and Next advances once. Freeze, Crosshair, Guides, Bright, Rulers and Color adjust the view without changing the audio. Save and Copy export the selected plot. <span class="default">Default: Oscilloscope.</span>
+    Displays the current tool's audio signal. Choose Spectroscope, Level, Oscilloscope or Wavescope to inspect different aspects of the signal. Visible meters update up to 60 times per second. Use All to show multiple meter views together and toggle each view with its meter button. Play cycles through single-meter views, and Next advances once. Freeze, Crosshair, Guides, Bright, Rulers and Color adjust the view without changing the audio. Save and Copy export the selected plot. <span class="default">Default: Oscilloscope.</span>
   </div>
 </div>
 
@@ -360,7 +360,7 @@
   <svg class="standard-image-help"><use href="/icons.svg#select_all"></use></svg>
   <div class="justify">
     <h1>All <span class="object">button</span></h1>
-    Shows the enabled Meters views together, each with its own rulers and crosshair. Meter buttons toggle individual views in All mode. Play and Next are unavailable. Save and Copy use the selected single-meter view if it is visible, otherwise the first visible view. They are unavailable when all views are hidden. Press All again to return to the selected single meter. Reset restores the single-meter view and enables all meters. <span class="default">Default: off.</span>
+    Shows all visible Meters views together, each with its own rulers and crosshair. Meter buttons toggle individual views in All mode. Play and Next are unavailable. Save and Copy use the selected single-meter view if it is visible, otherwise the first visible view. They are unavailable when all views are hidden. Press All again to return to the selected single meter. Reset restores the single-meter view and enables all visible meters. <span class="default">Default: off.</span>
   </div>
 </div>
 
@@ -376,7 +376,7 @@
   <svg class="standard-image-help"><use href="/icons.svg#play"></use></svg>
   <div class="justify">
     <h1>Meter play <span class="object">button</span></h1>
-    The Play button in Meters selects the next meter immediately and then every 10 seconds, returning to Spectroscope after Bit. It does not start or stop audio playback. Selecting a meter tab or switching to All mode stops cycling. Play is unavailable in All mode. Next and Freeze do not stop the cycle. Press Play again to stop cycling. Reset and page reload stop cycling. <span class="default">Default: off.</span>
+    The Play button in Meters selects the next meter immediately and then every 10 seconds, cycling through Spectroscope, Level, Oscilloscope and Wavescope before returning to Spectroscope. It does not start or stop audio playback. Selecting a meter tab or switching to All mode stops cycling. Play is unavailable in All mode. Next and Freeze do not stop the cycle. Press Play again to stop cycling. Reset and page reload stop cycling. <span class="default">Default: off.</span>
   </div>
 </div>
 
@@ -384,7 +384,7 @@
   <svg class="standard-image-help"><use href="/icons.svg#skip_right"></use></svg>
   <div class="justify">
     <h1>Next meter <span class="object">button</span></h1>
-    Selects the next Meters view in tab order: Spectroscope, Level, Oscilloscope, Wavescope, Phasescope and Bit, then back to Spectroscope. Unavailable in All mode. Play, Freeze and audio playback are unchanged.
+    Selects the next Meters view in tab order: Spectroscope, Level, Oscilloscope and Wavescope, then back to Spectroscope. Unavailable in All mode. Play, Freeze and audio playback are unchanged.
   </div>
 </div>
 
@@ -396,27 +396,25 @@
     A tooltip follows the crosshair and stays within the plot. Spectroscope shows frequency, cursor decibels and the displayed bar level.
     Level shows the channel, cursor dBFS and displayed level. Oscilloscope shows time, signed cursor amplitude and the sample value.
     Wavescope shows time before the newest sample, channel, cursor amplitude and the displayed minimum-to-maximum range.
-    Phasescope shows cursor Mid/Side and corresponding L/R amplitudes, plus the signal's overall correlation.
-    Bit shows the channel, bit position, cursor percentage and displayed bit activity. Its Over row shows the displayed overload activity.
     FS is normalized full-scale amplitude. Cursor values describe the pointer position, not the measured signal.
     Signal readouts use displayed data and remain held during Freeze. A dash means no sample is available, while zero amplitude is shown as -∞ dBFS.
     The tooltip is not included in bitmap exports.
   </div>
 </div>
 
-<div class="feature-row border">
+<div class="feature-row border" hidden>
   <svg class="standard-image-help"><use href="/icons.svg?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/icons.svg'); ?>#phasescope"></use></svg>
   <div class="justify">
     <h1>Phasescope <span class="object">button</span></h1>
-    Shows the stereo signal as a phase trace. Matching left and right signals form a vertical line. Opposite-polarity signals form a horizontal line. A wider trace indicates more stereo difference. Left-only and right-only signals follow the corresponding diagonal axes. Mono uses the same signal on both sides. The correlation reading appears above the trace. Its scale below the trace ranges from -1 for opposite polarity through 0 for unrelated signals to +1 for matching signals. Three cursors show the current value and the minimum and maximum over the last second of live updates. Color affects only the phase trace. A dash means correlation is undefined because one or both channels are silent, which also clears the cursors and their range. Guides shows the phase axes and the correlation scale, ticks and labels. Rulers shows the normalized mid and side amplitude scales. The correlation readout and cursors are independent of both toggles. The horizontal side signal is (R - L) / 2, and the vertical mid signal is (L + R) / 2. Freeze holds the trace, correlation and all three cursors without stopping audio.
+    Shows the stereo signal as a phase trace. Matching left and right signals form a vertical line. Opposite-polarity signals form a horizontal line. A wider trace indicates more stereo difference. Left-only and right-only signals follow the corresponding diagonal axes. Mono uses the same signal on both sides. The correlation reading appears above the trace. Its scale below the trace ranges from -1 for opposite polarity through 0 for unrelated signals to +1 for matching signals. Three cursors show the current value and the minimum and maximum over the last second of live updates. Color affects only the phase trace. A dash means correlation is undefined because one or both channels are silent, which also clears the cursors and their range. Guides shows the phase axes and the correlation scale, ticks and labels. Rulers shows the normalized mid and side amplitude scales. The correlation readout and cursors are independent of both toggles. The horizontal side signal is (R - L) / 2, and the vertical mid signal is (L + R) / 2. Freeze holds the trace, correlation and all three cursors without stopping audio. Crosshair shows cursor Mid/Side amplitudes, corresponding L/R values and signal correlation.
   </div>
 </div>
 
-<div class="feature-row border">
+<div class="feature-row border" hidden>
   <svg class="standard-image-help"><use href="/icons.svg?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/icons.svg'); ?>#bitmeter"></use></svg>
   <div class="justify">
     <h1>Bit <span class="object">button</span></h1>
-    Shows bit activity in a 32-bit signed PCM (pulse-code modulation) representation of the browser's audio signal. Each analysis window measures the percentage of samples with each bit set. Displayed activity rises immediately and uses the same gradual decay as Spectroscope when it falls. Bit 1 is the sign bit, and bit 32 is the least significant bit. L and R show the separate stereo channels, while M shows mono. The Over row measures the percentage of samples outside the normalized full-scale range from -1 to +1 before conversion. Values outside that range are clipped for the bit calculation. Guides shows the bit rows and channel labels. Rulers shows bit positions and percentage scales. The meter keeps measuring after playback stops and during silence, including any remaining signal activity. Silence clears the activity bars immediately. Only Freeze holds the displayed activity.
+    Shows bit activity in a 32-bit signed PCM (pulse-code modulation) representation of the browser's audio signal. Each analysis window measures the percentage of samples with each bit set. Displayed activity rises immediately and uses the same gradual decay as Spectroscope when it falls. Bit 1 is the sign bit, and bit 32 is the least significant bit. L and R show the separate stereo channels, while M shows mono. The Over row measures the percentage of samples outside the normalized full-scale range from -1 to +1 before conversion. Values outside that range are clipped for the bit calculation. Guides shows the bit rows and channel labels. Rulers shows bit positions and percentage scales. The meter keeps measuring after playback stops and during silence, including any remaining signal activity. Silence clears the activity bars immediately. Only Freeze holds the displayed activity. Crosshair shows the channel, bit position, cursor percentage and displayed bit activity. Its Over row shows displayed overload activity.
     This is not a measurement of the original file's bit depth or floating-point format. Browser decoding, resampling, gain and other processing can change the sample values. Inactive lower bits can indicate quantization in the measured signal, but do not establish the source format.
   </div>
 </div>
@@ -425,7 +423,7 @@
   <svg class="standard-image-help"><use href="/icons.svg#ruler"></use></svg>
   <div class="justify">
     <h1>Meter rulers <span class="object">button</span></h1>
-    The Rulers button in Meters shows or hides scales independently of Guides. Spectroscope shows frequency and decibel rulers. Level shows a decibel ruler, including -3 dB where space permits, and channel labels, L and R for left and right or M for mono. Crowded Level references are omitted together with their ticks and guides. Oscilloscope shows milliseconds across its sample window. Wavescope shows seconds back from the newest captured signal at 0 s, excluding silence and paused updates. Both show decibel rulers, with channel labels for stereo Wavescope. Phasescope shows normalized mid and side amplitude scales. Its bottom correlation meter is independent of Rulers. Bit shows bit positions and the percentage of samples with each bit set. Bright changes both guide and ruler contrast. The local Rulers button overrides the Settings Rulers option for Meters only. <span class="default">Default: on.</span>
+    The Rulers button in Meters shows or hides scales independently of Guides. Spectroscope shows frequency and decibel rulers. Level shows a decibel ruler, including -3 dB where space permits, and channel labels, L and R for left and right or M for mono. Crowded Level references are omitted together with their ticks and guides. Oscilloscope shows milliseconds across its sample window. Wavescope shows seconds back from the newest captured signal at 0 s, excluding silence and paused updates. Both show decibel rulers, with channel labels for stereo Wavescope. With Rulers on, tick lines extend across each plot even when Guides is off. Bright changes both guide and ruler contrast. The local Rulers button overrides the Settings Rulers option for Meters only. <span class="default">Default: on.</span>
   </div>
 </div>
 
@@ -433,7 +431,7 @@
   <svg class="standard-image-help"><use href="/icons.svg#guides"></use></svg>
   <div class="justify">
     <h1>Guides <span class="object">button</span></h1>
-    Shows reference lines in each visible Meters plot. The local Guides button overrides the Settings Guides option for Meters only. Rulers and Crosshair are independent. <span class="default">Default: on.</span>
+    Shows reference lines in each visible Meters plot. When Guides is off, Rulers still extends its tick lines across the plot. The local Guides button overrides the Settings Guides option for Meters only. Rulers and Crosshair are independent. <span class="default">Default: on.</span>
   </div>
 </div>
 

@@ -64,7 +64,7 @@
         </div>
       </div>
       <div id="meters-frame-level" class="meter-frame">
-        <div class="meter-mode-label">Level</div>
+        <div class="meter-mode-label">Level meter</div>
         <div class="timeline-ruler-layout meters-ruler-layout">
           <div class="meters-ruler-corner"><svg id="meters-ruler-corner-level" aria-hidden="true"></svg></div>
           <div class="meters-horizontal-ruler"><svg id="meters-horizontal-ruler-level" aria-label="Meter horizontal ruler"></svg></div>

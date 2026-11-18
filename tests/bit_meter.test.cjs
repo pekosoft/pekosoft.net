@@ -536,6 +536,8 @@ test('Next cycles through only the four visible meter modes', () => {
 test('All mode toggles individual views and preserves the single-meter selection', () => {
   const meter = createMeter();
   meter.applyMode('oscilloscope');
+  const oscilloscope = meter.element('tool-oscilloscope-button');
+  assert.ok(oscilloscope.classList.contains('button-on'));
   meter.element('meters-all-button').click();
   assert.equal(meter.storage.get('meters.player.view_mode'), 'all');
   assert.equal(meter.element('meters-all-button').getAttribute('aria-pressed'), 'true');
@@ -547,6 +549,10 @@ test('All mode toggles individual views and preserves the single-meter selection
   assert.ok(meter.element('meters-next-button').classList.contains('grey'));
   assert.ok(meter.element('meters-play-button').classList.contains('grey'));
   assert.ok(meter.visibleModes.every(mode => !meter.frameByMode[mode].classList.contains('meter-disabled')));
+  for (const id of ['tool-spectroscope-button', 'tool-level-button', 'tool-oscilloscope-button', 'tool-wavescope-button']) {
+    assert.equal(meter.element(id).classList.contains('button-on'), true);
+    assert.equal(meter.element(id).getAttribute('aria-pressed'), 'true');
+  }
   meter.tick(100);
   assert.ok(meter.visibleModes.every(mode => meter.contextReads.includes(meter.canvasByMode[mode])));
   assert.ok(!meter.contextReads.includes(meter.canvasByMode.phasescope));
@@ -554,6 +560,7 @@ test('All mode toggles individual views and preserves the single-meter selection
 
   meter.element('tool-level-button').click();
   assert.equal(meter.storage.get('meters.player.visible.level'), 'off');
+  assert.equal(meter.element('tool-level-button').classList.contains('button-on'), false);
   assert.equal(meter.element('tool-level-button').getAttribute('aria-pressed'), 'false');
   assert.ok(meter.frameByMode.level.classList.contains('meter-disabled'));
   assert.ok(meter.frameByMode.oscilloscope.classList.contains('active'));
@@ -566,6 +573,8 @@ test('All mode toggles individual views and preserves the single-meter selection
   assert.equal(meter.storage.get('meters.player.view_mode'), 'one');
   assert.equal(meter.element('meters-all-button').getAttribute('aria-pressed'), 'false');
   assert.ok(!meter.element('meters-container').classList.contains('meters-all-mode'));
+  assert.ok(oscilloscope.classList.contains('button-on'));
+  assert.equal(meter.element('tool-spectroscope-button').classList.contains('button-on'), false);
   assert.ok(meter.frameByMode.oscilloscope.classList.contains('active'));
   assert.equal(meter.element('meters-next-button').disabled, false);
   assert.equal(meter.element('meters-play-button').disabled, false);

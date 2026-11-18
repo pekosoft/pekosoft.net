@@ -346,7 +346,7 @@
   <svg class="standard-image-help"><use href="/icons.svg#meter"></use></svg>
   <div class="justify">
     <h1>Level <span class="object">button</span></h1>
-    Shows RMS (root mean square) signal level with an immediate response to rising levels and a short release as they fall. Stereo signals have separate L and R meters, and mono uses M. The ruler measures dBFS (decibels relative to full scale), with 0 dBFS at full scale.
+    Shows RMS (root mean square) signal level with an immediate response to rising levels and a short release as they fall. A trailing line follows each live bar's highest recent level and falls more slowly than the bar. One bar below each live bar shows the running average. Stereo signals have separate L and R meters, and mono uses M. The ruler measures dBFS (decibels relative to full scale), with 0 dBFS at full scale.
   </div>
 </div>
 
@@ -354,7 +354,7 @@
   <svg class="standard-image-help"><use href="/icons.svg#wavelength"></use></svg>
   <div class="justify">
     <h1>Oscilloscope <span class="object">button</span></h1>
-    Shows the signal's waveform over a short time window and holds the latest frame containing a signal between transient sounds. The rulers show milliseconds and amplitude in decibels.
+    Shows the signal's waveform over a short time window. Steady repeating signals start where the waveform rises through zero so the trace stays in place. Transient sounds are shown without this alignment, and the latest frame with a signal stays visible between sounds. The rulers show milliseconds and amplitude in decibels.
   </div>
 </div>
 
@@ -362,7 +362,7 @@
   <svg class="standard-image-help"><use href="/icons.svg#pulse"></use></svg>
   <div class="justify">
     <h1>Wavescope <span class="object">button</span></h1>
-    Shows a scrolling history of minimum and maximum signal amplitudes, with separate L and R traces for stereo or M for mono. New samples enter at 0 s, and older samples move back through the history. Silence and paused updates do not extend the history. The rulers show seconds before the newest captured signal and amplitude in decibels.
+    Shows a scrolling history of minimum and maximum signal amplitudes, with separate L and R traces for stereo or M for mono. New samples enter at 0 s. The time ruler counts back through captured signal only, not elapsed time. Silent and paused intervals are skipped rather than shown as gaps. The amplitude ruler shows decibels.
   </div>
 </div>
 

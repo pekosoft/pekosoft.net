@@ -480,6 +480,11 @@ Help explicitly so contextual Help stays consistent without per-tool copies.
 Abbreviated Meters tab labels retain explicit `data-help-entry` values matching
 their full Help headings, so shortening a label does not break entry navigation.
 
+- Level uses each channel's RMS for the live bar and a separate history edge with a slower release. One equally thick magenta bar below the live bar shows that channel's running RMS average. Leave a wider gap between stereo channels than between bars within a channel. Freeze holds all three indicators without sampling or aging history.
+- Spectroscope and Oscilloscope use the mixed analyser. Level and Wavescope use separate left and right analysers for stereo and one lane for mono. Leave stereo lanes empty if separate analysers are unavailable rather than duplicating the mix.
+- Oscilloscope aligns steady repeating signals to a rising zero crossing only when the capture repeats consistently. Draw consecutive real samples, not a wrapped buffer. Keep the latest signal frame between transient sounds, and use the displayed window for both the ruler and Crosshair.
+- Wavescope measures elapsed capture time rather than wall-clock time. Silent and paused intervals do not extend its history.
+
 ## Panel editability rule
 
 Panels are always input fields.

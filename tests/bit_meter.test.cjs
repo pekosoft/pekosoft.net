@@ -101,8 +101,8 @@ function createMeter(initialStorage = {}) {
       getBitActivity, getBitMeterGeometry, getMeterTicks, getCrosshairReadout,
       applyMode, applyAllMetersMode, applyFreeze, applyGuides, applyBright, applyRulers, applyMulticolor,
       renderBitMeter, redrawMeterFrame, tick, bitMeterState, spectrumDisplayState, levelDisplayState,
-      getSourceConfig, buildMeterBitmap, drawGuidesBehind, getDisplayedModes,
-      canvasByMode, frameByMode, visibleModes
+      getSourceConfig, buildMeterBitmap, drawGuidesBehind, getDisplayedModes, wavescopeState,
+      canvasByMode, frameByMode, visibleModes, pausedFrameState
     };
   })();`), context);
   return {
@@ -471,6 +471,114 @@ test('Level retains its existing immediate attack and 350 ms release', () => {
   value = 128;
   meter.tick(450);
   assert.ok(Math.abs(meter.levelDisplayState.left - 0.5 * Math.exp(-1)) < 1e-6);
+});
+
+test('Level draws one average bar per channel and slower history edges that pause during Freeze', () => {
+  const meter = createMeter();
+  const { leftAnalyser, rightAnalyser } = setSource(meter, [0], [0]);
+  let left = 64;
+  let right = 32;
+  let reads = 0;
+  for (const [channel, magnitude] of [[leftAnalyser, () => left], [rightAnalyser, () => right]]) {
+    channel.getByteTimeDomainData = target => {
+      reads++;
+      target.fill(128 - magnitude());
+    };
+  }
+  meter.applyMulticolor(false);
+  meter.applyMode('level');
+  meter.tick(100);
+  const averageBars = () => meter.draws.filter(({ color }) => color === 'rgb(255, 0, 255)')
+    .map(({ args }) => args.slice(1));
+  assert.deepEqual(averageBars(), [[126, 300, 122], [390, 150, 122]]);
+  assert.ok(meter.draws.some(({ args }) => args?.join() === '0,0,300,122'));
+  assert.ok(meter.draws.some(({ args }) => args?.join() === '0,264,150,122'));
+  assert.match(meter.getCrosshairReadout(300, 250, 600, 512, null), /Between channels/);
+  assert.match(meter.getCrosshairReadout(300, 262, 600, 512, null), /Between channels/);
+  left = 0;
+  meter.draws.length = 0;
+  meter.tick(450);
+  const { leftHistory, rightHistory } = meter.levelDisplayState;
+  assert.ok(leftHistory.edge > meter.levelDisplayState.left && leftHistory.edge < 0.5);
+  const historyX = Math.round(600 * leftHistory.edge) - 1;
+  assert.ok(meter.draws.some(({ args }) => args?.join() === `${historyX},0,1,122`));
+  assert.ok(averageBars()[0][1] > Math.round(600 * meter.levelDisplayState.left));
+  assert.deepEqual(averageBars().slice(1), [[390, 150, 122]]);
+  assert.equal(rightHistory.edge, 0.25);
+  assert.ok(meter.draws.every(({ text }) => !text?.startsWith('Peak:')));
+  right = 0;
+  meter.window.__pekosoftMetersSource.isActive = () => false;
+  const before = { ...leftHistory };
+  meter.applyFreeze(true);
+  meter.tick(2000);
+  assert.equal(reads, 4);
+  assert.deepEqual({ ...leftHistory }, before);
+  meter.applyFreeze(false);
+  meter.tick(2050);
+  assert.ok(leftHistory.edge < before.edge && leftHistory.edge > before.edge * 0.9);
+  assert.ok(leftHistory.meanSquare < before.meanSquare && leftHistory.meanSquare > before.meanSquare * 0.9);
+  meter.tick(15000);
+  assert.equal(leftHistory.edge, 0);
+  assert.equal(rightHistory.meanSquare, 0);
+});
+
+test('Level and Wavescope read real stereo pairs and never substitute the mix', () => {
+  const meter = createMeter();
+  const { leftAnalyser, rightAnalyser } = setSource(meter, [0], [0]);
+  const source = meter.window.__pekosoftMetersSource;
+  let mixReads = 0;
+  source.analyser = { getByteTimeDomainData() { mixReads++; } };
+  leftAnalyser.getByteTimeDomainData = target => target.fill(192);
+  rightAnalyser.getByteTimeDomainData = target => target.fill(96);
+  meter.applyMulticolor(false);
+  meter.applyMode('level');
+  meter.tick(100);
+  assert.equal(meter.levelDisplayState.left, 0.5);
+  assert.equal(meter.levelDisplayState.right, 0.25);
+  meter.applyMode('wavescope');
+  meter.tick(150);
+  assert.ok(meter.wavescopeState.historyMaxL.at(-1) > 0);
+  assert.ok(meter.wavescopeState.historyMaxR.at(-1) < 0);
+
+  source.analyserRight = null;
+  for (const [mode, time] of [['wavescope', 200], ['level', 250]]) {
+    meter.applyMode(mode);
+    meter.tick(time);
+    assert.equal(meter.getCrosshairReadout(300, 100, 600, 512, meter.getSourceConfig()), 'Stereo unavailable');
+  }
+  assert.equal(mixReads, 0);
+  assert.equal(meter.errors.length, 1);
+});
+
+test('Oscilloscope aligns steady tones and keeps the transient frame through silence', () => {
+  const meter = createMeter();
+  const { leftAnalyser } = setSource(meter, [0]);
+  const view = meter.pausedFrameState.oscilloscopeData;
+  let offset = 13;
+  const tone = (index) => Math.round(128 + 80 * Math.sin((index + offset) * Math.PI / 64));
+  leftAnalyser.getByteTimeDomainData = target => {
+    for (let i = 0; i < target.length; i++) target[i] = tone(i);
+  };
+  meter.tick(100);
+  assert.equal(view[0], 128);
+  assert.ok(view[1] > 128);
+  const aligned = view.slice();
+  offset = 55;
+  meter.tick(125);
+  assert.deepEqual(view, aligned, 'phase changes in the capture do not move the trace');
+  assert.match(meter.getCrosshairReadout(300, 100, 600, 512, meter.getSourceConfig()), /Time: 16\.00 ms/);
+
+  leftAnalyser.getByteTimeDomainData = target => {
+    for (let i = 0; i < target.length; i++) target[i] = i < 250 ? 128 : tone(i);
+  };
+  meter.tick(150);
+  assert.equal(view[249], 128);
+  assert.notEqual(view[250], 128, 'the attack and the lead-in remain unaligned');
+  const transient = view.slice();
+  leftAnalyser.getByteTimeDomainData = target => target.fill(128);
+  meter.tick(180);
+  meter.redrawMeterFrame();
+  assert.deepEqual(view, transient);
 });
 
 test('missing sources show no activity and an inactive replacement is measured immediately', () => {

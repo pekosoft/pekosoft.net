@@ -216,6 +216,11 @@
     return bitmap;
   }
 
+  function getLevelLaneLayout(height, channels) {
+    const gap = channels > 1 ? Math.min(16, height / 4) : 0;
+    return { gap, laneHeight: (height - gap) / channels };
+  }
+
   function getMeterTicks(mode, width, height, source) {
     if (mode === 'bit_meter') {
       const { rowTop, rowHeight, channelWidth, rightStart, channels } = getBitMeterGeometry(width, height, source);
@@ -271,15 +276,14 @@
     }
     if (mode === 'level') {
       const channels = (source?.channelCount || 2) > 1 ? 2 : 1;
-      const gap = channels > 1 ? 4 : 0;
-      const barHeight = Math.floor((height - gap * (channels - 1)) / channels);
+      const { gap, laneHeight } = getLevelLaneLayout(height, channels);
       return {
         horizontal: getLevelHorizontalTicks(width),
-        vertical: [{ position: channels > 1 ? barHeight + gap / 2 : height / 2, label: '' }],
+        vertical: [{ position: height / 2, label: '' }],
         labels: channels > 1
           ? [
-            { position: barHeight / 2, label: 'L' },
-            { position: barHeight + gap + barHeight / 2, label: 'R' }
+            { position: laneHeight / 2, label: 'L' },
+            { position: laneHeight + gap + laneHeight / 2, label: 'R' }
           ]
           : [{ position: height / 2 - 9, label: 'M' }]
       };
@@ -330,7 +334,7 @@
     const scrolling = mode === 'wavescope';
     const duration = scrolling
       ? Math.max(0, Math.floor(width) - 1) / wavescopeState.sampleRateHz
-      : timeArray.length / (source?.sampleRate || 44100) * 1000;
+      : oscilloscopeWindowSize / (source?.sampleRate || 44100) * 1000;
     if (duration <= 0) return [];
 
     const targetStep = duration / Math.max(1, Math.floor(width / 80));
@@ -410,11 +414,14 @@
 
   const timeArray = new Uint8Array(2048);
   const timeArrayR = new Uint8Array(2048);
+  const oscilloscopeWindowSize = 1536;
+  const meterHistoryReleaseMs = 1400;
+  const levelAverageMs = 600;
   let freqArray = new Uint8Array(0);
 
   const pausedFrameState = {
     oscilloscopeReady: false,
-    oscilloscopeData: new Uint8Array(2048),
+    oscilloscopeData: new Uint8Array(oscilloscopeWindowSize),
     spectrumReady: false,
     levelReady: false,
     levelLeft: 0,
@@ -425,6 +432,9 @@
   const levelDisplayState = {
     left: 0,
     right: 0,
+    leftHistory: { analyser: null, edge: 0, meanSquare: 0 },
+    rightHistory: { analyser: null, edge: 0, meanSquare: 0 },
+    frozenAtMs: null,
     lastUpdateMs: 0
   };
 
@@ -457,6 +467,8 @@
   };
 
   const wavescopeState = {
+    leftAnalyser: null,
+    rightAnalyser: null,
     historyMinL: [],
     historyMaxL: [],
     historyMinR: [],
@@ -552,6 +564,7 @@
   }
 
   function getCrosshairReadout(x, y, width, height, source, mode = activeMode) {
+    if (missingStereoChannels(mode, source)) return 'Stereo unavailable';
     const sampleRate = source?.sampleRate || 44100;
     if (mode === 'spectroscope') {
       const frequency = 20 * Math.pow(Math.max(21, sampleRate / 2) / 20, x / width);
@@ -561,10 +574,10 @@
       return `Frequency: ${frequency.toFixed(1)} Hz\nCursor: ${(-60 * y / height).toFixed(1)} dB\nBar: ${bar}`;
     }
     if (mode === 'level') {
-      const channels = pausedFrameState.levelReady ? pausedFrameState.levelChannels : (source?.channelCount || 2);
-      const barHeight = Math.max(1, Math.floor((height - (channels > 1 ? 4 : 0)) / Math.min(2, channels)));
-      if (channels > 1 && y >= barHeight && y < barHeight + 4) return 'Between channels';
-      const right = channels > 1 && y >= barHeight + 4;
+      const channels = pausedFrameState.levelReady ? pausedFrameState.levelChannels : Math.min(2, source?.channelCount || 2);
+      const { gap, laneHeight } = getLevelLaneLayout(height, channels);
+      if (channels > 1 && y >= laneHeight && y < laneHeight + gap) return 'Between channels';
+      const right = channels > 1 && y >= laneHeight + gap;
       const channel = channels > 1 ? (right ? 'R' : 'L') : 'M';
       const level = right ? pausedFrameState.levelRight : pausedFrameState.levelLeft;
       const signal = pausedFrameState.levelReady ? formatCrosshairAmplitude(level) : '-';
@@ -609,10 +622,10 @@
       const seconds = Math.min(0, (x - Math.max(0, Math.floor(width) - 1)) / wavescopeState.sampleRateHz);
       return `Time: ${seconds.toFixed(3)} s\nChannel: ${channel}\n${cursor}\nRange: ${signal}`;
     }
-    const index = Math.min(timeArray.length - 1, Math.floor(x / width * timeArray.length));
+    const index = Math.min(oscilloscopeWindowSize - 1, Math.floor(x / width * oscilloscopeWindowSize));
     const signal = pausedFrameState.oscilloscopeReady
       ? ((pausedFrameState.oscilloscopeData[index] - 128) / 128).toFixed(3) + ' FS' : '-';
-    return `Time: ${(x / width * timeArray.length / sampleRate * 1000).toFixed(2)} ms\n${cursor}\nSample: ${signal}`;
+    return `Time: ${(x / width * oscilloscopeWindowSize / sampleRate * 1000).toFixed(2)} ms\n${cursor}\nSample: ${signal}`;
   }
 
   function updateCrosshair(mode) {
@@ -698,6 +711,13 @@
   }
 
   function applyFreeze(nextState) {
+    if (nextState && !frozen) {
+      levelDisplayState.frozenAtMs = performance.now();
+    } else if (!nextState && frozen) {
+      const pauseMs = performance.now() - levelDisplayState.frozenAtMs;
+      if (levelDisplayState.lastUpdateMs) levelDisplayState.lastUpdateMs += pauseMs;
+      levelDisplayState.frozenAtMs = null;
+    }
     frozen = !!nextState;
     frozenSource = frozen ? getSourceConfig() : null;
     wavescopeState.lastPushMs = 0;
@@ -901,6 +921,13 @@
       isStopped: typeof source.isStopped === 'function' ? source.isStopped : null,
       palette: getMeterPalette()
     };
+  }
+
+  const missingStereoWarnings = new WeakSet();
+
+  function missingStereoChannels(mode, source) {
+    return (mode === 'level' || mode === 'wavescope') && source?.channelCount > 1
+      && (!source.analyserLeft || !source.analyserRight || source.analyserLeft === source.analyserRight);
   }
 
   function getPhasescopeGeometry(width, height) {
@@ -1243,19 +1270,47 @@
     }
   }
 
+  function getOscilloscopeTrigger(data, peak) {
+    const lookahead = data.length - oscilloscopeWindowSize;
+    const crossings = [];
+    for (let i = 1; i < data.length; i++) {
+      const previous = data[i - 1];
+      if (previous >= 128 || data[i] < 128) continue;
+      if (!crossings.length && i > lookahead) return null;
+      crossings.push(i - 1 + (128 - previous) / (data[i] - previous));
+      if (crossings.length === 3) break;
+    }
+    if (crossings.length < 3) return null;
+    const period = (crossings[2] - crossings[0]) / 2;
+    if (period < 4 || Math.abs(crossings[1] - crossings[0] - period) > 1) return null;
+
+    // Check the whole capture, including before the trigger, so attacks are not mistaken for steady tones.
+    const steps = Math.floor(period);
+    const fraction = period - steps;
+    const tolerance = Math.max(2, peak * 0.18);
+    for (let i = 0; i + steps + 1 < data.length; i++) {
+      const repeated = data[i + steps] * (1 - fraction) + data[i + steps + 1] * fraction;
+      if (Math.abs(data[i] - repeated) > tolerance) return null;
+    }
+    return Math.ceil(crossings[0]);
+  }
+
   function renderOscilloscope(ctx, canvas, analyser, source) {
     resizeCanvasToDisplaySize(canvas, ctx);
     const width = canvas.width / (window.devicePixelRatio || 1);
     const height = canvas.height / (window.devicePixelRatio || 1);
 
     analyser.getByteTimeDomainData(timeArray);
-    let hasSignal = false;
+    let peak = 0;
+    let peakIndex = 0;
     for (let i = 0; i < timeArray.length; i++) {
-      if (Math.abs((timeArray[i] - 128) / 128) >= 0.004) {
-        hasSignal = true;
-        break;
+      const amplitude = Math.abs(timeArray[i] - 128);
+      if (amplitude > peak) {
+        peak = amplitude;
+        peakIndex = i;
       }
     }
+    const hasSignal = peak > 0;
     if (!hasSignal && !meterNeedsRedraw) return;
 
     ctx.clearRect(0, 0, width, height);
@@ -1263,7 +1318,10 @@
       drawOscilloscopeFromData(ctx, width, height, pausedFrameState.oscilloscopeData, source, false);
       return;
     }
-    drawOscilloscopeFromData(ctx, width, height, timeArray, source, true);
+    const untriggeredStart = Math.min(Math.max(0, peakIndex - oscilloscopeWindowSize / 2),
+      timeArray.length - oscilloscopeWindowSize);
+    const start = (hasSignal ? getOscilloscopeTrigger(timeArray, peak) : null) ?? untriggeredStart;
+    drawOscilloscopeFromData(ctx, width, height, timeArray.subarray(start, start + oscilloscopeWindowSize), source, true);
   }
 
   function drawSpectrumFromData(ctx, width, height, source, data, shouldCache = false) {
@@ -1327,6 +1385,14 @@
     const width = canvas.width / (window.devicePixelRatio || 1);
     const height = canvas.height / (window.devicePixelRatio || 1);
 
+    const stereo = source.channelCount > 1;
+    const leftAnalyser = stereo ? source.analyserLeft : source.analyserLeft || source.analyser;
+    const rightAnalyser = stereo ? source.analyserRight : null;
+    if (wavescopeState.leftAnalyser !== leftAnalyser || wavescopeState.rightAnalyser !== rightAnalyser) {
+      resetWavescopeHistory();
+      wavescopeState.leftAnalyser = leftAnalyser;
+      wavescopeState.rightAnalyser = rightAnalyser;
+    }
     const pixelWidth = Math.max(1, Math.floor(width));
     if (wavescopeState.width !== pixelWidth) {
       resizeWavescopeHistory(pixelWidth);
@@ -1336,10 +1402,8 @@
       return;
     }
 
-    (source.analyserLeft || source.analyser).getByteTimeDomainData(timeArray);
-    if (source.channelCount > 1 && source.analyserRight) {
-      source.analyserRight.getByteTimeDomainData(timeArrayR);
-    }
+    leftAnalyser.getByteTimeDomainData(timeArray);
+    if (rightAnalyser) rightAnalyser.getByteTimeDomainData(timeArrayR);
 
     const nowMs = performance.now();
     const pushIntervalMs = 1000 / wavescopeState.sampleRateHz;
@@ -1362,9 +1426,7 @@
     };
 
     const minMaxL = getMinMaxNormalized(timeArray);
-    const minMaxR = source.channelCount > 1 && source.analyserRight
-      ? getMinMaxNormalized(timeArrayR)
-      : minMaxL;
+    const minMaxR = rightAnalyser ? getMinMaxNormalized(timeArrayR) : { min: 0, max: 0 };
 
     const silenceLevel = Math.max(
       Math.abs(minMaxL.min),
@@ -1386,10 +1448,12 @@
         wavescopeState.historyMinL.push(wavescopeState.smoothMinL);
         wavescopeState.historyMaxL.shift();
         wavescopeState.historyMaxL.push(wavescopeState.smoothMaxL);
-        wavescopeState.historyMinR.shift();
-        wavescopeState.historyMinR.push(wavescopeState.smoothMinR);
-        wavescopeState.historyMaxR.shift();
-        wavescopeState.historyMaxR.push(wavescopeState.smoothMaxR);
+        if (rightAnalyser) {
+          wavescopeState.historyMinR.shift();
+          wavescopeState.historyMinR.push(wavescopeState.smoothMinR);
+          wavescopeState.historyMaxR.shift();
+          wavescopeState.historyMaxR.push(wavescopeState.smoothMaxR);
+        }
       }
     }
     wavescopeState.lastPushMs = isSilent || !wavescopeState.lastPushMs
@@ -1479,41 +1543,43 @@
     });
   }
 
-  function drawLevelFromValues(ctx, width, height, source, left, right, channels, shouldCache = false) {
-    if (shouldCache) {
-      pausedFrameState.levelReady = true;
-      pausedFrameState.levelLeft = left;
-      pausedFrameState.levelRight = right;
-      pausedFrameState.levelChannels = channels;
-    }
-
+  function drawLevelFromValues(ctx, width, height, source) {
     drawGuidesBehind('level', ctx, width, height, source, 0);
 
-    const gap = channels > 1 ? 4 : 0;
-    const barHeight = Math.max(1, Math.floor((height - gap * (channels - 1)) / channels));
-
-    const leftWidth = Math.round(width * left);
-    const rightWidth = Math.round(width * right);
-
-    const drawChannel = (top, valueWidth) => {
-      if (!valueWidth) return;
-      if (!multicolorOn) {
-        ctx.fillStyle = getMeterColorStyle(source, 0);
-        ctx.fillRect(0, top, valueWidth, barHeight);
-        return;
+    const { levelLeft: left, levelRight: right, levelChannels: channels } = pausedFrameState;
+    const { gap, laneHeight } = getLevelLaneLayout(height, channels);
+    const barGap = Math.min(4, laneHeight / 8);
+    const barHeight = (laneHeight - barGap) / 2;
+    const drawChannel = (top, level, { edge, meanSquare }) => {
+      const barTop = top;
+      const valueWidth = Math.round(width * level);
+      if (valueWidth > 0) {
+        if (multicolorOn) {
+          const gradient = ctx.createLinearGradient(0, top, width, top);
+          gradient.addColorStop(0, getMeterColorStyle(source, 0, true));
+          gradient.addColorStop(1, getMeterColorStyle(source, 1, true));
+          ctx.fillStyle = gradient;
+        } else {
+          ctx.fillStyle = getMeterColorStyle(source, 0);
+        }
+        ctx.fillRect(0, barTop, valueWidth, barHeight);
       }
-      const gradient = ctx.createLinearGradient(0, top, width, top);
-      gradient.addColorStop(0, getMeterColorStyle(source, 0, true));
-      gradient.addColorStop(1, getMeterColorStyle(source, 1, true));
-      ctx.fillStyle = gradient;
-      ctx.fillRect(0, top, valueWidth, barHeight);
+      const averageWidth = Math.round(width * Math.sqrt(meanSquare));
+      if (averageWidth > 0) {
+        const { r, g, b } = source.palette.secondary;
+        ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
+        ctx.fillRect(0, top + laneHeight - barHeight, averageWidth, barHeight);
+      }
+      const historyX = Math.round(width * edge);
+      if (historyX > 0 && width >= 1) {
+        const { r, g, b } = source.palette.white;
+        ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
+        ctx.fillRect(Math.min(width - 1, historyX - 1), barTop, 1, barHeight);
+      }
     };
 
-    drawChannel(0, leftWidth);
-
-    if (channels > 1) {
-      drawChannel(barHeight + gap, rightWidth);
-    }
+    drawChannel(0, left, levelDisplayState.leftHistory);
+    if (channels > 1) drawChannel(laneHeight + gap, right, levelDisplayState.rightHistory);
   }
 
   function renderLevel(ctx, canvas, source) {
@@ -1521,35 +1587,65 @@
     const width = canvas.width / (window.devicePixelRatio || 1);
     const height = canvas.height / (window.devicePixelRatio || 1);
 
-    const getRms = (analyser) => {
+    const nowMs = performance.now();
+    const elapsedMs = levelDisplayState.lastUpdateMs ? nowMs - levelDisplayState.lastUpdateMs : 0;
+    const historyRelease = Math.exp(-elapsedMs / meterHistoryReleaseMs);
+    const averageRetention = Math.exp(-elapsedMs / levelAverageMs);
+    const getRms = (analyser, history) => {
       analyser.getByteTimeDomainData(timeArray);
       let sum = 0;
       for (let i = 0; i < timeArray.length; i++) {
         const centered = (timeArray[i] - 128) / 128;
         sum += centered * centered;
       }
-      return Math.sqrt(sum / timeArray.length);
+      const meanSquare = sum / timeArray.length;
+      const rms = Math.sqrt(meanSquare);
+      if (history.analyser !== analyser) {
+        Object.assign(history, { analyser, edge: rms, meanSquare });
+      } else {
+        history.edge = Math.max(rms, history.edge * historyRelease);
+        history.meanSquare = meanSquare + (history.meanSquare - meanSquare) * averageRetention;
+      }
+      if (history.edge < 0.001) history.edge = 0;
+      if (history.meanSquare < 0.000001) history.meanSquare = 0;
+      return rms;
     };
 
-    const currentLeft = getRms(source.analyserLeft || source.analyser);
-    const currentRight = source.channelCount > 1 && source.analyserRight ? getRms(source.analyserRight) : currentLeft;
-    const nowMs = performance.now();
-    const elapsedMs = levelDisplayState.lastUpdateMs ? nowMs - levelDisplayState.lastUpdateMs : 0;
+    const stereo = source.channelCount > 1;
+    const leftAnalyser = stereo ? source.analyserLeft : source.analyserLeft || source.analyser;
+    const previousLeft = levelDisplayState.leftHistory.analyser === leftAnalyser ? levelDisplayState.left : 0;
+    const previousRight = stereo && levelDisplayState.rightHistory.analyser === source.analyserRight ? levelDisplayState.right : 0;
+    const currentLeft = getRms(leftAnalyser, levelDisplayState.leftHistory);
+    const currentRight = stereo ? getRms(source.analyserRight, levelDisplayState.rightHistory) : 0;
+    if (!stereo) Object.assign(levelDisplayState.rightHistory, { analyser: null, edge: 0, meanSquare: 0 });
     const release = elapsedMs > 0 ? Math.exp(-elapsedMs / meterReleaseMs) : 0;
-    const left = getReleasedMeterValue(currentLeft, levelDisplayState.left, release);
-    const right = getReleasedMeterValue(currentRight, levelDisplayState.right, release);
+    const left = getReleasedMeterValue(currentLeft, previousLeft, release);
+    const right = getReleasedMeterValue(currentRight, previousRight, release);
     levelDisplayState.left = left < 0.001 ? 0 : left;
     levelDisplayState.right = right < 0.001 ? 0 : right;
     levelDisplayState.lastUpdateMs = nowMs;
 
-    const channels = source.channelCount > 1 ? 2 : 1;
+    pausedFrameState.levelReady = true;
+    pausedFrameState.levelLeft = levelDisplayState.left;
+    pausedFrameState.levelRight = levelDisplayState.right;
+    pausedFrameState.levelChannels = stereo ? 2 : 1;
 
     ctx.clearRect(0, 0, width, height);
-    drawLevelFromValues(ctx, width, height, source, levelDisplayState.left, levelDisplayState.right, channels, true);
+    drawLevelFromValues(ctx, width, height, source);
   }
 
   function clearMeterFrame(modeToClear = activeMode) {
     if (frozen) return;
+    if (modeToClear === 'level') {
+      pausedFrameState.levelReady = false;
+      levelDisplayState.left = 0;
+      levelDisplayState.right = 0;
+      levelDisplayState.lastUpdateMs = 0;
+      for (const history of [levelDisplayState.leftHistory, levelDisplayState.rightHistory]) {
+        Object.assign(history, { analyser: null, edge: 0, meanSquare: 0 });
+      }
+      meterNeedsRedraw = true;
+    }
     if (modeToClear === 'bit_meter') {
       bitMeterState.ready = false;
       bitMeterState.currentActivity.fill(0);
@@ -1677,6 +1773,19 @@
   }
 
   function drawIdleMeterFrame(canvas, ctx, source, mode = activeMode) {
+    if (missingStereoChannels(mode, source)) {
+      if (!missingStereoWarnings.has(source.analyser)) {
+        console.warn('Stereo meters require separate left and right analysers.');
+        missingStereoWarnings.add(source.analyser);
+      }
+      resizeCanvasToDisplaySize(canvas, ctx);
+      const ratio = window.devicePixelRatio || 1;
+      const width = canvas.width / ratio;
+      const height = canvas.height / ratio;
+      ctx.clearRect(0, 0, width, height);
+      drawGuidesBehind(mode, ctx, width, height, source);
+      return;
+    }
     if (mode === 'bit_meter') {
       resizeCanvasToDisplaySize(canvas, ctx);
       drawBitMeterFromData(
@@ -1717,16 +1826,7 @@
     } else if (mode === 'spectroscope' && pausedFrameState.spectrumReady) {
       drawSpectrumFromData(ctx, width, height, source, null, false);
     } else if (mode === 'level' && pausedFrameState.levelReady) {
-      drawLevelFromValues(
-        ctx,
-        width,
-        height,
-        source,
-        pausedFrameState.levelLeft,
-        pausedFrameState.levelRight,
-        pausedFrameState.levelChannels,
-        false
-      );
+      drawLevelFromValues(ctx, width, height, source);
     } else {
       drawGuidesBehind(mode, ctx, width, height, source);
     }
@@ -1777,16 +1877,19 @@
       drawMeterRulers(source, mode);
       const releaseIsActive = Boolean(source && !sourceIsActive && (
         (mode === 'spectroscope' && spectrumDisplayState.levels.some((value) => value > 0))
-        || (mode === 'level' && (levelDisplayState.left > 0 || levelDisplayState.right > 0))
+        || (mode === 'level' && (levelDisplayState.left > 0 || levelDisplayState.right > 0
+          || levelDisplayState.leftHistory.edge > 0 || levelDisplayState.rightHistory.edge > 0
+          || levelDisplayState.leftHistory.meanSquare > 0 || levelDisplayState.rightHistory.meanSquare > 0))
       ));
-      const meterIsActive = sourceIsActive || releaseIsActive || Boolean(source && mode === 'bit_meter');
+      const stereoUnavailable = missingStereoChannels(mode, source);
+      const meterIsActive = !stereoUnavailable && (sourceIsActive || releaseIsActive || Boolean(source && mode === 'bit_meter'));
       const activityEnded = wasMeterActiveByMode[mode] && !meterIsActive;
       if (activityEnded) wavescopeState.lastPushMs = 0;
       const canvas = canvasByMode[mode];
       const ctx = canvas.getContext('2d');
       if (ctx) {
         if (!meterIsActive) {
-          if (meterNeedsRedraw || activityEnded) {
+          if (meterNeedsRedraw || activityEnded || stereoUnavailable) {
             drawIdleMeterFrame(canvas, ctx, source, mode);
           }
         } else {
@@ -1953,6 +2056,7 @@
       });
       applyAllMetersMode(false, false);
       applyFreeze(false);
+      clearMeterFrame('level');
       clearMeterFrame('wavescope');
       clearMeterFrame('phasescope');
       clearMeterFrame('bit_meter');

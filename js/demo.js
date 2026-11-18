@@ -31,7 +31,7 @@
   const closingUrlLabel = closingUrl.getAttribute('aria-label');
   const typingInterval = 90;
   const caretBlinkInterval = 250;
-  const closingUrlColorDelay = 200;
+  const closingUrlColorDelay = 1200;
   const logoFadeInDuration = 300;
   const logoFadeOutDuration = 600;
   const logoBlinkTimes = [900, 1160];
@@ -45,13 +45,13 @@
   const signatureBeats = [...document.querySelectorAll('[data-demo-signature-beat]')];
   const platter = document.querySelector('[data-demo-platter]');
   const duration = slides.reduce((total, slide) => total + Number(slide.dataset.duration), 0);
-  const noteDuration = openingDuration + 600;
-  const noteFadeOutDuration = 1200;
+  const audioTailDuration = 700;
+  const noteDuration = openingDuration + audioTailDuration;
+  const noteFadeOutDuration = 600 + audioTailDuration;
   const noteScrollDuration = 5000;
   const noteScrollDistance = 1280;
   const beatDuration = 60000 / 120;
   const tapFeedbackDuration = 180;
-  const audioTailDuration = 600;
   const platterRpm = 100 / 3;
   const platterFrequency = 65.4064;
   const platterGain = 0.04;
@@ -582,11 +582,22 @@
     if (playing) frame = requestAnimationFrame(tick);
   }
 
-  darkModeButton.addEventListener('click', () => {
-    const lightMode = !document.documentElement.classList.contains('invert-colors');
-    localStorage.setItem('global.theme', lightMode ? 'light' : 'dark');
-    document.documentElement.classList.toggle('invert-colors', lightMode);
+  const themeStorageKey = 'global.theme';
+
+  function syncTheme() {
+    document.documentElement.classList.toggle('invert-colors', localStorage.getItem(themeStorageKey) === 'light');
     updateControls();
+  }
+
+  darkModeButton.addEventListener('click', () => {
+    const theme = localStorage.getItem(themeStorageKey) === 'light' ? 'dark' : 'light';
+    localStorage.setItem(themeStorageKey, theme);
+    syncTheme();
+  });
+
+  window.addEventListener('storage', event => {
+    if (event.storageArea !== localStorage || (event.key !== themeStorageKey && event.key !== null)) return;
+    syncTheme();
   });
 
   playButton.addEventListener('click', () => {

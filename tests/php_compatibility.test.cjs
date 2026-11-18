@@ -259,8 +259,9 @@ test('demo presents the four official tools with only playback controls and clea
   const buttons = [...result.body.matchAll(/<button\b[^>]*aria-label="([^"]+)"[^>]*>/g)];
   assert.deepEqual(buttons.map(([, label]) => label), ['More', 'Dark mode', 'Sound', 'Play', 'Replay', 'Loop', 'Download', 'Fullscreen']);
   assert.match(result.body, /data-demo-more[^>]*aria-expanded="false"[^>]*aria-controls="demo-playback"/);
-  assert.match(result.body, /id="demo-playback"[^>]*hidden/);
-  assert.match(result.body, /id="demo-playback"[^>]*>\s*<a[^>]*href="\/"[^>]*aria-label="Pekosoft"[^>]*>\s*<svg[^>]*><use href="\/icons\.svg#index"/);
+  const playbackMenu = result.body.match(/<div\b[^>]*id="demo-playback"[^>]*hidden[^>]*>([\s\S]*?)<\/div>/);
+  assert.ok(playbackMenu);
+  assert.doesNotMatch(playbackMenu[1], /<a\b/);
   assert.match(result.body, /data-demo-dark-mode[^>]*title="Toggle dark mode"[^>]*>\s*<svg[^>]*><use href="\/icons\.svg#moon"/);
   assert.match(result.body, /data-demo-download[^>]*title="Download video"/);
   assert.match(result.body, /data-demo-replay[^>]*aria-label="Replay"[^>]*title="Restart demo"[^>]*>\s*<svg[^>]*><use href="\/icons\.svg#reset"/);
@@ -306,7 +307,6 @@ test('demo presents the four official tools with only playback controls and clea
   for (const [, content] of buttonContent) {
     assert.equal(content.replace(/<svg\b[\s\S]*?<\/svg>/g, '').trim(), '');
   }
-  assert.equal((result.body.match(/<a\b/g) || []).length, 2);
   assert.doesNotMatch(result.body, /<input\b|<linearGradient\b|See sound in motion|Find your next sound/);
 
   const routing = fs.readFileSync(path.join(root, '.htaccess'), 'utf8');

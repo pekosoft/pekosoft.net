@@ -201,7 +201,15 @@ function createDemo({ blocked = false, embedded = false, fullscreenFailure = fal
     }
     close() { this.state = 'closed'; return Promise.resolve(); }
   }
-  const window = { AudioContext, addEventListener() {} };
+  const window = {
+    AudioContext,
+    handlers: {},
+    addEventListener(name, callback) { this.handlers[name] = callback; }
+  };
+  const localStorage = {
+    getItem: key => storage.get(key) || null,
+    setItem: (key, value) => storage.set(key, String(value))
+  };
   const document = {
     ...element(),
     fullscreenEnabled: true,
@@ -239,10 +247,7 @@ function createDemo({ blocked = false, embedded = false, fullscreenFailure = fal
     Math: math,
     AbortController,
     performance: { now: () => now },
-    localStorage: {
-      getItem: key => storage.get(key) || null,
-      setItem: (key, value) => storage.set(key, String(value))
-    },
+    localStorage,
     requestAnimationFrame: callback => { frames.set(++nextFrame, callback); return nextFrame; },
     cancelAnimationFrame: id => frames.delete(id),
     setTimeout: (callback, delay) => {
@@ -254,6 +259,11 @@ function createDemo({ blocked = false, embedded = false, fullscreenFailure = fal
   });
   return {
     play, replay, start, sound, loop, download, fullscreen, darkMode, more, controls, playbackControls, storage, document, window, status, slides, contexts, errors, parts, signatureBeats, descriptions, titles, staticBackground, staticNoise, openingLogo, openingSlogan, closingIcon, closingUrlLink, closingUrlText, closingUrlCaret,
+    changeStoredTheme(theme) {
+      if (theme === null) storage.clear();
+      else localStorage.setItem('global.theme', theme);
+      window.handlers.storage({ key: theme === null ? null : 'global.theme', storageArea: localStorage });
+    },
     advance(milliseconds) {
       now += milliseconds;
       for (const [id, timer] of timers) {
@@ -512,6 +522,27 @@ test('Dark mode follows the restored theme and saves toggles without interruptin
   }
 });
 
+test('the embedded Demo follows site theme changes without restarting or pausing', async () => {
+  const demo = createDemo({ embedded: true });
+  demo.start.click();
+  await settleAudio();
+  demo.advance(6500);
+  const sourceCount = demo.contexts[0].sources.length;
+
+  demo.changeStoredTheme('light');
+  assert.equal(demo.document.documentElement.classList.contains('invert-colors'), true);
+  assert.equal(demo.darkMode.attributes['aria-pressed'], 'false');
+  assert.equal(demo.play.attributes['aria-pressed'], 'true');
+  assert.equal(demo.active(), 1);
+  assert.equal(demo.contexts[0].sources.length, sourceCount);
+
+  demo.changeStoredTheme(null);
+  assert.equal(demo.document.documentElement.classList.contains('invert-colors'), false);
+  assert.equal(demo.darkMode.attributes['aria-pressed'], 'true');
+  demo.advance(3500);
+  assert.equal(demo.active(), 2);
+});
+
 test('video surface clicks pause and resume without handling controls or links', async () => {
   const demo = createDemo();
   const surface = { closest: () => null };
@@ -621,12 +652,12 @@ test('demo fades the opening logo and slogan with C1, ends with floppy, points a
   assert.equal(note.started, true);
   assert.ok(Math.abs(note.frequency.value - 32.7032) < 0.001);
   assert.equal(note.type, 'triangle');
-  assert.equal(note.stopTime, 6.6);
+  assert.equal(note.stopTime, 6.7);
   assert.deepEqual(demo.contexts[0].oscillators[0].outputs[0].gain.events, [
     { value: 0, time: 0 },
     { value: 0.22, time: 0.3 },
     { value: 0.22, time: 5.4 },
-    { value: 0, time: 6.6 }
+    { value: 0, time: 6.7 }
   ]);
   demo.advance(150);
   assert.equal(demo.slides[0].style.opacity, '0.5');
@@ -671,7 +702,7 @@ test('opening C fades into the first Tap Pad beats and resumes only its remainin
   assert.equal(kicks[0].startTime, 6);
   assert.ok(note.stopTime > kicks[1].startTime && note.stopTime < kicks[2].startTime);
   const fade = note.outputs[0].gain.events.slice(-2);
-  assert.ok(Math.abs(fade[1].time - fade[0].time - 1.2) < 1e-9);
+  assert.ok(Math.abs(fade[1].time - fade[0].time - 1.3) < 1e-9);
   assert.equal(fade[1].value, 0);
   demo.advance(6200);
   assert.equal(demo.active(), 1);
@@ -681,9 +712,9 @@ test('opening C fades into the first Tap Pad beats and resumes only its remainin
   await settleAudio();
   const resumedNote = context.oscillators.filter(source => source.type === 'triangle').at(-1);
   assert.notEqual(resumedNote, note);
-  assert.ok(Math.abs(resumedNote.stopTime - 7.6) < 1e-9);
-  assert.ok(Math.abs(resumedNote.outputs[0].gain.events[0].value - 0.22 / 3) < 1e-9);
-  demo.advance(400);
+  assert.ok(Math.abs(resumedNote.stopTime - 7.7) < 1e-9);
+  assert.ok(Math.abs(resumedNote.outputs[0].gain.events[0].value - 0.22 * 5 / 13) < 1e-9);
+  demo.advance(500);
   demo.play.click();
   demo.play.click();
   await settleAudio();
@@ -1040,7 +1071,10 @@ test('closing URL becomes clickable only when it turns blue, including pause and
   assert.equal(demo.closingUrlCaret.style.visibility, 'hidden');
   assert.equal(demo.closingUrlLink.attributes.href, undefined);
   assert.equal(demo.closingUrlLink.attributes['data-demo-url-color'], undefined);
-  demo.advance(199);
+  demo.advance(200);
+  assert.equal(demo.closingUrlLink.attributes.href, undefined);
+  assert.equal(demo.closingUrlLink.attributes['data-demo-url-color'], undefined);
+  demo.advance(999);
   assert.equal(demo.closingUrlLink.attributes.href, undefined);
   assert.equal(demo.closingUrlLink.attributes['data-demo-url-color'], undefined);
   demo.play.click();
@@ -1051,7 +1085,7 @@ test('closing URL becomes clickable only when it turns blue, including pause and
   demo.advance(1);
   assert.equal(demo.closingUrlLink.attributes.href, '/');
   assert.equal(demo.closingUrlLink.attributes['data-demo-url-color'], '');
-  demo.advance(1720);
+  demo.advance(720);
   assert.equal(demo.play.attributes['aria-pressed'], 'false');
   demo.advance(5000);
   assert.equal(demo.closingUrlText.textContent, 'pekosoft.net');
@@ -1302,7 +1336,7 @@ test('resuming during Turntable wind-up or braking preserves the RPM, pitch ramp
     const resumed = context.sources.slice(count).find(source => source.type === 'sawtooth');
     assert.ok(Math.abs(resumed.frequency.events[0].value / 65.4064 - speedRatio) < 1e-9);
     assert.deepEqual(resumed.frequency.events.at(-1), { value: 0, time: 28 });
-    assert.ok(Math.abs(resumed.stopTime - 28.6) < 1e-9);
+    assert.ok(Math.abs(resumed.stopTime - 28.7) < 1e-9);
     demo.advance(23000 - time - 1);
     const angle = Number(demo.parts[3].attributes.transform.match(/rotate\(([^ ]+)/)[1]);
     assert.ok(Math.abs(angle - 340) < 0.001);
@@ -1352,7 +1386,7 @@ test('tool scenes synthesize kicks, triplet echoes, eight metronome ticks and wi
   const wind = context.oscillators.find(source => source.type === 'sawtooth');
   assert.equal(wind.startTime, 18);
   assert.equal(clicks.at(-1).startTime, 17.5);
-  assert.equal(wind.stopTime, 23.6);
+  assert.equal(wind.stopTime, 23.7);
   assert.equal(wind.frequency.events[0].value, 0);
   assert.deepEqual(wind.frequency.events.at(-1), { value: 0, time: 23 });
 });
@@ -1427,16 +1461,16 @@ test('tool tails overlap transitions without adding beats or delaying the scenes
   for (const reverb of toolReverbs) {
     assert.equal(reverb.outputs[0].gain.value, 0.5);
     const samples = reverb.buffer.getChannelData(0);
-    assert.ok(Math.abs(samples.length / context.sampleRate - 1.1) < 0.0001);
+    assert.ok(Math.abs(samples.length / context.sampleRate - 1.2) < 0.0001);
     assert.ok(samples.slice(-4800).some(value => Math.abs(value) > 0.001));
   }
   const wet = context.delays[0].outputs[1];
-  assert.deepEqual(wet.gain.events.at(-1), { value: 0, time: 14.6 });
+  assert.deepEqual(wet.gain.events.at(-1), { value: 0, time: 14.7 });
   const wind = context.oscillators.find(source => source.type === 'sawtooth');
   assert.equal(wind.outputs[0].outputs[0].gain.events[1].value, 0.04);
   assert.deepEqual(wind.outputs[0].outputs[0].gain.events.slice(-2), [
     { value: 0.04, time: 21.8 },
-    { value: 0, time: 23.6 }
+    { value: 0, time: 23.7 }
   ]);
   for (const [time, slide] of [[10000, 2], [14000, 3], [18000, 4], [23000, 5]]) {
     demo.advance(time - context.currentTime * 1000);
@@ -1450,7 +1484,7 @@ test('tool tails overlap transitions without adding beats or delaying the scenes
 });
 
 test('resuming during the wind-down tail preserves its stopped pitch and remaining fade', async () => {
-  for (const time of [23300, 23600]) {
+  for (const time of [23650, 23700]) {
     const demo = createDemo();
     await settleAudio();
     const context = demo.contexts[0];
@@ -1460,17 +1494,18 @@ test('resuming during the wind-down tail preserves its stopped pitch and remaini
     demo.play.click();
     await settleAudio();
     const resumed = context.sources.slice(count);
-    assert.ok(resumed.every(source => source.type !== 'sine' || source.startTime >= 25.3));
+    assert.ok(resumed.every(source => source.type !== 'sine' || source.startTime >= 25.3 - 1e-9));
     const wind = resumed.find(source => source.type === 'sawtooth');
-    if (time === 23600) {
+    if (time === 23700) {
       assert.equal(wind, undefined);
     } else {
-      assert.equal(wind.startTime, 23.3);
-      assert.equal(wind.stopTime, 23.6);
+      assert.equal(wind.startTime, 23.65);
+      assert.ok(Math.abs(wind.stopTime - 23.7) < 1e-9);
       assert.equal(wind.frequency.events[0].value, 0);
       const envelope = wind.outputs[0].outputs[0].gain.events;
-      assert.ok(Math.abs(envelope[1].value - 0.005) < 0.00001);
-      assert.deepEqual(envelope.at(-1), { value: 0, time: 23.6 });
+      assert.ok(Math.abs(envelope[1].value - 0.04 * 0.0375 / 1.9) < 0.00001);
+      assert.equal(envelope.at(-1).value, 0);
+      assert.ok(Math.abs(envelope.at(-1).time - 23.7) < 1e-9);
     }
     assert.deepEqual(demo.errors, []);
   }

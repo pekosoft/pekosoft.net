@@ -213,8 +213,7 @@
   display: none;
 }
 
-.demo-controls button,
-.demo-controls a {
+.demo-controls button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -222,11 +221,6 @@
   min-width: 44px;
   height: 44px;
   padding: 10px;
-}
-
-.demo-controls a,
-.demo-controls a:visited {
-  color: #fff;
 }
 
 .demo-controls button[aria-pressed="true"] {

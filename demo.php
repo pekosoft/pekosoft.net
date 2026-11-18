@@ -173,9 +173,6 @@ $embedded = ($_GET['embedded'] ?? '') === '1';
         <svg class="icons" aria-hidden="true"><use href="/icons.svg#more"></use></svg>
       </button>
       <div class="demo-playback" id="demo-playback" data-demo-playback role="group" aria-label="Playback" hidden>
-        <a class="square icon-only" href="/" aria-label="Pekosoft" title="Go to front page">
-          <svg class="icons" aria-hidden="true"><use href="/icons.svg#index"></use></svg>
-        </a>
         <button class="square icon-only" type="button" data-demo-dark-mode aria-label="Dark mode" title="Toggle dark mode" aria-pressed="true">
           <svg class="icons" aria-hidden="true"><use href="/icons.svg#moon"></use></svg>
         </button>

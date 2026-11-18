@@ -182,6 +182,9 @@ test('front page embeds the paused Demo above tool captions and bordered site cr
     ['turntable', 'Turntable', 'For visualizing RPM.']
   ]);
   assert.match(result.body, /<div class="index-site-info border">[\s\S]*class="index-socials"[\s\S]*Copyright[\s\S]*class="index-focus"/);
+  const credits = result.body.slice(result.body.indexOf('<div class="index-site-info'), result.body.indexOf('<div class="footer-spacer">'));
+  assert.doesNotMatch(credits, /\/assets\.svg#logo/);
+  assert.match(credits, /\/assets\.svg#focus-studios/);
   assert.match(result.body, /data-href="\/updates"/);
 });
 

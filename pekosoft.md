@@ -298,6 +298,7 @@ To recover from an incomplete deployment, run Deploy site manually on `main` wit
 - On phones, a non-maximized circular instrument fills the module width and the module grows to contain it. Do not add tool-specific diameter caps or viewport-based maximize calculations.
 - Visualizer's All mode keeps smaller meters so several can be shown together. Its Single mode uses the shared circular sizing.
 - Clock shares its Instrument with a calendar. The cards stack or sit side by side according to the Instrument's available width. Stacked cards fill their width. Side-by-side content also fits the available height, reserving room for the date and time. Preserve scrolling when both cannot fit vertically.
+- The calendar uses equally sized squares for week numbers and dates, with a spacer between the week-number column and the dates.
 
 ## Cards heading convention
 

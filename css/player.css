@@ -72,6 +72,10 @@ audio::-webkit-media-controls-time-remaining-display {
   user-select: none;
 }
 
+.player-tool-timer.timer-bright-active {
+  color: var(--white);
+}
+
 #meters-container .standard {
   padding: 0;
   justify-content: flex-start;

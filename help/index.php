@@ -606,7 +606,7 @@
 
 <div class="feature-row border">
   <svg class="standard-image-help"><use href="/icons.svg#sun"></use></svg>
-  <div class="justify"><h1>Bright <span class="object">option</span></h1>Sets Bright for all modules that support it, including the Tap Pad Instrument readout, Timeline, Meters and the Icons preview. A module's Bright button can override the default for that module. Changing Bright in Settings clears those overrides. <span class="default">Default: off.</span></div>
+  <div class="justify"><h1>Bright <span class="object">option</span></h1>Sets Bright for all modules that support it, including the Instrument readouts in Tap Pad and Player, Timeline, Meters and the Icons preview. A module's Bright button can override the default for that module. Changing Bright in Settings clears those overrides. <span class="default">Default: off.</span></div>
 </div>
 
 <div class="feature-row border">

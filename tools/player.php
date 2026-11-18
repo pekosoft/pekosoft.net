@@ -23,7 +23,14 @@
     <div class="module-body standard border">
       <div id="tool-timer-display" class="player-tool-timer" aria-live="polite">00:00:000</div>
     </div>
-    <div class="module-footer wrapper colored"></div>
+    <div class="module-footer wrapper colored">
+      <button id="instrument-bright-button" type="button" data-help-entry="Instrument bright" class="square" title="Toggle timer contrast" aria-pressed="false">
+        <svg class="icons">
+          <use href="/icons.svg#sun" />
+        </svg>
+        <span class="button-text">Bright</span>
+      </button>
+    </div>
   </div>
 
   <!-- CONTROLS -->

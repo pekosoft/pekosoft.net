@@ -464,7 +464,7 @@ lock active through reload to prevent stale state from being saved again.
 
 Clearing local Guides, Bright, Rulers and Multicolor overrides restores their global defaults. Bright returns to off when the global Bright setting is off.
 
-Settings Bright applies to every module with a Bright mode, including the Tap Pad Instrument readout. Register new Bright overrides with the shared Bright control so changing the global setting clears them.
+Settings Bright applies to every module with a Bright mode, including the Tap Pad BPM readout and Player playback timer in Instrument. Register new Bright overrides with the shared Bright control so changing the global setting clears them.
 
 Clock tick sound defaults to off even when global Sound initially defaults to on. Preserve stored control choices, and let explicit global Sound changes include Clock. Clock Reset must keep its sound off after reloading rather than restoring a stale shared Sound registry entry.
 

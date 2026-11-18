@@ -127,6 +127,7 @@ const STORAGE = {
     input: 'player.input',
     volume: 'player.volume',
     loop: 'player.loop',
+    instrumentBright: 'player.instrument_bright',
     toolMeter: 'player.tool_meter',
     panelSource: 'player.panel_source',
     inputMonitor: 'player.input_monitor',
@@ -146,6 +147,31 @@ const STORAGE = {
     balance: 'player.balance',
     speed: 'player.speed'
 };
+
+function bindInstrumentBright() {
+    const button = document.getElementById('instrument-bright-button');
+    const isBright = () => {
+        const saved = localStorage.getItem(STORAGE.instrumentBright);
+        return saved === null ? window.PekoBrightGuides.getGlobal() : saved === 'true';
+    };
+    const update = () => {
+        const enabled = isBright();
+        toolTimerDisplayElement.classList.toggle('timer-bright-active', enabled);
+        button.classList.toggle('button-on', enabled);
+        button.setAttribute('aria-pressed', String(enabled));
+    };
+    button.addEventListener('click', () => {
+        localStorage.setItem(STORAGE.instrumentBright, String(!isBright()));
+        update();
+    });
+    window.addEventListener('pekosoft:bright-guides-global-change', update);
+    window.addEventListener('storage', (event) => {
+        if (event.key === STORAGE.instrumentBright) update();
+    });
+    update();
+}
+
+bindInstrumentBright();
 
 let loadedAudioBuffer = null;
 let timelineMarkers = [];

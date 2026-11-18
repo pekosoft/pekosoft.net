@@ -13,6 +13,44 @@ const monitoringSource = source.slice(source.indexOf('async function setInputMon
 const soundClickSource = source.slice(source.indexOf("toggleSound.addEventListener('click'"), source.indexOf('\nif (copyButton)'));
 const playClickSource = source.slice(source.indexOf("playButton.addEventListener('click'"), source.indexOf('\nfunction getAdjacentPlayableIndex('));
 
+test('Instrument Bright persists a timer-only override and returns to the global setting when cleared', () => {
+    const brightSource = source.slice(source.indexOf('function bindInstrumentBright()'), source.indexOf('\nlet loadedAudioBuffer'));
+    const key = 'player.instrument_bright';
+    const saved = new Map();
+    const events = {};
+    let globalBright = true;
+    let pressed;
+    let timerBright;
+    const button = {
+        addEventListener(type, handler) { this[type] = handler; },
+        classList: { toggle() {} },
+        setAttribute(name, value) { if (name === 'aria-pressed') pressed = value; }
+    };
+    const context = {
+        STORAGE: { instrumentBright: key },
+        localStorage: { getItem: name => saved.get(name) ?? null, setItem: (name, value) => saved.set(name, value) },
+        document: { getElementById: () => button },
+        toolTimerDisplayElement: { classList: { toggle(name, enabled) { if (name === 'timer-bright-active') timerBright = enabled; } } },
+        window: {
+            PekoBrightGuides: { getGlobal: () => globalBright },
+            addEventListener(type, handler) { events[type] = handler; }
+        }
+    };
+    const state = () => [pressed, timerBright];
+    vm.runInNewContext(brightSource, context);
+    assert.deepEqual(state(), ['true', true]);
+    button.click();
+    assert.equal(saved.get(key), 'false');
+    vm.runInNewContext(brightSource, context);
+    assert.deepEqual(state(), ['false', false]);
+    saved.delete(key);
+    events['pekosoft:bright-guides-global-change']();
+    assert.deepEqual(state(), ['true', true]);
+    globalBright = false;
+    events['pekosoft:bright-guides-global-change']();
+    assert.deepEqual(state(), ['false', false]);
+});
+
 function setup(duration) {
     const buttons = {};
     const context = {

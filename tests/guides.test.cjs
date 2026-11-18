@@ -132,7 +132,7 @@ test('global Guides changes are atomic and settle across tabs', () => {
 test('global Bright clears Instrument overrides along with other module overrides', () => {
   const browser = createTabs();
   const tapPad = browser.createTab('tap_pad');
-  const localKeys = ['tap_pad.bright', 'tap_pad.timeline_bright', 'meters.tap_pad.bright', 'icons.preview_bright'];
+  const localKeys = ['tap_pad.bright', 'player.instrument_bright', 'tap_pad.timeline_bright', 'meters.tap_pad.bright', 'icons.preview_bright'];
   for (const key of localKeys) browser.values.set(key, 'true');
   browser.values.set('tap_pad.blink', '1');
 

@@ -18,6 +18,16 @@
   </div>
 </div>
 
+<div class="feature-row border">
+  <svg class="standard-image-help">
+    <use href="/icons.svg#sun"></use>
+  </svg>
+  <div class="justify">
+    <h1 data-help-entry="Instrument bright">Bright <span class="object">button</span></h1>
+    Toggles enhanced contrast for the playback timer. Overrides the Settings Bright option for Instrument only. <span class="default">Default: off.</span>
+  </div>
+</div>
+
 <div class="feature-row module">
   <svg class="standard-image-help">
     <use href="/icons.svg#controls"></use>

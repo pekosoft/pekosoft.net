@@ -37,6 +37,7 @@ const tapPlayButton = document.getElementById("tap-play-button");
 const tapCopyButton = document.getElementById("tap-copy-button");
 const tapBlinkButton = document.getElementById("tap-blink-button");
 const tapBrightButton = document.getElementById("tap-bright-button");
+const instrumentBrightKey = "tap_pad.bright";
 const targetInput = document.getElementById("target");
 const targetKnob = document.getElementById("target-knob");
 const timerButton = document.getElementById("timer-button");
@@ -76,7 +77,6 @@ const tapTimelineRulers = timelineUtils?.createRulerLayout?.({
 let timerEnabled = readBoolFromStorage("tap_pad.timer_enabled", TIMER_DEFAULT_ENABLED);
 let hapticMode = false;
 let blinkMode = readBoolFromStorage("tap_pad.blink", false);
-let brightMode = readBoolFromStorage("tap_pad.bright", false);
 let blinkTimeout = null;
 let isTapPlaybackOn = false;
 let tapPlaybackBpm = 0;
@@ -316,12 +316,15 @@ if (tapBlinkButton) {
 
 if (tapBrightButton) {
   tapBrightButton.addEventListener("click", () => {
-    brightMode = !brightMode;
-    localStorage.setItem("tap_pad.bright", brightMode ? "1" : "0");
+    localStorage.setItem(instrumentBrightKey, getInstrumentBright() ? "0" : "1");
     applyBrightButtonUI();
   });
   makeKeyboardActivatable(tapBrightButton, () => tapBrightButton.click());
 }
+window.addEventListener("pekosoft:bright-guides-global-change", applyBrightButtonUI);
+window.addEventListener("storage", (event) => {
+  if (event.key === instrumentBrightKey) applyBrightButtonUI();
+});
 
 document.getElementById("reset-button").addEventListener("click", () => {
   stopTapPlayback();
@@ -348,7 +351,7 @@ document.getElementById("reset-button").addEventListener("click", () => {
   localStorage.removeItem("tap_pad.show_guides");
   localStorage.removeItem("tap_pad.haptic");
   localStorage.removeItem("tap_pad.blink");
-  localStorage.removeItem("tap_pad.bright");
+  localStorage.removeItem(instrumentBrightKey);
   localStorage.removeItem("tap_pad.sound_on");
   localStorage.removeItem("tap_pad.beat_sound");
   localStorage.removeItem("tap_pad.volume");
@@ -364,7 +367,6 @@ document.getElementById("reset-button").addEventListener("click", () => {
   showGuides = localStorage.getItem('global.guides') !== 'false';
   hapticMode = false;
   blinkMode = false;
-  brightMode = false;
   isSoundOn = true;
   beatSound = "click";
   soundVolume = 100;
@@ -546,7 +548,12 @@ function applyBlinkButtonUI() {
   tapBlinkButton.setAttribute("aria-pressed", blinkMode ? "true" : "false");
 }
 
+function getInstrumentBright() {
+  return readBoolFromStorage(instrumentBrightKey, window.PekoBrightGuides.getGlobal());
+}
+
 function applyBrightButtonUI() {
+  const brightMode = getInstrumentBright();
   tapButton.classList.toggle("pad-bright-active", brightMode);
   if (!tapBrightButton) return;
   tapBrightButton.classList.toggle("button-on", brightMode);

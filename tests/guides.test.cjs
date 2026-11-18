@@ -129,6 +129,19 @@ test('global Guides changes are atomic and settle across tabs', () => {
   }
 });
 
+test('global Bright clears Instrument overrides along with other module overrides', () => {
+  const browser = createTabs();
+  const tapPad = browser.createTab('tap_pad');
+  const localKeys = ['tap_pad.bright', 'tap_pad.timeline_bright', 'meters.tap_pad.bright', 'icons.preview_bright'];
+  for (const key of localKeys) browser.values.set(key, 'true');
+  browser.values.set('tap_pad.blink', '1');
+
+  tapPad.window.PekoBrightGuides.setGlobal(false);
+  for (const key of localKeys) assert.equal(browser.values.has(key), false);
+  assert.equal(browser.values.get('tap_pad.blink'), '1');
+  assert.equal(tapPad.window.PekoBrightGuides.getGlobal(), false);
+});
+
 test('queued storage events apply the latest state without writing it back', () => {
   const browser = createTabs();
   const player = browser.createTab('player', ['tool-guides-button', 'guides-button']);

@@ -41,7 +41,7 @@
   </svg>
   <div class="justify">
     <h1 data-help-entry="Instrument bright">Bright <span class="object">button</span></h1>
-    Toggles enhanced contrast for the pad's BPM readout. <span class="default">Default: off.</span>
+    Toggles enhanced contrast for the pad's BPM readout. Overrides the Settings Bright option for Instrument only. <span class="default">Default: off.</span>
   </div>
 </div>
 

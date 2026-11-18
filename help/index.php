@@ -606,7 +606,7 @@
 
 <div class="feature-row border">
   <svg class="standard-image-help"><use href="/icons.svg#sun"></use></svg>
-  <div class="justify"><h1>Bright <span class="object">option</span></h1>Increases guide contrast across supported Timeline and Meters modules. A module-local Bright button overrides this setting for its own module only. <span class="default">Default: off.</span></div>
+  <div class="justify"><h1>Bright <span class="object">option</span></h1>Sets Bright for all modules that support it, including the Tap Pad Instrument readout, Timeline, Meters and the Icons preview. A module's Bright button can override the default for that module. Changing Bright in Settings clears those overrides. <span class="default">Default: off.</span></div>
 </div>
 
 <div class="feature-row border">

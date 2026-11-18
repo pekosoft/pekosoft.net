@@ -16,6 +16,7 @@ function section(start, end) {
 function createBrightControl(saved = []) {
   const values = new Map(saved);
   const listeners = new Map();
+  const windowListeners = new Map();
   const buttonClasses = new Map();
   const padClasses = new Map();
   const attributes = new Map();
@@ -28,21 +29,28 @@ function createBrightControl(saved = []) {
   const context = vm.createContext({
     tapBrightButton: button,
     tapButton: { classList: { toggle: (name, enabled) => padClasses.set(name, enabled) } },
+    window: {
+      PekoBrightGuides: { getGlobal: () => values.get('global.bright_guides') === 'true' },
+      addEventListener: (name, handler) => windowListeners.set(name, handler)
+    },
     localStorage: {
       getItem: key => values.get(key) ?? null,
       setItem: (key, value) => values.set(key, value)
     }
   });
   vm.runInContext([
-    section('let brightMode =', '\n'),
+    section('const instrumentBrightKey =', '\n'),
     section('function readBoolFromStorage(', 'function resetSession('),
-    section('function applyBrightButtonUI()', 'function applyTapPlaybackButtonUI()'),
+    section('function getInstrumentBright()', 'function applyTapPlaybackButtonUI()'),
     section('function makeKeyboardActivatable(', '\nmakeKeyboardActivatable(volumeIncreaseButton'),
     section('if (tapBrightButton) {', 'document.getElementById("reset-button")'),
     'applyBrightButtonUI();'
   ].join('\n'), context);
   return {
     values, button,
+    notify(name, event) {
+      windowListeners.get(name)(event);
+    },
     check(enabled) {
       assert.equal(buttonClasses.get('button-on'), enabled);
       assert.equal(padClasses.get('pad-bright-active'), enabled);
@@ -76,4 +84,21 @@ test('Instrument Bright restores both saved on and off states', () => {
   createBrightControl(control.values).check(true);
   control.button.click();
   createBrightControl(control.values).check(false);
+});
+
+test('Instrument Bright follows the shared default unless locally overridden', () => {
+  const control = createBrightControl([['global.bright_guides', 'true']]);
+  control.check(true);
+  control.button.click();
+  control.check(false);
+  assert.equal(control.values.get('global.bright_guides'), 'true');
+  createBrightControl(control.values).check(false);
+
+  control.values.delete('tap_pad.bright');
+  control.notify('storage', { key: 'tap_pad.bright' });
+  control.check(true);
+
+  control.values.set('global.bright_guides', 'false');
+  control.notify('pekosoft:bright-guides-global-change');
+  control.check(false);
 });

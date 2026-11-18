@@ -200,8 +200,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (settings.brightGuides) {
     settings.brightGuides.addEventListener("change", () => {
-      localStorage.setItem("global.bright_guides", settings.brightGuides.checked);
-      if (window.PekoBrightGuides) window.PekoBrightGuides.setGlobal(settings.brightGuides.checked);
+      if (window.PekoBrightGuides) {
+        window.PekoBrightGuides.setGlobal(settings.brightGuides.checked);
+      } else {
+        localStorage.setItem("global.bright_guides", String(settings.brightGuides.checked));
+      }
       if (window.applySiteSettings) window.applySiteSettings();
     });
   }

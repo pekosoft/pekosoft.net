@@ -221,7 +221,7 @@
   function clearBrightLocalOverrides() {
     for (let index = localStorage.length - 1; index >= 0; index -= 1) {
       const key = localStorage.key(index);
-      if (/^meters\..+\.bright$/.test(key || "") || key?.endsWith(".timeline_bright") || key === "icons.preview_bright") {
+      if (/^meters\..+\.bright$/.test(key || "") || key?.endsWith(".timeline_bright") || key === "icons.preview_bright" || key === "tap_pad.bright") {
         localStorage.removeItem(key);
       }
     }
@@ -230,8 +230,8 @@
   function setBrightGlobal(nextState, persist = true) {
     const enabled = !!nextState;
     if (persist) {
-      localStorage.setItem("global.bright_guides", String(enabled));
       clearBrightLocalOverrides();
+      localStorage.setItem("global.bright_guides", String(enabled));
     }
     syncTimelineBrightButton();
     updateBrightSettingsButton();

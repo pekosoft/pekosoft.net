@@ -5,7 +5,7 @@ const test = require('node:test');
 const vm = require('node:vm');
 
 const source = fs.readFileSync(path.join(__dirname, '..', 'js', 'bpm_calculator.js'), 'utf8');
-const renderSource = source.slice(source.indexOf('function drawCanvas()'), source.indexOf('function createSvgElement('));
+const renderSource = source.slice(source.indexOf('function drawCanvas()'), source.indexOf('function createTimelineLine('));
 const inputSource = source.slice(source.indexOf('function updateNumericInput('), source.indexOf('function setupToolMenuPanel('));
 
 function createRenderer() {
@@ -41,7 +41,7 @@ function createRenderer() {
     document: { documentElement: {} }, window: {},
     getTimelinePlayheadMs: () => 1000,
     bpmTimelineRulers: { render() {}, getVisible: () => false },
-    timelineUtils: {}, timelineFollow: null,
+    timelineUtils: { drawTickExtensions() {} }, timelineFollow: null,
     svgUtils: { createElement: () => element() },
     createTimelineLine: (x1, y1, x2, y2, stroke) => element({ x1, y1, x2, y2, stroke }),
     createTimelineCircle: (cx, cy, r, fill) => element({ cx, cy, r, fill })

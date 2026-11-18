@@ -338,7 +338,7 @@
   <svg class="standard-image-help"><use href="/icons.svg#eq"></use></svg>
   <div class="justify">
     <h1>Spectroscope <span class="object">button</span></h1>
-    Shows signal levels across 32 logarithmic frequency bands from 20 Hz to the Nyquist frequency, which is half the audio sample rate. Peaks respond immediately and fall gradually between transient sounds. The rulers show frequency and decibels.
+    Shows signal levels across 32 logarithmic frequency bands from 20 Hz to the Nyquist frequency, which is half the audio sample rate. Each bar shows the live level in its band. Its peak marker shows a recent high and falls more slowly than the bar. The rulers show frequency and decibels.
   </div>
 </div>
 

@@ -440,6 +440,8 @@
 
   const spectrumDisplayState = {
     levels: new Float32Array(32),
+    peaks: new Float32Array(32),
+    analyser: null,
     lastUpdateMs: 0
   };
 
@@ -716,6 +718,7 @@
     } else if (!nextState && frozen) {
       const pauseMs = performance.now() - levelDisplayState.frozenAtMs;
       if (levelDisplayState.lastUpdateMs) levelDisplayState.lastUpdateMs += pauseMs;
+      if (spectrumDisplayState.lastUpdateMs) spectrumDisplayState.lastUpdateMs += pauseMs;
       levelDisplayState.frozenAtMs = null;
     }
     frozen = !!nextState;
@@ -1339,6 +1342,7 @@
     const nowMs = performance.now();
     const elapsedMs = spectrumDisplayState.lastUpdateMs ? nowMs - spectrumDisplayState.lastUpdateMs : 0;
     const release = elapsedMs > 0 ? Math.exp(-elapsedMs / meterReleaseMs) : 0;
+    const peakRelease = Math.exp(-elapsedMs / meterHistoryReleaseMs);
 
     for (let i = 0; i < barCount; i++) {
       const startFrequencyHz = minimumFrequencyHz * Math.pow(nyquistFrequencyHz / minimumFrequencyHz, i / barCount);
@@ -1357,11 +1361,23 @@
       const value = shouldCache
         ? getReleasedMeterValue(currentValue, previousValue, release)
         : previousValue;
-      if (shouldCache) spectrumDisplayState.levels[i] = value < 0.001 ? 0 : value;
+      if (shouldCache) {
+        spectrumDisplayState.levels[i] = value < 0.001 ? 0 : value;
+        const peak = getReleasedMeterValue(currentValue, spectrumDisplayState.peaks[i], peakRelease);
+        spectrumDisplayState.peaks[i] = peak < 0.001 ? 0 : peak;
+      }
       const h = Math.round(value * height);
       const t = i / Math.max(1, barCount - 1);
+      const x = i * barWidth;
+      const widthWithGap = Math.max(1, barWidth - 1);
       ctx.fillStyle = getMeterColorStyle(source, t);
-      ctx.fillRect(i * barWidth, height - h, Math.max(1, barWidth - 1), h);
+      ctx.fillRect(x, height - h, widthWithGap, h);
+      const peakHeight = Math.round(spectrumDisplayState.peaks[i] * height);
+      if (peakHeight > 0 && height >= 1) {
+        const { r, g, b } = source.palette.white;
+        ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
+        ctx.fillRect(x, Math.min(height - 1, height - peakHeight), widthWithGap, 1);
+      }
     }
 
     if (shouldCache) spectrumDisplayState.lastUpdateMs = nowMs;
@@ -1875,8 +1891,15 @@
     const modes = getDisplayedModes();
     modes.forEach((mode) => {
       drawMeterRulers(source, mode);
+      if (mode === 'spectroscope' && spectrumDisplayState.analyser !== (source?.analyser ?? null)) {
+        spectrumDisplayState.analyser = source?.analyser ?? null;
+        spectrumDisplayState.levels.fill(0);
+        spectrumDisplayState.peaks.fill(0);
+        spectrumDisplayState.lastUpdateMs = 0;
+        pausedFrameState.spectrumReady = false;
+      }
       const releaseIsActive = Boolean(source && !sourceIsActive && (
-        (mode === 'spectroscope' && spectrumDisplayState.levels.some((value) => value > 0))
+        (mode === 'spectroscope' && spectrumDisplayState.peaks.some((value) => value > 0))
         || (mode === 'level' && (levelDisplayState.left > 0 || levelDisplayState.right > 0
           || levelDisplayState.leftHistory.edge > 0 || levelDisplayState.rightHistory.edge > 0
           || levelDisplayState.leftHistory.meanSquare > 0 || levelDisplayState.rightHistory.meanSquare > 0))

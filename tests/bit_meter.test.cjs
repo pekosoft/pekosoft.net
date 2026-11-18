@@ -74,7 +74,9 @@ function createMeter(initialStorage = {}) {
   const context = vm.createContext({
     window,
     document: { getElementById: element, documentElement: {}, createElement: () => element(Symbol()) },
-    getComputedStyle: () => ({ getPropertyValue: name => name === '--color2' ? '#ff00ff' : '#0080ff' }),
+    getComputedStyle: () => ({
+      getPropertyValue: name => ({ '--color1': '#0080ff', '--color2': '#ff00ff', '--white': '#ffffff' })[name] ?? ''
+    }),
     localStorage: {
       getItem: key => storage.get(key) ?? null,
       setItem: (key, value) => storage.set(key, value),
@@ -228,6 +230,44 @@ test('Bit meter and Spectroscope use the same 60 Hz update cadence', () => {
   }
   assert.equal(leftAnalyser.reads, 4);
   assert.equal(spectrumAnalyser.frequencyReads, leftAnalyser.reads);
+});
+
+test('Spectroscope peak markers follow each band and outlast the live bars', () => {
+  const meter = createMeter();
+  const frequencies = new Uint8Array(1024);
+  frequencies[100] = 255;
+  const { leftAnalyser } = setSource(meter, frequencies);
+  const state = meter.spectrumDisplayState;
+  meter.applyMode('spectroscope');
+  meter.tick(100);
+  const band = state.peaks.indexOf(1);
+  assert.ok(band > 0);
+  assert.equal(state.peaks[0], 0);
+  const peakRect = () => meter.draws.find(({ args, color }) =>
+    color === 'rgb(255, 255, 255)' && args[0] === band * 600 / 32);
+  assert.deepEqual(peakRect()?.args, [band * 600 / 32, 0, 600 / 32 - 1, 1]);
+
+  frequencies.fill(0);
+  meter.window.__pekosoftMetersSource.isActive = () => false;
+  meter.draws.length = 0;
+  meter.tick(2600);
+  assert.equal(state.levels[band], 0);
+  assert.ok(state.peaks[band] > 0);
+  const releasedMarker = peakRect()?.args;
+  assert.ok(releasedMarker?.[1] > 0 && releasedMarker[1] < 512);
+
+  const reads = leftAnalyser.frequencyReads;
+  meter.applyFreeze(true);
+  meter.draws.length = 0;
+  meter.tick(9000);
+  assert.equal(leftAnalyser.frequencyReads, reads);
+  assert.deepEqual(peakRect()?.args, releasedMarker);
+
+  meter.applyFreeze(false);
+  meter.tick(9020);
+  assert.ok(state.peaks[band] > 0.15);
+  meter.tick(20000);
+  assert.equal(state.peaks[band], 0);
 });
 
 test('Bit meter matches Spectroscope release and immediate attack', () => {

@@ -296,7 +296,7 @@
   </svg>
   <div class="justify">
     <h1>Timeline <span class="object">module</span></h1>
-    X axis shows time, and is scrollable. Y axis typically shows tempo or amplitude. There's a button for toggling guides.
+    X axis shows time, and is scrollable. Y axis typically shows tempo or amplitude. There's a button for toggling guides. Timeline PNG exports have an opaque background.
   </div>
 </div>
 
@@ -370,7 +370,7 @@
   <svg class="standard-image-help"><use href="/icons.svg#select_all"></use></svg>
   <div class="justify">
     <h1>All <span class="object">button</span></h1>
-    Shows all visible Meters views together, each with its own rulers and crosshair. Meter buttons toggle individual views in All mode. Play and Next are unavailable. Save and Copy use the selected single-meter view if it is visible, otherwise the first visible view. They are unavailable when all views are hidden. Press All again to return to the selected single meter. Reset restores the single-meter view and enables all visible meters. <span class="default">Default: off.</span>
+    Shows all visible Meters views together, each with its own rulers and crosshair. Meter buttons toggle individual views in All mode. Play and Next are unavailable. Save and Copy export the visible plots together in one image. They are unavailable when all views are hidden. Press All again to return to the selected single meter. Reset restores the single-meter view and enables all visible meters. <span class="default">Default: off.</span>
   </div>
 </div>
 
@@ -465,7 +465,7 @@
   <svg class="standard-image-help"><use href="/icons.svg#photo"></use></svg>
   <div class="justify">
     <h1>Meter bitmap <span class="object">button</span></h1>
-    The Save button downloads the current Meters plot as a PNG. The image includes the displayed trace, guides and readouts, but not the outer rulers, crosshair overlay or controls. Freeze first to capture a held frame. Saving does not change the selected view, Freeze or audio playback. In All mode, one visible meter is exported, not the combined view.
+    The Save button downloads the current Meters plot as a PNG with an opaque background. In All mode, the PNG contains every visible plot with its title, arranged as on screen. The image includes traces, guides and readouts, but not the outer rulers, crosshair overlays or controls. Freeze first to capture a held frame. Saving does not change the selected view, Freeze or audio playback.
   </div>
 </div>
 
@@ -473,7 +473,7 @@
   <svg class="standard-image-help"><use href="/icons.svg#copy"></use></svg>
   <div class="justify">
     <h1>Copy <span class="object">button</span></h1>
-    Copies the same Meters plot image as the Save button to the clipboard in supported browsers. Copying does not change the selected view, Freeze or audio playback.
+    Copies the same PNG image as the Save button to the clipboard in supported browsers, including all visible plots in All mode. Copying does not change the selected view, Freeze or audio playback.
   </div>
 </div>
 

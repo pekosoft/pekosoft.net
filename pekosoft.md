@@ -477,7 +477,9 @@ Clock tick sound defaults to off even when global Sound initially defaults to on
 
 The shared Meters Freeze button holds meter samples without stopping audio or recording. Guides, Bright, Rulers, Color, mode changes and resizing redraw from cached samples or Wavescope history without sampling or advancing the held signal. Freeze is transient, starts off and is released by tool Reset or page reload. Document its shared behavior in General Help rather than individual tool Help files.
 
-Meters All mode uses the shared 4px `--grey1` dividers between meter frames and below their non-selectable titles, without extra outer padding or doubled borders. Use “Level meter” as the frame title. Meter titles stay neutral. Meter tabs independently toggle the visible views and indicate visibility with a blue highlight and `aria-pressed`. Play and Next are disabled. Bitmap export still uses the selected single meter if visible, otherwise the first visible meter.
+Meters All mode uses the shared 4px `--grey1` dividers between meter frames and below their non-selectable titles, without extra outer padding or doubled borders. Use “Level meter” as the frame title. Meter titles stay neutral. Meter tabs independently toggle the visible views and indicate visibility with a blue highlight and `aria-pressed`. Play and Next are disabled. Save and Copy combine visible plots and their titles in the on-screen grid order without outer rulers, crosshair overlays or controls.
+
+Meters PNG exports use an opaque black background in both single-meter and All modes. Timeline PNG exports use the same background without altering the displayed plot.
 
 Shared Meters behavior and control descriptions live in General Help. Tool Help
 keeps a module summary and links to that section. Meters controls target General

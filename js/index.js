@@ -1133,6 +1133,30 @@ function buildTimelineBitmap(timelineContainer) {
   });
 }
 
+function addBitmapBackground(bitmap) {
+  const ctx = bitmap.getContext("2d");
+  if (!ctx) throw new Error("Could not draw the bitmap background.");
+  ctx.save();
+  ctx.globalCompositeOperation = "destination-over";
+  ctx.fillStyle = "#000";
+  ctx.fillRect(0, 0, bitmap.width, bitmap.height);
+  ctx.restore();
+  return bitmap;
+}
+
+async function buildTimelineExportBitmap(timelineContainer) {
+  const source = await buildTimelineBitmap(timelineContainer);
+  if (!source) return null;
+
+  const bitmap = document.createElement("canvas");
+  bitmap.width = source.width;
+  bitmap.height = source.height;
+  const ctx = bitmap.getContext("2d");
+  if (!ctx) throw new Error("Could not draw the Timeline bitmap.");
+  ctx.drawImage(source, 0, 0);
+  return addBitmapBackground(bitmap);
+}
+
 function setupTimelineSaveButton() {
   const timelineContainer = document.getElementById("timeline-container");
   if (!timelineContainer) return;
@@ -1161,7 +1185,7 @@ function setupTimelineSaveButton() {
     const minutes = String(now.getMinutes()).padStart(2, '0');
     const seconds = String(now.getSeconds()).padStart(2, '0');
     const filename = `${release}_timeline_${day}-${month}-${year}_${hours}-${minutes}-${seconds}.png`;
-    const bitmap = await buildTimelineBitmap(timelineContainer);
+    const bitmap = await buildTimelineExportBitmap(timelineContainer);
     if (!bitmap) return;
     triggerDownloadFromCanvas(bitmap, filename);
   });

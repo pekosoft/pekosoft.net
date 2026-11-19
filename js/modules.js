@@ -1112,7 +1112,7 @@ function setupPanelWrapToggle() {
 }
 
 async function copyTimelineCanvasToClipboard(timelineContainer) {
-  const bitmapBuilder = typeof window.buildTimelineBitmap === "function" ? window.buildTimelineBitmap : null;
+  const bitmapBuilder = typeof window.buildTimelineExportBitmap === "function" ? window.buildTimelineExportBitmap : null;
   if (!bitmapBuilder) throw new Error("The bitmap export helper is unavailable.");
   const canvas = await bitmapBuilder(timelineContainer);
   await copyBitmapToClipboard(canvas);

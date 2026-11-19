@@ -5,6 +5,8 @@ const test = require('node:test');
 const vm = require('node:vm');
 
 const source = fs.readFileSync(path.join(__dirname, '..', 'js', 'meters.js'), 'utf8');
+const indexSource = fs.readFileSync(path.join(__dirname, '..', 'js', 'index.js'), 'utf8');
+const exportSource = indexSource.slice(indexSource.indexOf('function addBitmapBackground('), indexSource.indexOf('function setupTimelineSaveButton('));
 const markup = fs.readFileSync(path.join(__dirname, '..', 'meters.php'), 'utf8');
 const hiddenElements = new Set(Array.from(
   markup.matchAll(/<(?:button|div)\b[^>]*\bid="([^"]+)"[^>]*\shidden(?:\s|>)[^>]*>/g),
@@ -17,6 +19,8 @@ function createMeter(initialStorage = {}) {
   const draws = [];
   const strokes = [];
   const contextReads = [];
+  const bitmapExports = [];
+  const bitmapDraws = [];
   const errors = [];
   const rulers = {};
   const frames = [];
@@ -26,8 +30,11 @@ function createMeter(initialStorage = {}) {
   let currentPath = [];
   const context2d = new Proxy({
     measureText: text => ({ width: text.length * 6 }),
-    fillRect: (...args) => draws.push({ args, color: context2d.fillStyle }),
+    fillRect: (...args) => draws.push({ args, color: context2d.fillStyle, composite: context2d.globalCompositeOperation }),
     fillText: (text, ...position) => draws.push({ text, position }),
+    drawImage: (...args) => bitmapDraws.push(args),
+    save() { this.savedComposite = this.globalCompositeOperation; },
+    restore() { this.globalCompositeOperation = this.savedComposite; },
     beginPath() { currentPath = []; },
     moveTo(x, y) { currentPath.push(['moveTo', x, y]); },
     lineTo(x, y) { currentPath.push(['lineTo', x, y]); },
@@ -75,8 +82,14 @@ function createMeter(initialStorage = {}) {
     window,
     document: { getElementById: element, documentElement: {}, createElement: () => element(Symbol()) },
     getComputedStyle: () => ({
+      columnGap: '4px', rowGap: '4px', paddingLeft: '8px', borderBottomWidth: '4px',
+      backgroundColor: '#000', borderBottomColor: '#222', color: '#fff',
+      fontWeight: '400', fontSize: '22px', fontFamily: 'Arial',
       getPropertyValue: name => ({ '--color1': '#0080ff', '--color2': '#ff00ff', '--white': '#ffffff' })[name] ?? ''
     }),
+    buildTimelineBitmap: plot => plot.bitmap,
+    triggerDownloadFromCanvas: (bitmap, filename) => bitmapExports.push({ bitmap, filename }),
+    copyBitmapToClipboard: bitmap => bitmapExports.push({ bitmap }),
     localStorage: {
       getItem: key => storage.get(key) ?? null,
       setItem: (key, value) => storage.set(key, value),
@@ -96,6 +109,7 @@ function createMeter(initialStorage = {}) {
     Float32Array, Uint8Array
   });
   const rulerStubs = window.PekoSvgTimeline;
+  vm.runInContext(exportSource, context);
   vm.runInContext(fs.readFileSync(path.join(__dirname, '..', 'js', 'svg_timeline.js'), 'utf8'), context);
   Object.assign(window.PekoSvgTimeline, rulerStubs);
   vm.runInContext(source.replace(/\}\)\(\);(?=\s*\/\/ END OF FILE)/, `
@@ -104,11 +118,12 @@ function createMeter(initialStorage = {}) {
       applyMode, applyAllMetersMode, applyFreeze, applyGuides, applyBright, applyRulers, applyMulticolor,
       renderBitMeter, redrawMeterFrame, tick, bitMeterState, spectrumDisplayState, levelDisplayState,
       getSourceConfig, buildMeterBitmap, drawGuidesBehind, getDisplayedModes, wavescopeState,
-      canvasByMode, frameByMode, visibleModes, pausedFrameState
+      canvasByMode, frameByMode, meterPlotByMode, visibleModes, pausedFrameState
     };
   })();`), context);
   return {
-    ...context.meter, window, element, draws, strokes, contextReads, errors, rulers, storage, frames, intervals, context2d,
+    ...context.meter, window, element, draws, strokes, contextReads, errors, rulers, storage, frames, intervals, context2d, bitmapExports, bitmapDraws,
+    buildTimelineExportBitmap: context.buildTimelineExportBitmap,
     tick(timestamp) { nowMs = timestamp; context.meter.tick(timestamp); }
   };
 }
@@ -867,7 +882,55 @@ test('hiding every meter disables bitmap actions until a view is enabled', () =>
   assert.ok(meter.element('meters-save-button').classList.contains('grey'));
   meter.element('tool-level-button').click();
   assert.equal(meter.element('meters-save-button').disabled, false);
-  assert.ok(meter.frameByMode.level.classList.contains('active'));
+  assert.equal(meter.element('meters-copy-button').disabled, false);
+  assert.deepEqual(Array.from(meter.getDisplayedModes()), ['level']);
+});
+
+test('Timeline export adds a black background without changing the source canvas', async () => {
+  const { buildTimelineExportBitmap, bitmapDraws, draws } = createMeter();
+  const source = Object.freeze({ width: 320, height: 120 });
+  const bitmap = await buildTimelineExportBitmap({ bitmap: Promise.resolve(source) });
+  assert.notEqual(bitmap, source);
+  assert.deepEqual([bitmap.width, bitmap.height], [320, 120]);
+  assert.deepEqual(bitmapDraws.at(-1), [source, 0, 0]);
+  assert.deepEqual(draws.at(-1), { args: [0, 0, 320, 120], color: '#000', composite: 'destination-over' });
+});
+
+test('All exports compose the visible plots and titles in grid order for Save and Copy', () => {
+  const meter = createMeter({ 'meters.player.visible.level': 'off' });
+  const plots = [
+    { width: 400, height: 180, getContext: () => meter.context2d },
+    { width: 400, height: 180, getContext: () => meter.context2d },
+    { width: 400, height: 220, getContext: () => meter.context2d }
+  ];
+  for (const [index, mode] of ['spectroscope', 'oscilloscope', 'wavescope'].entries()) {
+    const frame = meter.frameByMode[mode];
+    const label = {
+      textContent: mode,
+      getBoundingClientRect: () => ({ height: 30 })
+    };
+    frame.querySelector = selector => selector === '.meter-mode-label' ? label : null;
+    frame.getBoundingClientRect = () => ({ top: index < 2 ? 80 : 294 });
+    meter.meterPlotByMode[mode] = { bitmap: plots[index] };
+  }
+  meter.applyAllMetersMode(true);
+  for (const id of ['meters-save-button', 'meters-copy-button']) {
+    meter.bitmapDraws.length = 0;
+    meter.draws.length = 0;
+    meter.element(id).click();
+    const { bitmap } = meter.bitmapExports.at(-1);
+    assert.deepEqual([bitmap.width, bitmap.height], [804, 464]);
+    assert.deepEqual(meter.draws.at(-1), { args: [0, 0, 804, 464], color: '#000', composite: 'destination-over' });
+    assert.deepEqual(meter.bitmapDraws, [
+      [plots[0], 0, 30], [plots[1], 404, 30], [plots[2], 0, 244]
+    ]);
+    assert.deepEqual(meter.draws.filter(draw => draw.text).map(draw => draw.text),
+      ['spectroscope', 'oscilloscope', 'wavescope']);
+  }
+  assert.match(meter.bitmapExports[0].filename, /_meters_all_/);
+  meter.applyAllMetersMode(false);
+  assert.equal(meter.buildMeterBitmap(), plots[1]);
+  assert.deepEqual(meter.draws.at(-1), { args: [0, 0, 400, 180], color: '#000', composite: 'destination-over' });
 });
 
 test('crosshair reports cached bit percentages and overload instead of time or decibels', () => {

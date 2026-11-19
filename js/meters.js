@@ -199,9 +199,7 @@
     ctx.restore();
   }
 
-  function buildMeterBitmap() {
-    const mode = getBitmapMode();
-    if (!mode) throw new Error('No Meters view is available to export.');
+  function buildMeterPlotBitmap(mode) {
     const bitmap = buildTimelineBitmap(meterPlotByMode[mode]);
     if (!bitmap) throw new Error('No Meters bitmap is available to export.');
     if (guidesOn && brightGuides) {
@@ -214,6 +212,66 @@
       ctx.restore();
     }
     return bitmap;
+  }
+
+  function buildMeterBitmap() {
+    const modes = getDisplayedModes();
+    if (!modes.length) throw new Error('No Meters view is available to export.');
+    const bitmap = allMetersOn ? buildCombinedMeterBitmap(modes) : buildMeterPlotBitmap(modes[0]);
+    return addBitmapBackground(bitmap);
+  }
+
+  function buildCombinedMeterBitmap(modes) {
+    const dpr = window.devicePixelRatio || 1;
+    const layout = document.getElementById('meters-all-layout');
+    const layoutStyle = getComputedStyle(layout);
+    const columnGap = Math.round(parseFloat(layoutStyle.columnGap) * dpr);
+    const rowGap = Math.round(parseFloat(layoutStyle.rowGap) * dpr);
+    const rows = [];
+    for (const mode of modes) {
+      const frame = frameByMode[mode];
+      const top = frame.getBoundingClientRect().top;
+      if (rows.at(-1)?.top !== top) rows.push({ top, tiles: [] });
+      const label = frame.querySelector('.meter-mode-label');
+      rows.at(-1).tiles.push({
+        label,
+        labelHeight: Math.round(label.getBoundingClientRect().height * dpr),
+        plot: buildMeterPlotBitmap(mode)
+      });
+    }
+
+    const columnWidths = [];
+    for (const { tiles } of rows) {
+      tiles.forEach(({ plot }, column) => {
+        columnWidths[column] = Math.max(columnWidths[column] || 0, plot.width);
+      });
+    }
+    const rowHeights = rows.map(({ tiles }) =>
+      Math.max(...tiles.map(({ plot, labelHeight }) => plot.height + labelHeight)));
+    const output = document.createElement('canvas');
+    output.width = columnWidths.reduce((sum, width) => sum + width, 0) + columnGap * (columnWidths.length - 1);
+    output.height = rowHeights.reduce((sum, height) => sum + height, 0) + rowGap * (rows.length - 1);
+    const ctx = output.getContext('2d');
+    if (!ctx) throw new Error('Could not draw the combined Meters bitmap.');
+    let y = 0;
+    rows.forEach(({ tiles }, row) => {
+      let x = 0;
+      tiles.forEach(({ label, labelHeight, plot }, column) => {
+        const style = getComputedStyle(label);
+        const inset = parseFloat(style.paddingLeft) * dpr;
+        const divider = Math.round(parseFloat(style.borderBottomWidth) * dpr);
+        ctx.fillStyle = style.borderBottomColor;
+        ctx.fillRect(x, y + labelHeight - divider, plot.width, divider);
+        ctx.fillStyle = style.color;
+        ctx.font = `${style.fontWeight} ${parseFloat(style.fontSize) * dpr}px ${style.fontFamily}`;
+        ctx.textBaseline = 'middle';
+        ctx.fillText(label.textContent.trim(), x + inset, y + (labelHeight - divider) / 2, plot.width - 2 * inset);
+        ctx.drawImage(plot, x, y + labelHeight);
+        x += columnWidths[column] + columnGap;
+      });
+      y += rowHeights[row] + rowGap;
+    });
+    return output;
   }
 
   function getLevelLaneLayout(height, channels) {
@@ -733,18 +791,13 @@
     return allMetersOn ? visibleModes.filter((mode) => enabledModes.has(mode)) : [activeMode];
   }
 
-  function getBitmapMode() {
-    const modes = getDisplayedModes();
-    return modes.includes(activeMode) ? activeMode : modes[0];
-  }
-
   function updateMeterControls() {
-    const bitmapMode = getBitmapMode();
+    const hasDisplayedMeters = getDisplayedModes().length > 0;
     visibleModes.forEach((mode) => {
       const selected = allMetersOn ? enabledModes.has(mode) : mode === activeMode;
       const button = buttonByMode[mode];
       frameByMode[mode].classList.toggle('meter-disabled', !enabledModes.has(mode));
-      frameByMode[mode].classList.toggle('active', mode === bitmapMode);
+      frameByMode[mode].classList.toggle('active', mode === activeMode);
       canvasByMode[mode].classList.toggle('active', mode === activeMode);
       if (button) {
         button.classList.toggle('button-on', selected);
@@ -756,8 +809,8 @@
       button.classList.toggle('grey', allMetersOn);
     });
     [saveButton, copyButton].forEach((button) => {
-      button.disabled = !bitmapMode;
-      button.classList.toggle('grey', !bitmapMode);
+      button.disabled = !hasDisplayedMeters;
+      button.classList.toggle('grey', !hasDisplayedMeters);
     });
   }
 
@@ -2010,7 +2063,7 @@
       const now = new Date();
       const date = [now.getDate(), now.getMonth() + 1, now.getFullYear()].map(value => String(value).padStart(2, '0')).join('-');
       const time = [now.getHours(), now.getMinutes(), now.getSeconds()].map(value => String(value).padStart(2, '0')).join('-');
-      triggerDownloadFromCanvas(bitmap, `${release}_meters_${getBitmapMode()}_${date}_${time}.png`);
+      triggerDownloadFromCanvas(bitmap, `${release}_meters_${allMetersOn ? 'all' : activeMode}_${date}_${time}.png`);
     } catch (error) {
       console.warn('Meters bitmap save failed:', error);
     }

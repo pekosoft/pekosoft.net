@@ -239,7 +239,7 @@ The project sits in the space between music production, web tools, and mathemati
 
 ## User experience principles
 
-The front page focuses on the official tools without an updates feed. Updates remain available from the TOC. Share opens a sharing action rather than a page and is available in Settings after Fullscreen.
+The front page focuses on the official tools without an updates feed. Updates remain available from the TOC. Updates restores the last successfully loaded page from `localStorage`, or the last available page if the saved page no longer exists. Share opens a sharing action rather than a page and is available in Settings after Fullscreen.
 
 Grid, Size, Alpha and Background controls live on `/dev`, not in Settings or General Help. Their saved preferences still apply sitewide through the shared settings code. Their contextual Help links open General Help without targeting a removed entry.
 

@@ -3,6 +3,7 @@ const previousButton = document.getElementById('updates-previous-button');
 const nextButton = document.getElementById('updates-next-button');
 const pageElement = document.getElementById('updates-page');
 const runsPerPage = 25;
+const updatesPageStorageKey = 'updates.page';
 let currentPage = 1;
 let totalPages = 1;
 let totalRuns = 0;
@@ -90,17 +91,30 @@ async function loadUpdates(page = 1) {
   renderUpdatesMessage('Loading');
 
   try {
-    const response = await fetch(`/updates_data.php?per_page=${runsPerPage}&page=${page}`, { cache: 'no-store' });
-    if (!response.ok) throw new Error(`Updates request failed: ${response.status}`);
+    async function fetchPage(requestedPage) {
+      const response = await fetch(`/updates_data.php?per_page=${runsPerPage}&page=${requestedPage}`, { cache: 'no-store' });
+      if (!response.ok) throw new Error(`Updates request failed: ${response.status}`);
+      return response.json();
+    }
 
-    const data = await response.json();
-    const runs = Array.isArray(data.workflow_runs) ? data.workflow_runs : [];
-    totalRuns = Number(data.total_count) || runs.length;
-    totalPages = Math.max(1, Math.ceil(totalRuns / runsPerPage));
-    currentPage = Math.min(page, totalPages);
+    let data = await fetchPage(page);
+    let runs = Array.isArray(data.workflow_runs) ? data.workflow_runs : [];
+    let count = Number(data.total_count) || runs.length;
+    let pages = Math.max(1, Math.ceil(count / runsPerPage));
+    if (page > pages && count > 0) {
+      page = pages;
+      data = await fetchPage(page);
+      runs = Array.isArray(data.workflow_runs) ? data.workflow_runs : [];
+      count = Number(data.total_count) || runs.length;
+      pages = Math.max(1, Math.ceil(count / runsPerPage));
+    }
 
-    if (runs.length === 0) throw new Error('No workflow runs found');
+    if (runs.length === 0 || page > pages) throw new Error('No workflow runs found');
+    totalRuns = count;
+    totalPages = pages;
+    currentPage = page;
     renderUpdates(runs);
+    localStorage.setItem(updatesPageStorageKey, String(currentPage));
   } catch (error) {
     renderUpdatesMessage('Updates unavailable');
     console.warn('Updates could not be loaded:', error);
@@ -113,5 +127,11 @@ async function loadUpdates(page = 1) {
 if (updatesRunsElement) {
   previousButton.addEventListener('click', () => loadUpdates(currentPage === 1 ? totalPages : currentPage - 1));
   nextButton.addEventListener('click', () => loadUpdates(currentPage === totalPages ? 1 : currentPage + 1));
-  loadUpdates();
+  const savedPage = localStorage.getItem(updatesPageStorageKey);
+  const page = Number(savedPage);
+  const validSavedPage = savedPage !== null && /^[1-9]\d*$/.test(savedPage) && Number.isSafeInteger(page);
+  if (savedPage !== null && !validSavedPage) {
+    console.warn('Invalid saved Updates page:', savedPage);
+  }
+  loadUpdates(validSavedPage ? page : 1);
 }

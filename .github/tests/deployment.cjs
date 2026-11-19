@@ -143,6 +143,7 @@ test('Transfer commands quote paths, create nested directories once and verify d
 
 test('Successful connection checks and dry runs never become upload baselines', async () => {
   const step = workflow.split('      - name: Find last successful upload\n')[1].split('\n      - name: ')[0];
+  assert.match(step, /^\s+retries: 3$/m);
   const script = step.split('          script: |\n')[1].split('\n')
     .filter(line => line.startsWith('            ') || !line.trim()).map(line => line.slice(12)).join('\n');
   const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor;
@@ -150,23 +151,50 @@ test('Successful connection checks and dry runs never become upload baselines', 
   let output;
   let failure;
   let apiFailure = false;
+  let jobPages = [];
+  let pagesRead = 0;
+  let runs = [
+    { id: 3, event: 'workflow_dispatch', updated_at: '2026-11-05T13:00:00Z' },
+    { id: 2, event: 'workflow_dispatch', updated_at: '2026-11-05T12:00:00Z' },
+    { id: 1, event: 'push', head_sha: 'deployed', updated_at: '2026-11-05T11:00:00Z' }
+  ];
   const github = { rest: { actions: methods }, paginate: async (method, options) => {
     if (apiFailure) throw new Error('API unavailable');
-    if (method === methods.listWorkflowRuns) return [
-      { id: 3, event: 'workflow_dispatch', updated_at: '2026-11-05T13:00:00Z' },
-      { id: 2, event: 'workflow_dispatch', updated_at: '2026-11-05T12:00:00Z' },
-      { id: 1, event: 'push', head_sha: 'deployed', updated_at: '2026-11-05T11:00:00Z' }
-    ];
-    assert.equal(method, methods.listJobsForWorkflowRun);
-    return [{ steps: [{ name: 'Check connection or preview changes', conclusion: 'success' },
-      { name: 'Upload website files', conclusion: 'skipped' }] }];
+    if (method === methods.listWorkflowRuns) return runs;
+    assert.fail('Unexpected paginated request');
   }};
+  github.paginate.iterator = async function* (method, options) {
+    assert.equal(method, methods.listJobsForWorkflowRun);
+    for (const jobs of jobPages.length ? jobPages : [[{ steps: [
+      { name: 'Check connection or preview changes', conclusion: 'success' },
+      { name: 'Upload website files', conclusion: 'skipped' }
+    ] }]]) {
+      pagesRead++;
+      yield { data: jobs };
+    }
+  };
   const execute = () => new AsyncFunction('github', 'context', 'core', script)(github,
     { repo: { owner: 'owner', repo: 'site' }, ref: 'refs/heads/main', runId: 99 },
     { info() {}, setOutput(key, value) { output = value; }, setFailed(value) { failure = value; } });
   await execute();
   assert.equal(output, 'deployed');
   assert.equal(failure, undefined);
+  runs = [{ id: 2, event: 'workflow_dispatch', head_sha: 'manual-upload', updated_at: '2026-11-05T13:00:00Z' }];
+  jobPages = [
+    [{ steps: [{ name: 'Check connection or preview changes', conclusion: 'success' }] }],
+    [{ steps: [{ name: 'Upload website files', conclusion: 'success' }] }],
+    [{ steps: [] }]
+  ];
+  pagesRead = 0;
+  await execute();
+  assert.equal(output, 'manual-upload');
+  assert.equal(pagesRead, 2);
+  runs = [
+    { id: 4, event: 'push', head_sha: 'newer-run', updated_at: '2026-11-05T12:00:00Z' },
+    { id: 1, event: 'push', head_sha: 'older-rerun', updated_at: '2026-11-05T14:00:00Z' }
+  ];
+  await execute();
+  assert.equal(output, 'older-rerun');
   apiFailure = true;
   await assert.rejects(execute(), /API unavailable/);
 });

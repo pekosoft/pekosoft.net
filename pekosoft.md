@@ -387,6 +387,9 @@ The standardized `.github/workflows/deploy.yml` workflow uses lftp over SFTP.
 It reads `.ftpignore`, generates `data/updates.json` from Git history and
 uploads changes since the last successful upload on the same branch.
 Failed commits are recovered by the next successful upload.
+Baseline discovery retries transient GitHub API errors and checks the full run
+history so a rerun of an older workflow can still be the latest upload.
+For manual runs, it stops fetching job pages once a successful upload is found.
 Missing baselines fail explicitly instead of selecting full sync.
 Manual **check** mode verifies login and destination without modifying files.
 **dry-run** previews a deployment plan without connecting.

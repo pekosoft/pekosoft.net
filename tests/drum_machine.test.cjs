@@ -2341,7 +2341,7 @@ test('Recorded voice edits affect only the chosen property, reach hidden hits an
 
 test('Rhythm presets load grooves and tempos without changing the kit or step count', () => {
   const { machine, edits } = createEditor();
-  const tempos = { basic: 120, four_floor: 128, breakbeat: 96, electro: 112, hip_hop: 95, lofi: 75, punk: 192, house: 124, pop: 108, dream_pop: 120 };
+  const tempos = { basic: 120, four_floor: 128, breakbeat: 96, electro: 112, hip_hop: 95, lofi: 75, punk: 192, house: 124, pop: 108, rock: 116, dream_pop: 120 };
   machine.setLength(8);
   const voices = JSON.stringify(machine.state.voices);
   const grooves = new Set();
@@ -2380,6 +2380,17 @@ test('Hip hop, Lofi and Dream pop layer hi-hat over every hit without changing t
   assert.deepEqual(hits('snare'), [8]);
   assert.deepEqual(hits('hat'), [0, 4, 8, 12]);
   assert.deepEqual(hits('perc'), []);
+});
+
+test('Pop kicks only on beats one and three while Rock adds a kick on the and of three', () => {
+  const { machine } = createEditor();
+  const hits = voice => Array.from(machine.getPatternHits().filter(hit => hit.voice === voice), hit => hit.step);
+  machine.loadPatternPreset('pop');
+  assert.deepEqual(hits('kick'), [0, 8]);
+  machine.loadPatternPreset('rock');
+  assert.deepEqual(hits('kick'), [0, 8, 10]);
+  assert.deepEqual(hits('snare'), [4, 12]);
+  assert.deepEqual(hits('hat'), [0, 2, 4, 6, 8, 10, 12, 14]);
 });
 
 test('A rhythm preset retimes the selected take without changing its length in steps', () => {

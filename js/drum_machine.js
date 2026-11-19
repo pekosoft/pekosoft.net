@@ -88,9 +88,15 @@
       perc:  [0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1]
     },
     pop: {
-      kick:  [2, 0, 0, 0, 0, 0, 1, 0, 2, 0, 1, 0, 0, 0, 0, 0],
+      kick:  [2, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0],
       snare: [0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 1],
       hat:   [2, 0, 1, 0, 1, 0, 1, 0, 2, 0, 1, 0, 1, 0, 1, 0],
+      perc:  Array(STEP_COUNT).fill(0)
+    },
+    rock: {
+      kick:  [2, 0, 0, 0, 0, 0, 0, 0, 2, 0, 1, 0, 0, 0, 0, 0],
+      snare: [0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0],
+      hat:   [2, 0, 1, 0, 2, 0, 1, 0, 2, 0, 1, 0, 2, 0, 1, 0],
       perc:  Array(STEP_COUNT).fill(0)
     },
     dream_pop: {
@@ -109,7 +115,7 @@
 
   const PATTERN_TEMPOS = {
     basic: 120, four_floor: 128, breakbeat: 96, electro: 112,
-    hip_hop: 95, lofi: 75, punk: 192, house: 124, pop: 108, dream_pop: 120
+    hip_hop: 95, lofi: 75, punk: 192, house: 124, pop: 108, rock: 116, dream_pop: 120
   };
 
   const KIT_PRESETS = {

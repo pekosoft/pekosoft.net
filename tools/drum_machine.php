@@ -135,6 +135,7 @@
             <option value="punk">Punk</option>
             <option value="house">House</option>
             <option value="pop">Pop</option>
+            <option value="rock">Rock</option>
             <option value="dream_pop">Dream pop</option>
             <option value="empty">Empty</option>
             <option value="custom">Custom</option>

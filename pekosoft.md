@@ -129,6 +129,8 @@ Use matching 16px gaps between the front-page Demo, tool grid and credits sectio
 
 Use matching symbols in General Help and the Demo for shared concepts: `star` for Simple, `reference` for Documented, `lock` for Secure, `github` for source availability and `settings` for Customizable.
 Use `browser` for the Inline entry in General Help.
+Use `cpu` for the Modern entry in General Help.
+Use an ad card with a prohibition badge for Ad-free.
 
 After the site's floppy icon (`icons.svg#index`), flash five separate one-second icon-and-text scenes: Simple (`star`), Documented (`reference`, the book icon), Secure (`lock`), Open source (`github`) and Customizable (`settings`). Then show the `pekosoft.net` URL. The Demo uses the explicitly requested "Open source" wording. This does not change the repository licence. Do not repeat the logo at the end or combine the ending scenes. Keep the URL white and inactive throughout typing, both caret blinks and the following 200 ms (about twelve frames at 60 fps). Turn it site blue and enable its link together, 200 ms after the caret disappears permanently. Keep the presentation artwork white.
 

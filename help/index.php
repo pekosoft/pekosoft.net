@@ -32,7 +32,7 @@
 
 <div class="feature-row border">
   <svg class="standard-image-help">
-    <use href="/icons.svg#ad_free"></use>
+    <use href="/icons.svg?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/icons.svg'); ?>#ad_free"></use>
   </svg>
   <div class="justify">
     <h1>Ad-free</h1>
@@ -43,7 +43,7 @@
 
 <div class="feature-row border">
   <svg class="standard-image-help">
-    <use href="/icons.svg#star"></use>
+    <use href="/icons.svg#cpu"></use>
   </svg>
   <div class="justify">
     <h1>Modern</h1>
@@ -465,7 +465,15 @@
   <svg class="standard-image-help"><use href="/icons.svg#photo"></use></svg>
   <div class="justify">
     <h1>Meter bitmap <span class="object">button</span></h1>
-    Save downloads the current Meters plot as a PNG. Copy copies the same image to the clipboard in supported browsers. The image includes the displayed trace, guides and readouts, but not the outer rulers, crosshair overlay or controls. Freeze first to capture a held frame. Saving and copying do not change the selected view, Freeze or audio playback. In All mode, one visible meter is exported, not the combined view.
+    The Save button downloads the current Meters plot as a PNG. The image includes the displayed trace, guides and readouts, but not the outer rulers, crosshair overlay or controls. Freeze first to capture a held frame. Saving does not change the selected view, Freeze or audio playback. In All mode, one visible meter is exported, not the combined view.
+  </div>
+</div>
+
+<div class="feature-row border">
+  <svg class="standard-image-help"><use href="/icons.svg#copy"></use></svg>
+  <div class="justify">
+    <h1>Copy <span class="object">button</span></h1>
+    Copies the same Meters plot image as the Save button to the clipboard in supported browsers. Copying does not change the selected view, Freeze or audio playback.
   </div>
 </div>
 

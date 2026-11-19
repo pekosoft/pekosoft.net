@@ -174,7 +174,7 @@
       </svg>
       <span class="button-text">Save</span>
     </button>
-    <button id="meters-copy-button" class="square" title="Copy bitmap" data-help-release="index" data-help-entry="Meter bitmap">
+    <button id="meters-copy-button" class="square" title="Copy bitmap" data-help-release="index">
       <svg class="icons">
         <use href="/icons.svg#copy" />
       </svg>

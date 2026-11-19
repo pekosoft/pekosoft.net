@@ -241,7 +241,7 @@ The project sits in the space between music production, web tools, and mathemati
 
 The front page focuses on the official tools without an updates feed. Updates remain available from the TOC. Share opens a sharing action rather than a page and is available in Settings after Fullscreen.
 
-Grid, Size, Alpha and Background controls live on `/dev`, not in Settings. Their saved preferences still apply sitewide through the shared settings code.
+Grid, Size, Alpha and Background controls live on `/dev`, not in Settings or General Help. Their saved preferences still apply sitewide through the shared settings code. Their contextual Help links open General Help without targeting a removed entry.
 
 Linked logos use the same hover opacity as linked icons. Unlinked artwork remains unchanged.
 

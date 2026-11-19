@@ -13,7 +13,7 @@
 <body>
   <?php require($_SERVER['DOCUMENT_ROOT'] . "/elements/toc.php"); ?>
 
-  <main class="standard padded border dev-controls">
+  <main class="standard padded border dev-controls" data-help-page>
     <div class="settings-toggle-row"><input type="checkbox" name="grid" id="grid" hidden><button type="button" data-setting-toggle="grid" data-help-release="index" data-help-entry="Grid" title="Background grid" class="toc-button"><svg class="icons"><use href="/icons.svg#grid" /></svg>Grid</button></div>
     <div class="setting-row">
       <label for="grid-size-value" data-help-release="index" title="Grid size" class="settings-control-label">Size:</label>

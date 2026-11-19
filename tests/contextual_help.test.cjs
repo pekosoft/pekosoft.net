@@ -107,6 +107,18 @@ function createHelp(url) {
   };
 }
 
+test('Dev controls open General Help without a removed entry', () => {
+  const help = createHelp('/dev');
+  const control = createElement('button', {
+    title: 'Background grid', 'data-help-release': 'index', 'data-help-entry': 'Grid'
+  }, 'Grid');
+  createElement('main', { 'data-help-page': '' }, '', [control]);
+  help.dispatch('mouseover', control);
+  assert.equal(help.link.href, '/help?t=index');
+  assert.equal(help.dispatch('click', control, { ctrlKey: true }).prevented, true);
+  assert.deepEqual(help.assigned, ['/help?t=index']);
+});
+
 test('TOC page buttons open their General Help entries from tools and documentation', () => {
   for (const page of ['/bpm_calculator', '/about?t=bpm_calculator', '/help?t=index', '/history?t=piano']) {
     const help = createHelp(page);

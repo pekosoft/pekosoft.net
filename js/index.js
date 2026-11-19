@@ -1275,7 +1275,7 @@ function getStatusDescriptor(target) {
     iconHref,
     entry: target.dataset.helpEntry?.trim() || name,
     release: toolRelease || target.dataset.helpRelease?.trim() || (isSettingsControl ? 'index' : undefined),
-    pageOnly: Boolean(toolRelease),
+    pageOnly: Boolean(toolRelease || target.closest('[data-help-page]')),
     kind: target.dataset.helpKind?.trim() || kind,
     label: statusLabel || (sentenceTooltip ? (matchesTooltip ? sentenceTooltip : `${name}: ${sentenceTooltip}`) : name),
   };

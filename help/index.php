@@ -248,7 +248,7 @@
   <svg class="standard-image-help"><use href="/icons.svg#view_list"></use></svg>
   <div class="justify">
     <h1>Table view <span class="object">button</span></h1>
-    Switches data tables between a table and Cards. Each card includes the row's enabled information and original controls, such as Play, selection and Remove. Copy card copies that row's information. Sorting, links, editable values and playlist totals remain available. In tools, Reset restores result tables and playlists to table mode. In Drum Machine History, View cycles through List, Cards, JSON and JavaScript. Reference keeps its existing table and Cards options.
+    Switches data tables between a table and Cards. Each card includes the row's enabled information and original controls, such as Play, selection and Remove. Copy card copies that row's information. Sorting, links, editable values and playlist totals remain available. In tools, Reset restores result tables and playlists to table mode.
   </div>
 </div>
 
@@ -593,13 +593,8 @@
 </div>
 
 <div class="feature-row border">
-  <svg class="standard-image-help"><use href="/icons.svg#bars"></use></svg>
+  <svg class="standard-image-help"><use href="/icons.svg#about"></use></svg>
   <div class="justify"><h1>Status bar <span class="object">option</span></h1>Toggles the bottom status bar. While on, hovering, focusing or long-pressing any control shows its help and feedback there. Ctrl+click a control, or click its icon in the status bar, opens that control's Help entry directly.</div>
-</div>
-
-<div class="feature-row border">
-  <svg class="standard-image-help"><use href="/icons.svg#view_grid"></use></svg>
-  <div class="justify"><h1>Grid <span class="object">option</span></h1>Toggles the background grid. Available on the <a href="/dev">Dev page</a>.</div>
 </div>
 
 <div class="feature-row border">
@@ -614,7 +609,7 @@
 
 <div class="feature-row border">
   <svg class="standard-image-help"><use href="/icons.svg#sun"></use></svg>
-  <div class="justify"><h1>Bright <span class="object">option</span></h1>Sets Bright for all modules that support it, including the Instrument readouts in Tap Pad and Player, Timeline, Meters and the Icons preview. A module's Bright button can override the default for that module. Changing Bright in Settings clears those overrides. <span class="default">Default: off.</span></div>
+  <div class="justify"><h1>Bright <span class="object">option</span></h1>Sets Bright for all modules that support it, including the Instrument readout in Tap Pad, Timeline and Meters. A module's Bright button can override the default for that module. Changing Bright in Settings clears those overrides. <span class="default">Default: off.</span></div>
 </div>
 
 <div class="feature-row border">
@@ -648,11 +643,6 @@
 </div>
 
 <div class="feature-row border">
-  <svg class="standard-image-help"><use href="/icons.svg#color_depth"></use></svg>
-  <div class="justify"><h1>Alpha <span class="object">option</span></h1>Applies transparency to selected interface surfaces. Sticky table headers remain opaque so scrolling rows cannot show through. Timeline rulers have no separate opaque background. Available on the <a href="/dev">Dev page</a>.</div>
-</div>
-
-<div class="feature-row border">
   <svg class="standard-image-help"><use href="/icons.svg#alpha"></use></svg>
   <div class="justify"><h1>Multicolor <span class="object">option</span></h1>Toggles multicolor rendering across Meters. A module-local Color button overrides this setting for its own Meters module. <span class="default">Default: on.</span></div>
 </div>
@@ -665,16 +655,6 @@
 <div class="feature-row border">
   <svg class="standard-image-help"><use href="/icons.svg#wrap_text"></use></svg>
   <div class="justify"><h1>Wrap <span class="object">option</span></h1>Toggles panel text wrapping across releases with Panel modules.</div>
-</div>
-
-<div class="feature-row border">
-  <svg class="standard-image-help"><use href="/icons.svg#knob"></use></svg>
-  <div class="justify"><h1>Size <span class="object">knob</span></h1>Sets the background-grid size. Available on the <a href="/dev">Dev page</a>.</div>
-</div>
-
-<div class="feature-row border">
-  <svg class="standard-image-help"><use href="/icons.svg#photo"></use></svg>
-  <div class="justify"><h1>Background <span class="object">field</span></h1>Chooses a background bitmap for the site. The image is saved in this browser. Available on the <a href="/dev">Dev page</a>.</div>
 </div>
 
 <div class="feature-row border">
@@ -723,7 +703,7 @@
   </svg>
   <div class="justify">
     <h1>Decimals</h1>
-    Most values are displayed with three decimals. Some, like the average BPM on Tap Pad, are rounded to whole numbers. Values that benefit from greater precision include amplitude in Audio Calculator, where an entry such as 2.54321% is used without rounding it to three decimals.
+    Most values are displayed with three decimals. Some, like the average BPM on Tap Pad, are rounded to whole numbers. Values that need greater precision may use more than three decimals.
   </div>
 </div>
 

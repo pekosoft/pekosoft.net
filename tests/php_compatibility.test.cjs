@@ -403,6 +403,31 @@ test('developer controls move out of Settings and render once on the clean Dev p
   }
 });
 
+test('General Help excludes Dev-only controls', () => {
+  const help = renderPhp('help.php', 't=index');
+  assert.equal(help.status, 200);
+  assert.equal(help.diagnostics, '');
+  for (const [name, kind] of [['Grid', 'option'], ['Alpha', 'option'], ['Size', 'knob'], ['Background', 'field']]) {
+    assert.ok(!help.body.includes(`<h1>${name} <span class="object">${kind}</span></h1>`), name);
+  }
+  assert.doesNotMatch(help.body, /href="\/dev"/);
+});
+
+test('General Help avoids beta tool examples in shared entries', () => {
+  const help = renderPhp('help.php', 't=index');
+  assert.equal(help.status, 200);
+  assert.equal(help.diagnostics, '');
+  for (const [heading, betaNames] of [
+    ['Bright', /\b(?:Player|Icons)\b/],
+    ['Table view', /\b(?:Drum Machine|Reference)\b/],
+    ['Decimals', /\bAudio Calculator\b/]
+  ]) {
+    const text = help.body.match(new RegExp(`<h1>${heading}(?:\\s*<span[^>]*>[^<]*<\\/span>)?<\\/h1>([\\s\\S]*?)<\\/div>`))?.[1];
+    assert.ok(text, heading);
+    assert.doesNotMatch(text, betaNames, heading);
+  }
+});
+
 test('tool Help links shared Meters documentation to General Help without legacy copies', () => {
   for (const release of [
     'bpm_calculator', 'bpm_circle', 'bpm_curve', 'circle_of_fifths', 'drum_machine',

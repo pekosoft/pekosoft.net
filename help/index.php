@@ -22,7 +22,7 @@
 
 <div class="feature-row border">
   <svg class="standard-image-help">
-    <use href="/icons.svg#notepad"></use>
+    <use href="/icons.svg#github"></use>
   </svg>
   <div class="justify">
     <h1>Source available</h1>
@@ -74,7 +74,7 @@
 
 <div class="feature-row border">
   <svg class="standard-image-help">
-    <use href="/icons.svg#star"></use>
+    <use href="/icons.svg#browser"></use>
   </svg>
   <div class="justify">
     <h1>Inline</h1>
@@ -84,7 +84,7 @@
 
 <div class="feature-row border">
   <svg class="standard-image-help">
-    <use href="/icons.svg#notepad"></use>
+    <use href="/icons.svg#reference"></use>
   </svg>
   <div class="justify">
     <h1>Documented</h1>
@@ -95,7 +95,7 @@
 
 <div class="feature-row border">
   <svg class="standard-image-help">
-    <use href="/icons.svg#panel"></use>
+    <use href="/icons.svg#lock"></use>
   </svg>
   <div class="justify">
     <h1>Secure</h1>

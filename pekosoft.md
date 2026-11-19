@@ -127,6 +127,9 @@ Show the Demo directly at the top of the front page, without autoplay. Display a
 
 Use matching 16px gaps between the front-page Demo, tool grid and credits sections. Keep the Focus Studios logo in the credits without repeating the Pekosoft logo there.
 
+Use matching symbols in General Help and the Demo for shared concepts: `star` for Simple, `reference` for Documented, `lock` for Secure, `github` for source availability and `settings` for Customizable.
+Use `browser` for the Inline entry in General Help.
+
 After the site's floppy icon (`icons.svg#index`), flash five separate one-second icon-and-text scenes: Simple (`star`), Documented (`reference`, the book icon), Secure (`lock`), Open source (`github`) and Customizable (`settings`). Then show the `pekosoft.net` URL. The Demo uses the explicitly requested "Open source" wording. This does not change the repository licence. Do not repeat the logo at the end or combine the ending scenes. Keep the URL white and inactive throughout typing, both caret blinks and the following 200 ms (about twelve frames at 60 fps). Turn it site blue and enable its link together, 200 ms after the caret disappears permanently. Keep the presentation artwork white.
 
 Keep all Demo text non-selectable. Make the closing URL a keyboard-accessible link to `/` only when it turns blue, retaining its presentation color after visiting. Disable its pointer interaction until that same state activates the link, so the inactive text cannot trigger shared link-hover styling. Type the closing URL in place with a filled white square caret and a soft synthesized keyboard tap for each character. After typing, blink the caret twice and remove it, then wait 1.2 seconds before turning the URL blue and making it clickable. Typing, keyboard sound, caret timing and link activation follow playback, including pause and resume. Sound mutes the keyboard along with the rest of the presentation.

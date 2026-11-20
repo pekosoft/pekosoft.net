@@ -428,6 +428,16 @@ test('General Help avoids beta tool examples in shared entries', () => {
   }
 });
 
+test('Official Help does not mention hidden meter views in visible entries', () => {
+  for (const release of ['index', 'tap_pad', 'bpm_calculator', 'metronome', 'turntable']) {
+    const help = renderPhp('help.php', `t=${release}`);
+    assert.equal(help.status, 200, release);
+    assert.equal(help.diagnostics, '', release);
+    const visibleHelp = help.body.replace(/<div class="feature-row border" hidden>[\s\S]*?<\/div>\s*<\/div>/g, '');
+    assert.doesNotMatch(visibleHelp, /\bPhasescope\b|\bBit meter\b|#bitmeter/, release);
+  }
+});
+
 test('tool Help links shared Meters documentation to General Help without legacy copies', () => {
   for (const release of [
     'bpm_calculator', 'bpm_circle', 'bpm_curve', 'circle_of_fifths', 'drum_machine',

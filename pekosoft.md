@@ -243,6 +243,8 @@ The front page focuses on the official tools without an updates feed. Updates re
 
 Grid, Size, Alpha and Background controls live on `/dev`, not in Settings or General Help. Their saved preferences still apply sitewide through the shared settings code. Their contextual Help links open General Help without targeting a removed entry.
 
+Visible General Help and official tool Help must not reference Phasescope or Bit while those meter views are hidden for launch. Preserve their hidden entries and Beta tool Help for reintroduction.
+
 Linked logos use the same hover opacity as linked icons. Unlinked artwork remains unchanged.
 
 Pekosoft favors:

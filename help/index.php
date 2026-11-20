@@ -457,7 +457,7 @@
   <svg class="standard-image-help"><use href="/icons.svg#alpha"></use></svg>
   <div class="justify">
     <h1>Color <span class="object">button</span></h1>
-    Toggles multicolor rendering in Meters. The local Color button overrides the Settings Multicolor option for Meters only. Phasescope's correlation readout and cursors are unchanged. <span class="default">Default: on.</span>
+    Toggles multicolor rendering in Meters. The local Color button overrides the Settings Multicolor option for Meters only. <span class="default">Default: on.</span>
   </div>
 </div>
 

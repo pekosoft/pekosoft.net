@@ -464,8 +464,8 @@
 <div class="feature-row border">
   <svg class="standard-image-help"><use href="/icons.svg#photo"></use></svg>
   <div class="justify">
-    <h1>Meter bitmap <span class="object">button</span></h1>
-    The Save button downloads the current Meters plot as a PNG with an opaque background. In All mode, the PNG contains every visible plot with its title, arranged as on screen. The image includes traces, guides and readouts, but not the outer rulers, crosshair overlays or controls. Freeze first to capture a held frame. Saving does not change the selected view, Freeze or audio playback.
+    <h1>Save Bitmap <span class="object">button</span></h1>
+    The Save button downloads the current Timeline or Meters plot as a PNG with an opaque background. In Meters All mode, the PNG contains every visible plot with its title, arranged as on screen. Meters images include traces, guides and readouts, but not the outer rulers, crosshair overlays or controls. Freeze Meters first to capture a held frame. Saving does not change the selected view, Freeze or audio playback.
   </div>
 </div>
 

@@ -168,7 +168,7 @@
       </svg>
       <span class="button-text">Color</span>
     </button>
-    <button id="meters-save-button" class="square" title="Save bitmap" data-help-release="index" data-help-entry="Meter bitmap">
+    <button id="meters-save-button" class="square" title="Save bitmap" data-help-release="index" data-help-entry="Save Bitmap">
       <svg class="icons">
         <use href="/icons.svg#photo" />
       </svg>

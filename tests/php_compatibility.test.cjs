@@ -466,7 +466,7 @@ test('meter contextual Help targets the matching General Help entries', () => {
     ['meters-all-button', 'All'], ['meters-freeze-button', 'Meter freeze'],
     ['meters-crosshair-button', 'Meter crosshair'], ['tool-guides-button', 'Guides'],
     ['tool-bright-button', 'Bright'], ['tool-rulers-button', 'Meter rulers'],
-    ['tool-color-button', 'Color'], ['meters-save-button', 'Meter bitmap'],
+    ['tool-color-button', 'Color'], ['meters-save-button', 'Save Bitmap'],
     ['meters-copy-button', 'Copy']
   ]) {
     const button = tool.body.match(new RegExp(`<button id="${id}"[^>]*>[\\s\\S]*?</button>`))?.[0];

@@ -438,6 +438,7 @@ See the shared [deployment procedure](../SITES.md#deployment).
 - Keep the surfaces distinct: button text `RESET`, tooltip `Reset to default`, Help heading `Reset button`, and statusbar message `Reset: Reset to default`.
 - Help headings and references must identify the same control. Preserve contextual Help links: names and feature kinds must continue to match the existing Help lookup. Use supported heading aliases when needed rather than silently breaking navigation.
 - When modules share a control name, set the same explicit `data-help-entry` on the control and its Help heading to distinguish the destination without changing the displayed name.
+- Timeline and Meters Save buttons target the shared General Help entry `Save Bitmap`.
 - The status-bar Help link retains the last control's destination while hovered, focused or activated. Never describe that link as a new control or rebuild its destination from its own accessible name.
 - The TOC tool list opens the top of each destination tool's Help with Ctrl+click or Ctrl+Enter. Its status-bar Help link uses the same destination. Normal clicks still open the tool.
 - The TOC's Tool, Help, History and About buttons use their matching page entries in General Help for contextual shortcuts and the status-bar Help link. Normal clicks still open the selected page of the current tool.

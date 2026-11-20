@@ -1171,6 +1171,8 @@ function setupTimelineSaveButton() {
   const saveButton = document.createElement("button");
   saveButton.className = "square timeline-save-button";
   saveButton.title = "Save bitmap";
+  saveButton.dataset.helpRelease = "index";
+  saveButton.dataset.helpEntry = "Save Bitmap";
   saveButton.innerHTML = `
     <svg class="icons"><use href="/icons.svg#photo" /></svg>
     <span class="button-text">Save</span>`;

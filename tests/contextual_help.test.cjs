@@ -7,6 +7,24 @@ const vm = require('node:vm');
 const source = fs.readFileSync(path.join(__dirname, '..', 'js', 'index.js'), 'utf8');
 const helpSource = source.slice(source.indexOf('function getStatusAssociatedLabel('), source.indexOf('const SITE_PLAY_STORAGE_KEY'));
 
+test('Timeline Save targets the shared Save Bitmap Help entry', () => {
+  let button;
+  const footer = {
+    querySelector() { return null; },
+    appendChild(element) { button = element; }
+  };
+  const timeline = { querySelector: selector => selector === '.module-footer' ? footer : {} };
+  const setupSource = source.slice(source.indexOf('function setupTimelineSaveButton('), source.indexOf('function getStatusAssociatedLabel('));
+  vm.runInNewContext(`${setupSource}\nsetupTimelineSaveButton();`, {
+    document: {
+      getElementById() { return timeline; },
+      createElement() { return { dataset: {}, addEventListener() {} }; }
+    }
+  });
+  assert.equal(button.dataset.helpRelease, 'index');
+  assert.equal(button.dataset.helpEntry, 'Save Bitmap');
+});
+
 function matches(element, selector) {
   return selector.split(',').some(part => {
     const excluded = [...part.matchAll(/:not\(([^)]+)\)/g)].map(match => match[1]);

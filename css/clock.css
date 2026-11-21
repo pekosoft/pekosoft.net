@@ -2,21 +2,76 @@
 /* pekosoft.net/css/clock.css */
 
 #tool-container .clock-page {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+}
+
+.clock-views {
   container: clock-instrument / size;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  align-content: start;
+  grid-template-rows: minmax(0, 1fr);
+  align-content: stretch;
+  flex: 1 1 auto;
+  min-height: 0;
 }
 
-.clock-hero {
-  align-self: start;
+.clock-view {
+  align-self: center;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   align-items: center;
   justify-content: center;
-  gap: 16px;
   width: 100%;
   max-width: 100%;
+}
+
+.clock-view[hidden] {
+  display: none;
+}
+
+.time-mode-view {
+  align-self: center;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 24px;
+  min-height: 0;
+  height: 100%;
+}
+
+.time-mode-view[hidden] {
+  display: none;
+}
+
+.time-display {
+  max-width: 100%;
+  color: var(--white);
+  font-family: Consolas, monospace;
+  font-size: clamp(32px, 12cqw, 96px);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  text-align: center;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.time-display.countdown-complete {
+  color: var(--color1);
+}
+
+.countdown-fields {
+  width: min(100%, 480px);
+  justify-content: center;
+}
+
+.countdown-fields .pair {
+  min-width: 120px;
+}
+
+.countdown-fields input {
+  width: 100%;
 }
 
 .clock-card,
@@ -248,20 +303,9 @@
   color: var(--color1);
 }
 
-@container clock-instrument (min-width: 720px) {
-  .clock-hero {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    align-items: stretch;
-    gap: 8px;
-  }
-
-  .clock-card,
-  .calendar-card {
-    grid-template-rows: minmax(0, 1fr) auto;
-  }
-
-  .clock-face,
-  .calendar-month {
-    width: min(100%, calc(100cqh - 80px));
-  }
+.clock-face,
+.calendar-month {
+  width: min(100%, max(0px, calc(100cqh - 80px)));
 }
+
+/* END OF FILE */

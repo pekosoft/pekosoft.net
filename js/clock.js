@@ -9,11 +9,48 @@ const calendarMonthName = document.getElementById("calendar-month-name");
 const resetButton = document.getElementById("reset-button");
 const clockSoundButton = document.getElementById("clock-sound-button");
 const clockHapticButton = document.getElementById("clock-haptic-button");
+const clockModeView = document.getElementById("clock-mode-view");
+const calendarModeView = document.getElementById("calendar-mode-view");
+const timerModeView = document.getElementById("timer-mode-view");
+const countdownModeView = document.getElementById("countdown-mode-view");
+const timerDisplay = document.getElementById("timer-display");
+const countdownDisplay = document.getElementById("countdown-display");
+const countdownHours = document.getElementById("countdown-hours");
+const countdownMinutes = document.getElementById("countdown-minutes");
+const countdownSeconds = document.getElementById("countdown-seconds");
+const countdownKnobs = [
+  { knob: document.getElementById("countdown-hours-knob"), field: countdownHours, max: 99, defaultValue: 0 },
+  { knob: document.getElementById("countdown-minutes-knob"), field: countdownMinutes, max: 59, defaultValue: 1 },
+  { knob: document.getElementById("countdown-seconds-knob"), field: countdownSeconds, max: 59, defaultValue: 0 }
+];
+const clockModeButton = document.getElementById("clock-mode-button");
+const calendarModeButton = document.getElementById("calendar-mode-button");
+const timerModeButton = document.getElementById("timer-mode-button");
+const countdownModeButton = document.getElementById("countdown-mode-button");
+const timeStartButton = document.getElementById("time-start-button");
+const timeStartText = document.getElementById("time-start-text");
+const modes = {
+  clock: { button: clockModeButton, view: clockModeView },
+  calendar: { button: calendarModeButton, view: calendarModeView },
+  timer: { button: timerModeButton, view: timerModeView },
+  countdown: { button: countdownModeButton, view: countdownModeView }
+};
+const countdownFields = [countdownHours, countdownMinutes, countdownSeconds];
 let renderedCalendarMonth = "";
 let lastTickSecond = null;
 let tickAudioContext = null;
 let isSoundOn = localStorage.getItem("clock.sound_on") === "true";
 let isHapticOn = localStorage.getItem("clock.haptic") === "true";
+let activeMode = ["clock", "calendar", "timer", "countdown"].includes(localStorage.getItem("clock.mode"))
+  ? localStorage.getItem("clock.mode")
+  : "clock";
+let timerElapsedMs = 0;
+let timerStartedAt = 0;
+let timerRunning = false;
+let countdownRemainingMs = readCountdownDuration();
+let countdownStartedAt = 0;
+let countdownRunning = false;
+let animationFrame = null;
 
 function padDatePart(value) {
   return String(value).padStart(2, "0");
@@ -34,6 +71,40 @@ function formatHeroDate(date) {
 
 function formatMonthName(date) {
   return date.toLocaleString("en-US", { month: "long" });
+}
+
+function formatDuration(milliseconds) {
+  const duration = Math.max(0, Math.floor(milliseconds));
+  const hours = Math.floor(duration / 3600000);
+  const minutes = Math.floor((duration % 3600000) / 60000);
+  const seconds = Math.floor((duration % 60000) / 1000);
+  const millis = duration % 1000;
+  return `${padDatePart(hours)}:${padDatePart(minutes)}:${padDatePart(seconds)}.${String(millis).padStart(3, "0")}`;
+}
+
+function clampNumberField(field, min, max) {
+  const value = Number.parseInt(field?.value, 10);
+  const normalized = Number.isFinite(value) ? Math.min(max, Math.max(min, value)) : min;
+  if (field) field.value = String(normalized);
+  return normalized;
+}
+
+function readStoredDurationPart(key, fallback, min, max) {
+  const stored = Number.parseInt(localStorage.getItem(key), 10);
+  return Number.isFinite(stored) ? Math.min(max, Math.max(min, stored)) : fallback;
+}
+
+function readCountdownDuration() {
+  const hours = readStoredDurationPart("clock.countdown_hours", 0, 0, 99);
+  const minutes = readStoredDurationPart("clock.countdown_minutes", 1, 0, 59);
+  const seconds = readStoredDurationPart("clock.countdown_seconds", 0, 0, 59);
+  return ((hours * 3600) + (minutes * 60) + seconds) * 1000;
+}
+
+function loadCountdownFields() {
+  if (countdownHours) countdownHours.value = String(readStoredDurationPart("clock.countdown_hours", 0, 0, 99));
+  if (countdownMinutes) countdownMinutes.value = String(readStoredDurationPart("clock.countdown_minutes", 1, 0, 59));
+  if (countdownSeconds) countdownSeconds.value = String(readStoredDurationPart("clock.countdown_seconds", 0, 0, 59));
 }
 
 function getIsoWeek(date) {
@@ -166,6 +237,222 @@ function triggerSecondFeedback(date) {
 function syncFeedbackButtonState() {
   clockSoundButton?.classList.toggle("button-on", isSoundOn);
   clockHapticButton?.classList.toggle("button-on", isHapticOn);
+  clockSoundButton?.setAttribute("aria-pressed", isSoundOn ? "true" : "false");
+  clockHapticButton?.setAttribute("aria-pressed", isHapticOn ? "true" : "false");
+}
+
+function getRunningState() {
+  return activeMode === "timer" ? timerRunning : activeMode === "countdown" && countdownRunning;
+}
+
+function getConfiguredCountdownDuration() {
+  const hours = Number.parseInt(countdownHours?.value, 10);
+  const minutes = Number.parseInt(countdownMinutes?.value, 10);
+  const seconds = Number.parseInt(countdownSeconds?.value, 10);
+  return (((Number.isFinite(hours) ? hours : 0) * 3600)
+    + ((Number.isFinite(minutes) ? minutes : 0) * 60)
+    + (Number.isFinite(seconds) ? seconds : 0)) * 1000;
+}
+
+function syncStartButton() {
+  if (!timeStartButton) return;
+  const hasActiveTimer = activeMode === "timer" || activeMode === "countdown";
+  const running = getRunningState();
+  timeStartButton.disabled = !hasActiveTimer
+    || (activeMode === "countdown" && !running && getConfiguredCountdownDuration() <= 0);
+  timeStartButton.classList.toggle("button-on", running);
+  timeStartButton.setAttribute("aria-pressed", running ? "true" : "false");
+  timeStartText.textContent = running ? "Pause" : "Start";
+  const modeName = activeMode === "countdown" ? "countdown" : "timer";
+  timeStartButton.title = `${running ? "Pause" : "Start"} ${modeName}`;
+  timeStartButton.dataset.helpEntry = activeMode === "countdown" ? "Countdown" : "Timer";
+  syncCountdownKnobs();
+}
+
+function syncCountdownKnobs() {
+  countdownKnobs.forEach(({ knob, field, max }) => {
+    if (!knob || !field) return;
+    const value = Number(field.value);
+    knob.disabled = countdownRunning;
+    knob.style.setProperty("--knob-angle", `${-135 + (value / max) * 270}deg`);
+    knob.setAttribute("aria-valuenow", String(value));
+  });
+}
+
+function initCountdownKnobs() {
+  countdownKnobs.forEach(({ knob, field, max, defaultValue }) => {
+    if (!knob || !field) return;
+    const setValue = (value) => {
+      if (countdownRunning) return;
+      field.value = String(Math.min(max, Math.max(0, Math.round(value))));
+      setCountdownDuration();
+    };
+    knob.setAttribute("role", "slider");
+    knob.setAttribute("aria-orientation", "vertical");
+    knob.setAttribute("aria-valuemin", "0");
+    knob.setAttribute("aria-valuemax", String(max));
+    bindKnobControl(knob, {
+      get: () => Number(field.value),
+      nudge: (direction) => setValue(Number(field.value) + direction),
+      drag: (start, delta) => setValue(start + delta * max / 270),
+      home: () => setValue(0),
+      end: () => setValue(max),
+      reset: () => setValue(defaultValue)
+    });
+  });
+  syncCountdownKnobs();
+}
+
+function syncMode() {
+  Object.entries(modes).forEach(([mode, config]) => {
+    const active = mode === activeMode;
+    config.button?.classList.toggle("button-on", active);
+    config.button?.setAttribute("aria-pressed", active ? "true" : "false");
+    if (config.view) config.view.hidden = !active;
+  });
+  syncStartButton();
+}
+
+function updateTimeDisplays() {
+  const now = Date.now();
+  if (timerRunning) timerDisplay.textContent = formatDuration(timerElapsedMs + now - timerStartedAt);
+  else timerDisplay.textContent = formatDuration(timerElapsedMs);
+
+  const remaining = countdownRunning
+    ? Math.max(0, countdownRemainingMs - (now - countdownStartedAt))
+    : countdownRemainingMs;
+  countdownDisplay.textContent = formatDuration(remaining);
+  countdownDisplay.classList.toggle("countdown-complete", countdownRemainingMs === 0 && !countdownRunning);
+  if (countdownRunning && remaining <= 0) finishCountdown();
+}
+
+function animateTimers() {
+  updateTimeDisplays();
+  if (timerRunning || countdownRunning) {
+    animationFrame = requestAnimationFrame(animateTimers);
+  } else {
+    animationFrame = null;
+  }
+}
+
+function ensureAnimation() {
+  if (animationFrame === null) animationFrame = requestAnimationFrame(animateTimers);
+}
+
+function startTimer() {
+  timerStartedAt = Date.now();
+  timerRunning = true;
+  syncStartButton();
+  ensureAnimation();
+}
+
+function pauseTimer() {
+  timerElapsedMs += Date.now() - timerStartedAt;
+  timerRunning = false;
+  updateTimeDisplays();
+  syncStartButton();
+}
+
+function setCountdownDuration() {
+  const hours = clampNumberField(countdownHours, 0, 99);
+  const minutes = clampNumberField(countdownMinutes, 0, 59);
+  const seconds = clampNumberField(countdownSeconds, 0, 59);
+  countdownRunning = false;
+  countdownRemainingMs = ((hours * 3600) + (minutes * 60) + seconds) * 1000;
+  countdownDisplay.classList.remove("countdown-complete");
+  localStorage.setItem("clock.countdown_hours", String(hours));
+  localStorage.setItem("clock.countdown_minutes", String(minutes));
+  localStorage.setItem("clock.countdown_seconds", String(seconds));
+  updateTimeDisplays();
+  syncStartButton();
+}
+
+function startCountdown() {
+  if (countdownRemainingMs <= 0) setCountdownDuration();
+  if (countdownRemainingMs <= 0) return;
+  countdownStartedAt = Date.now();
+  countdownRunning = true;
+  countdownFields.forEach((field) => {
+    if (field) field.disabled = true;
+  });
+  syncStartButton();
+  ensureAnimation();
+}
+
+function pauseCountdown() {
+  const elapsed = Date.now() - countdownStartedAt;
+  if (elapsed >= countdownRemainingMs) {
+    finishCountdown();
+    return;
+  }
+  countdownRemainingMs = Math.max(0, countdownRemainingMs - elapsed);
+  countdownRunning = false;
+  countdownFields.forEach((field) => {
+    if (field) field.disabled = false;
+  });
+  updateTimeDisplays();
+  syncStartButton();
+}
+
+function playCountdownComplete() {
+  if (!isSoundOn || localStorage.getItem("global.sound") === "false") return;
+  const audioContext = ensureTickAudioContext();
+  if (!audioContext || typeof window.playTransientSound !== "function") return;
+  for (let index = 0; index < 3; index++) {
+    window.playTransientSound({
+      audioContext,
+      tone: "sine",
+      when: audioContext.currentTime + (index * 0.18),
+      gain: 0.35,
+      durationSec: 0.12
+    });
+  }
+}
+
+function finishCountdown() {
+  countdownRemainingMs = 0;
+  countdownRunning = false;
+  countdownFields.forEach((field) => {
+    if (field) field.disabled = false;
+  });
+  updateTimeDisplays();
+  syncStartButton();
+  playCountdownComplete();
+  if (isHapticOn && "vibrate" in navigator) navigator.vibrate([120, 80, 120]);
+}
+
+function toggleActiveTimer() {
+  if (activeMode === "timer") {
+    if (timerRunning) pauseTimer();
+    else startTimer();
+  } else if (activeMode === "countdown") {
+    if (countdownRunning) pauseCountdown();
+    else startCountdown();
+  }
+}
+
+function resetClockTool() {
+  isSoundOn = false;
+  isHapticOn = false;
+  activeMode = "clock";
+  timerElapsedMs = 0;
+  timerStartedAt = 0;
+  timerRunning = false;
+  countdownRunning = false;
+  if (countdownHours) countdownHours.value = "0";
+  if (countdownMinutes) countdownMinutes.value = "1";
+  if (countdownSeconds) countdownSeconds.value = "0";
+  countdownRemainingMs = 60000;
+  countdownFields.forEach((field) => {
+    if (field) field.disabled = false;
+  });
+  ["clock.sound_on", "clock.haptic", "clock.mode", "clock.countdown_hours", "clock.countdown_minutes", "clock.countdown_seconds"]
+    .forEach((key) => localStorage.removeItem(key));
+  syncFeedbackButtonState();
+  syncMode();
+  updateTimeDisplays();
+  window.PekoSound?.syncFromTools();
+  renderClock();
 }
 
 function renderClock() {
@@ -188,14 +475,22 @@ function renderClock() {
 
 renderClock();
 syncFeedbackButtonState();
+loadCountdownFields();
+syncMode();
+updateTimeDisplays();
 resetButton?.addEventListener("click", () => {
-  isSoundOn = false;
-  isHapticOn = false;
-  localStorage.removeItem("clock.sound_on");
-  localStorage.removeItem("clock.haptic");
-  syncFeedbackButtonState();
-  window.PekoSound?.syncFromTools();
-  renderClock();
+  resetClockTool();
+});
+Object.keys(modes).forEach((mode) => {
+  modes[mode].button?.addEventListener("click", () => {
+    activeMode = mode;
+    localStorage.setItem("clock.mode", activeMode);
+    syncMode();
+  });
+});
+timeStartButton?.addEventListener("click", toggleActiveTimer);
+countdownFields.forEach((field) => {
+  field?.addEventListener("input", setCountdownDuration);
 });
 clockSoundButton?.addEventListener("click", () => {
   isSoundOn = !isSoundOn;
@@ -209,5 +504,9 @@ clockHapticButton?.addEventListener("click", () => {
   syncFeedbackButtonState();
 });
 setInterval(renderClock, 1000);
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible") updateTimeDisplays();
+});
+document.addEventListener("DOMContentLoaded", initCountdownKnobs);
 
 // END OF FILE

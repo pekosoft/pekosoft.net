@@ -588,6 +588,11 @@
 </div>
 
 <div class="feature-row border">
+  <svg class="standard-image-help"><use href="/icons.svg#display"></use></svg>
+  <div class="justify"><h1>Screen saver <span class="object">option</span></h1>Starts the screen saver immediately. It starts again after 10 minutes without pointer, touch, keyboard or wheel activity until this option is turned off. The Settings option remains on while the screen saver is dismissed. The screen saver shows the current tool's icon, or a floppy icon on other pages. Starting it from Settings enters browser fullscreen when available; automatic activation fills the page. Click or tap to dismiss it and restore the previous fullscreen state. <span class="default">Default: off.</span></div>
+</div>
+
+<div class="feature-row border">
   <svg class="standard-image-help"><use href="/icons.svg#play"></use></svg>
   <div class="justify"><h1>Play <span class="object">button</span></h1>Cycles through pages automatically.</div>
 </div>

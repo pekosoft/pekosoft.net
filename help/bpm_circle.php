@@ -96,7 +96,7 @@
 </div>
 
 <div class="feature-row border"><svg class="standard-image-help">
-    <use href="/icons.svg#pause"></use>
+    <use href="/icons.svg#lock"></use>
   </svg>
   <div class="justify">
     <h1>Hold <span class="object">button</span></h1>

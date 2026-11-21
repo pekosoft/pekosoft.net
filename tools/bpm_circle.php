@@ -70,7 +70,7 @@
             <use href="/icons.svg#playhead" />
           </svg><span class="button-text">Playhead</span></button>
         <button id="hold-button" title="Hold active segment"><svg class="icons" role="img">
-            <use href="/icons.svg#pause" />
+            <use href="/icons.svg#lock" />
           </svg><span class="button-text">Hold</span></button>
         <button id="loop-button" title="Loop playback"><svg class="icons" role="img">
             <use href="/icons.svg#loop" />

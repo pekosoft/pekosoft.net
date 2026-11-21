@@ -4,7 +4,7 @@
   </svg>
   <div class="justify">
     <h1>General</h1>
-    Pekosoft Clock shows local time, time zone and calendar date.
+    Pekosoft Clock shows local time, a calendar, a timer and a countdown.
   </div>
 </div>
 
@@ -14,7 +14,27 @@
   </svg>
   <div class="justify">
     <h1>Instrument <span class="object">module</span></h1>
-    A full-width view of the analog clock and current month calendar.
+    Switches between Clock, Calendar, Timer and Countdown. Only the selected view is shown. Timer and Countdown keep running when another view is selected.
+  </div>
+</div>
+
+<div class="feature-row border">
+  <svg class="standard-image-help">
+    <use href="/icons.svg?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/icons.svg'); ?>#timer"></use>
+  </svg>
+  <div class="justify">
+    <h1>Timer <span class="object">display</span></h1>
+    Counts elapsed time. The Start button starts or pauses the timer. Reset returns it to zero.
+  </div>
+</div>
+
+<div class="feature-row border">
+  <svg class="standard-image-help">
+    <use href="/icons.svg?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/icons.svg'); ?>#countdown"></use>
+  </svg>
+  <div class="justify">
+    <h1>Countdown <span class="object">display</span></h1>
+    Counts down from the Hours, Minutes and Seconds fields. The corresponding knobs adjust these values. The Start button starts or pauses the countdown. <span class="default">Default: 1 minute.</span>
   </div>
 </div>
 
@@ -44,7 +64,7 @@
   </svg>
   <div class="justify">
     <h1>Sound <span class="object">button</span></h1>
-    Toggles Click sound on each second. <span class="default">Default: off.</span>
+    Toggles clock ticks and countdown completion sound. <span class="default">Default: off.</span>
   </div>
 </div>
 
@@ -54,7 +74,7 @@
   </svg>
   <div class="justify">
     <h1>Haptic <span class="object">button</span></h1>
-    Toggles a short vibration on each second on supported devices. <span class="default">Default: off.</span>
+    Toggles clock ticks and countdown completion feedback on supported devices. <span class="default">Default: off.</span>
   </div>
 </div>
 
@@ -64,6 +84,6 @@
   </svg>
   <div class="justify">
     <h1>Reset <span class="object">button</span></h1>
-    Restores the Clock options to their defaults.
+    Stops Timer and Countdown, returns to Clock and restores all Clock options to their defaults.
   </div>
 </div>

@@ -19,6 +19,7 @@ window.FactoryDefaults = {
   alpha: false,
   multicolor: true,
   wrap: false,
+  screenSaver: false,
   inputBackgroundsEnabled: true,
   theme: "dark",
   footer: true,
@@ -57,6 +58,7 @@ document.addEventListener("DOMContentLoaded", () => {
     toggleAlpha: document.getElementById("toggle-alpha"),
     multicolor: document.getElementById("multicolor"),
     toggleWrap: document.getElementById("toggle-wrap"),
+    screenSaver: document.getElementById("screen-saver"),
     resetButton: document.getElementById("reset-settings-button"),
     defaultBPM: document.getElementById("default_bpm"),
     defaultBPMKnob: document.getElementById("default-bpm-knob"),
@@ -83,6 +85,42 @@ document.addEventListener("DOMContentLoaded", () => {
   };
   const phoneSettingsQuery = window.matchMedia("(max-width: 799px)");
   let suppressPhoneFieldClick = false;
+  const screenSaverDelay = 10 * 60 * 1000;
+  const screenSaverToolIcons = [
+    "audio_calculator",
+    "bpm_calculator",
+    "bpm_circle",
+    "bpm_curve",
+    "circle_of_fifths",
+    "clock",
+    "drum_machine",
+    "icons",
+    "metronome",
+    "notepad",
+    "piano",
+    "player",
+    "reference",
+    "system",
+    "tap_pad",
+    "tuner",
+    "turntable",
+    "visualizer"
+  ];
+  let screenSaverTimer = 0;
+  let screenSaverActive = false;
+  let screenSaverOwnsFullscreen = false;
+  const screenSaverOverlay = document.createElement("div");
+  const screenSaverIcon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  const screenSaverIconUse = document.createElementNS("http://www.w3.org/2000/svg", "use");
+
+  screenSaverOverlay.className = "screen-saver";
+  screenSaverOverlay.setAttribute("aria-hidden", "true");
+  screenSaverIcon.setAttribute("class", "screen-saver-icon");
+  screenSaverIcon.setAttribute("viewBox", "0 0 512 512");
+  screenSaverIcon.setAttribute("aria-hidden", "true");
+  screenSaverIcon.append(screenSaverIconUse);
+  screenSaverOverlay.append(screenSaverIcon);
+  document.body.append(screenSaverOverlay);
 
   document.querySelectorAll(":is(.settings-panel, .dev-controls) .setting-row:not(.background-image-row) :is(label, input, select)").forEach((field) => {
     field.addEventListener("pointerdown", (event) => {
@@ -278,6 +316,48 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  if (settings.screenSaver) {
+    settings.screenSaver.addEventListener("change", () => {
+      saveScreenSaverSetting();
+      if (settings.screenSaver.checked) activateScreenSaver(true);
+      else deactivateScreenSaver();
+    });
+  }
+
+  ["pointermove", "pointerdown", "touchstart", "wheel", "keydown"].forEach((eventName) => {
+    document.addEventListener(eventName, () => {
+      if (screenSaverActive) return;
+      scheduleScreenSaver();
+    }, { capture: true, passive: true });
+  });
+
+  document.addEventListener("click", (event) => {
+    if (!screenSaverActive) {
+      scheduleScreenSaver();
+      return;
+    }
+
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    deactivateScreenSaver();
+  }, { capture: true, passive: false });
+
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) {
+      window.clearTimeout(screenSaverTimer);
+      screenSaverTimer = 0;
+    } else {
+      scheduleScreenSaver();
+    }
+  });
+
+  window.addEventListener("pagehide", () => {
+    window.clearTimeout(screenSaverTimer);
+    screenSaverTimer = 0;
+  });
+
+  scheduleScreenSaver();
+
   if (settings.defaultBPM) {
     settings.defaultBPM.addEventListener("input", () => {
       const val = clampSettingNumber(settings.defaultBPM.value, numericRanges.defaultBPM.min, numericRanges.defaultBPM.max, defaults.defaultBPM);
@@ -400,6 +480,9 @@ document.addEventListener("DOMContentLoaded", () => {
     if (settings.toggleWrap) {
       settings.toggleWrap.checked = (localStorage.getItem("global.wrap") ?? defaults.wrap) === "true";
     }
+    if (settings.screenSaver) {
+      settings.screenSaver.checked = (localStorage.getItem("global.screen_saver") ?? String(defaults.screenSaver)) === "true";
+    }
     if (settings.defaultBPM) {
       const savedBPM = clampSettingNumber(localStorage.getItem("global.default_bpm"), numericRanges.defaultBPM.min, numericRanges.defaultBPM.max, defaults.defaultBPM);
       settings.defaultBPM.value = `${savedBPM}`;
@@ -498,6 +581,85 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     localStorage.setItem("global.wrap", String(nextWrapState));
     clearPanelWrapOverrides();
+  }
+
+  function saveScreenSaverSetting() {
+    localStorage.setItem("global.screen_saver", String(settings.screenSaver?.checked === true));
+  }
+
+  function getScreenSaverIconName() {
+    const pathSlug = decodeURIComponent(window.location.pathname)
+      .replace(/^\/+|\/+$/g, "")
+      .split("/")
+      .pop()
+      ?.replace(/\.php$/i, "") || "";
+    const querySlug = new URLSearchParams(window.location.search).get("t") || "";
+
+    if (screenSaverToolIcons.includes(pathSlug)) return pathSlug;
+    if (screenSaverToolIcons.includes(querySlug)) return querySlug;
+    return "save";
+  }
+
+  function activateScreenSaver(requestFullscreen = false) {
+    if (settings.screenSaver?.checked !== true) return;
+
+    window.clearTimeout(screenSaverTimer);
+    screenSaverTimer = 0;
+    screenSaverIconUse.setAttribute("href", `/icons.svg#${getScreenSaverIconName()}`);
+    screenSaverActive = true;
+    screenSaverOverlay.classList.add("screen-saver-active");
+    if (settings.screenSaver) {
+      settings.screenSaver.checked = true;
+      syncToggleButtonState(settings.screenSaver);
+    }
+    if (requestFullscreen) enterScreenSaverFullscreen();
+  }
+
+  function enterScreenSaverFullscreen() {
+    if (document.fullscreenElement || !document.fullscreenEnabled || typeof document.documentElement.requestFullscreen !== "function") return;
+
+    screenSaverOwnsFullscreen = true;
+    document.documentElement.requestFullscreen()
+      .then(() => {
+        if (screenSaverActive && screenSaverOwnsFullscreen) return;
+
+        screenSaverOwnsFullscreen = false;
+        if (document.fullscreenElement) {
+          document.exitFullscreen().catch((error) => {
+            console.error(`Screen saver fullscreen exit failed: ${error.message} (${error.name})`);
+          });
+        }
+      })
+      .catch((error) => {
+        screenSaverOwnsFullscreen = false;
+        console.error(`Screen saver fullscreen request failed: ${error.message} (${error.name})`);
+      });
+  }
+
+  function deactivateScreenSaver() {
+    if (!screenSaverActive) {
+      scheduleScreenSaver();
+      return;
+    }
+
+    const exitOwnedFullscreen = screenSaverOwnsFullscreen && !!document.fullscreenElement;
+    screenSaverOwnsFullscreen = false;
+    screenSaverActive = false;
+    screenSaverOverlay.classList.remove("screen-saver-active");
+    if (exitOwnedFullscreen) {
+      document.exitFullscreen().catch((error) => {
+        console.error(`Screen saver fullscreen exit failed: ${error.message} (${error.name})`);
+      });
+    }
+    scheduleScreenSaver();
+  }
+
+  function scheduleScreenSaver() {
+    window.clearTimeout(screenSaverTimer);
+    screenSaverTimer = 0;
+    if (screenSaverActive || document.hidden || settings.screenSaver?.checked !== true) return;
+
+    screenSaverTimer = window.setTimeout(activateScreenSaver, screenSaverDelay);
   }
 
   function dispatchGlobalDefaultsChange(changed) {

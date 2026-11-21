@@ -1814,6 +1814,45 @@ html.invert-colors .container:fullscreen {
   fill: var(--color1);
 }
 
+.screen-saver {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 2147483647;
+  overflow: hidden;
+  background: var(--black);
+  perspective: 1200px;
+}
+
+.screen-saver-active {
+  display: block;
+}
+
+.screen-saver-icon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: min(42vmin, 512px);
+  height: min(42vmin, 512px);
+  fill: var(--grey1);
+  animation: screen-saver-spin 8s linear infinite;
+  transform: translate(-50%, -50%);
+  transform-style: preserve-3d;
+  transform-origin: center;
+  backface-visibility: visible;
+  will-change: transform;
+}
+
+@keyframes screen-saver-spin {
+  0% {
+    transform: translate(-50%, -50%) rotateY(0deg);
+  }
+
+  100% {
+    transform: translate(-50%, -50%) rotateY(360deg);
+  }
+}
+
 :is(.settings-panel, .dev-controls) .setting-row {
   display: grid;
   grid-template-columns: minmax(120px, 1fr) minmax(160px, 320px);

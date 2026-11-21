@@ -260,6 +260,16 @@ Pekosoft favors:
 
 More menus use the same control layout and spacing as the regular module view. The More control indicates when its menu is open. More stays open until the user activates that module's More control again. Outside interactions and changes to module layout or visibility must preserve this mode. Global Reset is the exception and closes every module menu.
 
+Screen saver starts from its Settings option or after 10 minutes without
+pointer, touch, keyboard or wheel activity. Tool pages and their Help, History
+and About pages show the current tool icon; other pages show the floppy icon.
+Starting Screen saver from Settings enters browser fullscreen when available;
+automatic activation remains viewport-filling because browsers require a
+current user gesture for fullscreen requests. Click or tap dismisses Screen
+saver, restores fullscreen state owned by Screen saver and restarts the
+inactivity timer. The Settings option stays enabled until the user turns it
+off, and its state is persisted in localStorage.
+
 ## Production deployment
 
 The Deploy site workflow uploads only runtime files. Repository-only tooling, tests, configuration and documentation must remain excluded from incremental uploads, full sync and `.ftpignore`.
@@ -302,7 +312,7 @@ To recover from an incomplete deployment, run Deploy site manually on `main` wit
 - Use the shared `circular-instrument` module-body class for a single circular instrument. It fits a square into the module's available content width and height with standard margins, including when maximized.
 - On phones, a non-maximized circular instrument fills the module width and the module grows to contain it. Do not add tool-specific diameter caps or viewport-based maximize calculations.
 - Visualizer's All mode keeps smaller meters so several can be shown together. Its Single mode uses the shared circular sizing.
-- Clock shares its Instrument with a calendar. The cards stack or sit side by side according to the Instrument's available width. Stacked cards fill their width. Side-by-side content also fits the available height, reserving room for the date and time. Preserve scrolling when both cannot fit vertically.
+- Clock's Instrument has separate Clock, Calendar, Timer and Countdown tabs in its uppermost tab section. Timer and Countdown continue running when another tab is selected. Fit Clock and Calendar to the available Instrument space while retaining their date and time labels.
 - The calendar uses equally sized squares for week numbers and dates, with a spacer between the week-number column and the dates.
 
 ## Cards heading convention

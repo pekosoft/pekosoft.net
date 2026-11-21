@@ -11,6 +11,10 @@ const skipSource = source.slice(source.indexOf('function setupModuleTabSkipButto
 const titleSource = source.slice(source.indexOf('function setupModuleTabTitle('), source.indexOf('function setupModuleHeader('));
 
 const tabGroups = [
+  { file: 'tools\\clock.php', module: 'tool', title: 'Instrument', tabs: [
+    ['clock-mode-button', 'Clock'], ['calendar-mode-button', 'Calendar'],
+    ['timer-mode-button', 'Timer'], ['countdown-mode-button', 'Countdown']
+  ] },
   { file: 'tools\\reference.php', module: 'tool', title: 'Instrument', tabs: [
     ['table-bpm-button', 'BPM'], ['table-tempi-button', 'Italian Tempi'], ['table-notes-button', 'Notes'],
     ['table-scales-button', 'Scales'], ['table-chords-button', 'Chords']

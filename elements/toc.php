@@ -44,6 +44,16 @@
         Fullscreen
       </button>
 
+      <div class="settings-toggle-row">
+        <input type="checkbox" name="screen-saver" id="screen-saver" hidden>
+        <button type="button" data-setting-toggle="screen-saver" data-help-entry="Screen saver" data-help-release="index" title="Starts the screen saver" class="toc-button">
+          <svg class="icons" role="img">
+            <use href="/icons.svg#display" />
+          </svg>
+          Screen saver
+        </button>
+      </div>
+
       <button id="share-settings-button" class="toc-button" title="Share" aria-label="Share" data-help-release="index">
         <svg class="icons" role="img">
           <use href="/icons.svg#share" />

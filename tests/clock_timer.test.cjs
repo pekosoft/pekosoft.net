@@ -57,7 +57,7 @@ function createClock(saved = {}) {
     "clock-page", "timer-mode-view", "countdown-mode-view", "timer-display",
     "countdown-display", "countdown-hours", "countdown-minutes", "countdown-seconds",
     "countdown-hours-knob", "countdown-minutes-knob", "countdown-seconds-knob",
-    "countdown-alarm-button", "countdown-ms-button",
+    "countdown-alarm-button", "time-ms-button",
     "clock-mode-button", "calendar-mode-button", "timer-mode-button", "countdown-mode-button", "time-start-button",
     "time-start-icon", "time-start-text", "clock-local-time", "clock-time-zone",
     "clock-local-date"
@@ -411,20 +411,53 @@ test("Countdown knobs update fields, display and saved values, and follow runnin
   assert.equal(seconds.attributes.get("aria-valuenow"), "0");
 });
 
-test("Countdown milliseconds toggle preserves precision, rounds up and persists", () => {
-  const clock = createClock({ "clock.mode": "countdown" });
+test("Timer milliseconds toggle preserves precision and remains independent of Countdown", () => {
+  const clock = createClock({ "clock.mode": "timer" });
   const { elements, storage } = clock;
-  assert.equal(elements.get("countdown-ms-button").attributes.get("aria-pressed"), "true");
+  const msButton = elements.get("time-ms-button");
+  assert.equal(msButton.hidden, false);
+  assert.equal(msButton.attributes.get("aria-pressed"), "true");
   elements.get("time-start-button").dispatch("click");
   clock.setNow(2250);
   clock.runFrame();
-  elements.get("countdown-ms-button").dispatch("click");
+  msButton.dispatch("click");
+  assert.equal(elements.get("timer-display").textContent, "00:00:01");
+  assert.equal(storage.get("clock.timer_ms"), "false");
+  elements.get("time-start-button").dispatch("click");
+  elements.get("countdown-mode-button").dispatch("click");
+  assert.equal(msButton.attributes.get("aria-pressed"), "true");
+  msButton.dispatch("click");
+  assert.equal(storage.get("clock.countdown_ms"), "false");
+  elements.get("timer-mode-button").dispatch("click");
+  assert.equal(msButton.attributes.get("aria-pressed"), "false");
+  msButton.dispatch("click");
+  assert.equal(elements.get("timer-display").textContent, "00:00:01.250");
+  msButton.dispatch("click");
+  const reloaded = createClock(Object.fromEntries(storage));
+  assert.equal(reloaded.elements.get("time-ms-button").attributes.get("aria-pressed"), "false");
+  assert.equal(reloaded.elements.get("timer-display").textContent, "00:00:00");
+  reloaded.elements.get("reset-button").dispatch("click");
+  assert.equal(reloaded.storage.has("clock.timer_ms"), false);
+  assert.equal(reloaded.elements.get("time-ms-button").hidden, true);
+  reloaded.elements.get("timer-mode-button").dispatch("click");
+  assert.equal(reloaded.elements.get("time-ms-button").attributes.get("aria-pressed"), "true");
+  assert.equal(reloaded.elements.get("timer-display").textContent, "00:00:00.000");
+});
+
+test("Countdown milliseconds toggle preserves precision, rounds up and persists", () => {
+  const clock = createClock({ "clock.mode": "countdown" });
+  const { elements, storage } = clock;
+  assert.equal(elements.get("time-ms-button").attributes.get("aria-pressed"), "true");
+  elements.get("time-start-button").dispatch("click");
+  clock.setNow(2250);
+  clock.runFrame();
+  elements.get("time-ms-button").dispatch("click");
   assert.equal(elements.get("countdown-display").textContent, "00:00:59");
   assert.equal(storage.get("clock.countdown_ms"), "false");
-  elements.get("countdown-ms-button").dispatch("click");
+  elements.get("time-ms-button").dispatch("click");
   assert.equal(elements.get("countdown-display").textContent, "00:00:58.750");
   elements.get("reset-button").dispatch("click");
-  assert.equal(elements.get("countdown-ms-button").attributes.get("aria-pressed"), "true");
+  assert.equal(elements.get("time-ms-button").attributes.get("aria-pressed"), "true");
   assert.equal(storage.has("clock.countdown_ms"), false);
   assert.equal(createClock({ "clock.countdown_ms": "false" }).elements.get("countdown-display").textContent, "00:01:00");
 });

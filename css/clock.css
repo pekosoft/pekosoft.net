@@ -46,7 +46,7 @@
 }
 
 #countdown-alarm-button[hidden],
-#countdown-ms-button[hidden] {
+#time-ms-button[hidden] {
   display: none;
 }
 

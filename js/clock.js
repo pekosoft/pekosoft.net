@@ -14,7 +14,7 @@ const calendarModeView = document.getElementById("calendar-mode-view");
 const timerModeView = document.getElementById("timer-mode-view");
 const countdownModeView = document.getElementById("countdown-mode-view");
 const countdownAlarmButton = document.getElementById("countdown-alarm-button");
-const countdownMsButton = document.getElementById("countdown-ms-button");
+const timeMsButton = document.getElementById("time-ms-button");
 const timerDisplay = document.getElementById("timer-display");
 const countdownDisplay = document.getElementById("countdown-display");
 const countdownHours = document.getElementById("countdown-hours");
@@ -52,6 +52,7 @@ let activeMode = ["clock", "calendar", "timer", "countdown"].includes(localStora
 let timerElapsedMs = 0;
 let timerStartedAt = 0;
 let timerRunning = false;
+let showTimerMs = localStorage.getItem("clock.timer_ms") !== "false";
 let countdownRemainingMs = readCountdownDuration();
 let countdownStartedAt = 0;
 let countdownRunning = false;
@@ -81,8 +82,8 @@ function formatMonthName(date) {
   return date.toLocaleString("en-US", { month: "long" });
 }
 
-function formatDuration(milliseconds, showMilliseconds = true) {
-  const duration = Math.max(0, showMilliseconds ? Math.floor(milliseconds) : Math.ceil(milliseconds / 1000) * 1000);
+function formatDuration(milliseconds, showMilliseconds = true, roundUp = false) {
+  const duration = Math.max(0, !showMilliseconds && roundUp ? Math.ceil(milliseconds / 1000) * 1000 : Math.floor(milliseconds));
   const hours = Math.floor(duration / 3600000);
   const minutes = Math.floor((duration % 3600000) / 60000);
   const seconds = Math.floor((duration % 60000) / 1000);
@@ -352,7 +353,8 @@ function syncMode() {
     if (config.view) config.view.hidden = !active;
   });
   if (countdownAlarmButton) countdownAlarmButton.hidden = activeMode !== "countdown";
-  if (countdownMsButton) countdownMsButton.hidden = activeMode !== "countdown";
+  if (timeMsButton) timeMsButton.hidden = activeMode !== "timer" && activeMode !== "countdown";
+  syncMsButton();
   syncFeedbackButtonState();
   syncStartButton();
 }
@@ -360,8 +362,12 @@ function syncMode() {
 function syncCountdownOptions() {
   countdownAlarmButton?.classList.toggle("button-on", isCountdownAlarmOn);
   countdownAlarmButton?.setAttribute("aria-pressed", String(isCountdownAlarmOn));
-  countdownMsButton?.classList.toggle("button-on", showCountdownMs);
-  countdownMsButton?.setAttribute("aria-pressed", String(showCountdownMs));
+}
+
+function syncMsButton() {
+  const enabled = activeMode === "timer" ? showTimerMs : showCountdownMs;
+  timeMsButton?.classList.toggle("button-on", enabled);
+  timeMsButton?.setAttribute("aria-pressed", String(enabled));
 }
 
 function stopCountdownAlarm() {
@@ -372,13 +378,13 @@ function stopCountdownAlarm() {
 
 function updateTimeDisplays() {
   const now = Date.now();
-  if (timerRunning) timerDisplay.textContent = formatDuration(timerElapsedMs + now - timerStartedAt);
-  else timerDisplay.textContent = formatDuration(timerElapsedMs);
+  if (timerRunning) timerDisplay.textContent = formatDuration(timerElapsedMs + now - timerStartedAt, showTimerMs);
+  else timerDisplay.textContent = formatDuration(timerElapsedMs, showTimerMs);
 
   const remaining = countdownRunning
     ? Math.max(0, countdownRemainingMs - (now - countdownStartedAt))
     : countdownRemainingMs;
-  countdownDisplay.textContent = formatDuration(remaining, showCountdownMs);
+  countdownDisplay.textContent = formatDuration(remaining, showCountdownMs, true);
   countdownDisplay.classList.toggle("countdown-complete", countdownRemainingMs === 0 && !countdownRunning);
   if (countdownRunning && remaining <= 0) finishCountdown();
 }
@@ -504,6 +510,7 @@ function resetClockTool() {
     localStorage.removeItem(`clock.${mode}_haptic`);
   });
   isCountdownAlarmOn = false;
+  showTimerMs = true;
   showCountdownMs = true;
   activeMode = "clock";
   timerElapsedMs = 0;
@@ -517,7 +524,7 @@ function resetClockTool() {
   countdownFields.forEach((field) => {
     if (field) field.disabled = false;
   });
-  ["clock.sound_on", "clock.haptic", "clock.mode", "clock.countdown_hours", "clock.countdown_minutes", "clock.countdown_seconds", "clock.countdown_alarm", "clock.countdown_ms"]
+  ["clock.sound_on", "clock.haptic", "clock.mode", "clock.timer_ms", "clock.countdown_hours", "clock.countdown_minutes", "clock.countdown_seconds", "clock.countdown_alarm", "clock.countdown_ms"]
     .forEach((key) => localStorage.removeItem(key));
   syncFeedbackButtonState();
   syncCountdownOptions();
@@ -570,10 +577,15 @@ countdownAlarmButton?.addEventListener("click", () => {
   if (isCountdownAlarmOn && feedbackSettings.countdown.sound && localStorage.getItem("global.sound") !== "false") ensureTickAudioContext();
   syncCountdownOptions();
 });
-countdownMsButton?.addEventListener("click", () => {
-  showCountdownMs = !showCountdownMs;
-  localStorage.setItem("clock.countdown_ms", String(showCountdownMs));
-  syncCountdownOptions();
+timeMsButton?.addEventListener("click", () => {
+  if (activeMode === "timer") {
+    showTimerMs = !showTimerMs;
+    localStorage.setItem("clock.timer_ms", String(showTimerMs));
+  } else if (activeMode === "countdown") {
+    showCountdownMs = !showCountdownMs;
+    localStorage.setItem("clock.countdown_ms", String(showCountdownMs));
+  } else return;
+  syncMsButton();
   updateTimeDisplays();
 });
 countdownFields.forEach((field) => {

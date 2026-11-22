@@ -54,7 +54,7 @@
   </svg>
   <div class="justify">
     <h1>ms <span class="object">button</span></h1>
-    Toggles milliseconds in the Countdown display. When hidden, remaining time is rounded up to the next second. <span class="default">Default: on.</span>
+    Toggles milliseconds in the Timer or Countdown display. Each has its own setting. When hidden, elapsed time is rounded down and remaining time is rounded up to the next second. <span class="default">Default: on.</span>
   </div>
 </div>
 

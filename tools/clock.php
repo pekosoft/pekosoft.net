@@ -116,7 +116,7 @@
         <svg class="icons"><use href="/icons.svg#bell" /></svg>
         <span class="button-text">Alarm</span>
       </button>
-      <button id="countdown-ms-button" class="square" title="Toggle milliseconds" aria-pressed="true" data-help-entry="ms" data-help-kind="button" hidden>
+      <button id="time-ms-button" class="square" title="Toggle milliseconds" aria-pressed="true" data-help-entry="ms" data-help-kind="button" hidden>
         <svg class="icons"><use href="/icons.svg#decimals" /></svg>
         <span class="button-text">ms</span>
       </button>

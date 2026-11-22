@@ -18,7 +18,7 @@ test('calculator icons remain unique standalone monochrome geometry', () => {
 });
 
 test('updated interface icons remain unique standalone monochrome geometry', () => {
-  for (const id of ['clock', 'release', 'help', 'bars', 'loop', 'beat', 'snare', 'hi_hat', 'maraca', 'tambourine', 'bongos', 'knob', 'arrow_up_down', 'center', 'asterisk', 'ip', 'external', 'pulse', 'cassette', 'bitmeter', 'cable', 'lightning', 'ohm', 'shield', 'puzzle']) {
+  for (const id of ['clock', 'countdown', 'release', 'help', 'bars', 'loop', 'beat', 'snare', 'hi_hat', 'maraca', 'tambourine', 'bongos', 'knob', 'arrow_up_down', 'center', 'asterisk', 'ip', 'external', 'pulse', 'cassette', 'bitmeter', 'cable', 'lightning', 'ohm', 'shield', 'puzzle']) {
     assert.doesNotMatch(content(id), /<(?:text|use|image)\b|\b(?:fill|stroke|style)\s*=|\bfont-/i, id);
   }
 });

@@ -35,6 +35,26 @@ test('sprite symbols are alphabetically ordered by ID', () => {
   assert.deepEqual(ids, [...ids].sort());
 });
 
+test('software icons use their software names without generic duplicates', () => {
+  const ids = [...sprite.matchAll(/<symbol\b[^>]*\bid="([^"]+)"/g)].map(([, id]) => id);
+  for (const id of ['ableton-live', 'illustrator', 'photoshop', 'premiere-pro', 'bandlab', 'rx', 'visual-studio-code', 'audacity', 'traktor', 'chatgpt', 'spotify', 'wavelab', 'vlc', 'waves']) {
+    assert.equal(ids.filter(value => value === id).length, 1, id);
+  }
+  for (const id of ['clip-sequencer', 'vector-drawing', 'image-editing', 'video-editing', 'music-workstation', 'audio-restoration', 'code-editor', 'audio-editor', 'dj-mixing', 'chat-assistant', 'music-streaming', 'audio-mastering', 'media-cone', 'audio-effects']) {
+    assert.ok(!ids.includes(id), id);
+  }
+});
+
+test('Adobe tiles retain their cutouts when their symbol contents are used standalone', () => {
+  for (const id of ['illustrator', 'photoshop', 'premiere-pro']) {
+    const icon = content(id);
+    assert.match(icon, /<path fill-rule="evenodd" d="/, id);
+    assert.match(icon, /M4\.25 \.3h15\.5A4\.25 4\.25/, id);
+    assert.match(icon, /A4\.25 4\.25 0 0 1 4\.25 \.3ZM0 \.3m/, id);
+    assert.doesNotMatch(icon, /clip-path|<clipPath/, id);
+  }
+});
+
 test('Drum Machine percussion uses the standalone Maraca icon', () => {
   const script = fs.readFileSync(path.join(__dirname, '..', 'js', 'drum_machine.js'), 'utf8');
   assert.match(script, /perc: "maraca"/);

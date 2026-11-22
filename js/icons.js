@@ -59,6 +59,7 @@ const speedField = document.getElementById("speed-field");
 const searchField = document.getElementById("search-field");
 const timelineIcons = document.querySelectorAll("#timeline-container .icon-grid .icons");
 const timelineIconGrid = document.querySelector("#timeline-container .icon-grid");
+const iconSpriteUrl = `/icons.svg?v=${timelineIconGrid.dataset.spriteVersion}`;
 
 // STATE
 
@@ -130,7 +131,7 @@ function renderTimelineIcon(id) {
   const symbolCode = editedSymbolCodes.get(id);
   if (!symbolCode) {
     iconSvg.removeAttribute("viewBox");
-    iconSvg.innerHTML = `<use href="/icons.svg#${id}" />`;
+    iconSvg.innerHTML = `<use href="${iconSpriteUrl}#${id}" />`;
     return;
   }
 
@@ -1563,7 +1564,7 @@ function applyTimelineGridToggle() {
 
 // FETCH / INITIALIZE
 
-fetch("/icons.svg")
+fetch(iconSpriteUrl)
   .then(response => {
     // Set bytesField using Content-Length if available
     const bytes = response.headers.get("Content-Length");

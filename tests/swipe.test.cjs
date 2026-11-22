@@ -111,6 +111,29 @@ test('Contact remains in the TOC and both Play sequences', () => {
   assert.equal([...script.matchAll(/^\s*'\/contact',?\s*$/gm)].length, 2);
 });
 
+test('only the current page is marked in the TOC, including contextual pages', () => {
+  const script = fs.readFileSync(path.join(root, 'js', 'index.js'), 'utf8');
+  const functions = script.slice(script.indexOf('function normalizeNavigationPath('), script.indexOf('function syncSidebarFooterHeight('));
+  for (const [url, selected] of [
+    ['/tap_pad', 'Tap Pad'], ['/help?t=tap_pad', 'Help'], ['/history?t=tap_pad', 'History'], ['/contact', 'Contact']
+  ]) {
+    const buttons = [
+      ['/', 'Pekosoft'], ['/tap_pad', 'Tap Pad'], ['/tap_pad', 'Tool'],
+      ['/help?t=tap_pad', 'Help'], ['/history?t=tap_pad', 'History'], ['/contact', 'Contact']
+    ].map(([href, label]) => ({
+      dataset: { href }, label, attributes: {},
+      setAttribute(name, value) { this.attributes[name] = value; },
+      removeAttribute(name) { delete this.attributes[name]; }
+    }));
+    const context = {
+      URL, window: { location: new URL(url, 'http://localhost:8000') },
+      document: { querySelectorAll: () => buttons }
+    };
+    vm.runInNewContext(`${functions}\nmarkActiveTocButton();`, context);
+    assert.deepEqual(buttons.filter(button => button.attributes['aria-current'] === 'page').map(button => button.label), [selected], url);
+  }
+});
+
 test('both footer variants version the swipe script so navigation updates reach cached pages', () => {
   for (const name of ['footer.php', 'beta_footer.php']) {
     const footer = fs.readFileSync(path.join(root, 'elements', name), 'utf8');

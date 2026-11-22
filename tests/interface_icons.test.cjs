@@ -33,11 +33,12 @@ test('Cables compatibility uses two puzzle pieces with complementary curved edge
 test('sprite symbols are alphabetically ordered by ID', () => {
   const ids = [...sprite.matchAll(/<symbol\b[^>]*\bid="([^"]+)"/g)].map(([, id]) => id);
   assert.deepEqual(ids, [...ids].sort());
+  for (const id of ids) assert.doesNotMatch(id, /-/, id);
 });
 
 test('software icons use their software names without generic duplicates', () => {
   const ids = [...sprite.matchAll(/<symbol\b[^>]*\bid="([^"]+)"/g)].map(([, id]) => id);
-  for (const id of ['ableton-live', 'illustrator', 'photoshop', 'premiere-pro', 'bandlab', 'rx', 'visual-studio-code', 'audacity', 'traktor', 'chatgpt', 'spotify', 'wavelab', 'vlc', 'waves']) {
+  for (const id of ['ableton_live', 'illustrator', 'photoshop', 'premiere_pro', 'bandlab', 'rx', 'visual_studio_code', 'audacity', 'traktor', 'chatgpt', 'spotify', 'wavelab', 'vlc', 'waves', 't_shirt']) {
     assert.equal(ids.filter(value => value === id).length, 1, id);
   }
   for (const id of ['clip-sequencer', 'vector-drawing', 'image-editing', 'video-editing', 'music-workstation', 'audio-restoration', 'code-editor', 'audio-editor', 'dj-mixing', 'chat-assistant', 'music-streaming', 'audio-mastering', 'media-cone', 'audio-effects']) {
@@ -46,7 +47,7 @@ test('software icons use their software names without generic duplicates', () =>
 });
 
 test('Adobe tiles retain their cutouts when their symbol contents are used standalone', () => {
-  for (const id of ['illustrator', 'photoshop', 'premiere-pro']) {
+  for (const id of ['illustrator', 'photoshop', 'premiere_pro']) {
     const icon = content(id);
     assert.match(icon, /<path fill-rule="evenodd" d="/, id);
     assert.match(icon, /M4\.25 \.3h15\.5A4\.25 4\.25/, id);

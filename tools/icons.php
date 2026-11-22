@@ -316,7 +316,7 @@
   <div id="timeline-container" class="container">
     <div class="module-body canvas-container border">
       <div class="timeline-scroll scrollable">
-        <div class="icon-grid">
+        <div class="icon-grid" data-sprite-version="<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/icons.svg'); ?>">
         <?php
         $svgPath = $_SERVER['DOCUMENT_ROOT'] . '/icons.svg';
         if (file_exists($svgPath)) {
@@ -326,7 +326,7 @@
           foreach ($svg->symbol as $symbol) {
             $id = (string) $symbol['id'];
             echo '<div class="grid-icon" data-id="' . htmlspecialchars($id) . '" title="' . htmlspecialchars($id) . '">';
-            echo '<svg class="icons"><use href="/icons.svg#' . htmlspecialchars($id) . '" /></svg>';
+            echo '<svg class="icons"><use href="/icons.svg?v=' . filemtime($svgPath) . '#' . htmlspecialchars($id) . '" /></svg>';
             echo '</div>';
           }
         } else {

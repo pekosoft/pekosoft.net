@@ -9,6 +9,7 @@ Pekosoft uses a single SVG sprite file (`icons.svg`) for all interface icons. Ea
 - Do not use `fill="#..."`, `stroke="#..."`, `fill="currentColor"`, `stroke="currentColor"`, or any inline color value.
 - Icons must be single-color. Do not mix fill and stroke in a way that produces two rendered colors.
 - Build icon shapes as plain geometry so color is controlled only by CSS on `.icons` or the host SVG.
+- Use underscores, not hyphens, in icon names.
 - Name software icons for the software they represent. Reuse an existing named icon rather than adding a duplicate.
 - Prefer fill-based geometry over stroke-based drawing for consistent rendering with site icon styles.
 - Snap icon geometry to the 512 grid using PO2-friendly steps, preferably 16/32 multiples, when practical.

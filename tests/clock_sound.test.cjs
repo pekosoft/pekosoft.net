@@ -124,6 +124,8 @@ test('Clock Reset keeps ticking off after shared settings are restored', () => {
   context.countdownSeconds = { value: '3' };
   context.countdownFields = [context.countdownHours, context.countdownMinutes, context.countdownSeconds];
   context.syncFeedbackButtonState = () => { button.enabled = context.isSoundOn; };
+  context.stopCountdownAlarm = () => {};
+  context.syncCountdownOptions = () => {};
   context.syncMode = () => {};
   context.updateTimeDisplays = () => {};
   context.renderClock = () => {};

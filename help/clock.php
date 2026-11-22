@@ -40,6 +40,26 @@
 
 <div class="feature-row border">
   <svg class="standard-image-help">
+    <use href="/icons.svg#bell"></use>
+  </svg>
+  <div class="justify">
+    <h1>Alarm <span class="object">button</span></h1>
+    Toggles a repeating alert when Countdown finishes. The alert flashes until Alarm is turned off, Countdown is restarted, its duration is changed or Reset is pressed. Sound must be on for the alert to be audible. <span class="default">Default: off.</span>
+  </div>
+</div>
+
+<div class="feature-row border">
+  <svg class="standard-image-help">
+    <use href="/icons.svg#decimals"></use>
+  </svg>
+  <div class="justify">
+    <h1>ms <span class="object">button</span></h1>
+    Toggles milliseconds in the Countdown display. When hidden, remaining time is rounded up to the next second. <span class="default">Default: on.</span>
+  </div>
+</div>
+
+<div class="feature-row border">
+  <svg class="standard-image-help">
     <use href="/icons.svg#clock"></use>
   </svg>
   <div class="justify">

@@ -55,6 +55,7 @@ function createClock(saved = {}) {
     "clock-page", "timer-mode-view", "countdown-mode-view", "timer-display",
     "countdown-display", "countdown-hours", "countdown-minutes", "countdown-seconds",
     "countdown-hours-knob", "countdown-minutes-knob", "countdown-seconds-knob",
+    "countdown-alarm-button", "countdown-ms-button",
     "clock-mode-button", "calendar-mode-button", "timer-mode-button", "countdown-mode-button", "time-start-button",
     "time-start-icon", "time-start-text", "clock-local-time", "clock-time-zone",
     "clock-local-date"
@@ -69,6 +70,8 @@ function createClock(saved = {}) {
   let now = 1000;
   let nextFrame = null;
   let frameId = 0;
+  const intervals = new Map();
+  let intervalId = 0;
   class ClockDate extends Date {
     static now() {
       return now;
@@ -107,9 +110,12 @@ function createClock(saved = {}) {
       frameId += 1;
       return frameId;
     },
-    setInterval() {
-      return 1;
-    }
+    setInterval(callback) {
+      intervalId += 1;
+      intervals.set(intervalId, callback);
+      return intervalId;
+    },
+    clearInterval(id) { intervals.delete(id); }
   };
 
   vm.createContext(context);
@@ -129,6 +135,14 @@ function createClock(saved = {}) {
       const callback = nextFrame;
       nextFrame = null;
       callback?.();
+    },
+    runAlarmTick() {
+      for (const [id, callback] of intervals) {
+        if (id !== 1) callback();
+      }
+    },
+    getIntervalCount() {
+      return intervals.size;
     }
   };
 }
@@ -284,4 +298,59 @@ test("Countdown knobs update fields, display and saved values, and follow runnin
   assert.equal(hours.attributes.get("aria-valuenow"), "0");
   assert.equal(minutes.attributes.get("aria-valuenow"), "1");
   assert.equal(seconds.attributes.get("aria-valuenow"), "0");
+});
+
+test("Countdown milliseconds toggle preserves precision, rounds up and persists", () => {
+  const clock = createClock({ "clock.mode": "countdown" });
+  const { elements, storage } = clock;
+  assert.equal(elements.get("countdown-ms-button").attributes.get("aria-pressed"), "true");
+  elements.get("time-start-button").dispatch("click");
+  clock.setNow(2250);
+  clock.runFrame();
+  elements.get("countdown-ms-button").dispatch("click");
+  assert.equal(elements.get("countdown-display").textContent, "00:00:59");
+  assert.equal(storage.get("clock.countdown_ms"), "false");
+  elements.get("countdown-ms-button").dispatch("click");
+  assert.equal(elements.get("countdown-display").textContent, "00:00:58.750");
+  elements.get("reset-button").dispatch("click");
+  assert.equal(elements.get("countdown-ms-button").attributes.get("aria-pressed"), "true");
+  assert.equal(storage.has("clock.countdown_ms"), false);
+  assert.equal(createClock({ "clock.countdown_ms": "false" }).elements.get("countdown-display").textContent, "00:01:00");
+});
+
+test("Countdown alarm repeats until dismissed and obeys Sound", () => {
+  const clock = createClock({ "clock.mode": "countdown", "clock.countdown_alarm": "true", "clock.countdown_minutes": "0", "clock.countdown_seconds": "1" });
+  const { elements, storage, sounds } = clock;
+  elements.get("clock-sound-button").dispatch("click");
+  elements.get("time-start-button").dispatch("click");
+  clock.setNow(2000);
+  clock.runFrame();
+  assert.equal(elements.get("countdown-mode-view").classList.contains("countdown-alarm"), true);
+  assert.equal(sounds.length, 3);
+  clock.runAlarmTick();
+  assert.equal(sounds.length, 6);
+  storage.set("global.sound", "false");
+  clock.runAlarmTick();
+  assert.equal(sounds.length, 6);
+  elements.get("countdown-alarm-button").dispatch("click");
+  assert.equal(elements.get("countdown-mode-view").classList.contains("countdown-alarm"), false);
+  assert.equal(clock.getIntervalCount(), 1);
+  assert.equal(storage.get("clock.countdown_alarm"), "false");
+});
+
+test("Restart, editing duration and Reset stop an active countdown alarm", () => {
+  for (const action of ["restart", "edit", "reset"]) {
+    const clock = createClock({ "clock.mode": "countdown", "clock.countdown_alarm": "true", "clock.countdown_minutes": "0", "clock.countdown_seconds": "1" });
+    const { elements } = clock;
+    elements.get("time-start-button").dispatch("click");
+    clock.setNow(2000);
+    clock.runFrame();
+    assert.equal(clock.getIntervalCount(), 2);
+    if (action === "restart") elements.get("time-start-button").dispatch("click");
+    if (action === "edit") elements.get("countdown-seconds").dispatch("input");
+    if (action === "reset") elements.get("reset-button").dispatch("click");
+    assert.equal(clock.getIntervalCount(), 1);
+    assert.equal(elements.get("countdown-mode-view").classList.contains("countdown-alarm"), false);
+    if (action === "reset") assert.equal(clock.storage.has("clock.countdown_alarm"), false);
+  }
 });

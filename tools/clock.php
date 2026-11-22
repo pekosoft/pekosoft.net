@@ -112,6 +112,14 @@
         </svg>
         <span id="time-start-text" class="button-text">Start</span>
       </button>
+      <button id="countdown-alarm-button" class="square" title="Toggle countdown alarm" aria-pressed="false" data-help-entry="Alarm" data-help-kind="button" hidden>
+        <svg class="icons"><use href="/icons.svg#bell" /></svg>
+        <span class="button-text">Alarm</span>
+      </button>
+      <button id="countdown-ms-button" class="square" title="Toggle milliseconds" aria-pressed="true" data-help-entry="ms" data-help-kind="button" hidden>
+        <svg class="icons"><use href="/icons.svg#decimals" /></svg>
+        <span class="button-text">ms</span>
+      </button>
       <button id="clock-sound-button" class="square" title="Toggle sound" aria-pressed="false">
         <svg class="icons">
           <use href="/icons.svg#sound" />

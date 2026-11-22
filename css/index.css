@@ -3258,6 +3258,18 @@ body > #panel-container.module-maximized > .module-body {
   transform-origin: 50% calc(100% - 1px);
 }
 
+.knob-control:disabled {
+  cursor: default;
+}
+
+.knob-control:disabled::before {
+  background: var(--grey2);
+}
+
+.knob-control:disabled + span {
+  color: var(--grey2);
+}
+
 @media (hover: hover) {
   .knob-control:focus-visible {
     outline: none;

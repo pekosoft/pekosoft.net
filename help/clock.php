@@ -84,7 +84,7 @@
   </svg>
   <div class="justify">
     <h1>Sound <span class="object">button</span></h1>
-    Toggles clock ticks and countdown completion sound. <span class="default">Default: off.</span>
+    Toggles ticks for the selected Clock, Timer or Countdown tab. Timer and Countdown tick while running. Countdown also sounds when it finishes, even if another tab is selected. Each tab has its own setting. Calendar has no sound. <span class="default">Default: off.</span>
   </div>
 </div>
 
@@ -94,7 +94,7 @@
   </svg>
   <div class="justify">
     <h1>Haptic <span class="object">button</span></h1>
-    Toggles clock ticks and countdown completion feedback on supported devices. <span class="default">Default: off.</span>
+    Toggles feedback for the selected Clock, Timer or Countdown tab on supported devices. Timer and Countdown provide feedback while running. Countdown also provides feedback when it finishes, even if another tab is selected. Each tab has its own setting. Calendar has no feedback. <span class="default">Default: off.</span>
   </div>
 </div>
 

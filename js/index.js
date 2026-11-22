@@ -137,7 +137,12 @@ function setLocalToggleRegistryState(storageKey, controlKeys, enabled) {
 function syncLocalToggleRegistryFromButtons(storageKey, controlKeys, defaultEnabled, buttons) {
   const registry = getLocalToggleRegistry(storageKey, controlKeys, defaultEnabled);
   buttons.forEach((button) => {
-    registry[getCurrentToolControlKey(button)] = button.classList.contains('button-on');
+    const key = getCurrentToolControlKey(button);
+    const clockKind = key === 'clock:clock-sound-button' ? 'sound'
+      : key === 'clock:clock-haptic-button' ? 'haptic' : null;
+    registry[key] = clockKind && window.clockFeedback
+      ? window.clockFeedback.anyEnabled(clockKind)
+      : button.classList.contains('button-on');
   });
   saveLocalToggleRegistry(storageKey, registry);
   return Object.values(registry).some(Boolean);
@@ -197,6 +202,16 @@ function updateGlobalSoundIndicator(enabled) {
   dispatchGlobalSoundChange(enabled);
 }
 
+function setClockFeedback(kind, enabled) {
+  if (window.clockFeedback) {
+    window.clockFeedback.setAll(kind, enabled);
+  } else {
+    ['clock', 'timer', 'countdown'].forEach((mode) => {
+      localStorage.setItem(`clock.${mode}_${kind}`, String(enabled));
+    });
+  }
+}
+
 let isSyncingToolSoundButtons = false;
 
 function syncToolSoundButtons(enabled) {
@@ -204,7 +219,9 @@ function syncToolSoundButtons(enabled) {
   isSyncingToolSoundButtons = true;
   try {
     buttons.forEach((button) => {
-      if (button.classList.contains('button-on') !== enabled) button.click();
+      if (getCurrentToolControlKey(button) === 'clock:clock-sound-button' && window.clockFeedback) {
+        return;
+      } else if (button.classList.contains('button-on') !== enabled) button.click();
     });
   } finally {
     isSyncingToolSoundButtons = false;
@@ -218,7 +235,9 @@ function restoreToolSoundButtons() {
   try {
     buttons.forEach((button) => {
       const enabled = registry[getCurrentToolControlKey(button)];
-      if (button.classList.contains('button-on') !== enabled) button.click();
+      if (getCurrentToolControlKey(button) === 'clock:clock-sound-button' && window.clockFeedback) {
+        window.clockFeedback.restore('sound', enabled);
+      } else if (button.classList.contains('button-on') !== enabled) button.click();
     });
   } finally {
     isSyncingToolSoundButtons = false;
@@ -234,6 +253,7 @@ function dispatchGlobalSoundChange(enabled) {
 function setGlobalSound(enabled) {
   const nextState = !!enabled;
   setLocalToggleRegistryState(SOUND_REGISTRY_KEY, SOUND_CONTROL_KEYS, nextState);
+  setClockFeedback('sound', nextState);
   syncToolSoundButtons(nextState);
   updateGlobalSoundIndicator(nextState);
 }
@@ -259,7 +279,9 @@ window.PekoSound = {
 
 window.addEventListener('storage', (event) => {
   if (event.key !== 'global.sound') return;
-  setGlobalSound(event.newValue !== 'false');
+  restoreToolSoundButtons();
+  syncGlobalSoundSetting();
+  dispatchGlobalSoundChange(event.newValue !== 'false');
 });
 
 function initializeGlobalSoundSetting() {
@@ -322,7 +344,9 @@ function syncToolHapticsButtons(enabled) {
   isSyncingToolHapticsButtons = true;
   try {
     buttons.forEach((button) => {
-      if (button.classList.contains('button-on') !== enabled) button.click();
+      if (getCurrentToolControlKey(button) === 'clock:clock-haptic-button' && window.clockFeedback) {
+        return;
+      } else if (button.classList.contains('button-on') !== enabled) button.click();
     });
   } finally {
     isSyncingToolHapticsButtons = false;
@@ -336,7 +360,9 @@ function restoreToolHapticsButtons() {
   try {
     buttons.forEach((button) => {
       const enabled = registry[getCurrentToolControlKey(button)];
-      if (button.classList.contains('button-on') !== enabled) button.click();
+      if (getCurrentToolControlKey(button) === 'clock:clock-haptic-button' && window.clockFeedback) {
+        window.clockFeedback.restore('haptic', enabled);
+      } else if (button.classList.contains('button-on') !== enabled) button.click();
     });
   } finally {
     isSyncingToolHapticsButtons = false;
@@ -347,6 +373,7 @@ function setGlobalHaptics(enabled) {
   const nextState = !!enabled;
   clearHapticsLocalOverrides();
   setLocalToggleRegistryState(HAPTICS_REGISTRY_KEY, HAPTICS_CONTROL_KEYS, nextState);
+  setClockFeedback('haptic', nextState);
   syncToolHapticsButtons(nextState);
   updateGlobalHapticsIndicator(nextState);
 }

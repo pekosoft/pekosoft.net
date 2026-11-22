@@ -41,8 +41,11 @@ const countdownFields = [countdownHours, countdownMinutes, countdownSeconds];
 let renderedCalendarMonth = "";
 let lastTickSecond = null;
 let tickAudioContext = null;
-let isSoundOn = localStorage.getItem("clock.sound_on") === "true";
-let isHapticOn = localStorage.getItem("clock.haptic") === "true";
+const feedbackModes = ["clock", "timer", "countdown"];
+const feedbackSettings = Object.fromEntries(feedbackModes.map((mode) => [mode, {
+  sound: (localStorage.getItem(`clock.${mode}_sound`) ?? localStorage.getItem("clock.sound_on")) === "true",
+  haptic: (localStorage.getItem(`clock.${mode}_haptic`) ?? localStorage.getItem("clock.haptic")) === "true"
+}]));
 let activeMode = ["clock", "calendar", "timer", "countdown"].includes(localStorage.getItem("clock.mode"))
   ? localStorage.getItem("clock.mode")
   : "clock";
@@ -214,7 +217,7 @@ function ensureTickAudioContext() {
 }
 
 function playSecondTick() {
-  if (!isSoundOn || localStorage.getItem("global.sound") === "false") return;
+  if (!feedbackSettings[activeMode]?.sound || localStorage.getItem("global.sound") === "false") return;
 
   const audioContext = ensureTickAudioContext();
   if (!audioContext || typeof window.playTransientSound !== "function") return;
@@ -236,16 +239,48 @@ function triggerSecondFeedback(date) {
   if (lastTickSecond === secondKey) return;
 
   lastTickSecond = secondKey;
+  if (activeMode === "calendar" || (activeMode === "timer" && !timerRunning)
+      || (activeMode === "countdown" && !countdownRunning)) return;
   playSecondTick();
-  if (isHapticOn && "vibrate" in navigator) navigator.vibrate(10);
+  if (feedbackSettings[activeMode].haptic && "vibrate" in navigator) navigator.vibrate(10);
 }
 
 function syncFeedbackButtonState() {
-  clockSoundButton?.classList.toggle("button-on", isSoundOn);
-  clockHapticButton?.classList.toggle("button-on", isHapticOn);
-  clockSoundButton?.setAttribute("aria-pressed", isSoundOn ? "true" : "false");
-  clockHapticButton?.setAttribute("aria-pressed", isHapticOn ? "true" : "false");
+  const settings = feedbackSettings[activeMode];
+  if (clockSoundButton) clockSoundButton.disabled = !settings;
+  if (clockHapticButton) clockHapticButton.disabled = !settings;
+  clockSoundButton?.classList.toggle("button-on", !!settings?.sound);
+  clockHapticButton?.classList.toggle("button-on", !!settings?.haptic);
+  clockSoundButton?.setAttribute("aria-pressed", String(!!settings?.sound));
+  clockHapticButton?.setAttribute("aria-pressed", String(!!settings?.haptic));
 }
+
+function saveFeedback(kind) {
+  feedbackModes.forEach((mode) => {
+    localStorage.setItem(`clock.${mode}_${kind}`, String(feedbackSettings[mode][kind]));
+  });
+}
+
+function setAllFeedback(kind, enabled) {
+  feedbackModes.forEach((mode) => {
+    feedbackSettings[mode][kind] = enabled;
+  });
+  saveFeedback(kind);
+  if (kind === "sound" && enabled) ensureTickAudioContext();
+  syncFeedbackButtonState();
+}
+
+function restoreFeedback(kind, enabled) {
+  if (feedbackModes.some((mode) => localStorage.getItem(`clock.${mode}_${kind}`) !== null)) return;
+  feedbackModes.forEach((mode) => { feedbackSettings[mode][kind] = enabled; });
+  syncFeedbackButtonState();
+}
+
+window.clockFeedback = {
+  anyEnabled: (kind) => feedbackModes.some((mode) => feedbackSettings[mode][kind]),
+  setAll: setAllFeedback,
+  restore: restoreFeedback
+};
 
 function getRunningState() {
   return activeMode === "timer" ? timerRunning : activeMode === "countdown" && countdownRunning;
@@ -318,6 +353,7 @@ function syncMode() {
   });
   if (countdownAlarmButton) countdownAlarmButton.hidden = activeMode !== "countdown";
   if (countdownMsButton) countdownMsButton.hidden = activeMode !== "countdown";
+  syncFeedbackButtonState();
   syncStartButton();
 }
 
@@ -393,7 +429,7 @@ function startCountdown() {
   stopCountdownAlarm();
   if (countdownRemainingMs <= 0) setCountdownDuration();
   if (countdownRemainingMs <= 0) return;
-  if (isSoundOn && localStorage.getItem("global.sound") !== "false") ensureTickAudioContext();
+  if (feedbackSettings.countdown.sound && localStorage.getItem("global.sound") !== "false") ensureTickAudioContext();
   countdownStartedAt = Date.now();
   countdownRunning = true;
   countdownFields.forEach((field) => {
@@ -419,7 +455,7 @@ function pauseCountdown() {
 }
 
 function playCountdownComplete() {
-  if (!isSoundOn || localStorage.getItem("global.sound") === "false") return;
+  if (!feedbackSettings.countdown.sound || localStorage.getItem("global.sound") === "false") return;
   const audioContext = ensureTickAudioContext();
   if (!audioContext || typeof window.playTransientSound !== "function") return;
   for (let index = 0; index < 3; index++) {
@@ -446,7 +482,7 @@ function finishCountdown() {
     countdownModeView?.classList.add("countdown-alarm");
     countdownAlarmInterval = setInterval(playCountdownComplete, 1000);
   }
-  if (isHapticOn && "vibrate" in navigator) navigator.vibrate([120, 80, 120]);
+  if (feedbackSettings.countdown.haptic && "vibrate" in navigator) navigator.vibrate([120, 80, 120]);
 }
 
 function toggleActiveTimer() {
@@ -461,8 +497,12 @@ function toggleActiveTimer() {
 
 function resetClockTool() {
   stopCountdownAlarm();
-  isSoundOn = false;
-  isHapticOn = false;
+  feedbackModes.forEach((mode) => {
+    feedbackSettings[mode].sound = false;
+    feedbackSettings[mode].haptic = false;
+    localStorage.removeItem(`clock.${mode}_sound`);
+    localStorage.removeItem(`clock.${mode}_haptic`);
+  });
   isCountdownAlarmOn = false;
   showCountdownMs = true;
   activeMode = "clock";
@@ -484,6 +524,7 @@ function resetClockTool() {
   syncMode();
   updateTimeDisplays();
   window.PekoSound?.syncFromTools();
+  window.PekoHaptics?.syncFromTools();
   renderClock();
 }
 
@@ -526,7 +567,7 @@ countdownAlarmButton?.addEventListener("click", () => {
   isCountdownAlarmOn = !isCountdownAlarmOn;
   localStorage.setItem("clock.countdown_alarm", String(isCountdownAlarmOn));
   if (!isCountdownAlarmOn) stopCountdownAlarm();
-  if (isCountdownAlarmOn && isSoundOn && localStorage.getItem("global.sound") !== "false") ensureTickAudioContext();
+  if (isCountdownAlarmOn && feedbackSettings.countdown.sound && localStorage.getItem("global.sound") !== "false") ensureTickAudioContext();
   syncCountdownOptions();
 });
 countdownMsButton?.addEventListener("click", () => {
@@ -539,15 +580,27 @@ countdownFields.forEach((field) => {
   field?.addEventListener("input", setCountdownDuration);
 });
 clockSoundButton?.addEventListener("click", () => {
-  isSoundOn = !isSoundOn;
-  localStorage.setItem("clock.sound_on", String(isSoundOn));
-  if (isSoundOn) ensureTickAudioContext();
+  if (!feedbackSettings[activeMode]) return;
+  feedbackSettings[activeMode].sound = !feedbackSettings[activeMode].sound;
+  saveFeedback("sound");
+  if (feedbackSettings[activeMode].sound) ensureTickAudioContext();
   syncFeedbackButtonState();
 });
 clockHapticButton?.addEventListener("click", () => {
-  isHapticOn = !isHapticOn;
-  localStorage.setItem("clock.haptic", String(isHapticOn));
+  if (!feedbackSettings[activeMode]) return;
+  feedbackSettings[activeMode].haptic = !feedbackSettings[activeMode].haptic;
+  saveFeedback("haptic");
   syncFeedbackButtonState();
+});
+window.addEventListener("storage", (event) => {
+  feedbackModes.forEach((mode) => {
+    ["sound", "haptic"].forEach((kind) => {
+      if (event.key === `clock.${mode}_${kind}`) {
+        feedbackSettings[mode][kind] = event.newValue === "true";
+        syncFeedbackButtonState();
+      }
+    });
+  });
 });
 setInterval(renderClock, 1000);
 document.addEventListener("visibilitychange", () => {

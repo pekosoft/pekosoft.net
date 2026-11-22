@@ -50,6 +50,19 @@
   display: none;
 }
 
+#time-start-button:disabled,
+#clock-sound-button:disabled,
+#clock-haptic-button:disabled {
+  color: var(--grey2);
+  cursor: default;
+}
+
+#time-start-button:disabled .icons,
+#clock-sound-button:disabled .icons,
+#clock-haptic-button:disabled .icons {
+  fill: var(--grey2);
+}
+
 .time-display {
   max-width: 100%;
   color: var(--white);

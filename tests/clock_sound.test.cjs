@@ -8,6 +8,8 @@ const source = fs.readFileSync(path.join(__dirname, '..', 'js', 'index.js'), 'ut
 const registrySource = source.slice(source.indexOf('function getCurrentToolControlKey('), source.indexOf('window.PekoLocalToggleRegistry ='));
 const soundSource = source.slice(source.indexOf('const SOUND_REGISTRY_KEY ='), source.indexOf('window.PekoSound ='));
 const initializeSource = source.slice(source.indexOf('function initializeGlobalSoundSetting('), source.indexOf('function getGlobalHaptics('));
+const storageSource = source.slice(source.indexOf("window.addEventListener('storage'"), source.indexOf('function initializeGlobalSoundSetting('));
+const hapticsSource = source.slice(source.indexOf('function getGlobalHaptics('), source.indexOf("document.addEventListener('click', (event) => {"));
 const clockSource = fs.readFileSync(path.join(__dirname, '..', 'js', 'clock.js'), 'utf8');
 const resetSource = clockSource.slice(clockSource.indexOf('function resetClockTool()'), clockSource.indexOf('function renderClock()'));
 const clockKey = 'clock:clock-sound-button';
@@ -111,8 +113,16 @@ test('Clock Reset keeps ticking off after shared settings are restored', () => {
       'bpm_circle:sound-master-button': true
     })
   });
-  context.isSoundOn = true;
-  context.isHapticOn = false;
+  context.feedbackModes = ['clock', 'timer', 'countdown'];
+  context.feedbackSettings = {
+    clock: { sound: true, haptic: false },
+    timer: { sound: true, haptic: false },
+    countdown: { sound: true, haptic: false }
+  };
+  context.window.clockFeedback = {
+    anyEnabled: kind => context.feedbackModes.some(mode => context.feedbackSettings[mode][kind]),
+    restore: (kind, enabled) => context.feedbackModes.forEach(mode => { context.feedbackSettings[mode][kind] = enabled; })
+  };
   context.activeMode = 'timer';
   context.timerElapsedMs = 500;
   context.timerStartedAt = 100;
@@ -123,7 +133,7 @@ test('Clock Reset keeps ticking off after shared settings are restored', () => {
   context.countdownMinutes = { value: '2' };
   context.countdownSeconds = { value: '3' };
   context.countdownFields = [context.countdownHours, context.countdownMinutes, context.countdownSeconds];
-  context.syncFeedbackButtonState = () => { button.enabled = context.isSoundOn; };
+  context.syncFeedbackButtonState = () => { button.enabled = context.feedbackSettings.clock.sound; };
   context.stopCountdownAlarm = () => {};
   context.syncCountdownOptions = () => {};
   context.syncMode = () => {};
@@ -140,6 +150,64 @@ test('Clock Reset keeps ticking off after shared settings are restored', () => {
   assert.equal(storage.get('global.sound'), 'true');
   context.restoreToolSoundButtons();
   assert.equal(button.enabled, false);
+});
+
+test('global Sound changes on another tool persist for all Clock tabs', () => {
+  const { context, storage } = createSoundSettings({}, 'bpm_circle');
+  for (const enabled of [true, false]) {
+    context.setGlobalSound(enabled);
+    for (const mode of ['clock', 'timer', 'countdown']) {
+      assert.equal(storage.get(`clock.${mode}_sound`), String(enabled));
+    }
+  }
+});
+
+test('the Clock registry represents all tabs, not only the visible button', () => {
+  const { context, storage, button } = createSoundSettings();
+  button.enabled = false;
+  context.window.clockFeedback = { anyEnabled: () => true };
+  context.syncGlobalSoundFromTools();
+  assert.equal(JSON.parse(storage.get('global.sound.modules'))[clockKey], true);
+});
+
+test('a Sound indicator change from another page does not overwrite per-tab choices', () => {
+  const { context, storage } = createSoundSettings({
+    'clock.clock_sound': 'true', 'clock.timer_sound': 'false', 'clock.countdown_sound': 'false',
+    'global.sound.modules': JSON.stringify({ [clockKey]: true })
+  });
+  let onStorage;
+  context.window.addEventListener = (name, callback) => { if (name === 'storage') onStorage = callback; };
+  context.window.clockFeedback = {
+    restore() {},
+    setAll() { assert.fail('an indicator change must not change tab preferences'); }
+  };
+  vm.runInContext(storageSource, context);
+  storage.set('global.sound', 'true');
+  onStorage({ key: 'global.sound', newValue: 'true' });
+  assert.equal(storage.get('clock.clock_sound'), 'true');
+  assert.equal(storage.get('clock.timer_sound'), 'false');
+  assert.equal(storage.get('clock.countdown_sound'), 'false');
+});
+
+test('global feedback updates Clock while Calendar disables its buttons', () => {
+  const { context } = createSoundSettings();
+  vm.runInContext(hapticsSource, context);
+  const changes = [];
+  context.window.clockFeedback = { setAll: (kind, enabled) => changes.push([kind, enabled]) };
+  context.setGlobalSound(true);
+  context.setGlobalHaptics(true);
+  assert.deepEqual(changes, [['sound', true], ['haptic', true]]);
+});
+
+test('global Haptic changes on another tool persist for all Clock tabs', () => {
+  const { context, storage } = createSoundSettings({}, 'bpm_circle');
+  vm.runInContext(hapticsSource, context);
+  for (const enabled of [true, false]) {
+    context.setGlobalHaptics(enabled);
+    for (const mode of ['clock', 'timer', 'countdown']) {
+      assert.equal(storage.get(`clock.${mode}_haptic`), String(enabled));
+    }
+  }
 });
 
 test('shared toggle registries retain boolean defaults for other settings', () => {

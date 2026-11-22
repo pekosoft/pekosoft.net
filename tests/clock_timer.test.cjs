@@ -37,6 +37,7 @@ function createElement(value = "") {
       listeners.get(name).push(handler);
     },
     dispatch(name) {
+      if (name === "click" && this.disabled) return;
       for (const handler of listeners.get(name) || []) handler();
     }
   };
@@ -49,6 +50,7 @@ function createClock(saved = {}) {
   const elements = new Map();
   const knobBindings = new Map();
   const documentListeners = new Map();
+  const windowListeners = new Map();
   const ids = [
     "clock-hour", "clock-minute", "clock-second", "reset-button", "clock-sound-button",
     "clock-haptic-button", "clock-mode-view", "calendar-mode-view",
@@ -73,6 +75,9 @@ function createClock(saved = {}) {
   const intervals = new Map();
   let intervalId = 0;
   class ClockDate extends Date {
+    constructor(...args) {
+      super(...(args.length ? args : [now]));
+    }
     static now() {
       return now;
     }
@@ -99,6 +104,7 @@ function createClock(saved = {}) {
     window: {
       AudioContext: AudioContextStub,
       PekoSound: { syncFromTools() {} },
+      addEventListener(name, callback) { windowListeners.set(name, callback); },
       playTransientSound: options => sounds.push(options)
     },
     navigator: {
@@ -128,6 +134,12 @@ function createClock(saved = {}) {
     sounds,
     vibrations,
     knobBindings,
+    feedback: context.window.clockFeedback,
+    dispatchStorage(key, value) {
+      if (value === null) storage.delete(key);
+      else storage.set(key, value);
+      windowListeners.get("storage")({ key, newValue: value });
+    },
     setNow(value) {
       now = value;
     },
@@ -141,6 +153,7 @@ function createClock(saved = {}) {
         if (id !== 1) callback();
       }
     },
+    runClockTick() { intervals.get(1)(); },
     getIntervalCount() {
       return intervals.size;
     }
@@ -179,9 +192,9 @@ test("Countdown completion feedback still runs when paused at its deadline", () 
   elements.get("countdown-minutes").value = "0";
   elements.get("countdown-seconds").value = "2";
   elements.get("countdown-seconds").dispatch("input");
+  elements.get("countdown-mode-button").dispatch("click");
   elements.get("clock-sound-button").dispatch("click");
   elements.get("clock-haptic-button").dispatch("click");
-  elements.get("countdown-mode-button").dispatch("click");
   elements.get("time-start-button").dispatch("click");
   assert.equal(elements.get("countdown-seconds").disabled, true);
 
@@ -218,6 +231,104 @@ test("Countdown fields load saved values and disable Start when the duration is 
 
   assert.equal(elements.get("time-start-button").disabled, true);
   assert.equal(clock.storage.get("clock.countdown_seconds"), "0");
+});
+
+test("Sound and Haptic are independent and persist for each tab", () => {
+  const clock = createClock();
+  const { elements, storage } = clock;
+  const sound = elements.get("clock-sound-button");
+  const haptic = elements.get("clock-haptic-button");
+  sound.dispatch("click");
+  elements.get("timer-mode-button").dispatch("click");
+  assert.equal(sound.attributes.get("aria-pressed"), "false");
+  haptic.dispatch("click");
+  elements.get("countdown-mode-button").dispatch("click");
+  assert.equal(sound.attributes.get("aria-pressed"), "false");
+  assert.equal(haptic.attributes.get("aria-pressed"), "false");
+  sound.dispatch("click");
+  elements.get("calendar-mode-button").dispatch("click");
+  assert.equal(sound.disabled, true);
+  assert.equal(haptic.disabled, true);
+  assert.equal(elements.get("time-start-button").disabled, true);
+  sound.dispatch("click");
+  haptic.dispatch("click");
+  const reloaded = createClock(Object.fromEntries(storage));
+  assert.equal(reloaded.elements.get("clock-sound-button").disabled, true);
+  reloaded.elements.get("clock-mode-button").dispatch("click");
+  assert.equal(reloaded.elements.get("clock-sound-button").attributes.get("aria-pressed"), "true");
+  assert.equal(reloaded.elements.get("clock-haptic-button").attributes.get("aria-pressed"), "false");
+  reloaded.elements.get("timer-mode-button").dispatch("click");
+  assert.equal(reloaded.elements.get("clock-sound-button").attributes.get("aria-pressed"), "false");
+  assert.equal(reloaded.elements.get("clock-haptic-button").attributes.get("aria-pressed"), "true");
+  reloaded.elements.get("countdown-mode-button").dispatch("click");
+  assert.equal(reloaded.elements.get("clock-sound-button").attributes.get("aria-pressed"), "true");
+  reloaded.elements.get("reset-button").dispatch("click");
+  for (const mode of ["clock", "timer", "countdown"]) {
+    assert.equal(reloaded.storage.has(`clock.${mode}_sound`), false);
+    assert.equal(reloaded.storage.has(`clock.${mode}_haptic`), false);
+  }
+});
+
+test("Legacy feedback preferences migrate without losing untouched tab choices", () => {
+  const clock = createClock({ "clock.sound_on": "false", "clock.haptic": "true" });
+  clock.feedback.restore("sound", true);
+  clock.feedback.restore("haptic", true);
+  clock.elements.get("timer-mode-button").dispatch("click");
+  clock.elements.get("clock-sound-button").dispatch("click");
+  const reloaded = createClock(Object.fromEntries(clock.storage));
+  reloaded.elements.get("clock-mode-button").dispatch("click");
+  assert.equal(reloaded.elements.get("clock-sound-button").attributes.get("aria-pressed"), "true");
+  reloaded.elements.get("timer-mode-button").dispatch("click");
+  assert.equal(reloaded.elements.get("clock-sound-button").attributes.get("aria-pressed"), "false");
+  assert.equal(reloaded.elements.get("clock-haptic-button").attributes.get("aria-pressed"), "true");
+});
+
+test("Ticks follow the selected running tab and Calendar is silent", () => {
+  const clock = createClock({ "clock.clock_sound": "true", "clock.timer_sound": "true", "clock.timer_haptic": "true" });
+  clock.setNow(2000);
+  clock.runClockTick();
+  assert.equal(clock.sounds.length, 1);
+  clock.elements.get("timer-mode-button").dispatch("click");
+  clock.setNow(3000);
+  clock.runClockTick();
+  assert.equal(clock.sounds.length, 1);
+  clock.elements.get("time-start-button").dispatch("click");
+  clock.setNow(4000);
+  clock.runClockTick();
+  assert.equal(clock.sounds.length, 2);
+  assert.deepEqual(clock.vibrations, [10]);
+  clock.elements.get("calendar-mode-button").dispatch("click");
+  clock.setNow(5000);
+  clock.runClockTick();
+  assert.equal(clock.sounds.length, 2);
+  assert.deepEqual(clock.vibrations, [10]);
+});
+
+test("Countdown completion uses its own settings while Calendar is selected", () => {
+  const clock = createClock({
+    "clock.mode": "countdown", "clock.countdown_sound": "true", "clock.countdown_haptic": "true",
+    "clock.countdown_minutes": "0", "clock.countdown_seconds": "1"
+  });
+  clock.elements.get("time-start-button").dispatch("click");
+  clock.elements.get("calendar-mode-button").dispatch("click");
+  clock.setNow(2000);
+  clock.runFrame();
+  assert.equal(clock.sounds.length, 3);
+  assert.deepEqual(JSON.parse(JSON.stringify(clock.vibrations)), [[120, 80, 120]]);
+});
+
+test("Global feedback changes apply on Calendar and update across tabs", () => {
+  const clock = createClock({ "clock.mode": "calendar" });
+  clock.feedback.setAll("sound", true);
+  clock.feedback.setAll("haptic", true);
+  assert.equal(clock.elements.get("clock-sound-button").disabled, true);
+  clock.elements.get("timer-mode-button").dispatch("click");
+  assert.equal(clock.elements.get("clock-sound-button").attributes.get("aria-pressed"), "true");
+  assert.equal(clock.elements.get("clock-haptic-button").attributes.get("aria-pressed"), "true");
+  clock.dispatchStorage("clock.timer_sound", "false");
+  clock.dispatchStorage("clock.timer_haptic", "false");
+  assert.equal(clock.elements.get("clock-sound-button").attributes.get("aria-pressed"), "false");
+  assert.equal(clock.elements.get("clock-haptic-button").attributes.get("aria-pressed"), "false");
 });
 
 test("Calendar selection is restored, shows only its view, and Reset returns to Clock", () => {

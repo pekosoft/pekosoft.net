@@ -200,6 +200,11 @@ Always center table header text, independently of the table or column's body-cel
 alignment. Scope column-specific alignment rules to `td` so they never override
 headers.
 
+All tables use 4px `--grey1` borders, `--black` body and header backgrounds and
+`--grey1` hovered-row backgrounds. Every column supports header-edge resizing with a 4px
+`--color1` guide drawn continuously above horizontal borders and double-click or
+double-tap to restore its default width.
+
 ## Root CSS variables
 
 The main shared `:root` variables currently defined in `css/index.css` are:

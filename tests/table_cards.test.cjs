@@ -337,6 +337,8 @@ test('supported tables retain Cards while Updates remains table-only', () => {
   }
   const updates = fs.readFileSync(path.join(root, 'updates.php'), 'utf8');
   assert.match(updates, /<table id="updates-table" class="over scrollable-table">/);
+  assert.match(updates, /<thead>[\s\S]*<th class="updates-col-title" scope="col"/);
+  assert.equal((updates.match(/scope="col"/g) || []).length, 4);
   assert.doesNotMatch(updates, /data-cards-|updates-view-button/);
   const reference = fs.readFileSync(path.join(root, 'tools', 'reference.php'), 'utf8');
   assert.match(reference, /id="cards-view"/);

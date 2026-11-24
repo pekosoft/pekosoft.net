@@ -664,9 +664,17 @@ function setupResizableTables() {
       resizingHeader = null;
     };
 
+    const updateResizeGuide = (header) => {
+      const left = header.getBoundingClientRect().right - table.getBoundingClientRect().left - table.clientLeft;
+      table.style.setProperty('--column-resize-guide-left', `${left}px`);
+    };
+
     const setResizingColumn = (header, isResizing) => {
       const columnIndex = getVisibleHeaders().indexOf(header);
       if (columnIndex < 0) return;
+
+      if (isResizing) updateResizeGuide(header);
+      else table.style.removeProperty('--column-resize-guide-left');
 
       [...table.rows].forEach((row) => {
         if (row.parentElement?.tagName === 'TFOOT') return;
@@ -709,6 +717,7 @@ function setupResizableTables() {
         resizingHeader.dataset.columnWidth = String(Math.round(width));
         resizingHeader.style.width = `${Math.round(width)}px`;
         table.style.width = `${Math.max(getMinimumTableWidth(), Math.round(startTableWidth + widthChange))}px`;
+        updateResizeGuide(resizingHeader);
         return;
       }
 

@@ -176,6 +176,13 @@
         </button>
 
         <!-- Toggle Features -->
+        <button id="bend-button" class="square" type="button" title="Toggle temporary tempo changes" aria-pressed="false">
+          <svg class="icons">
+            <use href="/icons.svg?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/icons.svg'); ?>#bend" />
+          </svg>
+          <span class="button-text">Bend</span>
+        </button>
+
         <button id="reverse-button" class="square" title="Toggle rotation direction">
           <svg class="icons">
             <use href="/icons.svg#reverse" />
@@ -367,6 +374,7 @@
   <script src="/js/modules.js?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/js/modules.js'); ?>"></script>
   <script src="/js/drag.js?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/js/drag.js'); ?>"></script>
   <script src="/js/svg_utils.js"></script>
+  <script src="/js/tempo_bend.js?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/js/tempo_bend.js'); ?>"></script>
   <script src="/js/<?php echo $release; ?>.js?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/js/' . $release . '.js'); ?>"></script>
   <?php require($_SERVER['DOCUMENT_ROOT'] . "/elements/footer.php"); ?>
 </body>

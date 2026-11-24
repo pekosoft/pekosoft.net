@@ -159,6 +159,16 @@
 
 <div class="feature-row border">
   <svg class="standard-image-help">
+    <use href="/icons.svg?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/icons.svg'); ?>#bend"></use>
+  </svg>
+  <div class="justify">
+    <h1>Bend <span class="object">button</span></h1>
+    Makes changes with the Tempo slider and its Decrease and Increase buttons temporary. The original BPM returns on release. <span class="default">Default: off.</span>
+  </div>
+</div>
+
+<div class="feature-row border">
+  <svg class="standard-image-help">
     <use href="/icons.svg#triangle_down"></use>
   </svg>
   <div class="justify">

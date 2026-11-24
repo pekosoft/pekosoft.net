@@ -129,6 +129,13 @@
           <span class="button-text">Blink</span>
         </button>
 
+        <button id="bend-button" class="square" type="button" title="Toggle temporary tempo changes" aria-pressed="false">
+          <svg class="icons">
+            <use href="/icons.svg?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/icons.svg'); ?>#bend" />
+          </svg>
+          <span class="button-text">Bend</span>
+        </button>
+
         <button id="half-button" class="square" title="Halve the BPM">
           <svg class="icons">
             <use href="/icons.svg#triangle_down" />
@@ -318,6 +325,7 @@
   <script src="/js/audio.js"></script>
   <script src="/js/svg_utils.js"></script>
   <script src="/js/tempi.js?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/js/tempi.js'); ?>"></script>
+  <script src="/js/tempo_bend.js?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/js/tempo_bend.js'); ?>"></script>
   <script src="/js/<?php echo $release; ?>.js?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/js/' . $release . '.js'); ?>"></script>
   <?php require($_SERVER['DOCUMENT_ROOT'] . "/elements/footer.php"); ?>
 </body>

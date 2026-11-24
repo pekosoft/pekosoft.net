@@ -13,6 +13,7 @@ const btn33 = document.getElementById('33-button');
 const btn45 = document.getElementById('45-button');
 const btn78 = document.getElementById('78-button');
 const reverseButton = document.getElementById('reverse-button');
+const bendButton = document.getElementById('bend-button');
 const torqueButton = document.getElementById('torque-button');
 const hapticButton = document.getElementById('haptic-button');
 const resetButton = document.getElementById('reset-button');
@@ -178,6 +179,7 @@ function rpmToReferenceHz(rpm) {
 
 // Defaults
 let targetSpeed = 33.333;
+let bendOn = false;
 let showGuides = localStorage.getItem('global.guides') !== 'false';
 let showTimelineRPM = localStorage.getItem('turntable.timeline_rpm') !== 'false';
 let showTimelineSpeed = localStorage.getItem('turntable.timeline_speed') !== 'false';
@@ -727,6 +729,20 @@ function setSpeed(button, rpm) {
   saveSettings();
 }
 
+const tempoBend = window.createTempoBend({
+  slider: rpmSlider,
+  getValue: () => ({ rpm: targetSpeed, button: currentSpeedButton }),
+  restoreValue: (value) => setSpeed(value.button, value.rpm)
+});
+
+bendButton.addEventListener('click', () => {
+  bendOn = !bendOn;
+  tempoBend.setEnabled(bendOn);
+  bendButton.classList.toggle('button-on', bendOn);
+  bendButton.setAttribute('aria-pressed', String(bendOn));
+  saveSettings();
+});
+
 btn8.addEventListener('click', () => setSpeed(btn8, 8));
 btn16.addEventListener('click', () => setSpeed(btn16, 16.667));
 btn22.addEventListener('click', () => setSpeed(btn22, 22.5));
@@ -807,6 +823,11 @@ hapticButton.addEventListener('click', () => {
 });
 
 resetButton.addEventListener('click', () => {
+  tempoBend.finish();
+  bendOn = false;
+  tempoBend.setEnabled(false);
+  bendButton.classList.remove('button-on');
+  bendButton.setAttribute('aria-pressed', 'false');
   isPlaying = false;
   isAnimating = false;
   togglePlayButton.classList.remove('button-on');
@@ -856,6 +877,7 @@ resetButton.addEventListener('click', () => {
   // Clear all turntable-specific localStorage keys
   [
     'turntable.rpm',
+    'turntable.bend_on',
     'turntable.direction',
     'turntable.torque',
     'turntable.haptic',
@@ -1260,13 +1282,15 @@ volumeSlider.addEventListener('input', () => {
 
 // Settings
 function saveSettings() {
-  localStorage.setItem('turntable.rpm', state.rpm);
+  const original = tempoBend.getOriginal();
+  localStorage.setItem('turntable.rpm', original ? original.rpm : state.rpm);
+  localStorage.setItem('turntable.bend_on', bendOn);
   localStorage.setItem('turntable.direction', direction);
   localStorage.setItem('turntable.torque', torqueMode);
   localStorage.setItem('turntable.haptic', hapticMode);
   localStorage.setItem('turntable.volume', String(soundVolume));
   localStorage.setItem('turntable.tone_type', toneType);
-  localStorage.setItem('turntable.speed_btn', currentSpeedButton?.id || '');
+  localStorage.setItem('turntable.speed_btn', (original ? original.button : currentSpeedButton)?.id || '');
   localStorage.setItem('turntable.ring7', !document.querySelector('.ring-7').classList.contains('hidden'));
   localStorage.setItem('turntable.ring10', !document.querySelector('.ring-10').classList.contains('hidden'));
   localStorage.setItem('turntable.ring12', !document.querySelector('.ring-12').classList.contains('hidden'));
@@ -1281,6 +1305,10 @@ function saveSettings() {
 
 function loadSettings() {
   const savedRPM = parseFloat(localStorage.getItem('turntable.rpm'));
+  bendOn = localStorage.getItem('turntable.bend_on') === 'true';
+  tempoBend.setEnabled(bendOn);
+  bendButton.classList.toggle('button-on', bendOn);
+  bendButton.setAttribute('aria-pressed', String(bendOn));
   const savedDir = parseInt(localStorage.getItem('turntable.direction'));
   const savedTorque = localStorage.getItem('turntable.torque');
   const savedHapticRaw = localStorage.getItem('turntable.haptic');
@@ -1526,8 +1554,8 @@ function handleHold(startFn, stopFn, activateFn, element) {
   });
 }
 
-handleHold(startHoldIncrease, stopHoldIncrease, increaseRPM, increaseButton);
-handleHold(startHoldDecrease, stopHoldDecrease, decreaseRPM, decreaseButton);
+tempoBend.bindHold(startHoldIncrease, stopHoldIncrease, increaseRPM, increaseButton);
+tempoBend.bindHold(startHoldDecrease, stopHoldDecrease, decreaseRPM, decreaseButton);
 handleHold(startHoldVolumeIncrease, stopHoldVolumeIncrease, increaseVolume, volumeIncreaseButton);
 handleHold(startHoldVolumeDecrease, stopHoldVolumeDecrease, decreaseVolume, volumeDecreaseButton);
 
@@ -1561,6 +1589,7 @@ window.addEventListener('pekosoft:global-defaults-change', (event) => {
   }
 
   if ((defaults.changed === 'rpm' || defaults.changed === 'all') && Number.isFinite(defaults.rpm)) {
+    tempoBend.finish();
     targetSpeed = defaults.rpm;
     updateStateFromRPM(defaults.rpm);
     currentSpeedButton = getSpeedButtonForRPM(defaults.rpm);

@@ -5,6 +5,7 @@
 
 const bpmInput = document.getElementById('bpm-input');
 const bpmSlider = document.getElementById('tempo-slider');
+const bendButton = document.getElementById('bend-button');
 const halfButton = document.getElementById('half-button');
 const doubleButton = document.getElementById('double-button');
 const resetButton = document.getElementById('reset-button');
@@ -49,6 +50,7 @@ let metersLastActiveSec = 0;
 let isPlaying = false;
 let isSoundOn = true;
 let isBlinkOn = false;
+let bendOn = false;
 let show_guides = localStorage.getItem('global.guides') !== 'false';
 let hapticMode = false;
 let soundVolume = 100;
@@ -439,6 +441,8 @@ function updateToggleButtons() {
   if (toggleAccentButton) {
     toggleAccentButton.classList.toggle('button-on', accentOn);
   }
+  bendButton.classList.toggle('button-on', bendOn);
+  bendButton.setAttribute('aria-pressed', String(bendOn));
 }
 
 function renderPanelView() {
@@ -856,7 +860,7 @@ function updateTimelineControlButtons() {
 }
 
 function saveSettings() {
-  localStorage.setItem('metronome.bpm', bpmInput.value);
+  localStorage.setItem('metronome.bpm', tempoBend.getOriginal() ?? bpmInput.value);
   localStorage.setItem('metronome.beat_sound', beatSoundSelect.value);
   localStorage.setItem('metronome.sound_on', JSON.stringify(isSoundOn));
   localStorage.setItem('metronome.blink_on', JSON.stringify(isBlinkOn));
@@ -873,6 +877,7 @@ function loadSettings() {
   const savedBeatSound = localStorage.getItem('metronome.beat_sound');
   const savedSound = localStorage.getItem('metronome.sound_on');
   const savedBlink = localStorage.getItem('metronome.blink_on');
+  const savedBend = localStorage.getItem('metronome.bend_on');
   const savedVolume = localStorage.getItem('metronome.volume');
   const savedPanel = localStorage.getItem("metronome.panel");
   const savedBeats = localStorage.getItem("metronome.beat_history");
@@ -900,6 +905,8 @@ function loadSettings() {
   if (savedBeatSound !== null) beatSoundSelect.value = savedBeatSound;
   if (savedSound !== null) isSoundOn = JSON.parse(savedSound);
   if (savedBlink !== null) isBlinkOn = JSON.parse(savedBlink);
+  if (savedBend !== null) bendOn = JSON.parse(savedBend);
+  tempoBend.setEnabled(bendOn);
   if (savedVolume !== null) soundVolume = Math.min(Math.max(parseInt(savedVolume, 10) || 0, 0), 100);
   if (savedGuides !== null) {
     show_guides = JSON.parse(savedGuides);
@@ -1088,10 +1095,12 @@ if (stopButton) {
 
 resetButton.addEventListener('click', () => {
   stopMetronome();
+  finishTempoBend();
   localStorage.removeItem('metronome.bpm');
   localStorage.removeItem('metronome.beat_sound');
   localStorage.removeItem('metronome.sound_on');
   localStorage.removeItem('metronome.blink_on');
+  localStorage.removeItem('metronome.bend_on');
   localStorage.removeItem('metronome.volume');
   localStorage.removeItem("metronome.panel");
   localStorage.removeItem("metronome.beat_history");
@@ -1112,6 +1121,8 @@ resetButton.addEventListener('click', () => {
 
   isSoundOn = true;
   isBlinkOn = false;
+  bendOn = false;
+  tempoBend.setEnabled(false);
   show_guides = localStorage.getItem('global.guides') !== 'false';
   hapticMode = false;
   accentOn = true;
@@ -1186,7 +1197,25 @@ if (followButton) {
 }
 beatSoundSelect.addEventListener('change', saveSettings);
 bpmInput.addEventListener('input', () => updateBPM(parseFloat(bpmInput.value)));
-bpmSlider.addEventListener('input', () => updateBPM(bpmSlider.value));
+
+function finishTempoBend() {
+  tempoBend.finish();
+}
+
+const tempoBend = window.createTempoBend({
+  slider: bpmSlider,
+  getValue: () => bpmInput.value,
+  restoreValue: (value) => updateBPM(value)
+});
+
+bendButton.addEventListener('click', () => {
+  bendOn = !bendOn;
+  tempoBend.setEnabled(bendOn);
+  localStorage.setItem('metronome.bend_on', JSON.stringify(bendOn));
+  updateToggleButtons();
+});
+
+bpmSlider.addEventListener('input', () => updateBPM(bpmSlider.value, tempoBend.getOriginal() === null));
 volumeSlider.addEventListener('input', () => updateVolume(volumeSlider.value));
 halfButton.addEventListener('click', () => {
   const newBPM = Math.max(minBPM, bpmInput.value / 2);
@@ -1299,8 +1328,8 @@ function handleHold(startFn, stopFn, activateFn, element) {
   });
 }
 
-handleHold(startHoldIncrease, stopHoldIncrease, increaseBPM, increaseButton);
-handleHold(startHoldDecrease, stopHoldDecrease, decreaseBPM, decreaseButton);
+tempoBend.bindHold(startHoldIncrease, stopHoldIncrease, increaseBPM, increaseButton);
+tempoBend.bindHold(startHoldDecrease, stopHoldDecrease, decreaseBPM, decreaseButton);
 handleHold(startHoldVolumeIncrease, stopHoldVolumeIncrease, increaseVolume, volumeIncreaseButton);
 handleHold(startHoldVolumeDecrease, stopHoldVolumeDecrease, decreaseVolume, volumeDecreaseButton);
 
@@ -1317,7 +1346,10 @@ window.addEventListener('pekosoft:global-defaults-change', (event) => {
   const defaults = event.detail;
   if (!defaults || !['bpm', 'all'].includes(defaults.changed)) return;
   const bpm = defaults.bpm;
-  if (Number.isFinite(bpm)) updateBPM(bpm, false);
+  if (Number.isFinite(bpm)) {
+    finishTempoBend();
+    updateBPM(bpm, false);
+  }
 });
 
 if (metronomeTimelineSvg && metronomeSvgTimeline?.observeResize) {

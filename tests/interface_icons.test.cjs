@@ -23,6 +23,17 @@ test('updated interface icons remain unique standalone monochrome geometry', () 
   }
 });
 
+test('Metronome and Turntable Bend controls use the dedicated icon', () => {
+  assert.doesNotMatch(content('bend'), /<(?:text|use|image)\b|\b(?:fill|stroke|style)\s*=/i);
+  for (const tool of ['metronome', 'turntable']) {
+    const template = fs.readFileSync(path.join(__dirname, '..', 'tools', `${tool}.php`), 'utf8');
+    const button = template.match(/<button id="bend-button"[\s\S]*?<\/button>/)[0];
+    assert.match(button, /#bend"/);
+    const help = fs.readFileSync(path.join(__dirname, '..', 'help', `${tool}.php`), 'utf8');
+    assert.match(help, /#bend"><\/use><\/svg>|#bend"><\/use>/);
+  }
+});
+
 test('Cables compatibility uses two puzzle pieces with complementary curved edges', () => {
   const icon = content('puzzle');
   assert.equal((icon.match(/<path /g) || []).length, 2);

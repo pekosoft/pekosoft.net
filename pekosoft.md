@@ -223,6 +223,12 @@ Header logos are not selectable, without disabling their links or context
 menus. Desktop sidebars reach the viewport bottom when Status bar is off.
 With Status bar on, preserve its existing sidebar clearance and gap.
 
+Existing page and section heading bars use the shared `site_ui.css` rules.
+Single-line bars are 48px high with 8px vertical and 10px horizontal padding.
+Titles use a 32px line height, with 28px page titles and 24px section titles.
+Center titles and allow wrapping rather than clipping long names.
+Do not add page or module headers to Pekosoft.
+
 Background sits directly above Reset in Settings. It is off by default,
 persists across pages and resets to off.
 Pekosoft's supplied background is a gradient from `--color2` to `--color1`,
@@ -230,6 +236,11 @@ following the current accent colors. A custom bitmap still replaces it and is
 removed by Global Reset. Background hides both when off.
 External text links use one decorative `#external` indicator.
 Keep the complete cross-site presentation rules in the shared `SITES.md`.
+
+Updates pagination uses the shared `site_ui.css` rules on all nine sites.
+Its `--grey1` bar is at least 48px high, with vertically centered text and
+transparent 48px Previous and Next controls. Keep the 16px gap before the table
+outside the bar, with no background on the surrounding Updates wrapper.
 
 ## Root CSS variables
 

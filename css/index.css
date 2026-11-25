@@ -2070,19 +2070,6 @@ html.invert-colors .container:fullscreen {
   text-align: left;
 }
 
-#updates-pagination {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  margin-bottom: 8px;
-}
-
-#updates-page {
-  color: var(--white);
-  white-space: nowrap;
-}
-
 #updates-table:not(.table-cards) td.updates-col-title {
   text-align: left;
 }

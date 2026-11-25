@@ -12,6 +12,40 @@
   user-select: none;
 }
 
+.top-line,
+.page-heading,
+.section-heading {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 48px;
+  padding: 8px 10px;
+  border: 0;
+  background: var(--grey1);
+}
+
+:is(.top-line, .page-heading, .section-heading) > :is(h1, h2) {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  font-family: Arial, sans-serif;
+  font-weight: bold;
+  line-height: 32px;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+:is(.top-line, .page-heading, .section-heading) > h1 {
+  font-size: 28px;
+}
+
+:is(.top-line, .page-heading, .section-heading) > h2,
+.section-heading > h1 {
+  font-size: 24px;
+}
+
 #toc, #settings-panel {
   box-sizing: border-box;
   background: var(--black);
@@ -142,6 +176,41 @@
 body {
   position: relative;
   isolation: isolate;
+}
+
+.updates {
+  background: transparent;
+}
+
+.updates-pagination,
+#updates-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  min-height: 48px;
+  margin: 0 0 16px;
+  background: var(--grey1);
+  color: var(--white);
+}
+
+.updates .updates-pagination > :is(a, button),
+#updates-pagination > :is(a, button) {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 48px;
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+}
+
+.updates-pagination > span,
+#updates-pagination > span {
+  white-space: nowrap;
 }
 
 .site-background {

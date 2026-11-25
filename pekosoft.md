@@ -216,8 +216,9 @@ The loader versions styles, scripts and the configured image with `filemtime`.
 TOC and Settings use opaque `--black` surfaces with 4px `--grey1` borders and
 `--grey1` row hovers. Rows use Arial bold at 24px, 42px minimum height, 10px
 horizontal padding, 16px gaps and 28px icons. The top TOC toolbar contains
-Home, Previous page, Play and Next page. Preserve official and Beta playback
-sequences and existing tool Settings. Do not add page or module headers.
+Home, Previous page, Play and Next page. Each control occupies an equal quarter
+of the full inner width, without horizontal padding or gaps. Preserve official
+and Beta playback sequences and existing tool Settings. Do not add page or module headers.
 Header logos are not selectable, without disabling their links or context
 menus. Desktop sidebars reach the viewport bottom when Status bar is off.
 With Status bar on, preserve its existing sidebar clearance and gap.

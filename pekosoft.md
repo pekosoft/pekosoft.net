@@ -218,7 +218,8 @@ TOC and Settings use opaque `--black` surfaces with 4px `--grey1` borders and
 horizontal padding, 16px gaps and 28px icons. The top TOC toolbar contains
 Home, Previous page, Play and Next page. Each control occupies an equal quarter
 of the full inner width, without gaps. Align the Home icon with the row icons
-below and place the Next page icon 10px from the opposite edge. Preserve official
+below and place the Next page icon 10px from the opposite edge. The toolbar
+icons use 0.8 opacity on hover without a background change. Preserve official
 and Beta playback sequences and existing tool Settings. Do not add page or module headers.
 Header logos are not selectable, without disabling their links or context
 menus. Desktop sidebars reach the viewport bottom when Status bar is off.

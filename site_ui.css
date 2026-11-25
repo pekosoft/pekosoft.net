@@ -158,7 +158,11 @@
 }
 
 #toc .toc-controls > :is(a, button):hover {
-  background: var(--grey1);
+  background: transparent;
+}
+
+#toc .toc-controls > :is(a, button):hover .icons {
+  opacity: 0.8;
 }
 
 #toc :is(a, button):focus-visible, #settings-panel button:focus-visible {

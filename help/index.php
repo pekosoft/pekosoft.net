@@ -583,6 +583,11 @@
 </div>
 
 <div class="feature-row border">
+  <svg class="standard-image-help"><use href="/icons.svg#photo"></use></svg>
+  <div class="justify"><h1>Background <span class="object">option</span></h1>Shows or hides the background. Remembers the choice across pages. A selected bitmap replaces the supplied background. Reset turns Background off and removes the selected bitmap. <span class="default">Default: off.</span></div>
+</div>
+
+<div class="feature-row border">
   <svg class="standard-image-help"><use href="/icons.svg#full_screen"></use></svg>
   <div class="justify"><h1>Fullscreen <span class="object">button</span></h1>Enters or exits browser fullscreen.</div>
 </div>
@@ -594,7 +599,22 @@
 
 <div class="feature-row border">
   <svg class="standard-image-help"><use href="/icons.svg#play"></use></svg>
-  <div class="justify"><h1>Play <span class="object">button</span></h1>Cycles through pages automatically.</div>
+  <div class="justify"><h1>Play <span class="object">button</span></h1>Cycles through pages automatically. Home, Previous page, Play and Next page are at the top of the Menu. Selecting a page or pressing Escape stops Play.</div>
+</div>
+
+<div class="feature-row border">
+  <svg class="standard-image-help"><use href="/icons.svg#home"></use></svg>
+  <div class="justify"><h1>Home <span class="object">button</span></h1>Opens the front page and stops page playback.</div>
+</div>
+
+<div class="feature-row border">
+  <svg class="standard-image-help"><use href="/icons.svg#skip_prev"></use></svg>
+  <div class="justify"><h1>Previous page <span class="object">button</span></h1>Opens the previous page in the navigation sequence and stops page playback. Wraps to the last page from the first.</div>
+</div>
+
+<div class="feature-row border">
+  <svg class="standard-image-help"><use href="/icons.svg#skip_next"></use></svg>
+  <div class="justify"><h1>Next page <span class="object">button</span></h1>Opens the next page in the navigation sequence and stops page playback. Wraps to the first page from the last.</div>
 </div>
 
 <div class="feature-row border">

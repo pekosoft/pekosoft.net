@@ -345,6 +345,22 @@ input[type="range"]::-webkit-slider-runnable-track {
 
 /* TABLE */
 
+:is(.updates-scroll, .table-scroll, .table-container, .scrollable, .reference-content-scroll):has(> table:not(.table-cards)) {
+  box-sizing: border-box;
+  border-left: 4px solid var(--grey1);
+  border-right: 4px solid var(--grey1);
+}
+
+:is(.updates-scroll, .table-scroll, .table-container, .scrollable, .reference-content-scroll):has(> table:not(.table-cards)) > table,
+:is(.updates-scroll, .table-scroll, .table-container, .scrollable, .reference-content-scroll) > table:not(.table-cards) :is(td, th) {
+  border-right: 0;
+}
+
+:is(.updates-scroll, .table-scroll, .table-container, .scrollable, .reference-content-scroll) > table:not(.table-cards),
+:is(.updates-scroll, .table-scroll, .table-container, .scrollable, .reference-content-scroll) > table:not(.table-cards) :is(td, th):first-child {
+  border-left: 0;
+}
+
 table {
   background: var(--black);
   width: 100%;

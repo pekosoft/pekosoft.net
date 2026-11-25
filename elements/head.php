@@ -180,3 +180,4 @@ try {
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:description" content="<?php echo htmlspecialchars($previewDescription, ENT_QUOTES, 'UTF-8'); ?>">
+<?php require dirname(__DIR__) . '/site_ui.php'; ?>

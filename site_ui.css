@@ -1,0 +1,182 @@
+/* Shared component source. Distribute with tests/sync_site_ui.ps1. */
+:root {
+  --navigation-font: bold 24px/1.25 Arial, sans-serif;
+  --navigation-row-height: 42px;
+  --navigation-icon-size: 28px;
+  --section-gap: 16px;
+}
+
+.top-heading .heading a,
+.heading .logo-link {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+#toc, #settings-panel {
+  box-sizing: border-box;
+  background: var(--black);
+  border: 4px solid var(--grey1);
+  padding: 0;
+  text-align: left;
+}
+
+@media (min-width: 800px) {
+  #toc, #settings-panel {
+    /* Preserve the existing gap only when a status bar reserves space. */
+    --sidebar-bottom-gap: clamp(0px, var(--sidebar-footer-height, 0px), 16px);
+    height: calc(var(--visual-viewport-height, 100dvh) - 64px - var(--sidebar-footer-height, 0px) - var(--sidebar-bottom-gap));
+    margin-bottom: var(--sidebar-bottom-gap);
+  }
+}
+
+#toc :is(ul, li, h1) {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+#toc .toc-column + .toc-column,
+#toc .toc-section-start,
+#toc li:not(.toc-brand) + .toc-brand,
+#toc .toc-brand + li:not(.toc-brand) {
+  margin-top: var(--section-gap);
+}
+
+#toc :is(li a, .toc-button), #settings-panel .toc-button {
+  box-sizing: border-box;
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 16px;
+  width: 100%;
+  min-width: 0;
+  height: auto;
+  min-height: var(--navigation-row-height);
+  margin: 0;
+  padding: 4px 10px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--white);
+  font: var(--navigation-font);
+  text-align: left;
+  text-decoration: none;
+  text-transform: none;
+  cursor: pointer;
+}
+
+#toc :is(li a, .toc-button):hover, #settings-panel .toc-button:hover {
+  background: var(--grey1);
+}
+
+#toc :is(a, button)[aria-current="page"],
+#toc .button-on, #settings-panel .button-on {
+  color: var(--color1);
+}
+
+#toc .icons, #settings-panel .icons {
+  flex: 0 0 var(--navigation-icon-size);
+  width: var(--navigation-icon-size);
+  height: var(--navigation-icon-size);
+  margin: 0;
+  fill: currentColor;
+}
+
+#toc .toc-controls {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  align-items: center;
+  flex: 0 0 auto;
+  min-height: 48px;
+  margin: 0;
+  padding: 4px 10px;
+  border: 0;
+  border-bottom: 4px solid var(--grey1);
+  background: var(--black);
+}
+
+#toc .toc-controls > :is(a, button) {
+  all: unset;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  height: 40px;
+  color: var(--white);
+  cursor: pointer;
+}
+
+#toc .toc-controls > :is(.button-on, [aria-current="page"]) {
+  color: var(--color1);
+}
+
+#toc .toc-controls > :is(a, button):hover {
+  background: var(--grey1);
+}
+
+#toc :is(a, button):focus-visible, #settings-panel button:focus-visible {
+  outline: 1px solid var(--color1);
+  outline-offset: -1px;
+}
+
+#toc button:disabled, #settings-panel button:disabled {
+  color: var(--grey2);
+  cursor: default;
+}
+
+#toc :is(.toc-close-wrap, .toc-close),
+#settings-panel :is(.toc-close-wrap, .settings-panel-close) {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  height: 48px;
+  margin: var(--section-gap) 0 0;
+  padding: 0;
+  background: var(--black);
+}
+
+body {
+  position: relative;
+  isolation: isolate;
+}
+
+.site-background {
+  position: fixed;
+  inset: 0;
+  z-index: -3;
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  pointer-events: none;
+}
+
+.invert-colors body > .site-background {
+  filter: none;
+}
+
+.invert-colors body > .site-background.bitmap {
+  filter: invert(1) hue-rotate(180deg);
+}
+
+html:not(.site-background-enabled) .background-bitmap {
+  visibility: hidden;
+}
+
+.external-link-icon {
+  display: inline-block;
+  flex: 0 0 16px;
+  width: 16px;
+  height: 16px;
+  margin: 0 0 0 4px;
+  fill: currentColor;
+  vertical-align: middle;
+}
+
+a:has(> .external-link-icon):not(:has(img, svg:not(.external-link-icon))):hover {
+  color: var(--black);
+  background: var(--white);
+}

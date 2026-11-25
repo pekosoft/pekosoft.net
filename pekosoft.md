@@ -205,6 +205,31 @@ All tables use 4px `--grey1` borders, `--black` body and header backgrounds and
 `--color1` guide drawn continuously above horizontal borders and double-click or
 double-tap to restore its default width.
 
+## Shared site interface
+
+The root `site_ui.php`, `site_ui.css` and `site_ui.js` files are the canonical
+navigation and Settings components for all nine sites. Distribute identical
+runtime copies with `tests/sync_site_ui.ps1`. Keep site-specific background
+choices in `data/site_ui.json`, not conditional branches in the component.
+The loader versions styles, scripts and the configured image with `filemtime`.
+
+TOC and Settings use opaque `--black` surfaces with 4px `--grey1` borders and
+`--grey1` row hovers. Rows use Arial bold at 24px, 42px minimum height, 10px
+horizontal padding, 16px gaps and 28px icons. The top TOC toolbar contains
+Home, Previous page, Play and Next page. Preserve official and Beta playback
+sequences and existing tool Settings. Do not add page or module headers.
+Header logos are not selectable, without disabling their links or context
+menus. Desktop sidebars reach the viewport bottom when Status bar is off.
+With Status bar on, preserve its existing sidebar clearance and gap.
+
+Background sits directly above Reset in Settings. It is off by default,
+persists across pages and resets to off.
+Pekosoft's supplied background is a gradient from `--color2` to `--color1`,
+following the current accent colors. A custom bitmap still replaces it and is
+removed by Global Reset. Background hides both when off.
+External text links use one decorative `#external` indicator.
+Keep the complete cross-site presentation rules in the shared `SITES.md`.
+
 ## Root CSS variables
 
 The main shared `:root` variables currently defined in `css/index.css` are:

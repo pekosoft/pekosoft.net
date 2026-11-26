@@ -65,6 +65,34 @@ test('Global Reset does not reload before a failed background removal can be rep
   assert.ok(!events.includes('reload'));
 });
 
+test('selected background photos gain an overlay and removal restores the gradient', () => {
+  const classes = new Set();
+  const properties = new Map();
+  const revoked = [];
+  const context = vm.createContext({
+    Blob,
+    URL: {
+      createObjectURL: () => 'blob:photo',
+      revokeObjectURL: url => revoked.push(url)
+    },
+    document: { documentElement: { style: {
+      setProperty: (key, value) => properties.set(key, value),
+      removeProperty: key => properties.delete(key)
+    } } },
+    backgroundBitmap: { classList: { toggle: (name, enabled) => enabled ? classes.add(name) : classes.delete(name) } },
+    settings: { backgroundImagePicker: { textContent: '' } }
+  });
+  vm.runInContext('let backgroundImageUrl = "";', context);
+  vm.runInContext(source.slice(source.indexOf('  function applyBackgroundImageSetting('), source.indexOf('  function expandHex(')), context);
+  context.applyBackgroundImageSetting(new Blob(['photo']));
+  assert.equal(classes.has('background-photo'), true);
+  assert.equal(properties.get('--selected-background-image'), 'url("blob:photo")');
+  context.applyBackgroundImageSetting();
+  assert.equal(classes.has('background-photo'), false);
+  assert.equal(properties.has('--selected-background-image'), false);
+  assert.deepEqual(revoked, ['blob:photo']);
+});
+
 test('pages without the developer Size control retain the saved grid size', () => {
   const context = vm.createContext({
     settings: { gridSizeValue: null },

@@ -238,6 +238,13 @@ body {
   pointer-events: none;
 }
 
+html.site-background-enabled :is(.site-background, .background-bitmap).background-photo::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+}
+
 .invert-colors body > .site-background {
   filter: none;
 }

@@ -235,7 +235,8 @@ Background sits directly above Reset in Settings. It is off by default,
 persists across pages and resets to off.
 Pekosoft's supplied background is a gradient from `--color2` to `--color1`,
 following the current accent colors. A custom bitmap still replaces it and is
-removed by Global Reset. Background hides both when off.
+removed by Global Reset. Background photos, including custom bitmaps, have a
+80% black overlay; the gradient remains unchanged. Background hides both when off.
 External text links use one decorative `#external` indicator.
 Keep the complete cross-site presentation rules in the shared `SITES.md`.
 

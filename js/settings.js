@@ -788,6 +788,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (backgroundImageUrl) URL.revokeObjectURL(backgroundImageUrl);
     backgroundImageUrl = "";
     document.documentElement.style.removeProperty("--selected-background-image");
+    backgroundBitmap.classList.toggle("background-photo", file instanceof Blob);
     if (!(file instanceof Blob)) {
       if (settings.backgroundImagePicker) settings.backgroundImagePicker.textContent = "Choose bitmap";
       return;

@@ -140,11 +140,14 @@ test('Background defaults off, persists a toggle and restores off when storage i
   assert.equal(button.getAttribute('aria-pressed'), 'false');
   assert.equal(page.document.body.children[0].style.backgroundImage, 'none');
   assert.equal(page.document.body.children[0].classList.contains('bitmap'), true);
+  assert.equal(page.document.body.children[0].classList.contains('background-photo'), true);
   button.click();
   assert.equal(page.values.get('global.background_enabled'), 'true');
   assert.equal(page.document.body.children[0].style.backgroundImage, 'url("/photo.png")');
   const restored = fixture({ saved: Object.fromEntries(page.values) });
   restored.features.setupBackground();
+  assert.equal(restored.document.body.children[0].classList.contains('background-photo'), true);
+  assert.equal(restored.document.body.children[0].classList.contains('bitmap'), false);
   assert.equal(restored.document.getElementById('toggle-background-button').getAttribute('aria-pressed'), 'true');
   restored.values.clear();
   restored.window.fire('storage', { key: null });
@@ -187,6 +190,7 @@ test('Gradient background follows the accent variables and toggle without bitmap
   const button = page.document.getElementById('toggle-background-button');
   assert.equal(background.style.backgroundImage, 'linear-gradient(135deg, var(--color2), var(--color1))');
   assert.equal(background.classList.contains('bitmap'), false);
+  assert.equal(background.classList.contains('background-photo'), false);
   button.click();
   assert.equal(background.style.backgroundImage, 'none');
   assert.equal(page.document.documentElement.classList.contains('site-background-enabled'), false);

@@ -50,7 +50,7 @@
       ? 'linear-gradient(135deg, var(--color2), var(--color1))'
       : `url("${options.background}")`;
     const background = document.createElement('div');
-    background.className = `site-background${!isGradient && options.rootInversion === 'true' ? ' bitmap' : ''}`;
+    background.className = `site-background${isGradient ? '' : ' background-photo'}${!isGradient && options.rootInversion === 'true' ? ' bitmap' : ''}`;
     background.setAttribute('aria-hidden', 'true');
     document.body.prepend(background);
     const apply = () => {

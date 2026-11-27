@@ -17,7 +17,7 @@ function createTabs() {
     const documentListeners = new Map();
     const inputs = new Map(['guides', 'bright-guides', 'rulers'].map(id => [id, { checked: false }]));
     const settingsButtons = new Map();
-    const moduleButtons = moduleIds.map(id => createButton(id, true));
+    const moduleButtons = moduleIds.map(id => createButton(id, id !== 'instrument-guides-button'));
     const tab = { changes: [], moduleButtons, inputs };
     tabs.push(tab);
 
@@ -38,7 +38,9 @@ function createTabs() {
           const next = !classes.has('button-on');
           this.classList.toggle('button-on', next);
           tab.changes.push({ id, enabled: next });
-          localStorage.setItem(id === 'tool-guides-button' ? `meters.${slug}.guides` : `${slug}.show_guides`, String(next));
+          const key = id === 'tool-guides-button' ? `meters.${slug}.guides`
+            : id === 'instrument-guides-button' ? `${slug}.instrument_guides` : `${slug}.show_guides`;
+          localStorage.setItem(key, String(next));
           documentListeners.get('click')?.forEach(listener => listener({ target: this }));
         }
       };
@@ -132,7 +134,7 @@ test('global Guides changes are atomic and settle across tabs', () => {
 test('global Bright clears Instrument overrides along with other module overrides', () => {
   const browser = createTabs();
   const tapPad = browser.createTab('tap_pad');
-  const localKeys = ['tap_pad.bright', 'player.instrument_bright', 'tap_pad.timeline_bright', 'meters.tap_pad.bright', 'icons.preview_bright'];
+  const localKeys = ['tap_pad.bright', 'player.instrument_bright', 'metronome.instrument_bright', 'tap_pad.timeline_bright', 'meters.tap_pad.bright', 'icons.preview_bright'];
   for (const key of localKeys) browser.values.set(key, 'true');
   browser.values.set('tap_pad.blink', '1');
 
@@ -170,4 +172,40 @@ test('local Guides toggles retain independent module states', () => {
   assert.equal(player.moduleButtons[1].classList.contains('button-on'), false);
   player.moduleButtons[0].click();
   assert.equal(player.inputs.get('guides').checked, false);
+});
+
+test('Metronome Instrument guides remain independent until Settings Guides changes', () => {
+  const browser = createTabs();
+  const tab = browser.createTab('metronome', ['guides-button', 'instrument-guides-button']);
+  tab.window.PekoGuides.setGlobal(false);
+  tab.moduleButtons[1].click();
+  assert.equal(tab.moduleButtons[0].classList.contains('button-on'), false);
+  assert.equal(tab.moduleButtons[1].classList.contains('button-on'), true);
+  const registry = JSON.parse(browser.values.get('global.guides.modules'));
+  assert.equal(registry['metronome.show_guides'], false);
+  assert.equal(registry['metronome.instrument_guides'], true);
+  tab.window.PekoGuides.setGlobal(false);
+  assert.equal(tab.moduleButtons[1].classList.contains('button-on'), false);
+});
+
+test('Metronome Instrument guides default off without losing explicit global or local choices', () => {
+  const browser = createTabs();
+  const key = 'metronome.instrument_guides';
+  const other = browser.createTab('player', ['guides-button']);
+  other.window.PekoGuides.syncPageRegistry();
+  assert.equal(other.window.PekoGuides.getModuleState(key, false), false);
+  const tab = browser.createTab('metronome', ['guides-button', 'instrument-guides-button']);
+  assert.equal(tab.window.PekoGuides.getGlobal(), true);
+  assert.equal(tab.window.PekoGuides.getModuleState(key, false), false);
+  tab.window.PekoGuides.syncPageRegistry();
+  assert.equal(tab.window.PekoGuides.getModuleState(key, false), false);
+  tab.window.PekoGuides.setGlobal(true);
+  assert.equal(tab.window.PekoGuides.getModuleState(key, false), true);
+  browser.values.delete(key);
+  const reopened = browser.createTab('metronome');
+  assert.equal(reopened.window.PekoGuides.getModuleState(key, false), true);
+  browser.values.set(key, 'false');
+  assert.equal(reopened.window.PekoGuides.getModuleState(key, false), false);
+  browser.values.clear();
+  assert.equal(reopened.window.PekoGuides.getModuleState(key, false), false);
 });

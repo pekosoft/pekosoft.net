@@ -39,6 +39,7 @@
 
   <div id="tool-container" class="container">
     <div class="module-body metronome-spacer border">
+      <svg id="instrument-guides" class="metronome-guides" aria-hidden="true"></svg>
       <div class="metronome-wrapper">
         <div class="pendulum">
           <div id="metronome-weight" class="metronome-weight"></div>
@@ -50,6 +51,14 @@
       </div>
     </div>
     <div class="module-footer wrapper colored">
+      <button id="instrument-guides-button" data-help-entry="Instrument guides" class="square" type="button" title="Toggle guides" aria-pressed="false">
+        <svg class="icons"><use href="/icons.svg#guides" /></svg>
+        <span class="button-text">Guides</span>
+      </button>
+      <button id="instrument-bright-button" data-help-entry="Instrument bright" class="square" type="button" title="Toggle bright guides" aria-pressed="false">
+        <svg class="icons"><use href="/icons.svg#sun" /></svg>
+        <span class="button-text">Bright</span>
+      </button>
       <button id="base-bpm-button" class="square" title="Toggle BPM">
         <svg class="icons">
           <use href="/icons.svg#1_4" />

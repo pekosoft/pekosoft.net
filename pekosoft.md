@@ -367,6 +367,7 @@ To recover from an incomplete deployment, run Deploy site manually on `main` wit
 ## Guides text selection convention
 
 - Use "guides" when referring to plot reference lines collectively, not "grid" or "guide". Use Guides when referring to the named control.
+- Instrument guides use `--grey1` by default and stay behind instrument content, including when Bright is enabled.
 - Text associated with guides, timelines and rulers must never be selectable. This includes axis titles, ticks, numbers, units and channel labels in Meters.
 - Enforce `user-select: none` through shared styles for guides and rulers, including SVG roots and text. Cover both `.timeline-ruler-layout` and Player's `.player-ruler-layout`, not only elements inside Timeline.
 - Preserve pointer interactions such as seeking, dragging and scrolling. Keep text selection and editing available in inputs and Panel textareas.

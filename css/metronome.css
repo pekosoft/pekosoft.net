@@ -8,7 +8,7 @@
   justify-content: center;
   align-items: center;
   position: relative;
-  padding: 16px;
+  padding: 32px 16px 16px;
   margin: 8px auto 0;
 }
 
@@ -25,12 +25,42 @@
   align-items: center;
   position: relative;
   border: none;
+  z-index: 1;
+}
+
+.metronome-guides {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  color: var(--grey1);
+  pointer-events: none;
+  user-select: none;
+  z-index: 0;
+}
+
+.metronome-guides text {
+  fill: currentColor;
+  font-size: 14px;
+  dominant-baseline: middle;
+  user-select: none;
+}
+
+.metronome-guides line,
+.metronome-guides circle {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1;
+}
+
+.metronome-guides.bright-guides {
+  color: var(--white);
 }
 
 #tool-container.module-maximized .metronome-spacer {
   display: grid;
   place-items: center;
-  padding: 24px;
+  padding: 32px 24px 24px;
   flex: 1 1 auto;
   min-height: 0;
   height: auto;

@@ -97,7 +97,8 @@ test('switching motion and changing tempo preserve beat-centered crossings', () 
 });
 
 test('reset restores natural motion and disables Bend', () => {
-  const storage = new Map([['metronome.emulate_pendulum', 'false'], ['metronome.bend_on', 'true']]);
+  const storage = new Map([['metronome.emulate_pendulum', 'false'], ['metronome.bend_on', 'true'],
+    ['metronome.instrument_guides', 'false'], ['metronome.instrument_bright', 'true']]);
   const context = vm.createContext({
     emulatePendulum: false,
     bendOn: true,
@@ -122,6 +123,7 @@ test('reset restores natural motion and disables Bend', () => {
     btnGuides: { classList: { remove() {} } },
     btnHaptic: { classList: { remove() {} } },
     updateToggleButtons() {},
+    updateInstrumentGuides() {},
     metronomeTimelineRulers: null,
     clearBeatSessionData() {},
     updateBaseText() {}
@@ -133,6 +135,127 @@ test('reset restores natural motion and disables Bend', () => {
   assert.equal(storage.has('metronome.emulate_pendulum'), false);
   assert.equal(context.bendOn, false);
   assert.equal(storage.has('metronome.bend_on'), false);
+  assert.equal(storage.has('metronome.instrument_guides'), false);
+  assert.equal(storage.has('metronome.instrument_bright'), false);
+});
+
+test('Instrument guides match the swing limits and instrument size while retaining independent states', () => {
+  function element() {
+    return {
+      children: [],
+      attributes: {},
+      style: {},
+      classList: { toggle(name, enabled) { this[name] = enabled; } },
+      setAttribute(name, value) { this.attributes[name] = value; },
+      getComputedTextLength() { return 30; },
+      append(child) { this.children.push(child); },
+      prepend(child) { this.children.unshift(child); },
+      replaceChildren() { this.children = []; }
+    };
+  }
+  const storage = new Map();
+  const guides = element();
+  guides.getBoundingClientRect = () => ({ left: 0, top: 0, width: 600, height: 442 });
+  const context = vm.createContext({
+    instrumentGuides: guides,
+    instrumentGuidesButton: element(),
+    instrumentBrightButton: element(),
+    METRONOME_BODY_HEIGHT: 402,
+    pendulumDirection: -30,
+    localStorage: { getItem: key => storage.get(key) ?? null },
+    window: {
+      PekoGuides: { getModuleState: (key, fallback) => storage.has(key) ? storage.get(key) === 'true' : fallback },
+      PekoBrightGuides: { getGlobal: () => false }
+    },
+    document: {
+      querySelector: () => ({ getBoundingClientRect: () => ({ left: 135, top: 20, width: 330, bottom: 422, height: 402 }) }),
+      createElementNS: (namespace, tag) => Object.assign(element(), { tag })
+    }
+  });
+  vm.runInContext(source.slice(source.indexOf('function updateInstrumentGuides()'), source.indexOf("instrumentGuidesButton.addEventListener")), context);
+  context.updateInstrumentGuides();
+  assert.equal(guides.style.display, 'none');
+  assert.equal(context.instrumentGuidesButton.attributes['aria-pressed'], 'false');
+  storage.set('metronome.instrument_guides', 'true');
+  context.updateInstrumentGuides();
+  const lines = guides.children.filter(child => child.tag === 'line');
+  assert.equal(lines.length, 4);
+  const labels = guides.children.filter(child => child.tag === 'text');
+  assert.deepEqual(labels.map(label => label.textContent), ['-30\u00b0', '0\u00b0', '+30\u00b0']);
+  for (const line of lines) {
+    const { x1, y1, x2, y2 } = line.attributes;
+    assert.ok(Math.abs((Number(x1) - 300) * (Number(y2) - 362)
+      - (Number(y1) - 362) * (Number(x2) - 300)) < 1e-8);
+    for (const [x, y] of [[Number(x1), Number(y1)], [Number(x2), Number(y2)]]) {
+      assert.ok(Math.min(Math.abs(x), Math.abs(x - 600), Math.abs(y), Math.abs(y - 442)) < 1e-8);
+    }
+  }
+  assert.equal(labels[1].attributes.x, '312');
+  for (const [index, angle] of [-30, 30].entries()) {
+    const label = labels[index * 2];
+    const offset = angle < 0 ? -12 : 12;
+    closeTo((Number(label.attributes.x) - offset - 300) / (362 - Number(label.attributes.y)), Math.tan(angle * Math.PI / 180));
+  }
+  for (const label of labels) {
+    assert.ok(Number(label.attributes.x) >= 24 && Number(label.attributes.x) <= 576);
+    assert.ok(Number(label.attributes.y) >= 24 && Number(label.attributes.y) <= 418);
+  }
+  const circles = guides.children.filter(child => child.tag === 'circle');
+  assert.deepEqual(circles.map(circle => circle.attributes.r), ['201', '165']);
+  for (const circle of circles) {
+    assert.equal(circle.attributes.cx, '300');
+    assert.equal(circle.attributes.cy, '221');
+  }
+  context.pendulumDirection = 30;
+  context.updateInstrumentGuides();
+  assert.deepEqual(guides.children.filter(child => child.tag === 'text').map(label => label.textContent),
+    ['-30\u00b0', '0\u00b0', '+30\u00b0']);
+  for (const scale of [0.5, 2]) {
+    guides.getBoundingClientRect = () => ({ left: 0, top: 0, width: 600 * scale, height: 442 * scale });
+    context.document.querySelector = () => ({
+      getBoundingClientRect: () => ({
+        left: 135 * scale, top: 20 * scale, width: 330 * scale, bottom: 422 * scale, height: 402 * scale
+      })
+    });
+    context.updateInstrumentGuides();
+    const resizedCircles = guides.children.filter(child => child.tag === 'circle');
+    assert.deepEqual(resizedCircles.map(circle => Number(circle.attributes.r)), [201 * scale, 165 * scale]);
+    for (const circle of resizedCircles) {
+      closeTo(Number(circle.attributes.cx), 300 * scale);
+      closeTo(Number(circle.attributes.cy), 221 * scale);
+    }
+    for (const line of guides.children.filter(child => child.tag === 'line')) {
+      const { x1, y1, x2, y2 } = line.attributes;
+      closeTo((Number(x1) - 300 * scale) * (Number(y2) - 362 * scale)
+        - (Number(y1) - 362 * scale) * (Number(x2) - 300 * scale), 0);
+      for (const [x, y] of [[Number(x1), Number(y1)], [Number(x2), Number(y2)]]) {
+        assert.ok(Math.min(Math.abs(x), Math.abs(x - 600 * scale), Math.abs(y), Math.abs(y - 442 * scale)) < 1e-8);
+      }
+    }
+    for (const label of guides.children.filter(child => child.tag === 'text')) {
+      const x = Number(label.attributes.x);
+      const y = Number(label.attributes.y);
+      const left = label.attributes['text-anchor'] === 'end' ? x - 30 : x;
+      const right = left + 30;
+      assert.ok(left >= 24 && right <= 600 * scale - 24);
+      assert.ok(y >= 24 && y <= 442 * scale - 24);
+      const angle = Number(label.textContent.slice(0, -1)) * Math.PI / 180;
+      for (const cornerX of [left, right]) {
+        for (const cornerY of [y - 7, y + 7]) {
+          const distance = (cornerX - 300 * scale) * Math.cos(angle)
+            + (cornerY - 362 * scale) * Math.sin(angle);
+          assert.ok(angle < 0 ? distance < -6 : distance > 6);
+        }
+      }
+    }
+  }
+  storage.set('metronome.instrument_bright', 'true');
+  context.updateInstrumentGuides();
+  assert.equal(guides.classList['bright-guides'], true);
+  storage.set('metronome.instrument_guides', 'false');
+  context.updateInstrumentGuides();
+  assert.equal(guides.style.display, 'none');
+  assert.equal(context.instrumentGuidesButton.attributes['aria-pressed'], 'false');
 });
 
 test('pausing freezes the pendulum and cancels its animation', () => {

@@ -9,6 +9,7 @@
     "tap_pad.show_guides",
     "bpm_calculator.show_guides",
     "metronome.show_guides",
+    "metronome.instrument_guides",
     "turntable.show_guides",
     "bpm_circle.show_guides",
     "bpm_curve.guides",
@@ -53,7 +54,7 @@
     "piano.settings": ["timelineGuides"]
   };
 
-  const buttonIds = new Set(["guides-button", "timeline-guides-button", "tool-guides-button"]);
+  const buttonIds = new Set(["guides-button", "timeline-guides-button", "tool-guides-button", "instrument-guides-button"]);
   let applyingGlobalGuides = false;
 
   function readBoolean(value, fallback) {
@@ -95,6 +96,10 @@
     }
   }
 
+  function getModuleState(key, defaultState) {
+    return readBoolean(localStorage.getItem(key), readBoolean(getRegistry()[key], defaultState));
+  }
+
   function saveRegistry(registry) {
     localStorage.setItem("global.guides.modules", JSON.stringify(registry));
   }
@@ -106,6 +111,7 @@
 
   function getButtonKey(button) {
     const slug = getPageSlug();
+    if (button.id === "instrument-guides-button") return `${slug}.instrument_guides`;
     if (button.id === "tool-guides-button") return `meters.${slug}.guides`;
     if (button.id === "timeline-guides-button") {
       if (slug === "bpm_curve") return "bpm_curve.timeline_guides";
@@ -165,7 +171,7 @@
     const registry = getRegistry();
     if (!Object.keys(registry).length) {
       storageKeys.forEach((key) => {
-        registry[key] = getGlobal();
+        registry[key] = key === "metronome.instrument_guides" ? false : getGlobal();
       });
     }
     guideButtons().forEach((button) => {
@@ -222,7 +228,7 @@
     for (let index = localStorage.length - 1; index >= 0; index -= 1) {
       const key = localStorage.key(index);
       if (/^meters\..+\.bright$/.test(key || "") || key?.endsWith(".timeline_bright")
-          || key === "icons.preview_bright" || key === "tap_pad.bright" || key === "player.instrument_bright") {
+          || key === "icons.preview_bright" || key === "tap_pad.bright" || key?.endsWith(".instrument_bright")) {
         localStorage.removeItem(key);
       }
     }
@@ -278,6 +284,7 @@
 
   window.PekoGuides = {
     getGlobal,
+    getModuleState,
     setGlobal,
     syncPageRegistry,
     updateSettingsButton,
@@ -303,7 +310,7 @@
   };
 
   document.addEventListener("click", (event) => {
-    if (event.target.closest?.("#guides-button, #timeline-guides-button, #tool-guides-button")) {
+    if (event.target.closest?.("#guides-button, #timeline-guides-button, #tool-guides-button, #instrument-guides-button")) {
       syncPageRegistry();
     }
   });

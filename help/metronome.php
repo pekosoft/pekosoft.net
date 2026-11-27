@@ -27,6 +27,22 @@
   </div>
 </div>
 
+<div class="feature-row border">
+  <svg class="standard-image-help"><use href="/icons.svg#guides"></use></svg>
+  <div class="justify">
+    <h1>Instrument guides <span class="object">button</span></h1>
+    Shows four reference lines through the pendulum pivot across the full Instrument area. Degree labels mark the center and the arm's turning limits at -30 and +30 degrees. Two reference circles surround the instrument and sit within its outline. This control is independent of Timeline guides. Settings Guides changes include this control, and local choices are saved. <span class="default">Default: off.</span>
+  </div>
+</div>
+
+<div class="feature-row border">
+  <svg class="standard-image-help"><use href="/icons.svg#sun"></use></svg>
+  <div class="justify">
+    <h1>Instrument bright <span class="object">button</span></h1>
+    Toggles emphasis for Instrument guides. Follows Settings Bright until changed locally. <span class="default">Default: off.</span>
+  </div>
+</div>
+
 <div class="feature-row border"><svg class="standard-image-help">
     <use href="/icons.svg#italy"></use>
   </svg>

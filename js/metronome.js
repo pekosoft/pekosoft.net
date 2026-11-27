@@ -42,6 +42,9 @@ const baseTempiText = document.getElementById('base-tempi-text');
 const metronomeWeight = document.getElementById('metronome-weight');
 const metronomeSpacer = document.querySelector('.metronome-spacer');
 const metronomeToolContainer = document.getElementById('tool-container');
+const instrumentGuides = document.getElementById('instrument-guides');
+const instrumentGuidesButton = document.getElementById('instrument-guides-button');
+const instrumentBrightButton = document.getElementById('instrument-bright-button');
 
 let audioContext = new AudioContext();
 let metersAnalyserNode = null;
@@ -192,7 +195,84 @@ function updateMetronomeScale() {
   const scale = Math.max(0.25, Math.min(maxScale, availableWidth / METRONOME_BODY_WIDTH, availableHeight / METRONOME_BODY_HEIGHT));
 
   document.documentElement.style.setProperty('--metronome-scale', String(scale));
+  updateInstrumentGuides();
 }
+
+function updateInstrumentGuides() {
+  const enabled = window.PekoGuides.getModuleState('metronome.instrument_guides', false);
+  const savedBright = localStorage.getItem('metronome.instrument_bright');
+  const bright = savedBright === null ? window.PekoBrightGuides.getGlobal() : savedBright === 'true';
+  instrumentGuidesButton.classList.toggle('button-on', enabled);
+  instrumentGuidesButton.setAttribute('aria-pressed', String(enabled));
+  instrumentBrightButton.classList.toggle('button-on', bright);
+  instrumentBrightButton.setAttribute('aria-pressed', String(bright));
+  instrumentGuides.classList.toggle('bright-guides', bright);
+  instrumentGuides.style.display = enabled ? '' : 'none';
+  if (!enabled) return;
+
+  const bounds = instrumentGuides.getBoundingClientRect();
+  const wrapper = document.querySelector('.metronome-wrapper').getBoundingClientRect();
+  if (!bounds.width || !bounds.height || !wrapper.height) return;
+  const pivotX = wrapper.left + wrapper.width / 2 - bounds.left;
+  const pivotY = wrapper.bottom - wrapper.height * 60 / METRONOME_BODY_HEIGHT - bounds.top;
+  instrumentGuides.setAttribute('viewBox', `0 0 ${bounds.width} ${bounds.height}`);
+  instrumentGuides.replaceChildren();
+  const swingAngle = Math.abs(pendulumDirection);
+  const circleY = wrapper.top + wrapper.height / 2 - bounds.top;
+  for (const radius of [wrapper.height / 2, wrapper.width / 2]) {
+    const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    circle.setAttribute('cx', String(pivotX));
+    circle.setAttribute('cy', String(circleY));
+    circle.setAttribute('r', String(radius));
+    instrumentGuides.append(circle);
+  }
+  for (const degrees of [-swingAngle, 0, swingAngle, 90]) {
+    const radians = degrees * Math.PI / 180;
+    const dx = Math.sin(radians);
+    const dy = -Math.cos(radians);
+    const endpoints = [-1, 1].map(direction => {
+      const rayX = dx * direction;
+      const rayY = dy * direction;
+      const distanceToEdge = (insetX, insetY = insetX) => {
+        const horizontal = Math.abs(rayX) < 1e-8 ? Infinity
+          : (rayX > 0 ? bounds.width - insetX - pivotX : pivotX - insetX) / Math.abs(rayX);
+        const vertical = Math.abs(rayY) < 1e-8 ? Infinity
+          : (rayY > 0 ? bounds.height - insetY - pivotY : pivotY - insetY) / Math.abs(rayY);
+        return Math.max(0, Math.min(horizontal, vertical));
+      };
+      if (direction === 1 && degrees !== 90) {
+        const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        const labelSide = degrees < 0 ? -1 : 1;
+        label.setAttribute('text-anchor', labelSide < 0 ? 'end' : 'start');
+        label.textContent = `${degrees > 0 ? '+' : ''}${degrees}\u00b0`;
+        instrumentGuides.append(label);
+        const labelDistance = distanceToEdge(24 + label.getComputedTextLength() + 12, 24);
+        label.setAttribute('x', String(pivotX + rayX * labelDistance + labelSide * 12));
+        label.setAttribute('y', String(pivotY + rayY * labelDistance));
+      }
+      const lineDistance = distanceToEdge(0);
+      return { x: pivotX + rayX * lineDistance, y: pivotY + rayY * lineDistance };
+    });
+    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    const [start, end] = endpoints;
+    line.setAttribute('x1', String(start.x));
+    line.setAttribute('y1', String(start.y));
+    line.setAttribute('x2', String(end.x));
+    line.setAttribute('y2', String(end.y));
+    instrumentGuides.prepend(line);
+  }
+}
+
+instrumentGuidesButton.addEventListener('click', () => {
+  localStorage.setItem('metronome.instrument_guides', String(instrumentGuidesButton.getAttribute('aria-pressed') !== 'true'));
+  updateInstrumentGuides();
+});
+instrumentBrightButton.addEventListener('click', () => {
+  localStorage.setItem('metronome.instrument_bright', String(instrumentBrightButton.getAttribute('aria-pressed') !== 'true'));
+  updateInstrumentGuides();
+});
+window.addEventListener('pekosoft:guides-global-change', updateInstrumentGuides);
+window.addEventListener('pekosoft:bright-guides-global-change', updateInstrumentGuides);
 
 function requestMetronomeScaleUpdate() {
   if (metronomeScaleFrame !== null) return;
@@ -1105,6 +1185,8 @@ resetButton.addEventListener('click', () => {
   localStorage.removeItem("metronome.panel");
   localStorage.removeItem("metronome.beat_history");
   localStorage.removeItem('metronome.show_guides');
+  localStorage.removeItem('metronome.instrument_guides');
+  localStorage.removeItem('metronome.instrument_bright');
   localStorage.removeItem('metronome.haptic');
   localStorage.removeItem('metronome.show_base_bpm');
   localStorage.removeItem('metronome.show_base_tempi');
@@ -1151,6 +1233,7 @@ resetButton.addEventListener('click', () => {
   btnGuides.classList.remove('button-on');
   btnHaptic.classList.remove('button-on');
   updateToggleButtons();
+  updateInstrumentGuides();
   metronomeTimelineRulers?.setVisible(true, false);
   clearBeatSessionData();
   updateBaseText();
